@@ -12,16 +12,25 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfiguring Neo4j Overview
+# Reconfiguring Neo4j
 
-This page explains how KubeDB Ops-manager applies configuration changes to Neo4j using `Neo4jOpsRequest`.
+This guide gives an overview of how KubeDB Ops-manager reconfigures `Neo4j` database components.
 
 ## Before You Begin
 
 - You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
 - You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-## How Reconfigure Works
+## How Reconfiguring Neo4j Process Works
+
+The following diagram shows how KubeDB Ops-manager reconfigures `Neo4j` database components. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Reconfiguring process of Neo4j" src="/docs/images/neo4j/Reconfigure.png">
+  <figcaption align="center">Fig: Reconfiguring process of Neo4j</figcaption>
+</figure>
+
+The reconfigure process consists of the following steps:
 
 For a `Neo4jOpsRequest` with `spec.type: Reconfigure`, KubeDB Ops-manager:
 

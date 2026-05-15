@@ -23,6 +23,15 @@ This page explains how KubeDB Ops-manager performs horizontal scaling for Neo4j 
 
 ## How Horizontal Scaling Works
 
+The following diagram shows how KubeDB Ops-manager performs horizontal scaling for a `Neo4j` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Horizontal scaling process of Neo4j" src="/docs/images/neo4j/HorizontalScalling.png">
+  <figcaption align="center">Fig: Horizontal scaling process of Neo4j</figcaption>
+</figure>
+
+The horizontal scaling process consists of the following steps:
+
 For a `Neo4jOpsRequest` with `spec.type: HorizontalScaling`, KubeDB Ops-manager:
 
 1. Validates the requested server count in `spec.horizontalScaling.server`.

@@ -23,6 +23,15 @@ This page explains how KubeDB Ops-manager upgrades Neo4j using `Neo4jOpsRequest`
 
 ## How Update Version Works
 
+The following diagram shows how KubeDB Ops-manager updates the version of a `Neo4j` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Update version process of Neo4j" src="/docs/images/neo4j/UpdateVersion.png">
+  <figcaption align="center">Fig: Update version process of Neo4j</figcaption>
+</figure>
+
+The update version process consists of the following steps:
+
 For a `Neo4jOpsRequest` with `spec.type: UpdateVersion`, KubeDB Ops-manager:
 
 1. Validates target version from `spec.updateVersion.targetVersion`.

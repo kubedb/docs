@@ -12,29 +12,37 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Reconfiguring Neo4j TLS Overview
+# Reconfiguring TLS of Neo4j Database
 
-This page explains how KubeDB Ops-manager manages TLS updates for Neo4j using `Neo4jOpsRequest`.
+This guide gives an overview of how KubeDB Ops-manager reconfigures TLS for a `Neo4j` database, including adding TLS, rotating certificates, updating issuer reference, and removing TLS through `Neo4jOpsRequest`.
 
 ## Before You Begin
 
 - You should be familiar with [Neo4j](/docs/guides/neo4j/concepts/neo4j.md).
 - You should be familiar with [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 
-## How ReconfigureTLS Works
+## How Reconfiguring Neo4j TLS Works
 
-For a `Neo4jOpsRequest` with `spec.type: ReconfigureTLS`, KubeDB Ops-manager:
+The following diagram shows the TLS reconfiguration flow for a `Neo4j` database. Open the image in a new tab to see the enlarged version.
 
-1. Validates TLS operation fields under `spec.tls`.
-2. Handles one of the supported actions:
-   - rotate certificates (`rotateCertificates`),
-   - remove TLS (`remove`),
-   - issue/re-issue TLS from `issuerRef`.
-3. Pauses conflicting reconciliations.
-4. Updates secrets/config and restarts affected members as required.
-5. Verifies connectivity and pod health.
-6. Marks the request `Successful` after reconciliation.
+<figure align="center">
+  <img alt="Reconfiguring TLS process of Neo4j" src="/docs/images/neo4j/reconfigureTLS.png">
+  <figcaption align="center">Fig: Reconfiguring TLS process of Neo4j</figcaption>
+</figure>
+
+The process consists of the following steps:
+
+1. A user creates a `Neo4j` Custom Resource.
+2. KubeDB Provisioner reconciles the database and creates required workloads and secrets.
+3. To update TLS settings, the user creates a `Neo4jOpsRequest` with `spec.type: ReconfigureTLS`.
+4. KubeDB Ops-manager watches the `Neo4jOpsRequest` and validates the `spec.tls` fields.
+5. Ops-manager temporarily pauses conflicting reconciliation for the target database.
+6. It applies the requested TLS action (add/update via `issuerRef`, rotate via `rotateCertificates`, or disable via `remove`).
+7. It rolls/restarts the required pods so updated TLS configuration is picked up.
+8. After successful checks, Ops-manager marks the request `Successful` and resumes normal reconciliation.
+
+In the next guide, we show the step-by-step workflow for each TLS reconfiguration operation.
 
 ## Next Step
 
-Follow the detailed guide: [Reconfigure TLS in Neo4j](/docs/guides/neo4j/reconfigure-tls/reconfigure-tls.md).
+- Follow: [Reconfigure TLS in Neo4j](/docs/guides/neo4j/reconfigure-tls/reconfigure-tls.md).

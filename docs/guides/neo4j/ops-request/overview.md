@@ -23,6 +23,13 @@ This page gives an overview of how KubeDB Ops-manager handles day-2 operations f
 
 ## How the Operator Processes `Neo4jOpsRequest`
 
+The following diagram shows how KubeDB Ops-manager processes `Neo4jOpsRequest` for day-2 operations. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Neo4j OpsRequest operational flow" src="/docs/images/neo4j/operational-view.png">
+  <figcaption align="center">Fig: Neo4j OpsRequest operational flow</figcaption>
+</figure>
+
 When you create a `Neo4jOpsRequest`, KubeDB Ops-manager performs the operation in phases:
 
 1. Validates `spec.type` and operation-specific fields.

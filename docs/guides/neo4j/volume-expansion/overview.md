@@ -24,6 +24,15 @@ This page explains how KubeDB Ops-manager expands Neo4j data volumes using `Neo4
 
 ## How Volume Expansion Works
 
+The following diagram shows how KubeDB Ops-manager expands volume for a `Neo4j` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Volume expansion process of Neo4j" src="/docs/images/neo4j/VolumeExpanison.png">
+  <figcaption align="center">Fig: Volume expansion process of Neo4j</figcaption>
+</figure>
+
+The volume expansion process consists of the following steps:
+
 For a `Neo4jOpsRequest` with `spec.type: VolumeExpansion`, KubeDB Ops-manager:
 
 1. Validates requested size from `spec.volumeExpansion.server`.

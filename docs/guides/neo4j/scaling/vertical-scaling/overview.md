@@ -23,6 +23,15 @@ This page explains how KubeDB Ops-manager updates Neo4j pod resources using `Neo
 
 ## How Vertical Scaling Works
 
+The following diagram shows how KubeDB Ops-manager performs vertical scaling for a `Neo4j` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Vertical scaling process of Neo4j" src="/docs/images/neo4j/VerticalScaling.png">
+  <figcaption align="center">Fig: Vertical scaling process of Neo4j</figcaption>
+</figure>
+
+The vertical scaling process consists of the following steps:
+
 For a `Neo4jOpsRequest` with `spec.type: VerticalScaling`, KubeDB Ops-manager:
 
 1. Validates CPU/memory values from `spec.verticalScaling.server.resources`.
