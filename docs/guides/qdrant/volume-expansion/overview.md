@@ -22,7 +22,14 @@ This guide will give an overview of how KubeDB Ops-manager expands the volume of
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## How Volume Expansion Works
+## How Volume Expansion Process Works
+
+The following diagram shows how KubeDB Ops Manager expand the volumes of `Qdrant` database components. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Volume Expansion process of Qdrant" src="/docs/guides/qdrant/images/qdrant-volume-expansion.png">
+<figcaption align="center">Fig: Volume Expansion process of Qdrant</figcaption>
+</figure>
 
 The Volume Expansion process consists of the following steps:
 
@@ -30,9 +37,9 @@ The Volume Expansion process consists of the following steps:
 
 2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like pods, PVCs, secrets, services, etc.
+3. When the operator finds a `Qdrant` CR, it creates a `Petset` and related necessary stuff like pods, PVCs, secrets, services, etc.
 
-4. Each StatefulSet creates a Persistent Volume according to the volume claim template. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
+4. Each Petset creates a Persistent Volume according to the volume claim template. This Persistent Volume will be expanded by the `KubeDB` Ops-manager operator.
 
 5. Then, in order to expand the volume of the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the desired new storage size.
 

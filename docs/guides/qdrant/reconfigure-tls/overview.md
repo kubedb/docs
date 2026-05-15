@@ -42,7 +42,7 @@ The Reconfigure TLS process consists of the following steps:
 
 2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
 
-3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Qdrant` CR, it creates a `Petset` and related necessary stuff like secrets, services, etc.
 
 4. Then, in order to reconfigure TLS of the `Qdrant` database, the user creates a `QdrantOpsRequest` CR specifying the desired TLS configuration. The user can add TLS to an existing non-TLS database, rotate the existing certificates, or remove TLS entirely.
 

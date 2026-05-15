@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
-  name: qdops-rotate-auth
+  name: qdops-reconfigure-remove
   namespace: demo
 spec:
-  type: RotateAuth
+  type: Reconfigure
   databaseRef:
     name: qdrant-sample
-  timeout: 5m
-  apply: IfReady
+  configuration:
+    removeCustomConfig: true

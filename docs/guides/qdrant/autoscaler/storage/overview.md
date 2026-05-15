@@ -1,5 +1,5 @@
 ---
-title: Qdrant Storage Autoscaler Overview
+title: Qdrant Storage Autoscaling Overview
 menu:
   docs_{{ .version }}:
     identifier: qdrant-autoscaler-storage-overview
@@ -12,45 +12,48 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Qdrant Storage Autoscaler
+# Qdrant Storage Autoscaling
 
-This guide shows how to configure storage autoscaling for Qdrant.
+This guide will give an overview on how KubeDB `Autoscaler` operator autoscales the database storage using `QdrantAutoscaler` CRD.
 
 ## Before You Begin
 
-- StorageClass with `allowVolumeExpansion: true`.
-- KubeDB Autoscaler operator installed.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/autoscaler/storage/autoscaler.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/)
+  - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
+  
 
-```bash
-kubectl create ns demo
-kubectl get storageclass
-```
+## How Storage Autoscaling Works
 
-## Deploy Qdrant
+The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Qdrant`. Open the image in a new tab to see the enlarged version.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+<figure align="center">
+  <img alt="Storage Auto Scaling process of Qdrant" src="/docs/guides/qdrant/images/qdrant-storage-autoscaling.png">
+<figcaption align="center">Fig: Storage Auto Scaling process of Qdrant</figcaption>
+</figure>
 
-## Apply QdrantAutoscaler
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/storage/autoscaler.yaml
-```
+The Auto Scaling process consists of the following steps:
 
-## Verify
+1. At first, a user creates a `Qdrant` Custom Resource Object (CRO).
 
-```bash
-kubectl get qdrantautoscaler -n demo qdrant-as-storage
-kubectl describe qdrantautoscaler -n demo qdrant-as-storage
-```
+2. `KubeDB` Provisioner operator watches the `Qdrant` CRO.
 
-## Cleaning up
+3. When the operator finds a `Qdrant` CRO, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
 
-```bash
-kubectl delete qdrantautoscaler -n demo qdrant-as-storage
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+4. Each PetSet creates a Persistent Volumes according to the Volume Claim Template provided in the petset's configuration.
+
+5. Then, in order to set up storage autoscaling of the `Qdrant` database the user creates a `QdrantAutoscaler` CRO with desired configuration.
+
+6. `KubeDB` Autoscaler operator watches the `QdrantAutoscaler` CRO.
+
+7. `KubeDB` Autoscaler operator continuously watches persistent volumes of the databases to check if it exceeds the specified usage threshold.
+
+8. If the usage exceeds the specified usage threshold, then `KubeDB` Autoscaler operator creates a `QdrantOpsRequest` to expand the storage of the database. 
+   
+9. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CRO.
+
+10. Then the `KubeDB` Ops-manager operator will expand the storage of the database as specified on the `QdrantOpsRequest` CRO.
+
+In the next docs, we are going to show a step-by-step guide on Autoscaling storage of Qdrant database using `QdrantAutoscaler` CRD.

@@ -26,6 +26,7 @@ This guide will show you how to use `KubeDB` to auto-scale compute resources i.e
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Qdrant](/docs/guides/qdrant/concepts/)
+  - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
   - [Compute Resource Autoscaling Overview](/docs/guides/qdrant/autoscaler/overview.md)
 

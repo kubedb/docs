@@ -1,11 +1,11 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
-  name: qdops-rotate-auth
+  name: qdops-hscale-down
   namespace: demo
 spec:
-  type: RotateAuth
+  type: HorizontalScaling
   databaseRef:
     name: qdrant-sample
-  timeout: 5m
-  apply: IfReady
+  horizontalScaling:
+    node: 4

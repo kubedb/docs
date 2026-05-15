@@ -1,11 +1,13 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
-  name: qdrant-update-version
+  name: qdops-update-version
   namespace: demo
 spec:
   type: UpdateVersion
   databaseRef:
     name: qdrant-sample
   updateVersion:
-    targetVersion: 1.18.0
+    targetVersion: "1.17.0"
+  timeout: 5m
+  apply: IfReady

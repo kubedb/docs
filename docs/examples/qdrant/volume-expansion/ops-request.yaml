@@ -1,12 +1,12 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
-  name: qdrant-volume-expand
+  name: qdops-vol-exp
   namespace: demo
 spec:
   type: VolumeExpansion
   databaseRef:
     name: qdrant-sample
   volumeExpansion:
-    mode: Online
-    node: 4Gi
+    mode: "Offline"
+    node: 3Gi

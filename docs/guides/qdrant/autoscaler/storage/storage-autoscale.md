@@ -30,6 +30,7 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Qdran
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Qdrant](/docs/guides/qdrant/concepts/)
+  - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
   - [Storage Autoscaling Overview](/docs/guides/qdrant/autoscaler/overview.md)
 
@@ -94,7 +95,7 @@ NAME             VERSION   STATUS   AGE
 qdrant-db        1.17.0    Ready    3m46s
 ```
 
-Let's check the volume size from the StatefulSet and from the persistent volumes:
+Let's check the volume size from the Petset and from the persistent volumes:
 
 ```bash
 $ kubectl get sts -n demo qdrant-db -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
@@ -107,7 +108,7 @@ pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete     
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-qdrant-db-1         topolvm-provisioner            57s
 ```
 
-You can see the StatefulSet has 1GB storage and the capacity of all the persistent volumes is also 1GB.
+You can see the Petset has 1GB storage and the capacity of all the persistent volumes is also 1GB.
 
 We are now ready to apply the `QdrantAutoscaler` CRD to set up storage autoscaling for this database.
 

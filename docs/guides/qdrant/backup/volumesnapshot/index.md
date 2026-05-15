@@ -20,19 +20,7 @@ KubeStash allows you to take volume snapshot backups of Qdrant databases. Volume
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
 - Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
-- Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- Ensure your storage provider supports VolumeSnapshots (e.g., Longhorn, AWS EBS, GCE PD).
-- If you are not familiar with how KubeStash backup and restore Qdrant databases, please check the following guide [here](/docs/guides/qdrant/backup/overview/index.md).
-
-You should be familiar with the following `KubeStash` concepts:
-
-- [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
-- [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
-- [BackupSession](https://kubestash.com/docs/latest/concepts/crds/backupsession/)
-- [RestoreSession](https://kubestash.com/docs/latest/concepts/crds/restoresession/)
-- [Addon](https://kubestash.com/docs/latest/concepts/crds/addon/)
-- [Function](https://kubestash.com/docs/latest/concepts/crds/function/)
-- [Task](https://kubestash.com/docs/latest/concepts/crds/addon/#task-specification)
+- To install `External-snapshotter`  in your cluster following the steps [here](https://github.com/kubernetes-csi/external-snapshotter/tree/release-5.0).
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
@@ -43,65 +31,28 @@ namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/backup/volumesnapshot/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-## Prepare Backup Infrastructure
-
-We are going to store our backed up data using VolumeSnapshots. We have to create a `VolumeSnapshotClass`, `Secret`, `BackupStorage`, and `RetentionPolicy` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
-
-### Ensure VolumeSnapshotClass
-
-First, ensure that the `VolumeSnapshotClass` for your storage provider is available. For Longhorn:
-
-```bash
-$ kubectl get volumesnapshotclasses
-NAME                    DRIVER               DELETIONPOLICY   AGE
-longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
-```
-
-If not available, create one:
-
-```yaml
-apiVersion: snapshot.storage.k8s.io/v1
-kind: VolumeSnapshotClass
-metadata:
-  name: longhorn-snapshot-vsc
-driver: driver.longhorn.io
-deletionPolicy: Delete
-parameters:
-  type: snap
-```
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/volumesnapshotclass.yaml
-volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc created
-```
-
-Note: Ensure that the VolumeSnapshotClass is provisioned with the same storage class driver used for provisioning your Qdrant database.
-
-### Create BackupStorage
-
-Create a `BackupStorage` CR to configure the backup storage:
+### BackupStorage
+BackupStorage is a CR provided by KubeStash that can manage storage from various providers like GCS, S3, and more.
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
 kind: BackupStorage
 metadata:
-  name: minio-storage
+  name: storage
   namespace: demo
 spec:
   storage:
     provider: s3
     s3:
+      endpoint: s3.amazonaws.com
       bucket: qdrant-backups
-      endpoint: http://minio.demo.svc:9000
-      insecureTLS: true
-      prefix: backup/demo
       region: us-east-1
-      secretName: aws-secret
+      prefix: backup-demo
+      secretName: s3-secret
   usagePolicy:
     allowedNamespaces:
       from: All
-  default: true
-  deletionPolicy: Delete
+  deletionPolicy: WipeOut
 ```
 
 Apply the BackupStorage:
@@ -110,14 +61,28 @@ Apply the BackupStorage:
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/minio-storage created
 ```
+Note: Before applying this yaml, verify that a bucket named `qdrant-backups` is already created on your bucket provider.
 
 ### Create Storage Secret
 
 Create a secret with credentials to access the storage:
 
+```yaml
+apiVersion: v1
+kind: Secret
+type: Opaque
+metadata:
+  name: s3-secret
+  namespace: demo
+stringData:
+  AWS_ACCESS_KEY_ID: "*************26CX"
+  AWS_SECRET_ACCESS_KEY: "************jj3lp"
+  AWS_ENDPOINT: s3.amazonaws.com
+```
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/storage-secret.yaml
-secret/aws-secret created
+secret/s3-secret created
 ```
 
 ### Create Encryption Secret
@@ -141,10 +106,9 @@ Below is the YAML of the `RetentionPolicy` object that we are going to create,
 apiVersion: storage.kubestash.com/v1alpha1
 kind: RetentionPolicy
 metadata:
-  name: demo-retention
+  name: qdrant-retention-policy
   namespace: demo
 spec:
-  default: true
   maxNumberOfSnapshots: 5
   usagePolicy:
     allowedNamespaces:

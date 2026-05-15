@@ -14,6 +14,8 @@ section_menu_id: guides
 
 # Qdrant Distributed Deployment
 
+Since version v0.8.0, Qdrant supports a distributed deployment mode where multiple Qdrant services communicate with each other to distribute data across peers, extending storage capabilities and increasing stability. In this mode, Qdrant uses the [Raft](https://raft.github.io/) consensus protocol to maintain consistency of cluster topology and collection structure, while sharding enables horizontal scaling by splitting collections across multiple nodes. Replication further enhances reliability by keeping copies of shards across the cluster.
+
 This tutorial will show you how to deploy a Qdrant database in distributed mode using KubeDB.
 
 ## Before You Begin
@@ -126,7 +128,7 @@ qdrant-sample-1    1/1     Running   0          2m
 qdrant-sample-2    1/1     Running   0          2m
 ```
 
-In distributed mode, Qdrant creates a StatefulSet with the specified number of replicas.
+In distributed mode, Qdrant creates a Petset with the specified number of replicas.
 
 ## Horizontal Scaling
 

@@ -130,7 +130,7 @@ NAME      VERSION   DB_IMAGE                    DEPRECATED   AGE
 
 ### spec.podTemplate
 
-KubeDB allows providing a template for database pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the StatefulSet created for Qdrant database. Notable sub-fields include:
+KubeDB allows providing a template for database pods through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the Petset created for Qdrant database. Notable sub-fields include:
 
 - `spec.podTemplate.spec.serviceAccountName` to provide a custom ServiceAccount.
 - `spec.podTemplate.spec.imagePullSecrets` to pull images from a private registry.
