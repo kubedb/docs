@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Hazelcast","metadata":{"annotations":{},"name":"hazelcast-sample","namespace":"demo"},"spec":{"deletionPolicy":"Halt","enableSSL":true,"licenseSecret":{"name":"hz-license-key"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"longhorn"},"tls":{"certificates":[{"alias":"server","dnsNames":["localhost"],"ipAddresses":["127.0.0.1"],"subject":{"organizations":["kubedb"]}},{"alias":"client","dnsNames":["localhost"],"ipAddresses":["127.0.0.1"],"subject":{"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"ClusterIssuer","name":"self-signed-issuer"}},"version":"5.5.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Hazelcast","metadata":{"annotations":{},"name":"hazelcast-sample","namespace":"demo"},"spec":{"deletionPolicy":"Halt","enableSSL":true,"licenseSecret":{"name":"hz-license-key"},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}},"storageClassName":"standard"},"tls":{"certificates":[{"alias":"server","dnsNames":["localhost"],"ipAddresses":["127.0.0.1"],"subject":{"organizations":["kubedb"]}},{"alias":"client","dnsNames":["localhost"],"ipAddresses":["127.0.0.1"],"subject":{"organizations":["kubedb"]}}],"issuerRef":{"apiGroup":"cert-manager.io","kind":"ClusterIssuer","name":"self-signed-issuer"}},"version":"5.5.2"}}
   creationTimestamp: "2025-06-11T07:35:38Z"
   generation: 1
   labels:

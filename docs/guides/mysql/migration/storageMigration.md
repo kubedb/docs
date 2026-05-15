@@ -43,12 +43,12 @@ At first verify that your cluster has at least two `StorageClass`. Let's check,
 ➤ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  12d
-longhorn               driver.longhorn.io      Delete          Immediate              true                   12d
-longhorn-custom        driver.longhorn.io      Delete          WaitForFirstConsumer   true                   2d20h
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   12d
+standard               driver.standard.io      Delete          Immediate              true                   12d
+standard-custom        driver.standard.io      Delete          WaitForFirstConsumer   true                   2d20h
+standard-static        driver.standard.io      Delete          Immediate              true                   12d
 ```
 From the above output we can see that we have more than two `StorageClass` resources. We will now deploy a `MySQL` database using `local-path` StorageClass and insert some data into it. 
-After that, we will apply `MySQLOpsRequest` to migrate StorageClass from `local-path` to `longhorn-custom`.
+After that, we will apply `MySQLOpsRequest` to migrate StorageClass from `local-path` to `standard-custom`.
 
 > Both the old and new PVCs should be on the same node. Therefore, the new StorageClass `VOLUMEBINDINGMODE` should be `WaitForFirstConsumer` if the old one uses `WaitForFirstConsumer`. If the old one uses `Immediate` any mode is allowed.
 
@@ -189,7 +189,7 @@ spec:
   databaseRef:
     name: sample-mysql
   migration:
-    storageClassName: longhorn-custom
+    storageClassName: standard-custom
     oldPVReclaimPolicy: Delete
 ```
 
@@ -227,12 +227,12 @@ We can see from the above output that the `MySQLOpsRequest` has succeeded. Let's
 ``` bash
 $ kubectl get pvc -n demo
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
-data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            longhorn-custom     <unset>                 21m
-data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            longhorn-custom     <unset>                 21m
-data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            longhorn-custom     <unset>                 21m
+data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            standard-custom     <unset>                 21m
+data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            standard-custom     <unset>                 21m
+data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            standard-custom     <unset>                 21m
 ```
 
-The `PersistentVolumeClaim` StorageClass has changed to `longhorn-custom`.  Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `MySQL` pod and perform read query.
+The `PersistentVolumeClaim` StorageClass has changed to `standard-custom`.  Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `MySQL` pod and perform read query.
 
 ```bash
 $ kubectl exec -it -n demo sample-mysql-0 -- bash

@@ -49,10 +49,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Ignite` standalone database with version `2.17.0`.
 
@@ -70,7 +70,7 @@ spec:
   version: "2.17.0"
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -101,7 +101,7 @@ $ kubectl get petset -n demo ig-standalone -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-d0b07657-a012-4384-862a-b4e437774287   1Gi        RWO            Delete           Bound    demo/datadir-ig-standalone-0   standard                49s
+pvc-d0b07657-a012-4384-862a-b4e437774287   1Gi        RWO            Delete           Bound    demo/datadir-ig-standalone-0   longhorn                49s
 ```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
@@ -227,7 +227,7 @@ $ kubectl get petset -n demo ig -o json | jq '.spec.volumeClaimTemplates[].spec.
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-d0b07657-a012-4384-862a-b4e437774287   2Gi        RWO            Delete           Bound    demo/datadir-ig-0   standard                4m29s
+pvc-d0b07657-a012-4384-862a-b4e437774287   2Gi        RWO            Delete           Bound    demo/datadir-ig-0   longhorn                4m29s
 ```
 
 The above output verifies that we have successfully expanded the volume of the Ignite database.

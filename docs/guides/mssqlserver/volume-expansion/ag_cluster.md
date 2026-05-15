@@ -50,11 +50,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  2d
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   3m25s
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   3m19s
+standard (default)     driver.standard.io      Delete          Immediate              true                   3m25s
+standard-static        driver.standard.io      Delete          Immediate              true                   3m19s
 ```
 
-We can see from the output that `longhorn (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
+We can see from the output that `standard (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
 
 
 Now, we are going to deploy a `MSSQLServer` in `AvailabilityGroup` Mode with version `2022-cu12`.
@@ -129,7 +129,7 @@ spec:
               value: Evaluation # Change it 
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -161,9 +161,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-059f186a-01a4-441d-85f1-95aef34934be   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          82s
-pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          52s
-pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          35s
+pvc-059f186a-01a4-441d-85f1-95aef34934be   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          82s
+pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          52s
+pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          35s
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -198,7 +198,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `mssqlserver-ag-cluster` database.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.volumeExpansion.mssqlserver` specifies the desired volume size.
-- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `longhorn` supports `Offline` volume expansion.
+- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `standard` supports `Offline` volume expansion.
 
 > **Note:** If the Storageclass you are using support `Online` Volume Expansion, Try Online volume expansion by using `spec.volumeExpansion.mode:"Online"`.
 
@@ -234,9 +234,9 @@ $ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeCl
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-059f186a-01a4-441d-85f1-95aef34934be   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   longhorn       <unset>                          29m
-pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   longhorn       <unset>                          29m
-pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   longhorn       <unset>                          29m
+pvc-059f186a-01a4-441d-85f1-95aef34934be   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          29m
+pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          29m
+pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          29m
 ```
 
 The above output verifies that we have successfully expanded the volume of the MSSQLServer database.

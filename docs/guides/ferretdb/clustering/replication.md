@@ -233,15 +233,15 @@ ferret-secondary-pods       ClusterIP   None            <none>        27017/TCP 
 
 $ kubectl get pvc -n demo
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-ferret-pg-backend-0   Bound    pvc-e26fdc37-a7e4-4567-bc2e-d2e5e4e52ad9   1Gi        RWO            longhorn       <unset>                 46m
-data-ferret-pg-backend-1   Bound    pvc-470d3d5a-b00e-4100-bb8e-8bad63369f7b   1Gi        RWO            longhorn       <unset>                 45m
-data-ferret-pg-backend-2   Bound    pvc-5a02705b-b389-413d-98bb-969b5f0b9128   1Gi        RWO            longhorn       <unset>                 45m
+data-ferret-pg-backend-0   Bound    pvc-e26fdc37-a7e4-4567-bc2e-d2e5e4e52ad9   1Gi        RWO            standard       <unset>                 46m
+data-ferret-pg-backend-1   Bound    pvc-470d3d5a-b00e-4100-bb8e-8bad63369f7b   1Gi        RWO            standard       <unset>                 45m
+data-ferret-pg-backend-2   Bound    pvc-5a02705b-b389-413d-98bb-969b5f0b9128   1Gi        RWO            standard       <unset>                 45m
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-470d3d5a-b00e-4100-bb8e-8bad63369f7b   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-1   longhorn       <unset>                          46m
-pvc-5a02705b-b389-413d-98bb-969b5f0b9128   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-2   longhorn       <unset>                          46m
-pvc-e26fdc37-a7e4-4567-bc2e-d2e5e4e52ad9   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-0   longhorn       <unset>                          46m
+pvc-470d3d5a-b00e-4100-bb8e-8bad63369f7b   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-1   standard       <unset>                          46m
+pvc-5a02705b-b389-413d-98bb-969b5f0b9128   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-2   standard       <unset>                          46m
+pvc-e26fdc37-a7e4-4567-bc2e-d2e5e4e52ad9   1Gi        RWO            Delete           Bound    demo/data-ferret-pg-backend-0   standard       <unset>                          46m
 
 $ kubectl get secret -n demo
 NAME                        TYPE                       DATA   AGE

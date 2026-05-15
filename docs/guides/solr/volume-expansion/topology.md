@@ -125,9 +125,9 @@ $ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volume
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          44m
-pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          44m
-pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          44m
+pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          44m
+pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          44m
+pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          44m
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -392,9 +392,9 @@ $ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volume
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          52m
-pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          52m
-pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          52m
+pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          52m
+pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          52m
+pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          52m
 ```
 
 The above output verifies that we have successfully expanded the volume of the Solr.

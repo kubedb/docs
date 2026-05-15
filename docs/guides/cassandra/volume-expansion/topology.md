@@ -55,7 +55,7 @@ longhorn-static        driver.longhorn.io      Delete          Immediate        
 
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Cassandra` combined cluster with version `5.0.3`.
 
