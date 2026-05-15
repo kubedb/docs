@@ -350,7 +350,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 277
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 9.4.0 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -411,10 +411,10 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.4.0"
   replicas: 4
   configSecret:
-    name: my-config
+    name: my-configuration
   topology:
     mode: GroupReplication
     group:
@@ -468,7 +468,7 @@ bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 3115
-Server version: 9.1.0 MySQL Community Server - GPL
+Server version: 9.4.0 MySQL Community Server - GPL
 
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
@@ -535,7 +535,7 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.4.0"
   replicas: 4
   configSecret:
     name: my-config
