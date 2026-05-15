@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: HanaDB
+metadata:
+  name: hanadb-private-registry
+  namespace: demo
+spec:
+  version: "2.0.82-private"
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+      - name: myregistrykey
+  deletionPolicy: WipeOut
