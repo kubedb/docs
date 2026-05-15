@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DocumentDB
+metadata:
+  name: documentdb
+  namespace: demo
+spec:
+  version: "pg17-0.109.0"
+  storageType: Durable
+  deletionPolicy: Delete
+  replicas: 1
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
