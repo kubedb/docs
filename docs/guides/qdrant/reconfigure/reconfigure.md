@@ -34,27 +34,35 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/reconfigure/yamls](/docs/guides/qdrant/reconfigure/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/reconfigure](/docs/examples/qdrant/reconfigure) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-### Prepare Qdrant
+## Prepare Qdrant
 
 Now, we are going to deploy a `Qdrant` cluster with an initial configuration.
 
-#### Deploy Qdrant with custom config
+### Deploy Qdrant with custom config
 
-First, we will create a `qdrant.yaml` config file containing our initial configuration settings.
+Below is the YAML of the configuration `Secret` that we are going to create:
 
 ```yaml
-# qdrant.yaml
-storage:
-  performance:
-    max_search_threads: 4
+apiVersion: v1
+stringData:
+  config.yaml: |
+    log_level: DEBUG
+    performance:
+      max_search_threads: 4
+      update_rate_limit: 100
+kind: Secret
+metadata:
+  name: qdrant-configuration
+  namespace: demo
+type: Opaque
 ```
 
-Now, we will create a secret with this configuration file.
+Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl create secret generic -n demo qdrant-configuration --from-file=./qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/configuration-secret.yaml
 secret/qdrant-configuration created
 ```
 
@@ -83,7 +91,7 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure/yamls/qdrant.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/qdrant.yaml
 qdrant.kubedb.com/qdrant-sample created
 ```
 
@@ -95,27 +103,35 @@ NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m42s
 ```
 
-### Reconfigure using new config secret
+## Reconfigure using new config secret
 
 Now we will reconfigure this database to change `max_search_threads` to `8`.
 
-First, we will create a new `qdrant.yaml` file containing the updated configuration:
+Below is the YAML of the new configuration `Secret` that we are going to create:
 
 ```yaml
-# qdrant.yaml
-storage:
-  performance:
-    max_search_threads: 8
+apiVersion: v1
+stringData:
+  config.yaml: |
+    log_level: DEBUG
+    performance:
+      max_search_threads: 8
+      update_rate_limit: 100
+kind: Secret
+metadata:
+  name: new-qdrant-configuration
+  namespace: demo
+type: Opaque
 ```
 
-Then, we will create a new secret with this configuration file:
+Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl create secret generic -n demo new-qdrant-configuration --from-file=./qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/new-configuration-secret.yaml
 secret/new-qdrant-configuration created
 ```
 
-#### Create QdrantOpsRequest
+### Create QdrantOpsRequest
 
 Now, we will use this secret to replace the previous secret using a `QdrantOpsRequest` CR. Below is the YAML of the `QdrantOpsRequest` that we are going to create:
 
@@ -147,11 +163,11 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure/yamls/reconfigure-using-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/reconfigure-using-secret.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-config created
 ```
 
-#### Verify the new configuration is working
+### Verify the new configuration is working
 
 If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of the `Qdrant` object.
 
@@ -160,10 +176,10 @@ Let's wait for `QdrantOpsRequest` to be `Successful`:
 ```bash
 $ kubectl get qdops -n demo
 NAME                       TYPE          STATUS       AGE
-qdops-reconfigure-config   Reconfigure   Successful   3m21s
+qdops-reconfigure-config   Reconfigure   Successful   3m
 ```
 
-### Reconfigure using applyConfig
+## Reconfigure using applyConfig
 
 We can also reconfigure our existing secret by modifying configuration inline using `applyConfig`. Below is the YAML of the `QdrantOpsRequest`:
 
@@ -179,10 +195,11 @@ spec:
     name: qdrant-sample
   configuration:
     applyConfig:
-      qdrant.yaml: |
-        storage:
-          performance:
-            max_search_threads: 6
+      config.yaml: |
+        log_level: DEBUG
+        performance:
+          max_search_threads: 6
+          update_rate_limit: 100
 ```
 
 > **Note:** You can modify multiple fields of your current configuration using `applyConfig`. If you don't have any existing config secret, `applyConfig` will create a new secret for you. If a config secret already exists, `applyConfig` will merge the new configuration with the existing one.
@@ -194,21 +211,21 @@ Here,
 - `spec.configuration.applyConfig` contains the inline configuration to apply.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure/yamls/apply-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/apply-config.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-apply-config created
 ```
 
-#### Verify the new configuration is working
+### Verify the new configuration is working
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
 $ kubectl get qdops qdops-reconfigure-apply-config -n demo
 NAME                              TYPE          STATUS       AGE
-qdops-reconfigure-apply-config    Reconfigure   Successful   4m59s
+qdops-reconfigure-apply-config    Reconfigure   Successful   5m30s
 ```
 
-### Remove Custom Configuration
+## Remove Custom Configuration
 
 We can also remove existing custom config using `QdrantOpsRequest`. Set `spec.configuration.removeCustomConfig: true` to remove the existing custom configuration.
 
@@ -227,7 +244,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure/yamls/remove-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/remove-config.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-remove created
 ```
 
@@ -236,7 +253,7 @@ Let's wait for `QdrantOpsRequest` to be `Successful`:
 ```bash
 $ kubectl get qdops qdops-reconfigure-remove -n demo
 NAME                       TYPE          STATUS       AGE
-qdops-reconfigure-remove   Reconfigure   Successful   2m10s
+qdops-reconfigure-remove   Reconfigure   Successful   97s
 ```
 
 After this, the `Qdrant` CR will no longer reference a `configSecret` and the database will use its default configuration.
@@ -252,7 +269,14 @@ After this, the `Qdrant` CR will no longer reference a `configSecret` and the da
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrantopsrequest -n demo qdops-reconfigure-config qdops-reconfigure-apply-config qdops-reconfigure-remove
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
+$ kubectl delete qdrantopsrequest -n demo qdops-reconfigure-config qdops-reconfigure-apply-config qdops-reconfigure-remove
+qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-config" deleted
+qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-apply-config" deleted
+qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-remove" deleted
+
+$ kubectl delete qdrant -n demo qdrant-sample
+qdrant.kubedb.com "qdrant-sample" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```

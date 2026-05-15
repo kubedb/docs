@@ -103,9 +103,9 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Now, wait a few minutes. KubeDB operator will create the necessary PVC, StatefulSet, services, and secrets. If everything goes well, we will see that a pod with the name `custom-qdrant-0` has been created.
+Now, wait a few minutes. KubeDB operator will create the necessary PVC, Petset, services, and secrets. If everything goes well, we will see that a pod with the name `custom-qdrant-0` has been created.
 
-Check that the StatefulSet's pod is running:
+Check that the Petset's pod is running:
 
 ```bash
 $ kubectl get pod -n demo custom-qdrant-0

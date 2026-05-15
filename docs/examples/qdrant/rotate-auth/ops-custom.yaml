@@ -1,11 +1,12 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
-  name: qdops-rotate-auth
+  name: qdops-rotate-auth-custom
   namespace: demo
 spec:
   type: RotateAuth
   databaseRef:
     name: qdrant-sample
-  timeout: 5m
-  apply: IfReady
+  authentication:
+    secretRef:
+      name: my-custom-auth-secret

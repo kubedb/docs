@@ -34,13 +34,13 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/scaling/horizontal-scaling/scale-horizontally/yamls](/docs/guides/qdrant/scaling/horizontal-scaling/scale-horizontally/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/scaling/horizontal-scaling](/docs/examples/qdrant/scaling/horizontal-scaling) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-### Apply Horizontal Scaling on Qdrant Cluster
+## Apply Horizontal Scaling on Qdrant Cluster
 
 Here, we are going to deploy a `Qdrant` cluster using a supported version by `KubeDB` operator. Then we are going to apply horizontal scaling on it.
 
-#### Prepare Cluster
+### Prepare Cluster
 
 At first, we are going to deploy a cluster with 3 nodes. Then, we are going to add two additional nodes through horizontal scaling. Finally, we will remove 1 node from the cluster again via horizontal scaling.
 
@@ -70,7 +70,7 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/scaling/horizontal-scaling/scale-horizontally/yamls/qdrant.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/qdrant.yaml
 qdrant.kubedb.com/qdrant-sample created
 ```
 
@@ -113,7 +113,7 @@ $ kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
 
 We are ready to apply the `QdrantOpsRequest` CR to scale horizontally.
 
-#### Scale Up
+### Scale Up
 
 Here, we are going to scale up the cluster from 3 nodes to 5 nodes.
 
@@ -146,7 +146,7 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/scaling/horizontal-scaling/scale-horizontally/yamls/hscale-up.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-up.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-hscale-up created
 ```
 
@@ -175,7 +175,7 @@ qdrant-sample-3     1/1     Running   0          2m
 qdrant-sample-4     1/1     Running   0          1m
 ```
 
-#### Scale Down
+### Scale Down
 
 Here, we are going to scale down the cluster from 5 nodes to 4 nodes.
 
@@ -198,7 +198,7 @@ spec:
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/scaling/horizontal-scaling/scale-horizontally/yamls/hscale-down.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-down.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-hscale-down created
 ```
 

@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Qdrant Horizontal Scaling
+# Horizontal Scaling Overview
 
-This guide will give an overview of how KubeDB Ops-manager scales the number of nodes in a `Qdrant` database cluster.
+This guide will give you an overview of how `KubeDB` Ops Manager scales up/down the number of members of a `Qdrant`.
 
 ## Before You Begin
 
@@ -22,26 +22,35 @@ This guide will give an overview of how KubeDB Ops-manager scales the number of 
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## How Horizontal Scaling Works
+## How Horizontal Scaling Process Works
 
-The Horizontal Scaling process consists of the following steps:
+The following diagram shows how `KubeDB` Ops Manager used to scale up the number of members of a `Qdrant` cluster. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Horizontal scaling Flow" src="/docs/guides/qdrant/images/qdrant-horizontal-scaling.png">
+<figcaption align="center">Fig: Horizontal scaling process of Qdrant</figcaption>
+</figure>
+
+The horizontal scaling process consists of the following steps:
 
 1. At first, a user creates a `Qdrant` CR.
 
-2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
+2. `KubeDB` provisioner operator watches for the `Qdrant` CR.
 
-3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` with the specified number of node replicas, along with related necessary stuff like secrets, services, etc.
+3. When it finds one, it creates a `PetSet` and related necessary stuff like secret, service, etc.
 
-4. Then, in order to scale the number of nodes in the `Qdrant` cluster, the user creates a `QdrantOpsRequest` CR with the desired node count.
+4. Then, in order to scale the cluster up or down, the user creates a `QdrantOpsRequest` CR with the desired number of replicas after scaling.
 
-5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
+5. `KubeDB` Ops Manager watches for `QdrantOpsRequest`.
 
-6. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the scaling process.
+6. When it finds one, it halts the `Qdrant` object so that the `KubeDB` provisioner operator doesn't perform any operation on the `Qdrant` during the scaling process.
 
-7. Then the `KubeDB` Ops-manager operator scales the `StatefulSet` to the desired number of replicas.
+7. Then `KubeDB` Ops Manager will add nodes in case of scale up or remove nodes in case of scale down.
 
-8. After the successful scaling of the `StatefulSet`, the `KubeDB` Ops-manager updates the replica count in the `Qdrant` object to reflect the updated state.
+8. Then the `KubeDB` Ops Manager will scale the PetSet replicas to reach the expected number of replicas for the cluster.
 
-9. After the successful Horizontal Scaling, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+9. After successful scaling of the PetSet's replica, the `KubeDB` Ops Manager updates the `spec.replicas` field of `Qdrant` object to reflect the updated cluster state.
 
-In the next doc, we are going to show a step-by-step guide on Horizontal Scaling of a Qdrant database using `QdrantOpsRequest` CRD.
+10. After successful scaling of the `Qdrant` replicas, the `KubeDB` Ops Manager resumes the `Qdrant` object so that the `KubeDB` provisioner operator can resume its usual operations.
+
+In the next doc, we are going to show a step-by-step guide on scaling of a Qdrant cluster using Horizontal Scaling.

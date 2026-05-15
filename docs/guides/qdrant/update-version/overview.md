@@ -1,5 +1,5 @@
 ---
-title: Updating Qdrant Version
+title: Updating Qdrant Version Overview
 menu:
   docs_{{ .version }}:
     identifier: qdrant-update-version-overview
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Updating Qdrant Version
+# Updating Qdrant Version Overview
 
-This guide will give you an overview of how KubeDB Ops-manager updates the version of a `Qdrant` database.
+This guide will give you an overview on how KubeDB Ops-manager operator update the version of `Qdrant` database.
 
 ## Before You Begin
 
@@ -22,26 +22,33 @@ This guide will give you an overview of how KubeDB Ops-manager updates the versi
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## How the Update Process Works
+## How update version Process Works
+
+The following diagram shows how KubeDB Ops-manager operator update the version of `Qdrant`. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="updating Process of Qdrant" src="/docs/guides/qdrant/images/qdrant-update-version.png">
+<figcaption align="center">Fig: Updating Process of Qdrant</figcaption>
+</figure>
 
 The updating process consists of the following steps:
 
-1. At first, a user creates a `Qdrant` CR.
+1. At first, a user creates a `Qdrant` Custom Resource (CR).
 
-2. `KubeDB-Provisioner` operator watches for the `Qdrant` CR.
+2. `KubeDB` Provisioner operator watches the `Qdrant` CR.
 
-3. When it finds one, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
+3. When the operator finds a `Qdrant` CR, it creates `PetSets` and related necessary resources like secrets, services, etc.
 
-4. Then, in order to update the version of the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the desired target version.
+4. Then, in order to update the version of the `Qdrant` the user creates a `QdrantOpsRequest` CR with the desired version.
 
-5. `KubeDB-ops-manager` operator watches for `QdrantOpsRequest`.
+5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
 
-6. When it finds one, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the updating process.
+6. When it finds a `QdrantOpsRequest` CR, it halts the `Qdrant` object which is referred from the `QdrantOpsRequest`. So, the `KubeDB` Provisioner operator doesn't perform any operations on the `Qdrant` object during the updating process.
 
-7. By looking at the target version from the `QdrantOpsRequest` CR, the `KubeDB-ops-manager` operator updates the images of the `StatefulSet` for the new version.
+7. By looking at the target version from `QdrantOpsRequest` CR, `KubeDB` Ops-manager operator updates the images of the `PetSet`.
 
-8. After successful update of the `StatefulSet` and its Pod images, the `KubeDB-ops-manager` updates the image of the `Qdrant` object to reflect the updated cluster state.
+8. After successfully updating the `PetSet` and their `Pods` images, the `KubeDB` Ops-manager operator updates the image of the `Qdrant` object to reflect the updated state of the database.
 
-9. After successful update of the `Qdrant` object, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` can resume its usual operations.
+9. After successfully updating of `Qdrant` object, the `KubeDB` Ops-manager operator resumes the `Qdrant` object so that the `KubeDB` Provisioner operator can resume its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on updating a Qdrant database using the `UpdateVersion` operation.
+In the next doc, we are going to show a step-by-step guide on updating of a Qdrant using UpdateVersion operation.

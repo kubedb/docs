@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Qdrant TLS/SSL Encryption
+# Qdrant TLS Encryption
 
-This guide will give an overview of how KubeDB supports TLS/SSL encryption for `Qdrant` databases.
+This guide will give an overview of how KubeDB supports TLS encryption for `Qdrant` databases.
 
 ## Before You Begin
 
@@ -36,7 +36,7 @@ KubeDB uses `cert-manager` to manage TLS certificates for Qdrant databases. The 
 
 5. `cert-manager` creates the certificates and stores them in a `Secret`.
 
-6. `KubeDB-Provisioner` operator creates the `StatefulSet` with the TLS secrets mounted, enabling encrypted communication.
+6. `KubeDB-Provisioner` operator creates the `Petset` with the TLS secrets mounted, enabling encrypted communication.
 
 7. The `Qdrant` database nodes use these certificates for encrypted client-to-server and peer-to-peer communication.
 

@@ -95,7 +95,7 @@ spec:
 Let's create the `QdrantOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/ops.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/ops-request.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-restart created
 ```
 
@@ -104,7 +104,7 @@ Now the Ops-manager operator will restart the Qdrant pods one by one, waiting fo
 ```bash
 $ kubectl get qdops -n demo qdops-restart
 NAME            TYPE      STATUS       AGE
-qdops-restart   Restart   Successful   3m25s
+qdops-restart   Restart   Successful   66s
 ```
 
 ```bash
@@ -112,40 +112,83 @@ $ kubectl get qdops -n demo qdops-restart -o yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"ops.kubedb.com/v1alpha1","kind":"QdrantOpsRequest","metadata":{"annotations":{},"name":"qdops-restart","namespace":"demo"},"spec":{"apply":"Always","databaseRef":{"name":"qdrant-sample"},"timeout":"3m","type":"Restart"}}
+  creationTimestamp: "2026-05-15T05:43:05Z"
+  generation: 1
   name: qdops-restart
   namespace: demo
+  resourceVersion: "3357120"
+  uid: f90d628f-1db2-4fbc-a20d-e449ab7215a8
 spec:
   apply: Always
   databaseRef:
     name: qdrant-sample
+  maxRetries: 1
   timeout: 3m
   type: Restart
 status:
   conditions:
-  - lastTransitionTime: "2026-05-01T10:00:00Z"
-    message: Qdrant ops request is restarting nodes
+  - lastTransitionTime: "2026-05-15T05:43:05Z"
+    message: Qdrant ops-request has started to restart Qdrant nodes
     observedGeneration: 1
     reason: Restart
     status: "True"
     type: Restart
-  - lastTransitionTime: "2026-05-01T10:02:30Z"
-    message: Successfully restarted all nodes
+  - lastTransitionTime: "2026-05-15T05:44:07Z"
+    message: Successfully Restarted Qdrant nodes
     observedGeneration: 1
     reason: RestartNodes
     status: "True"
     type: RestartNodes
-  - lastTransitionTime: "2026-05-01T10:00:10Z"
-    message: evict pod; ConditionStatus:True
+  - lastTransitionTime: "2026-05-15T05:43:17Z"
+    message: get pod; ConditionStatus:True; PodName:qdrant-sample-0
     observedGeneration: 1
     status: "True"
-    type: EvictPod
-  - lastTransitionTime: "2026-05-01T10:01:05Z"
-    message: check pod ready; ConditionStatus:True
+    type: GetPod--qdrant-sample-0
+  - lastTransitionTime: "2026-05-15T05:43:18Z"
+    message: evict pod; ConditionStatus:True; PodName:qdrant-sample-0
     observedGeneration: 1
     status: "True"
-    type: CheckPodReady
-  - lastTransitionTime: "2026-05-01T10:02:30Z"
-    message: Successfully completed the modification process.
+    type: EvictPod--qdrant-sample-0
+  - lastTransitionTime: "2026-05-15T05:43:32Z"
+    message: running pod; ConditionStatus:True; PodName:qdrant-sample-0
+    observedGeneration: 1
+    status: "True"
+    type: RunningPod--qdrant-sample-0
+  - lastTransitionTime: "2026-05-15T05:43:37Z"
+    message: get pod; ConditionStatus:True; PodName:qdrant-sample-1
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--qdrant-sample-1
+  - lastTransitionTime: "2026-05-15T05:43:38Z"
+    message: evict pod; ConditionStatus:True; PodName:qdrant-sample-1
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--qdrant-sample-1
+  - lastTransitionTime: "2026-05-15T05:43:42Z"
+    message: running pod; ConditionStatus:True; PodName:qdrant-sample-1
+    observedGeneration: 1
+    status: "True"
+    type: RunningPod--qdrant-sample-1
+  - lastTransitionTime: "2026-05-15T05:43:47Z"
+    message: get pod; ConditionStatus:True; PodName:qdrant-sample-2
+    observedGeneration: 1
+    status: "True"
+    type: GetPod--qdrant-sample-2
+  - lastTransitionTime: "2026-05-15T05:43:48Z"
+    message: evict pod; ConditionStatus:True; PodName:qdrant-sample-2
+    observedGeneration: 1
+    status: "True"
+    type: EvictPod--qdrant-sample-2
+  - lastTransitionTime: "2026-05-15T05:44:02Z"
+    message: running pod; ConditionStatus:True; PodName:qdrant-sample-2
+    observedGeneration: 1
+    status: "True"
+    type: RunningPod--qdrant-sample-2
+  - lastTransitionTime: "2026-05-15T05:44:08Z"
+    message: Controller has successfully restarted the Qdrant replicas
     observedGeneration: 1
     reason: Successful
     status: "True"
@@ -165,7 +208,12 @@ status:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrantopsrequest -n demo qdops-restart
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
+$ kubectl delete qdrantopsrequest -n demo qdops-restart
+qdrantopsrequest.ops.kubedb.com "qdops-restart" deleted
+
+$ kubectl delete qdrant -n demo qdrant-sample
+qdrant.kubedb.com "qdrant-sample" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```

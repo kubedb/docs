@@ -1,5 +1,5 @@
 ---
-title: Qdrant Compute Autoscaler Overview
+title: Qdrant Compute Autoscaling Overview
 menu:
   docs_{{ .version }}:
     identifier: qdrant-autoscaler-compute-overview
@@ -12,44 +12,44 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Qdrant Compute Autoscaler
+# Qdrant Compute Resource Autoscaling
 
-This guide shows how to configure compute autoscaling for Qdrant.
+This guide will give an overview on how KubeDB Autoscaler operator autoscales the database compute resources i.e. cpu and memory using `QdrantAutoscaler` crd.
 
 ## Before You Begin
 
-- Install KubeDB Autoscaler operator.
-- Install metrics-server in your cluster.
-- Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/autoscaler/compute/autoscaler.yaml`.
+- You should be familiar with the following `KubeDB` concepts:
+  - [Qdrant](/docs/guides/qdrant/concepts/)
+  - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
+  - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
 
-```bash
-kubectl create ns demo
-```
+## How Compute Autoscaling Works
 
-## Deploy Qdrant
+The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `Qdrant` database components. Open the image in a new tab to see the enlarged version.
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/distributed.yaml
-kubectl get qdrant -n demo qdrant-sample -w
-```
+<figure align="center">
+  <img alt="Compute Auto Scaling process of Qdrant" src="/docs/guides/qdrant/images/qdrant-compute-autoscaling.png">
+<figcaption align="center">Fig: Compute Auto Scaling process of Qdrant</figcaption>
+</figure>
 
-## Apply QdrantAutoscaler
+The Auto Scaling process consists of the following steps:
 
-```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/autoscaler.yaml
-```
+1. At first, a user creates a `Qdrant` Custom Resource Object (CRO).
 
-## Verify
+2. `KubeDB` Provisioner operator watches the `Qdrant` CRO.
 
-```bash
-kubectl get qdrantautoscaler -n demo qdrant-as-compute
-kubectl describe qdrantautoscaler -n demo qdrant-as-compute
-```
+3. When the operator finds a `Qdrant` CRO, it creates `PetSet` and related necessary stuff like secrets, services, etc.
 
-## Cleaning up
+4. Then, in order to set up autoscaling of the `Qdrant` database the user creates a `QdrantAutoscaler` CRO with desired configuration.
 
-```bash
-kubectl delete qdrantautoscaler -n demo qdrant-as-compute
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
-```
+5. `KubeDB` Autoscaler operator watches the `QdrantAutoscaler` CRO.
+
+6. `KubeDB` Autoscaler operator generates recommendation using the modified version of kubernetes [official recommender](https://github.com/kubernetes/autoscaler/tree/master/vertical-pod-autoscaler/pkg/recommender) for different components of the database, as specified in the `QdrantAutoscaler` CRO.
+
+7. If the generated recommendation doesn't match the current resources of the database, then `KubeDB` Autoscaler operator creates a `QdrantOpsRequest` CRO to scale the database to match the recommendation generated.
+
+8. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CRO.
+
+9. Then the `KubeDB` Ops-manager operator will scale the database component vertically as specified on the `QdrantOpsRequest` CRO.
+
+In the next docs, we are going to show a step-by-step guide on Autoscaling of various Qdrant database using `QdrantAutoscaler` CRD.

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Reconfiguring Qdrant
 
-This guide will give an overview of how KubeDB Ops-manager reconfigures a `Qdrant` database.
+This guide will give an overview on how KubeDB Ops-manager operator reconfigures `Qdrant` database.
 
 ## Before You Begin
 
@@ -22,26 +22,33 @@ This guide will give an overview of how KubeDB Ops-manager reconfigures a `Qdran
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## How Reconfiguration Works
+## How Reconfiguring Qdrant Process Works
 
-The Reconfiguration process consists of the following steps:
+The following diagram shows how KubeDB Ops-manager operator reconfigures `Qdrant` database. Open the image in a new tab to see the enlarged version.
 
-1. At first, a user creates a `Qdrant` CR.
+<figure align="center">
+  <img alt="Reconfiguring process of Qdrant" src="/docs/guides/qdrant/images/qdrant-reconfigure.png">
+<figcaption align="center">Fig: Reconfiguring process of Qdrant</figcaption>
+</figure>
 
-2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
+The Reconfiguring Qdrant process consists of the following steps:
 
-3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and related necessary stuff like secrets, services, etc.
+1. At first, a user creates a `Qdrant` Custom Resource (CR).
 
-4. Then, in order to reconfigure the `Qdrant` database, the user creates a `QdrantOpsRequest` CR with the new configuration. The user can provide the new configuration either via a new config secret, via `applyConfig`, or by removing the custom configuration (reverting to defaults).
+2. `KubeDB` Provisioner operator watches the `Qdrant` CR.
+
+3. When the operator finds a `Qdrant` CR, it creates required number of `PetSets` and related necessary stuff like secrets, services, etc.
+
+4. Then, in order to reconfigure the `Qdrant` database the user creates a `QdrantOpsRequest` CR with desired information.
 
 5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
 
-6. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the reconfiguration process.
+6. When it finds a `QdrantOpsRequest` CR, it halts the `Qdrant` object which is referred from the `QdrantOpsRequest`. So, the `KubeDB` Provisioner operator doesn't perform any operations on the `Qdrant` object during the reconfiguring process.
 
-7. Then the `KubeDB` Ops-manager operator updates the configuration secret and restarts the pods in a rolling fashion to apply the new configuration.
+7. Then the `KubeDB` Ops-manager operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `QdrantOpsRequest` CR.
 
-8. After the successful configuration update, the `KubeDB` Ops-manager updates the `Qdrant` object to reflect the updated configuration state.
+8. Then the `KubeDB` Ops-manager operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `QdrantOpsRequest` CR.
 
-9. After the successful reconfiguration, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+9. After the successful reconfiguring of the `Qdrant`, the `KubeDB` Ops-manager operator resumes the `Qdrant` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on reconfiguring a Qdrant database using `QdrantOpsRequest` CRD.
+In the next docs, we are going to show a step-by-step guide on reconfiguring Qdrant database using `QdrantOpsRequest` CR.

@@ -111,7 +111,7 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops-request.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth created
 ```
 
@@ -141,6 +141,26 @@ You can see that the API key has been rotated. The new key is different from the
 ## Rotate Auth with a Custom Secret
 
 You can also rotate the authentication credentials using a custom secret that you provide:
+
+```yaml
+apiVersion: v1
+stringData:
+  api-key: MyCus0mAPIKey
+kind: Secret
+metadata:
+  name: my-custom-auth-secret
+  namespace: demo
+type: Opaque
+```
+
+Let's create the `Secret` we have shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/custom-auth-secret.yaml
+secret/my-custom-auth-secret created
+```
+
+Now, create a `QdrantOpsRequest` with the custom secret reference:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -173,8 +193,16 @@ qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth-custom created
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrantopsrequest -n demo qdops-rotate-auth qdops-rotate-auth-custom
-kubectl delete secret -n demo my-custom-auth-secret
-kubectl delete qdrant -n demo qdrant-sample
-kubectl delete ns demo
+$ kubectl delete qdrantopsrequest -n demo qdops-rotate-auth qdops-rotate-auth-custom
+qdrantopsrequest.ops.kubedb.com "qdops-rotate-auth" deleted
+qdrantopsrequest.ops.kubedb.com "qdops-rotate-auth-custom" deleted
+
+$ kubectl delete secret -n demo my-custom-auth-secret
+secret "my-custom-auth-secret" deleted
+
+$ kubectl delete qdrant -n demo qdrant-sample
+qdrant.kubedb.com "qdrant-sample" deleted
+
+$ kubectl delete ns demo
+namespace "demo" deleted
 ```

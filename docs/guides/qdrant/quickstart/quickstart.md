@@ -93,7 +93,7 @@ Here,
 
 - `spec.version` is the name of the QdrantVersion CR where Docker images are specified. In this tutorial, a Qdrant `1.17.0` cluster is created.
 - `spec.mode` specifies the Qdrant deployment mode `Standalone` or `Distributed`.
-- `spec.storage` specifies the size and StorageClass of the PVC that will be dynamically allocated to store data for each Qdrant pod. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods.
+- `spec.storage` specifies the size and StorageClass of the PVC that will be dynamically allocated to store data for each Qdrant pod. This storage spec will be passed to the Petset created by KubeDB operator to run database pods.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user tries to delete the `Qdrant` CR. Deletion policy `DoNotTerminate` prevents deletion of this object if the admission webhook is enabled.
 
 > **Note:** `spec.storage` section is used to create PVC for the database pods. Specify only `requests`, not `limits` — PVC does not resize automatically.
@@ -121,12 +121,52 @@ Annotations:  <none>
 API Version:  kubedb.com/v1alpha2
 Kind:         Qdrant
 Metadata:
-  ...
+  Creation Timestamp:  2026-05-14T08:43:57Z
+  Finalizers:
+    kubedb.com
+  Generation:        3
+  Resource Version:  3259342
+  UID:               42df526b-fba5-4d21-aea4-d20ae5f36f30
 Spec:
   Auth Secret:
-    Name:  qdrant-sample-auth
-  Deletion Policy:  DoNotTerminate
-  Replicas:         3
+    Active From:    2026-05-14T08:43:57Z
+    API Group:      
+    Kind:           Secret
+    Name:           qdrant-sample-auth
+  Deletion Policy:  WipeOut
+  Health Checker:
+    Failure Threshold:  3
+    Period Seconds:     10
+    Timeout Seconds:    10
+  Mode:                 Standalone
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Containers:
+        Name:  qdrant
+        Resources:
+          Limits:
+            Memory:  1Gi
+          Requests:
+            Cpu:     500m
+            Memory:  1Gi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Group:     1000
+          Run As Non Root:  true
+          Run As User:      1000
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Pod Placement Policy:
+        Name:  default
+      Security Context:
+        Fs Group:            1000
+      Service Account Name:  qdrant-sample
+  Replicas:                  1
   Storage:
     Access Modes:
       ReadWriteOnce
@@ -138,59 +178,63 @@ Spec:
   Version:               1.17.0
 Status:
   Conditions:
-    Last Transition Time:  2024-10-01T10:00:00Z
-    Message:               The KubeDB operator has started the provisioning of Qdrant: demo/qdrant-sample
+    Last Transition Time:  2026-05-14T08:43:57Z
+    Message:               The KubeDB operator has started the provisioning of Qdrant: demo qdrant-sample
+    Observed Generation:   1
     Reason:                DatabaseProvisioningStartedSuccessfully
     Status:                True
     Type:                  ProvisioningStarted
-    Last Transition Time:  2024-10-01T10:01:30Z
+    Last Transition Time:  2026-05-14T08:44:11Z
     Message:               All desired replicas are ready.
+    Observed Generation:   3
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
-    Last Transition Time:  2024-10-01T10:02:00Z
-    Message:               The Qdrant: demo/qdrant-sample is accepting client requests.
-    Reason:                DatabaseAcceptingConnectionRequest
+    Last Transition Time:  2026-05-14T08:44:22Z
+    Message:               database demo/qdrant-sample is accepting connection
+    Observed Generation:   3
+    Reason:                AcceptingConnection
     Status:                True
     Type:                  AcceptingConnection
-    Last Transition Time:  2024-10-01T10:02:00Z
-    Message:               DB is ready because of reason
-    Reason:                ReadinessCheckSucceeded
+    Last Transition Time:  2026-05-14T08:44:22Z
+    Message:               database demo/qdrant-sample is ready
+    Reason:                AllReplicasReady
     Status:                True
     Type:                  Ready
-    Last Transition Time:  2024-10-01T10:02:00Z
+    Last Transition Time:  2026-05-14T08:44:23Z
     Message:               The Qdrant: demo/qdrant-sample is successfully provisioned.
+    Observed Generation:   3
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
     Type:                  Provisioned
-  Phase:  Ready
+  Phase:                   Ready
+Events:                    <none>
+
 ```
 
 ## Find Underlying Kubernetes Resources
 
-KubeDB operator creates a StatefulSet, PVCs, PVs, and Services for the Qdrant database. Let's check them:
+KubeDB operator creates a Petset, PVCs, PVs, and Services for the Qdrant database. Let's check them:
 
 ```bash
-$ kubectl get statefulset -n demo qdrant-sample
-NAME            READY   AGE
-qdrant-sample   3/3     15m
+$ kubectl get petset -n demo qdrant-sample
+NAME            AGE
+qdrant-sample   2m34s
 
 $ kubectl get pvc -n demo
-NAME                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-data-qdrant-sample-0              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            standard       15m
-data-qdrant-sample-1              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            standard       15m
-data-qdrant-sample-2              Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            standard       15m
+NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+data-qdrant-sample-0                      Bound    pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            standard       <unset>      
 
 $ kubectl get pv -n demo
-NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
-pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0       standard                15m
-pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-1       standard                15m
-pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-2       standard                15m
+NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
+pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0                      standard       <unset>                          4m14s
+
 
 $ kubectl get service -n demo
-NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-qdrant-sample         ClusterIP   10.96.128.61   <none>        6333/TCP   15m
-qdrant-sample-pods    ClusterIP   None           <none>        6333/TCP   15m
+NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                       AGE
+qdrant-sample        ClusterIP   10.43.18.112   <none>        6333/TCP,6334/TCP             5m36s
+qdrant-sample-pods   ClusterIP   None           <none>        6335/TCP                      5m36s
+
 ```
 
 ## Verify Qdrant YAML Output
@@ -205,84 +249,97 @@ $ kubectl get qdrant -n demo qdrant-sample -o yaml
 apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
-  creationTimestamp: "2025-06-01T10:00:00Z"
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Qdrant","metadata":{"annotations":{},"name":"qdrant-sample","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","mode":"Standalone","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"1.17.0"}}
+  creationTimestamp: "2026-05-14T08:43:57Z"
   finalizers:
-    - kubedb.com
-  generation: 2
+  - kubedb.com
+  generation: 3
   name: qdrant-sample
   namespace: demo
-  resourceVersion: "225923"
-  uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
+  resourceVersion: "3259342"
+  uid: 42df526b-fba5-4d21-aea4-d20ae5f36f30
 spec:
   authSecret:
+    activeFrom: "2026-05-14T08:43:57Z"
+    apiGroup: ""
     kind: Secret
     name: qdrant-sample-auth
-  deletionPolicy: DoNotTerminate
+  deletionPolicy: WipeOut
   healthChecker:
-    failureThreshold: 1
+    failureThreshold: 3
     periodSeconds: 10
     timeoutSeconds: 10
+  mode: Standalone
   podTemplate:
     controller: {}
+    metadata: {}
     spec:
       containers:
-        - name: qdrant
-          resources:
-            limits:
-              memory: 2Gi
-            requests:
-              cpu: 500m
-              memory: 2Gi
-      initContainers:
-        - name: qdrant-init
-          resources:
-            limits:
-              memory: 512Mi
-            requests:
-              cpu: 200m
-              memory: 512Mi
-  replicas: 3
+      - name: qdrant
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+        securityContext:
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop:
+            - ALL
+          runAsGroup: 1000
+          runAsNonRoot: true
+          runAsUser: 1000
+          seccompProfile:
+            type: RuntimeDefault
+      podPlacementPolicy:
+        name: default
+      securityContext:
+        fsGroup: 1000
+      serviceAccountName: qdrant-sample
+  replicas: 1
   storage:
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: "1.17.0"
+  version: 1.17.0
 status:
   conditions:
-    - lastTransitionTime: "2025-06-01T10:00:00Z"
-      message: 'The KubeDB operator has started the provisioning of Qdrant: demo/qdrant-sample'
-      observedGeneration: 2
-      reason: DatabaseProvisioningStartedSuccessfully
-      status: "True"
-      type: ProvisioningStarted
-    - lastTransitionTime: "2025-06-01T10:01:30Z"
-      message: All replicas are ready for Qdrant demo/qdrant-sample
-      observedGeneration: 2
-      reason: AllReplicasReady
-      status: "True"
-      type: ReplicaReady
-    - lastTransitionTime: "2025-06-01T10:02:00Z"
-      message: database demo/qdrant-sample is accepting connection
-      observedGeneration: 2
-      reason: AcceptingConnection
-      status: "True"
-      type: AcceptingConnection
-    - lastTransitionTime: "2025-06-01T10:02:00Z"
-      message: database demo/qdrant-sample is ready
-      observedGeneration: 2
-      reason: AllReplicasReady
-      status: "True"
-      type: Ready
-    - lastTransitionTime: "2025-06-01T10:02:00Z"
-      message: 'The Qdrant: demo/qdrant-sample is successfully provisioned.'
-      observedGeneration: 2
-      reason: DatabaseSuccessfullyProvisioned
-      status: "True"
-      type: Provisioned
+  - lastTransitionTime: "2026-05-14T08:43:57Z"
+    message: 'The KubeDB operator has started the provisioning of Qdrant: demo qdrant-sample'
+    observedGeneration: 1
+    reason: DatabaseProvisioningStartedSuccessfully
+    status: "True"
+    type: ProvisioningStarted
+  - lastTransitionTime: "2026-05-14T08:44:11Z"
+    message: All desired replicas are ready.
+    observedGeneration: 3
+    reason: AllReplicasReady
+    status: "True"
+    type: ReplicaReady
+  - lastTransitionTime: "2026-05-14T08:44:22Z"
+    message: database demo/qdrant-sample is accepting connection
+    observedGeneration: 3
+    reason: AcceptingConnection
+    status: "True"
+    type: AcceptingConnection
+  - lastTransitionTime: "2026-05-14T08:44:22Z"
+    message: database demo/qdrant-sample is ready
+    reason: AllReplicasReady
+    status: "True"
+    type: Ready
+  - lastTransitionTime: "2026-05-14T08:44:23Z"
+    message: 'The Qdrant: demo/qdrant-sample is successfully provisioned.'
+    observedGeneration: 3
+    reason: DatabaseSuccessfullyProvisioned
+    status: "True"
+    type: Provisioned
   phase: Ready
 ```
 
@@ -292,24 +349,44 @@ KubeDB creates a Secret containing authentication credentials for the Qdrant clu
 
 ```bash
 $ kubectl get secret -n demo qdrant-sample-auth -o yaml
+```
+```yaml
 apiVersion: v1
 data:
-  api-key: <base64-encoded-api-key>
+  api-key: ZUlxZVlMcnB4dmJ4SFBsbA==
+  read-only-api-key: M04yN25yakF3WWtlS0hPYg==
 kind: Secret
 metadata:
+  annotations:
+    kubedb.com/auth-active-from: "2026-05-14T08:43:57Z"
+  creationTimestamp: "2026-05-14T08:43:57Z"
+  labels:
+    app.kubernetes.io/component: database
+    app.kubernetes.io/instance: qdrant-sample
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/name: qdrants.kubedb.com
   name: qdrant-sample-auth
   namespace: demo
+  ownerReferences:
+  - apiVersion: kubedb.com/v1alpha2
+    blockOwnerDeletion: true
+    controller: true
+    kind: Qdrant
+    name: qdrant-sample
+    uid: 42df526b-fba5-4d21-aea4-d20ae5f36f30
+  resourceVersion: "3259248"
+  uid: 760da5c0-76de-48ae-838d-01a63cf90b8b
 type: Opaque
 ```
 
 Now, let's connect to the Qdrant cluster using port forwarding:
 
 ```bash
-$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333
 $ export QDRANT_API_KEY=$(kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d)
 
 $ curl -H "api-key: $QDRANT_API_KEY" http://localhost:6333/collections
-{"result":{"collections":[]},"status":"ok","time":0.001}
+{"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":0.00001235}
 ```
 
 ## AppBinding
@@ -326,8 +403,11 @@ items:
   - apiVersion: appcatalog.appscode.com/v1alpha1
     kind: AppBinding
     metadata:
-      creationTimestamp: "2025-06-01T10:00:30Z"
-      generation: 1
+      annotations:
+        kubectl.kubernetes.io/last-applied-configuration: |
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"Qdrant","metadata":{"annotations":{},"name":"qdrant-sample","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","mode":"Standalone","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"version":"1.17.0"}}
+      creationTimestamp: "2026-05-14T08:44:00Z"
+      generation: 2
       labels:
         app.kubernetes.io/component: database
         app.kubernetes.io/instance: qdrant-sample
@@ -341,9 +421,9 @@ items:
           controller: true
           kind: Qdrant
           name: qdrant-sample
-          uid: e5c9292b-f3a3-4dbf-95c8-1b544096e1d4
-      resourceVersion: "225711"
-      uid: 4d111a65-cf3d-4a74-a77e-24f2dee690df
+          uid: 42df526b-fba5-4d21-aea4-d20ae5f36f30
+      resourceVersion: "3259280"
+      uid: 7183b027-3eda-42ed-95f7-0a366d493464
     spec:
       appRef:
         apiGroup: kubedb.com
@@ -353,13 +433,14 @@ items:
       clientConfig:
         service:
           name: qdrant-sample
-          path: /
           port: 6333
           scheme: http
       secret:
+        apiGroup: ""
+        kind: Secret
         name: qdrant-sample-auth
       type: kubedb.com/qdrant
-      version: "1.17"
+      version: 1.17.0
 kind: List
 metadata:
   resourceVersion: ""
@@ -401,13 +482,13 @@ Now, check that the PVCs and Secrets still exist:
 
 ```bash
 $ kubectl get secret,pvc -n demo
-NAME                        TYPE     DATA   AGE
-secret/qdrant-sample-auth   Opaque   2      30m
+NAME                          TYPE                       DATA   AGE
+secret/qdrant-sample-auth     Opaque                     2      11m
+secret/qdrant-sample-f36f30   Opaque                     1      11m
 
-NAME                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
-persistentvolumeclaim/data-qdrant-sample-0   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            standard       29m
-persistentvolumeclaim/data-qdrant-sample-1   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f13   1Gi        RWO            standard       29m
-persistentvolumeclaim/data-qdrant-sample-2   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f14   1Gi        RWO            standard       29m
+NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
+persistentvolumeclaim/data-qdrant-sample-0   Bound    pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            standard     <unset>                 11m
+
 ```
 
 You can recreate your Qdrant database later using these PVCs and Secrets.

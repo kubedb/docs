@@ -42,7 +42,7 @@ KubeDB supports the following Microsoft SQL Server Version.
 ## Life Cycle of a Qdrant Object
 
 <p align="center">
-  <img alt="lifecycle"  src="/docs/guides/qdrant/images/qdrant-lifecycle.png" >
+  <img alt="lifecycle"  src="/docs/guides/qdrant/images/qdrant-lifecycle.png" style="padding: 20px;" >
 </p>
 
 

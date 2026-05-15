@@ -1,5 +1,5 @@
 ---
-title: Rotating Qdrant Credentials
+title: Rotate Authentication Overview
 menu:
   docs_{{ .version }}:
     identifier: qdrant-rotate-auth-overview
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Rotating Qdrant Authentication Credentials
+# Rotate Authentication of Qdrant
 
-This guide will give an overview of how KubeDB Ops-manager rotates the authentication credentials of a `Qdrant` database.
+This guide will give an overview on how KubeDB Ops-manager operator Rotate Authentication configuration.
 
 ## Before You Begin
 
@@ -22,26 +22,26 @@ This guide will give an overview of how KubeDB Ops-manager rotates the authentic
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
 
-## How Rotate Auth Works
+## How Rotate Qdrant Authentication Configuration Process Works
 
-The Rotate Auth process consists of the following steps:
+The authentication rotation process for Qdrant using KubeDB involves the following steps:
 
-1. At first, a user creates a `Qdrant` CR.
+1. A user first creates a `Qdrant` Custom Resource Object (CRO).
 
-2. `KubeDB-Provisioner` operator watches the `Qdrant` CR.
+2. The `KubeDB Provisioner operator` continuously watches for `Qdrant` CROs.
 
-3. When the operator finds a `Qdrant` CR, it creates a `StatefulSet` and generates an `authSecret` containing the initial API key for the Qdrant database.
+3. When the operator detects a `Qdrant` CR, it provisions the required `PetSets`, along with related resources such as secrets, services, and other dependencies.
 
-4. Then, in order to rotate the authentication credentials, the user creates a `QdrantOpsRequest` CR with `type: RotateAuth`. The user can optionally provide a new custom secret, or let KubeDB auto-generate a new API key.
+4. To initiate authentication rotation, the user creates a `QdrantOpsRequest` CR with the desired configuration.
 
-5. `KubeDB` Ops-manager operator watches the `QdrantOpsRequest` CR.
+5. The `KubeDB Ops-manager` operator watches for `QdrantOpsRequest` CRs.
 
-6. When it finds a `QdrantOpsRequest` CR, it pauses the `Qdrant` object so that the `KubeDB-Provisioner` operator doesn't perform any operations on the `Qdrant` during the credential rotation process.
+6. Upon detecting a `QdrantOpsRequest`, the operator pauses the referenced `Qdrant` object, ensuring that the Provisioner operator does not perform any operations during the authentication rotation process.
 
-7. Then the `KubeDB` Ops-manager operator generates a new API key (or uses the provided secret), updates the `authSecret`, and restarts the pods in a rolling fashion to apply the new credentials.
+7. The `Ops-manager` operator then updates the necessary configuration (such as credentials) based on the provided `QdrantOpsRequest` specification.
 
-8. After the successful credential rotation, the `KubeDB` Ops-manager updates the `Qdrant` object to reflect the updated auth state.
+8. After applying the updated configuration, the operator restarts all `Qdrant` Pods so they come up with the new authentication environment variables and settings.
 
-9. After the successful Rotate Auth, the `KubeDB` Ops-manager resumes the `Qdrant` object so that the `KubeDB-Provisioner` resumes its usual operations.
+9. Once the authentication rotation is completed successfully, the operator resumes the `Qdrant` object, allowing the Provisioner operator to continue its usual operations.
 
-In the next doc, we are going to show a step-by-step guide on rotating authentication credentials of a Qdrant database using `QdrantOpsRequest` CRD.
+In the next section, we will walk you through a step-by-step guide to rotating Qdrant authentication using the `QdrantOpsRequest` CRD.
