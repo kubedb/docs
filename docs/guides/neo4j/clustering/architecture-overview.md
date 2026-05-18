@@ -16,11 +16,11 @@ section_menu_id: guides
 
 ## Overview
 
-KubeDB provisions Neo4j in **cluster mode** using the [Neo4j Cluster](https://neo4j.com/docs/operations-manual/current/clustering/) topology. Each Neo4j cluster is a set of server instances that cooperate to provide a fully connected, highly available, and scalable graph database. KubeDB strictly follows the `modeConstraint: NONE` server operating mode, which allows any server in the cluster to perform any role the cluster topology requires.
+KubeDB provisions Neo4j in **cluster mode** using the [Neo4j Cluster](https://neo4j.com/docs/operations-manual/current/clustering/) topology. Each `Neo4j` cluster is a set of server instances that cooperate to provide a fully connected, highly available, and scalable graph database. KubeDB strictly follows the `modeConstraint: NONE` server operating mode, which allows any server in the cluster to perform any role the cluster topology requires.
 
 ## Cluster Mode: `NONE` Constraint
 
-Neo4j servers can be constrained to specific roles in the cluster (primary-only, secondary-only). KubeDB does **not** apply any such restriction — every server is started with:
+Neo4j servers can be constrained to specific roles in the cluster (primary-only, secondary-only). KubeDB does not apply any such restriction, every server is started with:
 
 ```
 server.cluster.mode.constraint=NONE
@@ -40,11 +40,11 @@ This means:
   </kbd>
 </p>
 
-The diagram above shows the **operational view** of a KubeDB-managed Neo4j cluster. Each pod runs a single Neo4j server instance. Kubernetes services route:
+The diagram above shows the operational view of a KubeDB-managed `Neo4j` cluster. Each pod runs a single Neo4j server instance. Kubernetes services route:
 
-- **Bolt traffic** (`7687`) to the cluster-level ClusterIP Service `{neo4j-name}`.
-- **HTTP Browser traffic** (`7474`) to the same ClusterIP Service.
-- **Intra-cluster communication** (`7000` discovery, `6000` transaction, `7688` intra-Bolt) through per-pod headless Services.
+- `Bolt traffic` (`7687`) to the cluster-level ClusterIP Service `{neo4j-name}`.
+- `HTTP Browser traffic` (`7474`) to the same ClusterIP Service.
+- `Intra-cluster communication` (`7000` discovery, `6000` transaction, `7688` intra-Bolt) through per-pod headless Services.
 
 ## Cluster Components
 
@@ -98,6 +98,10 @@ spec:
       requests:
         storage: 2Gi
   deletionPolicy: WipeOut
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
 ```
 
 When applied:

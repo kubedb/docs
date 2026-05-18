@@ -29,7 +29,7 @@ This guide covers two rotation modes:
 
 KubeDB uses `Neo4jOpsRequest` with `type: RotateAuth` to rotate credentials. Under the hood it:
 
-1. Generates a new password — or reads one from `spec.authentication.secretRef`
+1. Generates a new password or reads one from `spec.authentication.secretRef`
 2. Updates the Kubernetes auth Secret
 3. Calls the Neo4j password-change API on the running cluster
 4. Marks the operation `Successful` once all pods accept the new credential
@@ -120,9 +120,9 @@ spec:
 Apply it and wait for completion:
 
 ```bash
-kubectl apply -f neo4j-rotate-auth.yaml
+$ kubectl apply -f neo4j-rotate-auth.yaml
 
-kubectl wait --for=jsonpath='{.status.phase}'=Successful \
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful \
   neo4jopsrequest/neo4j-rotate-auth \
   -n demo --timeout=900s
 ```
@@ -136,18 +136,18 @@ neo4jopsrequest.ops.kubedb.com/neo4j-rotate-auth condition met
 ### Step 3 — Verify the Password Changed
 
 ```bash
-kubectl get neo4jopsrequest -n demo neo4j-rotate-auth
+$ kubectl get neo4jopsrequest -n demo neo4j-rotate-auth
 
 AFTER_B64=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}')
 [ "$BEFORE_B64" != "$AFTER_B64" ] && echo "password_changed=true" || echo "password_changed=false"
 
 NEW_PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
-kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$NEW_PASS" "RETURN 'auth-ok' AS status"
+$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$NEW_PASS" "RETURN 'auth-ok' AS status"
 ```
 
 Expected output:
 
-```
+```bash 
 NAME                TYPE         STATUS       AGE
 neo4j-rotate-auth   RotateAuth   Successful   37s
 
@@ -168,7 +168,7 @@ In this mode, you supply a Kubernetes Secret containing your chosen password. Ku
 ### Step 1 — Create the Auth Secret
 
 ```bash
-kubectl create secret generic external-neo4j-auth \
+$ kubectl create secret generic external-neo4j-auth \
   -n demo \
   --from-literal=username=neo4j \
   --from-literal=password='Neo4j@12345' \
@@ -202,9 +202,9 @@ spec:
 Apply it and wait for completion:
 
 ```bash
-kubectl apply -f neo4j-rotate-auth-user.yaml
+$ kubectl apply -f neo4j-rotate-auth-user.yaml
 
-kubectl wait --for=jsonpath='{.status.phase}'=Successful \
+$ kubectl wait --for=jsonpath='{.status.phase}'=Successful \
   neo4jopsrequest/neo4j-rotate-auth-user \
   -n demo --timeout=900s
 ```
@@ -218,15 +218,15 @@ neo4jopsrequest.ops.kubedb.com/neo4j-rotate-auth-user condition met
 ### Step 3 — Verify Login with the New Password
 
 ```bash
-kubectl get neo4jopsrequest -n demo neo4j-rotate-auth-user
+$ kubectl get neo4jopsrequest -n demo neo4j-rotate-auth-user
 
-kubectl exec -n demo neo4j-test-0 -- \
+$ kubectl exec -n demo neo4j-test-0 -- \
   cypher-shell -u neo4j -p 'Neo4j@12345' "RETURN 'user-auth-ok' AS status"
 ```
 
 Expected output:
 
-```
+```bash
 NAME                     TYPE         STATUS       AGE
 neo4j-rotate-auth-user   RotateAuth   Successful   33s
 

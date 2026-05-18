@@ -56,7 +56,7 @@ You verify the result using two complementary Cypher views:
 ## Step 1 — Set Up the Namespace
 
 ```bash
-kubectl create ns demo
+$ kubectl create ns demo
 ```
 
 ---
@@ -66,9 +66,9 @@ kubectl create ns demo
 Apply the example manifest and wait for the cluster to become ready:
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
 
-kubectl get neo4j -n demo neo4j-test -w
+$ kubectl get neo4j -n demo neo4j-test -w
 ```
 
 Wait until `STATUS` shows `Ready` before proceeding.
@@ -88,17 +88,17 @@ PASS=$(kubectl get secret -n demo neo4j-test-auth \
   -o jsonpath='{.data.password}' | base64 -d)
 
 # Create the database
-kubectl exec -n demo neo4j-test-0 -- \
+$ kubectl exec -n demo neo4j-test-0 -- \
   cypher-shell -u neo4j -p "$PASS" \
   "CREATE DATABASE appdb IF NOT EXISTS WAIT"
 
 # Seed 2,000 User nodes
-kubectl exec -n demo neo4j-test-0 -- \
+$ kubectl exec -n demo neo4j-test-0 -- \
   cypher-shell -d appdb -u neo4j -p "$PASS" \
   "UNWIND range(1,2000) AS i CREATE (:User {id:i, name:'user-'+toString(i)})"
 
 # Confirm the count
-kubectl exec -n demo neo4j-test-0 -- \
+$ kubectl exec -n demo neo4j-test-0 -- \
   cypher-shell -d appdb -u neo4j -p "$PASS" \
   "MATCH (u:User) RETURN count(u) AS totalUsers"
 ```
@@ -325,15 +325,15 @@ If this OpsRequest does not finish, first inspect the affected pod and then chec
 Check the OpsRequest status, the pod events, and cluster allocation:
 
 ```bash
-kubectl describe neo4jopsrequest -n demo <ops-request-name>
-kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-kubectl describe pod -n demo neo4j-test-0
+$ kubectl describe neo4jopsrequest -n demo <ops-request-name>
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+$ kubectl describe pod -n demo neo4j-test-0
 ```
 
 If the node is full, the new server count may not be schedulable. Check node capacity:
 
 ```bash
-kubectl describe node <node-name> | grep -A 10 "Allocated resources"
+$ kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 ```
 
 **Database shows `offline` after scaling**
@@ -341,8 +341,8 @@ kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 Neo4j may need time to reallocate. Wait a few seconds and re-run `SHOW DATABASE`. If it persists, check the `kubedb-ops-manager` logs and pod readiness:
 
 ```bash
-kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
-kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+$ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 ```
 
 **OpsRequest moves to `Failed`**
@@ -350,8 +350,8 @@ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 Read the failure condition and then inspect the `kubedb-ops-manager` logs:
 
 ```bash
-kubectl get neo4jopsrequest -n demo <ops-request-name> -o jsonpath='{.status.conditions}' | jq .
-kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
+$ kubectl get neo4jopsrequest -n demo <ops-request-name> -o jsonpath='{.status.conditions}' | jq .
+$ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 ---
@@ -361,13 +361,11 @@ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager 
 Remove all resources created in this guide:
 
 ```bash
-kubectl delete neo4jopsrequest -n demo \
+$ kubectl delete neo4jopsrequest -n demo \
   neo4j-horizontal-scale-up \
   neo4j-horizontal-scale-down
-
-kubectl delete neo4j -n demo neo4j-test
-
-kubectl delete ns demo
+$ kubectl delete neo4j -n demo neo4j-test
+$ kubectl delete ns demo
 ```
 
 ---
@@ -376,4 +374,3 @@ kubectl delete ns demo
 
 - [Neo4j Vertical Scaling](/docs/guides/neo4j/scaling/vertical-scaling/) — adjust CPU and memory
 - [Neo4j TLS Configuration](/docs/guides/neo4j/tls/) — enable encrypted connections
-- [Neo4j Backup & Restore](/docs/guides/neo4j/backup/) — schedule automated backups

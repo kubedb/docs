@@ -117,7 +117,7 @@ kubectl get pvc -n demo -l app.kubernetes.io/instance=neo4j-test
 
 Expected output:
 
-```
+```bash
 NAME                STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-neo4j-test-0   Bound    ...      2Gi        RWO            longhorn       3m
 data-neo4j-test-1   Bound    ...      2Gi        RWO            longhorn       3m

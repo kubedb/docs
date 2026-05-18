@@ -54,7 +54,7 @@ secret/myregistrykey created
 
 ## Install KubeDB Operator
 
-Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that it points to the DOCKER_REGISTRY you wish to pull images from.
+Follow the steps to [install KubeDB operator](/docs/setup/README.md) properly in cluster so that it points to the `DOCKER_REGISTRY` you wish to pull images from.
 
 ## Create Neo4jVersion CRD
 
@@ -122,6 +122,5 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl patch -n demo neo4j/pvt-reg-neo4j -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo neo4j/pvt-reg-neo4j
-
 kubectl delete ns demo
 ```

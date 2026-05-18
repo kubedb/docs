@@ -155,10 +155,11 @@ To learn more:
 KubeDB supports standard database termination policies such as `DoNotTerminate`, `Halt`, `Delete`, and `WipeOut`.
 
 Use `WipeOut` when you want full cleanup, including data and generated secrets. Use safer policies in production when you need to preserve data for recovery.
+For more details visit [HERE](https://appscode.com/blog/post/deletion-policy/)
 
 ## Next Steps
 
 - Learn about [Neo4jVersion CRD](/docs/guides/neo4j/concepts/catalog.md).
 - Learn about [AppBinding CRD](/docs/guides/neo4j/concepts/appbinding.md).
-- Explore [Neo4j OpsRequest](/docs/guides/neo4j/concepts/opsrequest.md) for day-2 operations.
+- Explore [Neo4j OpsRequest](/docs/guides/neo4j/concepts/opsrequest.md).
 - Follow the [Neo4j quickstart](/docs/guides/neo4j/quickstart/quickstart.md)

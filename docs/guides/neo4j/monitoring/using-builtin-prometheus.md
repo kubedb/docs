@@ -105,7 +105,6 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl patch -n demo neo4j/builtin-prom-neo4j -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 kubectl delete -n demo neo4j/builtin-prom-neo4j
-
 kubectl delete ns demo
 kubectl delete ns monitoring
 ```

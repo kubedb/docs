@@ -52,9 +52,9 @@ spec:
 Apply it and wait for the cluster to become ready:
 
 ```bash
-kubectl apply -f neo4j.yaml
+$ kubectl apply -f neo4j.yaml
 
-kubectl get neo4j -n demo neo4j-test -w
+$ kubectl get neo4j -n demo neo4j-test -w
 ```
 
 Wait until `STATUS` shows `Ready` before proceeding.
