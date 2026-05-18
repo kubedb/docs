@@ -68,7 +68,9 @@ We can see from the output the `longhorn (default)` and `longhorn-static` storag
 
 ### Deploy PlacementPolicy
 
-For distributed MariaDB autoscaling, the `PlacementPolicy` must include a `monitoring.prometheus.url` for each spoke cluster. The autoscaler uses these endpoints to monitor storage usage across all clusters where MariaDB pods are running. For storageclass you have to mention the storageclass name under both cluster like `spec.clusterSpreadConstraint.distributionRules.storageClassName`
+For distributed `MariaDB` autoscaling, the PlacementPolicy must define a valid `monitoring.prometheus.url` for each spoke cluster. These endpoints are required by the autoscaler to collect metrics and monitor storage usage across all clusters where MariaDB pods are deployed.
+
+Additionally, it is essential to explicitly specify the storage class for each cluster using `spec.clusterSpreadConstraint.distributionRules.storageClassName`. If this field is not provided, the system will fall back to the default storage class, which may lead to unintended behavior or potential data management risks in a distributed environment.
 
 Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 4 replicas across two clusters and provides the Prometheus endpoint for each:
 
