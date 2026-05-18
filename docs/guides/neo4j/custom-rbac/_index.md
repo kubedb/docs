@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-custom-rbac
     name: Custom RBAC
     parent: neo4j-guides
-    weight: 90
+    weight: 70
 menu_name: docs_{{ .version }}
 ---

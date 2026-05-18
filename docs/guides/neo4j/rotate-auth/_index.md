@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-rotate-auth
     name: Rotate Auth
     parent: neo4j-guides
-    weight: 34
+    weight: 60
 menu_name: docs_{{ .version }}
 ---

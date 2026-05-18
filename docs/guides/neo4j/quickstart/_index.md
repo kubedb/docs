@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-quickstart
     name: Quickstart
     parent: neo4j-guides
-    weight: 15
+    weight: 10
 menu_name: docs_{{ .version }}
 ---

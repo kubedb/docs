@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-update-version
     name: Update Version
     parent: neo4j-guides
-    weight: 33
+    weight: 45
 menu_name: docs_{{ .version }}
 ---

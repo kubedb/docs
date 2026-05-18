@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-reconfigure
     name: Reconfigure
     parent: neo4j-guides
-    weight: 31
+    weight: 50
 menu_name: docs_{{ .version }}
 ---

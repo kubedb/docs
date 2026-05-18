@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-configuration
     name: Custom Configuration
     parent: neo4j-guides
-    weight: 130
+    weight: 30
 menu_name: docs_{{ .version }}
 ---

@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-monitoring
     name: Monitoring
     parent: neo4j-guides
-    weight: 20
+    weight: 90
 menu_name: docs_{{ .version }}
 ---

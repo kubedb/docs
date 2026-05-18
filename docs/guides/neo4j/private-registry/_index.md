@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-private-registry
     name: Private Registry
     parent: neo4j-guides
-    weight: 120
+    weight: 80
 menu_name: docs_{{ .version }}
 ---

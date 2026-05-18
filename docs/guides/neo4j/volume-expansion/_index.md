@@ -5,6 +5,6 @@ menu:
     identifier: neo4j-volume-expansion
     name: Volume Expansion
     parent: neo4j-guides
-    weight: 35
+    weight: 40
 menu_name: docs_{{ .version }}
 ---
