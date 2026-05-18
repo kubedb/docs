@@ -33,6 +33,7 @@ For a `Neo4jOpsRequest` with `spec.type: RotateAuth`, KubeDB Ops-manager:
 4. Ensures database authentication remains healthy.
 5. Marks the request `Successful` when rotation completes.
 
+
 ## Next Step
 
 Follow the detailed guide: [Rotate Auth for Neo4j](/docs/guides/neo4j/rotate-auth/rotateauth.md).

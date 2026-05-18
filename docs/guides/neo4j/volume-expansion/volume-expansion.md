@@ -222,6 +222,8 @@ kubectl exec -n demo neo4j-test-0 -- df -h /data
 
 ## Troubleshooting
 
+If this OpsRequest does not finish, first inspect the affected PVC and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+
 **OpsRequest stays in `Progressing` — PVC capacity does not change**
 
 First, confirm the PVC resize was actually sent:
@@ -230,45 +232,41 @@ First, confirm the PVC resize was actually sent:
 kubectl describe pvc -n demo data-neo4j-test-0
 ```
 
-Look for a `FileSystemResizePending` condition. If it is there, the volume backend accepted the resize but the filesystem inside the pod has not updated yet. Longhorn normally handles this automatically — if it has not happened after a few minutes, restart the pod:
+Look for a `FileSystemResizePending` condition. If it is there, the volume backend accepted the resize but the filesystem inside the pod has not updated yet. If it has not happened after a few minutes, restart the pod:
 
 ```bash
 kubectl delete pod -n demo neo4j-test-0
 ```
 
-KubeDB will bring it back, and the filesystem resize will complete on mount.
-
 **`Longhorn volume driver not found` or PVC stays in `Pending`**
 
-Longhorn may not be installed or the storage class name is wrong. Verify:
+Verify the storage backend and the storage class:
 
 ```bash
 kubectl get storageclass longhorn
 kubectl get pods -n longhorn-system
 ```
 
-If the storage class is missing, install Longhorn following the [official guide](https://longhorn.io/docs/latest/deploy/install/) and re-deploy the Neo4j cluster.
+If the storage class is missing, install Longhorn and re-deploy the Neo4j cluster.
 
 **OpsRequest moves to `Failed` with error `volume expansion not supported`**
 
-This means the storage class does not have `allowVolumeExpansion: true`. Check:
+This means the storage class does not have `allowVolumeExpansion: true`. Check it and patch the storage class if needed:
 
 ```bash
 kubectl get storageclass longhorn -o jsonpath='{.allowVolumeExpansion}'
-```
-
-If the output is `false` or empty, the Longhorn storage class in your cluster was created without expansion support. Patch it:
-
-```bash
 kubectl patch storageclass longhorn -p '{"allowVolumeExpansion": true}'
 ```
 
-Then delete and re-apply the OpsRequest.
+Then re-apply the OpsRequest.
 
 **OpsRequest moves to `Failed` — read the exact reason**
 
+Use the OpsRequest status and the `kubedb-ops-manager` logs together:
+
 ```bash
 kubectl get neo4jopsrequest -n demo neo4j-volume-expansion -o jsonpath='{.status.conditions}' | jq .
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 ---

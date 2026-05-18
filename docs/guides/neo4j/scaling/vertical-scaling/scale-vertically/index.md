@@ -222,54 +222,41 @@ neo4j-vertical-scale   VerticalScaling   Successful   101s
 
 ## Troubleshooting
 
+If this OpsRequest does not finish, first inspect the affected pod and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+
 **OpsRequest stays in `Progressing` and never completes**
 
-A pod is likely stuck and not becoming `Running`. Check which pod is the problem:
+Check the pod that is being restarted and look for scheduling or resource issues:
 
 ```bash
 kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 kubectl describe pod -n demo neo4j-test-0
-```
-
-Look for events like `Insufficient cpu` or `Insufficient memory` — these mean the node does not have enough allocatable resources for the new values. Check node capacity:
-
-```bash
 kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 ```
 
-If the node is full, either free up resources on it or add a new node to the cluster before retrying.
-
 **OpsRequest moves to `Failed`**
 
-Read the failure reason directly from the OpsRequest status:
+Read the failure condition and then inspect the `kubedb-ops-manager` logs:
 
 ```bash
 kubectl get neo4jopsrequest -n demo neo4j-vertical-scale -o jsonpath='{.status.conditions}' | jq .
-```
-
-Then check the Ops-manager operator logs for the full error:
-
-```bash
 kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 **Pod restarts repeatedly after scaling (`CrashLoopBackOff`)**
 
-The new memory limit may be too low for Neo4j to start. Neo4j's JVM heap is derived from the container memory limit. Check the pod logs for an out-of-memory error:
+If Neo4j does not start with the new memory values, inspect the previous pod logs:
 
 ```bash
 kubectl logs -n demo neo4j-test-0 --previous
 ```
 
-If you see `java.lang.OutOfMemoryError` or `There is insufficient memory`, increase the memory limit and re-apply the OpsRequest.
-
 **`jq` not installed**
 
-Use a plain jsonpath query instead:
+Use jsonpath directly:
 
 ```bash
-kubectl get pod -n demo neo4j-test-0 \
-  -o jsonpath='req-cpu={.spec.containers[0].resources.requests.cpu} req-mem={.spec.containers[0].resources.requests.memory} lim-cpu={.spec.containers[0].resources.limits.cpu} lim-mem={.spec.containers[0].resources.limits.memory}'
+kubectl get neo4jopsrequest -n demo neo4j-vertical-scale -o jsonpath='{.status.conditions}'
 ```
 
 ---

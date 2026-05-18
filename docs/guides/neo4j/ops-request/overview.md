@@ -25,9 +25,9 @@ This page gives an overview of how KubeDB Ops-manager handles day-2 operations f
 
 The following diagram shows how KubeDB Ops-manager processes `Neo4jOpsRequest` for day-2 operations. Open the image in a new tab to see the enlarged version.
 
-<figure align="center">
+<figure>
   <img alt="Neo4j OpsRequest operational flow" src="/docs/images/neo4j/operational-view.png">
-  <figcaption align="center">Fig: Neo4j OpsRequest operational flow</figcaption>
+  <figcaption>Fig: Neo4j OpsRequest operational flow</figcaption>
 </figure>
 
 When you create a `Neo4jOpsRequest`, KubeDB Ops-manager performs the operation in phases:
@@ -49,6 +49,7 @@ When you create a `Neo4jOpsRequest`, KubeDB Ops-manager performs the operation i
 - [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md): Rotate, remove, or re-issue TLS configuration.
 - [Rotate Auth](/docs/guides/neo4j/rotate-auth/overview.md): Rotate database credentials using generated or user-provided secrets.
 - [Restart](/docs/guides/neo4j/restart/restart.md): Restart Neo4j pods in a controlled way.
+
 
 ## Next Step
 

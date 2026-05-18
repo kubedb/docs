@@ -186,22 +186,19 @@ neo4j-test   2025.12.1   Ready    21m
 
 ## Troubleshooting
 
+If this OpsRequest does not finish, first inspect the affected pod and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+
 **OpsRequest stays in `Progressing` and never completes**
 
-A pod is likely not becoming ready after its image was updated. Find which pod is stuck:
+A pod is likely not becoming ready after its image was updated. Find which pod is stuck and inspect its events and logs:
 
 ```bash
 kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-```
-
-Inspect the stuck pod's events and logs to understand why it is not starting:
-
-```bash
 kubectl describe pod -n demo neo4j-test-0
 kubectl logs -n demo neo4j-test-0
 ```
 
-Common causes: image pull failure (check `ImagePullBackOff` events), insufficient resources on the node, or a misconfigured Neo4j version.
+Common causes include image pull failures, insufficient node resources, or a version mismatch.
 
 **`targetVersion` not found**
 
@@ -215,21 +212,21 @@ Update your KubeDB operator to get the latest catalog, or check the [supported v
 
 **Neo4j stuck in `Critical` and does not recover**
 
-A brief `Critical` phase during rolling restarts is normal. If it persists for more than a few minutes, the new version may have failed to start cleanly. Check the pod logs for startup errors:
+If the new version fails to start cleanly, inspect the pod logs for startup errors and then check the `kubedb-ops-manager` logs:
 
 ```bash
 kubectl logs -n demo neo4j-test-0
 kubectl logs -n demo neo4j-test-1
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
-
-Also check whether the new version requires a higher memory allocation than your pods currently have. Neo4j version upgrades sometimes raise minimum memory requirements.
 
 **OpsRequest moves to `Failed`**
 
-Read the failure condition directly:
+Read the failure condition directly, then use the operator logs for the detailed message:
 
 ```bash
 kubectl get neo4jopsrequest -n demo neo4j-update-version -o jsonpath='{.status.conditions}' | jq .
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 ---

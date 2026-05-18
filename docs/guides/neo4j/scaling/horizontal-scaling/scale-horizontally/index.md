@@ -318,29 +318,40 @@ name, state, health, hosting
 
 ## Troubleshooting
 
+If this OpsRequest does not finish, first inspect the affected pod and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+
 **Ops request stuck in `Progressing`**
 
-Check the KubeDB operator logs and Neo4j pod events:
+Check the OpsRequest status, the pod events, and cluster allocation:
 
 ```bash
 kubectl describe neo4jopsrequest -n demo <ops-request-name>
-kubectl logs -n <kubedb-namespace> <kubedb-operator-pod>
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+kubectl describe pod -n demo neo4j-test-0
+```
+
+If the node is full, the new server count may not be schedulable. Check node capacity:
+
+```bash
+kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 ```
 
 **Database shows `offline` after scaling**
 
-Neo4j may need time to reallocate. Wait a few seconds and re-run `SHOW DATABASE`. If it persists, check pod readiness:
+Neo4j may need time to reallocate. Wait a few seconds and re-run `SHOW DATABASE`. If it persists, check the `kubedb-ops-manager` logs and pod readiness:
 
 ```bash
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 ```
 
-**Password retrieval fails**
+**OpsRequest moves to `Failed`**
 
-Ensure the secret name matches your Neo4j instance name:
+Read the failure condition and then inspect the `kubedb-ops-manager` logs:
 
 ```bash
-kubectl get secrets -n demo | grep neo4j
+kubectl get neo4jopsrequest -n demo <ops-request-name> -o jsonpath='{.status.conditions}' | jq .
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 ---

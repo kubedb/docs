@@ -250,36 +250,6 @@ status
 
 ---
 
-## Troubleshooting
-
-**Ops request stuck in `Progressing`**
-
-The password change may be waiting on a pod that is not ready:
-
-```bash
-kubectl describe neo4jopsrequest -n demo neo4j-rotate-auth
-kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-```
-
-**Login fails after rotation**
-
-Re-read the Secret and retry — the pod may have cached the old credential:
-
-```bash
-PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
-kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" "RETURN 1"
-```
-
-**`apply: IfReady` causes the request to be skipped**
-
-The database must be in `Ready` state before the operation runs. Check its status:
-
-```bash
-kubectl get neo4j -n demo neo4j-test
-```
-
----
-
 ## Cleanup
 
 ```bash
