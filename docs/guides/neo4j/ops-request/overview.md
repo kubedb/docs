@@ -45,6 +45,7 @@ When you create a `Neo4jOpsRequest`, KubeDB Ops-manager performs the operation i
 - [Horizontal Scaling](/docs/guides/neo4j/scaling/horizontal-scaling/overview.md): Add or remove Neo4j server members.
 - [Vertical Scaling](/docs/guides/neo4j/scaling/vertical-scaling/overview.md): Update CPU and memory requests/limits.
 - [Volume Expansion](/docs/guides/neo4j/volume-expansion/overview.md): Expand PVC size for Neo4j data volumes.
+- [StorageClass Migration](/docs/guides/neo4j/migration/storageMigration.md): Migrate database PVCs from one StorageClass to another.
 - [Update Version](/docs/guides/neo4j/update-version/overview.md): Upgrade Neo4j to a target `Neo4jVersion`.
 - [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md): Rotate, remove, or re-issue TLS configuration.
 - [Rotate Auth](/docs/guides/neo4j/rotate-auth/overview.md): Rotate database credentials using generated or user-provided secrets.

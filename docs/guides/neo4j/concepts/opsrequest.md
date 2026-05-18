@@ -32,6 +32,7 @@ Like any Kubernetes resource, a `Neo4jOpsRequest` contains `TypeMeta`, `ObjectMe
 - `HorizontalScaling`
 - `VerticalScaling`
 - `VolumeExpansion`
+- `StorageMigration`
 
 ## Sample Neo4jOpsRequest manifests
 
@@ -279,14 +280,33 @@ spec:
       name: neo4j-ca-issuer
 ```
 
+**Sample `Neo4jOpsRequest` for storage class migration:**
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: neo4j-test
+  migration:
+    storageClassName: custom-longhorn
+    oldPVReclaimPolicy: Delete
+  timeout: 3000s
+```
+
 ## Key fields
 
 - `spec.databaseRef.name` identifies the target `Neo4j` object.
-- `spec.type` selects the operation category. Valid values are `Restart`, `ReconfigureTLS`, `RotateAuth`, `Reconfigure`, `HorizontalScaling`, `VerticalScaling`, `VolumeExpansion`, and `UpdateVersion`.
-- Set the operation-specific section that matches `spec.type`, such as `spec.updateVersion`, `spec.verticalScaling`, `spec.volumeExpansion`, `spec.horizontalScaling`, `spec.authentication`, `spec.configuration`, or `spec.tls`.
+- `spec.type` selects the operation category. Valid values are `Restart`, `ReconfigureTLS`, `RotateAuth`, `Reconfigure`, `HorizontalScaling`, `VerticalScaling`, `VolumeExpansion`, `StorageMigration`, and `UpdateVersion`.
+- Set the operation-specific section that matches `spec.type`, such as `spec.updateVersion`, `spec.verticalScaling`, `spec.volumeExpansion`, `spec.horizontalScaling`, `spec.migration`, `spec.authentication`, `spec.configuration`, or `spec.tls`.
 - `spec.updateVersion.targetVersion` selects the target `Neo4jVersion` for an `UpdateVersion` request.
 - `spec.verticalScaling.server.resources` defines the new CPU and memory requests and limits for Neo4j server Pods.
 - `spec.volumeExpansion.mode` chooses whether storage expansion runs in `Online` or `Offline` mode, and `spec.volumeExpansion.server` sets the new PVC size for the server volume.
+- `spec.migration.storageClassName` selects the destination StorageClass for `StorageMigration`, and `spec.migration.oldPVReclaimPolicy` controls old PV reclaim behavior (`Delete` or `Retain`).
 - `spec.horizontalScaling.server` sets the desired number of Neo4j servers. `spec.horizontalScaling.reallocate.strategy` controls post-scaling reallocation, and `spec.horizontalScaling.reallocate.batchSize` is used with the `incremental` strategy.
 - `spec.authentication.secretRef` optionally points to a user-managed Secret for `RotateAuth`. If it is omitted, KubeDB can rotate credentials using an operator-managed Secret.
 - `spec.configuration.configSecret.name` points to a Secret containing new custom configuration, `spec.configuration.removeCustomConfig` removes the existing custom config, and `spec.configuration.applyConfig` applies inline configuration changes.
@@ -335,6 +355,7 @@ Common `type` values:
 | `VerticalScaling`     | Vertical scaling step has completed                                     |
 | `HorizontalScaling`   | Horizontal scaling step has completed                                   |
 | `VolumeExpansion`     | Volume expansion step has completed                                     |
+| `StorageMigration`    | Storage class migration step has completed                              |
 | `Reconfigure`         | Reconfiguration step has completed                                      |
 | `ReconfigureTLS`      | TLS reconfiguration step has completed                                  |
 | `Restart`             | Restart step has completed                                              |
@@ -356,6 +377,9 @@ Common `reason` values:
 | `HorizontalScalingStarted`              | Horizontal scaling has started                                          |
 | `SuccessfullyPerformedHorizontalScaling`| Horizontal scaling has completed successfully                           |
 | `FailedToPerformHorizontalScaling`      | Horizontal scaling has failed                                           |
+| `StorageMigrationStarted`               | Storage migration has started                                           |
+| `SuccessfullyPerformedStorageMigration` | Storage migration has completed successfully                            |
+| `FailedToPerformStorageMigration`       | Storage migration has failed                                            |
 
 ## Next Steps
 
@@ -364,3 +388,4 @@ Common `reason` values:
 - Read the [Reconfigure TLS guide](/docs/guides/neo4j/reconfigure-tls/overview.md) for certificate rotation, removal, or issuer updates.
 - Read the [Restart guide](/docs/guides/neo4j/restart/restart.md), [Rotate Auth guide](/docs/guides/neo4j/rotate-auth/overview.md), and [Update Version guide](/docs/guides/neo4j/update-version/overview.md).
 - Read the [Horizontal Scaling guide](/docs/guides/neo4j/scaling/horizontal-scaling/overview.md), [Vertical Scaling guide](/docs/guides/neo4j/scaling/vertical-scaling/overview.md), and [Volume Expansion guide](/docs/guides/neo4j/volume-expansion/overview.md).
+- Read the [Storage Migration guide](/docs/guides/neo4j/migration/storageMigration.md) for persistent volume and storage class migration.

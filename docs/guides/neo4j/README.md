@@ -35,6 +35,7 @@ KubeDB supports graph database deployment with Neo4j using the `Neo4j` CRD.
 - HorizontalScaling
 - VerticalScaling
 - VolumeExpansion
+- StorageMigration
 - UpdateVersion
 - ReconfigureTLS
 - RotateAuth
@@ -88,6 +89,8 @@ spec:
 - [Update Version Details](/docs/guides/neo4j/update-version/versionupgrading/)
 - [Volume Expansion](/docs/guides/neo4j/volume-expansion/overview.md)
 - [Volume Expansion Details](/docs/guides/neo4j/volume-expansion/volume-expansion.md)
+- [Migration](/docs/guides/neo4j/migration/)
+- [StorageClass Migration](/docs/guides/neo4j/migration/storageMigration.md)
 - [Horizontal Scaling](/docs/guides/neo4j/scaling/horizontal-scaling/overview.md)
 - [Horizontal Scaling Details](/docs/guides/neo4j/scaling/horizontal-scaling/scale-horizontally/)
 - [Vertical Scaling](/docs/guides/neo4j/scaling/vertical-scaling/overview.md)
