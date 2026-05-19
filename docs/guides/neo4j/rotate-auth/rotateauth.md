@@ -253,10 +253,10 @@ status
 ## Cleanup
 
 ```bash
-kubectl delete neo4jopsrequest -n demo neo4j-rotate-auth neo4j-rotate-auth-user
-kubectl delete secret -n demo external-neo4j-auth
-kubectl delete neo4j -n demo neo4j-test
-kubectl delete ns demo
+$ kubectl delete neo4jopsrequest -n demo neo4j-rotate-auth neo4j-rotate-auth-user
+$ kubectl delete secret -n demo external-neo4j-auth
+$ kubectl delete neo4j -n demo neo4j-test
+$ kubectl delete ns demo
 ```
 
 ---
