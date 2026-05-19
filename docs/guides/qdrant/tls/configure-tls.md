@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Configure TLS/SSL in Qdrant
+# Configure TLS in Qdrant
 
-`KubeDB` provides support for TLS/SSL encryption for `Qdrant`. This tutorial will show you how to use `KubeDB` to deploy a `Qdrant` database with TLS/SSL configuration.
+`KubeDB` provides support for TLS encryption for `Qdrant`. This tutorial will show you how to use `KubeDB` to deploy a `Qdrant` database with TLS configuration.
 
 ## Before You Begin
 
@@ -35,11 +35,22 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/tls/configure/yamls](/docs/guides/qdrant/tls/configure/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/tls](/docs/examples/qdrant/tls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
-### Deploy Qdrant database with TLS/SSL configuration
+## Overview
 
-As a pre-requisite, we are going to create an Issuer/ClusterIssuer. This Issuer/ClusterIssuer is used to create certificates. Then we are going to deploy a Qdrant with TLS/SSL configuration.
+KubeDB uses the following CRD fields to enable TLS/SSL encryption in Qdrant.
+
+- `spec:`
+  - `tls:`
+    - `issuerRef`
+    - `certificates`
+    - `client` — enables TLS for client-to-server communication
+    - `p2p` — enables TLS for peer-to-peer communication between Qdrant nodes
+
+- `client` (optional, default `false`): When set to `true`, the Qdrant server will accept TLS-encrypted connections from clients. This is essential for securing client access to the database.
+
+- `p2p` (optional, default `false`): When set to `true`, all inter-node communication within the Qdrant cluster (gossip, replication, etc.) will be encrypted using TLS. This ensures that data in transit between Qdrant nodes is secure.
 
 ### Create Issuer/ClusterIssuer
 
@@ -74,13 +85,13 @@ spec:
 Let's create the `Issuer` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/tls/configure/yamls/issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/issuer.yaml
 issuer.cert-manager.io/qdrant-ca-issuer created
 ```
 
-### Deploy Qdrant cluster with TLS/SSL configuration
+### Deploy Qdrant cluster with TLS configuration
 
-Here, our issuer `qdrant-ca-issuer` is ready to deploy a `Qdrant` cluster with TLS/SSL configuration. Below is the YAML for the Qdrant cluster that we are going to create:
+Here, our issuer `qdrant-ca-issuer` is ready to deploy a `Qdrant` cluster with TLS configuration. Below is the YAML for the Qdrant cluster that we are going to create:
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -90,21 +101,15 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
+  mode: Distributed
   replicas: 3
   tls:
     issuerRef:
       apiGroup: cert-manager.io
       name: qdrant-ca-issuer
       kind: Issuer
-    certificates:
-    - alias: server
-      subject:
-        organizations:
-        - kubedb:server
-      dnsNames:
-      - localhost
-      ipAddresses:
-      - "127.0.0.1"
+    client: true
+    p2p: true 
   storage:
     storageClassName: "standard"
     accessModes:
@@ -121,14 +126,16 @@ Here,
   - `apiGroup` — the API group of the issuer (e.g., `cert-manager.io`).
   - `kind` — the kind of issuer (`Issuer` or `ClusterIssuer`).
   - `name` — the name of the issuer.
-- `spec.tls.certificates` provides options to configure certificate renewal and keep-alive. You can find more details from [here](/docs/guides/qdrant/concepts/qdrant.md#tls).
+- `spec.tls.client` (optional, default `false`): Enables TLS for client-to-server communication. When set to `true`, clients must connect using TLS.
+- `spec.tls.p2p` (optional, default `false`): Enables TLS for peer-to-peer communication between Qdrant nodes in the cluster.
+- `spec.tls.certificates` provides options to configure custom certificate settings. You can find more details from [here](/docs/guides/qdrant/concepts/qdrant.md#spectls).
 
 **Deploy Qdrant Cluster:**
 
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/tls/configure/yamls/tls-qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/tls-qdrant.yaml
 qdrant.kubedb.com/qdrant-tls created
 ```
 
@@ -152,9 +159,9 @@ qdrant-tls-1      1/1     Running   0          2m40s
 qdrant-tls-2      1/1     Running   0          2m20s
 ```
 
-**Verify TLS/SSL configuration:**
+**Verify TLS configuration:**
 
-Now, let's verify the TLS/SSL configuration by checking the secrets created for the Qdrant database:
+Now, let's verify the TLS configuration by checking the secrets created for the Qdrant database:
 
 ```bash
 $ kubectl get secrets -n demo | grep qdrant-tls
@@ -162,7 +169,7 @@ qdrant-tls-server-cert   kubernetes.io/tls   3      3m
 qdrant-tls-client-cert   kubernetes.io/tls   3      3m
 ```
 
-The TLS certificates have been created and the Qdrant cluster is now configured to use TLS/SSL for both client connections and peer-to-peer communication.
+The TLS certificates have been created and the Qdrant cluster is now configured to use TLS for both client connections and peer-to-peer communication.
 
 ## Next Steps
 

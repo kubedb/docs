@@ -36,7 +36,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/qdrant/reconfigure-tls/yamls](/docs/guides/qdrant/reconfigure-tls/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/reconfigure-tls](/docs/examples/qdrant/reconfigure-tls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Add TLS to a Qdrant database
 
@@ -67,7 +67,7 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/qdrant.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/qdrant.yaml
 qdrant.kubedb.com/qdrant-sample created
 ```
 
@@ -114,7 +114,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/issuer.yaml
 issuer.cert-manager.io/qdrant-issuer created
 ```
 
@@ -160,7 +160,7 @@ Here,
 - `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/add-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/add-tls.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-add-tls created
 ```
 
@@ -197,7 +197,7 @@ Here,
 - `spec.tls.rotateCertificates` specifies that we are requesting to rotate the certificates of the `qdrant-sample` database.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/rotate-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/rotate-tls.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-rotate-tls created
 ```
 
@@ -232,7 +232,7 @@ Here,
 - `spec.tls.remove` specifies that we are removing the TLS configuration from `qdrant-sample` database.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/qdrant/reconfigure-tls/yamls/remove-tls.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/remove-tls.yaml
 qdrantopsrequest.ops.kubedb.com/qdops-remove-tls created
 ```
 

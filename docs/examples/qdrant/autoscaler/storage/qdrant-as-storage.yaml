@@ -6,14 +6,9 @@ metadata:
 spec:
   databaseRef:
     name: qdrant-sample
-  opsRequestOptions:
-    timeout: 3m
-    apply: IfReady
   storage:
     node:
       trigger: "On"
-      expansionMode: Online
-      usageThreshold: 70
-      scalingThreshold: 50
-      minAllowed: 2Gi
-      maxAllowed: 50Gi
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
