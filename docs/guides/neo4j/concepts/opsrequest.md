@@ -348,9 +348,6 @@ Common `type` values:
 
 | Type                  | Meaning                                                                 |
 |-----------------------|-------------------------------------------------------------------------|
-| `Progressing`         | Operation processing is in progress                                     |
-| `Successful`          | Operation has completed successfully                                    |
-| `Failure`             | Operation has failed                                                    |
 | `UpdateVersion`       | Version update step has completed                                       |
 | `VerticalScaling`     | Vertical scaling step has completed                                     |
 | `HorizontalScaling`   | Horizontal scaling step has completed                                   |

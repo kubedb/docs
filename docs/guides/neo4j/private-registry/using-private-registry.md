@@ -68,7 +68,7 @@ metadata:
 spec:
   db:
     image: PRIVATE_REGISTRY/neo4j:2025.11.2
-  version: "2025.12.1"
+  version: "2025.11.2"
 ```
 
 ```bash
@@ -85,7 +85,7 @@ metadata:
   name: pvt-reg-neo4j
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2025.11.2"
   replicas: 3
   storageType: Durable
   storage:
