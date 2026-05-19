@@ -37,7 +37,7 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/cassandra/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/cassandra/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [guides/cassandra/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/cassandra/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find Available StorageClass
 
