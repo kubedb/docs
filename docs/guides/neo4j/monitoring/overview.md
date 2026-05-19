@@ -34,11 +34,6 @@ To enable monitoring for Neo4j, configure the `spec.monitor` section. KubeDB pro
 | Field | Type | Uses |
 | --- | --- | --- |
 | `spec.monitor.agent` | `Required` | Type of monitoring agent. Supported values: `prometheus.io/builtin` or `prometheus.io/operator`. |
-| `spec.monitor.prometheus.exporter.port` | `Optional` | Port where exporter sidecar serves metrics. |
-| `spec.monitor.prometheus.exporter.args` | `Optional` | Arguments passed to exporter sidecar. |
-| `spec.monitor.prometheus.exporter.env` | `Optional` | Environment variables for exporter sidecar. |
-| `spec.monitor.prometheus.exporter.resources` | `Optional` | Resource requests/limits for exporter sidecar. |
-| `spec.monitor.prometheus.exporter.securityContext` | `Optional` | Security settings for exporter sidecar container. |
 | `spec.monitor.prometheus.serviceMonitor.labels` | `Optional` | Labels for `ServiceMonitor` object. |
 | `spec.monitor.prometheus.serviceMonitor.interval` | `Optional` | Metrics scraping interval. |
 
@@ -70,14 +65,6 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-      exporter:
-        resources:
-          requests:
-            memory: 128Mi
-            cpu: 100m
-          limits:
-            memory: 256Mi
-            cpu: 200m
 ```
 
 Here, `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create monitoring resources for Prometheus operator. KubeDB creates a `ServiceMonitor` object with the configured labels, and the Prometheus server discovers and scrapes Neo4j metrics through `{neo4j-name}-stats` service.
