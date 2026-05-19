@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: qdrant-opsrequest-concepts
     name: QdrantOpsRequest
-    parent: qdrant-concepts-qdrant
+    parent: qdrant-concepts
     weight: 25
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -126,6 +126,30 @@ A `QdrantOpsRequest` object has the following fields in the `spec` section:
 - `VerticalScaling` — vertically scale the resources (CPU and memory) of database pods.
 - `VolumeExpansion` — expand the persistent volume claim size of a running Qdrant database.
 
+#### spec.authentication
+
+`spec.authentication` is used when `spec.type` is `RotateAuth`. It contains:
+
+- `spec.authentication.secretRef` — a reference to the secret containing the new authentication credentials:
+  - `apiGroup` — the API group of the referenced secret.
+  - `kind` — the kind of the referenced secret.
+  - `name` — the name of the secret (required).
+
+#### spec.maxRetries
+
+`spec.maxRetries` is an optional `<integer>` field that specifies the maximum number of times the ops request should be retried if it fails.
+
+#### spec.migration
+
+`spec.migration` is used when `spec.type` is `VolumeExpansion` or other migration-requiring operations. It contains:
+
+- `spec.migration.storageClassName` — the target storage class name for migration.
+- `spec.migration.oldPVReclaimPolicy` — the reclaim policy for the old PersistentVolume.
+
+#### spec.restart
+
+`spec.restart` is used when `spec.type` is `Restart`. It is an empty object (`{}`). No further configuration is needed for a restart operation.
+
 #### spec.updateVersion
 
 `spec.updateVersion` is used when `spec.type` is `UpdateVersion`. It contains:
@@ -142,14 +166,37 @@ A `QdrantOpsRequest` object has the following fields in the `spec` section:
 
 `spec.verticalScaling` is used when `spec.type` is `VerticalScaling`. It contains:
 
-- `spec.verticalScaling.node.resources` — the CPU and memory resource requests and limits for Qdrant nodes.
+- `spec.verticalScaling.node` — the per-node vertical scaling configuration:
+  - `resources` — the CPU and memory resource requests and limits for Qdrant nodes.
+  - `nodeSelectionPolicy` — the policy for selecting nodes to scale.
+  - `topology` — the topology constraints for the vertical scaling operation:
+    - `key` — the topology key (required).
+    - `value` — the topology value (required).
 
 #### spec.volumeExpansion
 
 `spec.volumeExpansion` is used when `spec.type` is `VolumeExpansion`. It contains:
 
-- `spec.volumeExpansion.node` — the new desired storage size for Qdrant nodes.
+- `spec.volumeExpansion.node` — the per-node volume expansion configuration. Can be an empty object `{}` if the volume expansion should use defaults.
 - `spec.volumeExpansion.mode` — the volume expansion mode. Can be `Online` or `Offline`.
+
+#### spec.tls
+
+`spec.tls` is used when `spec.type` is `ReconfigureTLS`. It contains:
+
+- `spec.tls.client` — TLS configuration for client connections.
+- `spec.tls.p2p` — TLS configuration for peer-to-peer connections.
+- `spec.tls.remove` — specifies whether to remove TLS configuration.
+- `spec.tls.rotateCertificates` — specifies whether to rotate TLS certificates.
+
+#### spec.configuration
+
+`spec.configuration` is used when `spec.type` is `Reconfigure`. It contains:
+
+- `spec.configuration.applyConfig` — a map of key-value pairs for inline configuration changes.
+- `spec.configuration.configSecret` — the secret containing the new configuration.
+- `spec.configuration.removeCustomConfig` — specifies whether to remove the custom configuration.
+- `spec.configuration.restart` — specifies the restart behavior after applying configuration. Supported values are `auto`, `true`, and `false`.
 
 #### spec.timeout
 
@@ -167,15 +214,26 @@ A `QdrantOpsRequest` object has the following fields in the `spec` section:
 
 `status.phase` indicates the overall phase of the operation for this `QdrantOpsRequest`. It can have the following values:
 
-| Phase       | Meaning                                                                         |
-|-------------|---------------------------------------------------------------------------------|
-| Successful  | KubeDB has successfully performed the operation requested in the QdrantOpsRequest |
-| Progressing | KubeDB has started the execution of the applied QdrantOpsRequest                  |
-| Failed      | KubeDB has failed the operation requested in the QdrantOpsRequest                 |
-| Denied      | KubeDB has denied the operation requested in the QdrantOpsRequest                 |
-| Skipped     | KubeDB has skipped the operation requested in the QdrantOpsRequest                |
+| Phase              | Meaning                                                                         |
+|--------------------|---------------------------------------------------------------------------------|
+| Pending            | The QdrantOpsRequest has been created but execution has not started yet           |
+| Progressing        | KubeDB has started the execution of the applied QdrantOpsRequest                  |
+| Successful         | KubeDB has successfully performed the operation requested in the QdrantOpsRequest |
+| Failed             | KubeDB has failed the operation requested in the QdrantOpsRequest                 |
+| Denied             | KubeDB has denied the operation requested in the QdrantOpsRequest                 |
+| Skipped            | KubeDB has skipped the operation requested in the QdrantOpsRequest                |
+| WaitingForApproval | The QdrantOpsRequest is waiting for approval before execution                     |
 
 Ops-manager Operator can skip an opsRequest only if its execution has not been started yet and there is a newer opsRequest applied in the cluster. `spec.type` has to be the same as the skipped one, in this case.
+
+#### status.pausedBackups
+
+`status.pausedBackups` is a list of references to backup objects that were paused during the operation. Each entry has:
+
+- `apiGroup` — the API group of the paused backup.
+- `kind` — the kind of the paused backup.
+- `name` — the name of the paused backup (required).
+- `namespace` — the namespace of the paused backup.
 
 #### status.observedGeneration
 

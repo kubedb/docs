@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: qdrant-catalog-concepts
     name: QdrantVersion
-    parent: qdrant-concepts-qdrant
+    parent: qdrant-concepts
     weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -60,12 +60,37 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 ```bash
 $ kubectl get qdrantversions
-NAME      VERSION   DB_IMAGE                    DEPRECATED   AGE
-1.7.4     1.7.4     qdrant/qdrant:v1.7.4                     3d
-1.10.0    1.10.0    qdrant/qdrant:v1.10.0                    3d
-1.14.0    1.14.0    qdrant/qdrant:v1.14.0                    3d
-1.17.0    1.17.0    qdrant/qdrant:v1.17.0                    3d
+NAME     VERSION   DB_IMAGE                                       DEPRECATED   AGE
+1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                28d
+1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                28d
+1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                28d
 ```
+
+### spec.endOfLife
+
+`spec.endOfLife` is an optional `<boolean>` field that indicates whether this Qdrant version has reached its end of life.
+
+### spec.securityContext
+
+`spec.securityContext` specifies the security context for the database container. It contains:
+
+- `spec.securityContext.runAsUser` — the user ID to run the container as.
+
+### spec.ui
+
+`spec.ui` is an optional array that specifies the UI configuration for this Qdrant version. Each entry contains:
+
+- `name` — the name of the UI component.
+- `version` — the version of the UI component.
+- `values` — configuration values for the UI component.
+- `disable` — whether the UI component is disabled.
+
+### spec.updateConstraints
+
+`spec.updateConstraints` specifies constraints for version updates. It contains:
+
+- `spec.updateConstraints.allowlist` — a list of versions that are allowed as update targets from this version.
+- `spec.updateConstraints.denylist` — a list of versions that are forbidden as update targets from this version.
 
 ## Next Steps
 

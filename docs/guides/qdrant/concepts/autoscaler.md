@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: qdrant-autoscaler-concepts
     name: QdrantAutoscaler
-    parent: qdrant-concepts-qdrant
+    parent: qdrant-concepts
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -82,15 +82,23 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 
 #### spec.compute
 
-`spec.compute` specifies the compute (CPU and memory) autoscaling configuration. It contains a `node` sub-section with the following fields:
+`spec.compute` specifies the compute (CPU and memory) autoscaling configuration. It contains:
 
-- `spec.compute.node.trigger` — enables (`On`) or disables (`Off`) compute autoscaling.
-- `spec.compute.node.podLifeTimeThreshold` — the minimum age of a pod before VPA can recommend resource updates.
-- `spec.compute.node.resourceDiffPercentage` — the minimum percentage difference required before applying a recommendation.
-- `spec.compute.node.minAllowed` — the minimum allowed CPU and memory resources.
-- `spec.compute.node.maxAllowed` — the maximum allowed CPU and memory resources.
-- `spec.compute.node.controlledResources` — the list of resources to be controlled (e.g., `["cpu", "memory"]`).
-- `spec.compute.node.containerControlledValues` — specifies whether to control `RequestsAndLimits` or `RequestsOnly`.
+- `spec.compute.node` — the per-node compute autoscaling configuration:
+  - `trigger` — enables (`On`) or disables (`Off`) compute autoscaling.
+  - `podLifeTimeThreshold` — the minimum age of a pod before VPA can recommend resource updates.
+  - `resourceDiffPercentage` — the minimum percentage difference required before applying a recommendation.
+  - `minAllowed` — the minimum allowed CPU and memory resources.
+  - `maxAllowed` — the maximum allowed CPU and memory resources.
+  - `controlledResources` — the list of resources to be controlled (e.g., `["cpu", "memory"]`).
+  - `containerControlledValues` — specifies whether to control `RequestsAndLimits` or `RequestsOnly`.
+  - `inMemoryStorage` — configuration for in-memory storage autoscaling per node:
+    - `scalingFactorPercentage` — the scaling factor percentage for in-memory storage.
+    - `usageThresholdPercentage` — the usage threshold percentage that triggers scaling.
+- `spec.compute.nodeTopology` — specifies per-node topology for compute autoscaling:
+  - `name` — the name of the topology entry.
+  - `scaleDownDiffPercentage` — the scale-down difference percentage for this topology.
+  - `scaleUpDiffPercentage` — the scale-up difference percentage for this topology.
 
 #### spec.storage
 
@@ -100,6 +108,10 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 - `spec.storage.node.usageThreshold` — the storage usage threshold (percentage) that triggers autoscaling.
 - `spec.storage.node.scalingThreshold` — the percentage by which storage will be scaled when triggered.
 - `spec.storage.node.expansionMode` — the volume expansion mode (`Online` or `Offline`).
+- `spec.storage.node.upperBound` — the upper bound for storage size.
+- `spec.storage.node.scalingRules` — a list of scaling rule objects, each containing:
+  - `appliesUpto` — the upper limit for which this rule applies.
+  - `threshold` — the threshold for this scaling rule.
 
 #### spec.opsRequestOptions
 
@@ -107,6 +119,7 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 
 - `spec.opsRequestOptions.timeout` — the timeout for the generated ops request.
 - `spec.opsRequestOptions.apply` — when to apply the ops request. Can be `Always` or `IfReady`.
+- `spec.opsRequestOptions.maxRetries` — the maximum number of retries for the ops request.
 
 ## Next Steps
 

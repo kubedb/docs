@@ -49,7 +49,7 @@ In this section, we are going to deploy a Qdrant database with version `1.17.0`.
 apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
-  name: qdrant-db
+  name: qdrant-sample
   namespace: demo
 spec:
   version: "1.17.0"
@@ -79,22 +79,22 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant-db.yaml
-qdrant.kubedb.com/qdrant-db created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant.yaml
+qdrant.kubedb.com/qdrant-sample created
 ```
 
-Now, wait until `qdrant-db` has status `Ready`:
+Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
 $ kubectl get qdrant -n demo
-NAME             VERSION   STATUS   AGE
-qdrant-db        1.17.0    Ready    4m
+NAME            VERSION   STATUS   AGE
+qdrant-sample   1.17.0    Ready    51s
 ```
 
 Let's check the Pod container resources:
 
 ```bash
-$ kubectl get pod -n demo qdrant-db-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "200m",
@@ -125,7 +125,7 @@ metadata:
   namespace: demo
 spec:
   databaseRef:
-    name: qdrant-db
+    name: qdrant-sample
   opsRequestOptions:
     timeout: 3m
     apply: IfReady
@@ -146,7 +146,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing compute autoscaling on `qdrant-db` database.
+- `spec.databaseRef.name` specifies that we are performing compute autoscaling on `qdrant-sample` database.
 - `spec.compute.node.trigger` specifies that compute resource autoscaling is enabled for the Qdrant nodes.
 - `spec.compute.node.podLifeTimeThreshold` specifies the minimum age of a Pod before the `VerticalPodAutoscaler` can recommend a resource update.
 - `spec.compute.node.resourceDiffPercentage` specifies the minimum percentage change needed before applying a new resource recommendation.
@@ -171,7 +171,7 @@ Let's check that the `QdrantAutoscaler` resource is created successfully:
 ```bash
 $ kubectl get qdrantautoscaler -n demo
 NAME                AGE
-qdrant-as-compute   5s
+qdrant-as-compute   0s
 
 $ kubectl describe qdrantautoscaler qdrant-as-compute -n demo
 Name:         qdrant-as-compute
@@ -191,17 +191,21 @@ Spec:
         Cpu:     1
         Memory:  2Gi
       Min Allowed:
-        Cpu:     400m
-        Memory:  400Mi
-      Pod Life Time Threshold:      10m0s
-      Resource Diff Percentage:     20
-      Trigger:                      On
+        Cpu:                     400m
+        Memory:                  400Mi
+      Pod Life Time Threshold:   10m
+      Resource Diff Percentage:  20
+      Trigger:                   On
   Database Ref:
-    Name:  qdrant-db
+    Name:  qdrant-sample
   Ops Request Options:
-    Apply:    IfReady
-    Timeout:  3m0s
-Events:       <none>
+    Apply:        IfReady
+    Max Retries:  1
+    Timeout:      3m
+Status:
+  Vpas:
+    Vpa Name:  qdrant-sample
+Events:        <none>
 ```
 
 So, the `QdrantAutoscaler` resource is created successfully. The operator will now watch the resource usage of the Qdrant pods and create `QdrantOpsRequest` resources to scale when needed.
@@ -210,22 +214,22 @@ After some time, you can observe that the autoscaler has created a `QdrantOpsReq
 
 ```bash
 $ kubectl get qdrantopsrequest -n demo
-NAME                              TYPE              STATUS       AGE
-qdops-qdrant-db-xxxxxxxx         VerticalScaling   Successful   5m
+NAME                           TYPE              STATUS       AGE
+qdops-qdrant-sample-829lnp     VerticalScaling   Successful   45s
 ```
 
 You can then verify the updated resources on the pods:
 
 ```bash
-$ kubectl get pod -n demo qdrant-db-0 -o json | jq '.spec.containers[].resources'
+$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
 {
   "limits": {
     "cpu": "400m",
-    "memory": "512Mi"
+    "memory": "400Mi"
   },
   "requests": {
     "cpu": "400m",
-    "memory": "512Mi"
+    "memory": "400Mi"
   }
 }
 ```
@@ -237,7 +241,7 @@ The above output verifies that we have successfully autoscaled the resources of 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrant -n demo qdrant-db
+kubectl delete qdrant -n demo qdrant-sample
 kubectl delete qdrantautoscaler -n demo qdrant-as-compute
 kubectl delete ns demo
 ```
