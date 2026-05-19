@@ -18,25 +18,32 @@ aliases:
 Guides to show you how to perform tasks with KubeDB:
 - [Cassandra](/docs/guides/cassandra/README.md). Shows how to manage Cassandra using KubeDB.
 - [ClickHouse](/docs/guides/clickhouse/README.md). Shows how to manage ClickHouse using KubeDB.
+- [DB2](/docs/guides/db2/README.md). Shows how to manage DB2 using KubeDB.
+- [DocumentDB](/docs/guides/documentdb/README.md). Shows how to manage DocumentDB using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
 - [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.
+- [HanaDB](/docs/guides/hanadb/README.md). Shows how to manage HanaDB using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.
 - [Ignite](/docs/guides/ignite/README.md). Shows how to manage Ignite using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
 - [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
+- [Milvus](/docs/guides/milvus/README.md). Shows how to manage Milvus using KubeDB.
 - [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.
+- [Neo4j](/docs/guides/neo4j/README.md). Shows how to manage Neo4j using KubeDB.
 - [Oracle](/docs/guides/oracle/README.md). Shows how to manage Oracle using KubeDB.
 - [Percona XtraDB](/docs/guides/percona-xtradb/README.md). Shows how to manage Percona XtraDB using KubeDB.
 - [PgBouncer](/docs/guides/pgbouncer/README.md). Shows how to manage PgBouncer using KubeDB.
 - [Pgpool](/docs/guides/pgpool/README.md). Shows how to manage Pgpool using KubeDB.
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
+- [Qdrant](/docs/guides/qdrant/README.md). Shows how to manage Qdrant using KubeDB.
 - [RabbitMQ](/docs/guides/rabbitmq/README.md). Shows how to manage RabbitMQ using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
 - [SingleStore](/docs/guides/singlestore/README.md). Shows how to manage SingleStore using KubeDB.
 - [Solr](/docs/guides/solr/README.md). Shows how to manage Solr using KubeDB.
+- [Weaviate](/docs/guides/weaviate/README.md). Shows how to manage Weaviate using KubeDB.
 - [ZooKeeper](/docs/guides/zookeeper/README.md). Shows how to manage ZooKeeper using KubeDB.

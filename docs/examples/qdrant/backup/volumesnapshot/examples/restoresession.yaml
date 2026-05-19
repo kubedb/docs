@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-sample-qdrant
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Qdrant
+    namespace: demo
+    name: restored-qdrant
+  dataSource:
+    repository: minio-qdrant-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: qdrant-addon
+    tasks:
+      - name: volume-snapshot-restore

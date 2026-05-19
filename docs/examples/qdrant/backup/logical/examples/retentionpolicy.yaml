@@ -1,0 +1,11 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: RetentionPolicy
+metadata:
+  name: demo-retention
+  namespace: demo
+spec:
+  default: true
+  maxNumberOfSnapshots: 5
+  usagePolicy:
+    allowedNamespaces:
+      from: All

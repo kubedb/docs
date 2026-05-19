@@ -38,4 +38,9 @@ aliases:
 
 - [Quickstart Oracle](/docs/guides/oracle/quickstart/guide.md) with KubeDB Operator.
 
+## Concepts
+
+- [Oracle CRD](/docs/guides/oracle/concepts/oracle.md) defines the schema for Oracle custom resource.
+- [OracleVersion CRD](/docs/guides/oracle/concepts/catalog.md) defines the schema for OracleVersion custom resource.
+
 

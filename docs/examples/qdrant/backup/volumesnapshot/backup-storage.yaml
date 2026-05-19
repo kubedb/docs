@@ -1,0 +1,20 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: minio-storage
+  namespace: default
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: qdrant-backups
+      endpoint: http://minio.default.svc:9000
+      insecureTLS: true
+      prefix: backup/demo
+      region: us-east-1
+      secretName: aws-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: Delete
