@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: neo4j-test
+  migration:
+    storageClassName: custom-longhorn
+    oldPVReclaimPolicy: Delete
+  timeout: 3000s
+
