@@ -16,7 +16,7 @@ section_menu_id: guides
 
 ## What is FerretDB
 
-`FerretDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [FerretDB](https://www.ferretdb.com/) in a Kubernetes native way. You only need to describe the desired configuration in a `FerretDB`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
+`FerretDB` is a Kubernetes `Custom Resource Definitions` (CRD). It provides declarative configuration for [FerretDB](https://docs.ferretdb.io/) in a Kubernetes native way. You only need to describe the desired configuration in a `FerretDB`object, and the KubeDB operator will create Kubernetes objects in the desired state for you.
 
 ## FerretDB Spec
 
