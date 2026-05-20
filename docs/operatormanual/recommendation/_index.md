@@ -1,6 +1,5 @@
 ---
 title: Recommendation
-description: Recommendation
 menu:
   docs_{{ .version }}:
     identifier: recommendation
