@@ -72,7 +72,7 @@ For distributed `MariaDB` autoscaling, the PlacementPolicy must define a valid `
 
 Additionally, it is essential to explicitly specify the storage class for each cluster using `spec.clusterSpreadConstraint.distributionRules.storageClassName`. If this field is not provided, the system will fall back to the default storage class, which may lead to unintended behavior or potential data management risks in a distributed environment.
 
-Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 4 replicas across two clusters and provides the Prometheus endpoint for each:
+Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 3 replicas across two clusters and provides the Prometheus endpoint for each:
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1

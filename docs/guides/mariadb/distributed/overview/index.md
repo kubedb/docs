@@ -51,12 +51,12 @@ Follow these steps to deploy a distributed MariaDB Galera cluster across multipl
 Ensure your `KUBECONFIG` is set up to switch between clusters. This guide uses two clusters: `demo-controller` (hub and spoke) and `demo-worker` (spoke).
 
 ```bash
-kubectl config get-contexts
+$ kubectl config get-contexts
 ```
 
 **Output:**
 
-```
+```bash
 CURRENT   NAME              CLUSTER           AUTHINFO          NAMESPACE
 *         demo-controller   demo-controller   demo-controller   
           demo-worker       demo-worker       demo-worker
@@ -67,8 +67,8 @@ CURRENT   NAME              CLUSTER           AUTHINFO          NAMESPACE
 On the `demo-controller` cluster, initialize the OCM hub:
 
 ```bash
-kubectl config use-context demo-controller
-clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
+$ kubectl config use-context demo-controller
+$ clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
 ```
 
 #### 3. Verify Hub Deployment
@@ -76,7 +76,7 @@ clusteradm init --wait --feature-gates=ManifestWorkReplicaSet=true
 Check the pods in the `open-cluster-management-hub` namespace to ensure all components are running:
 
 ```bash
-kubectl get pods -n open-cluster-management-hub
+$ kubectl get pods -n open-cluster-management-hub
 ```
 
 **Output:**
@@ -98,7 +98,7 @@ All pods should be in the `Running` state with `1/1` readiness and no restarts, 
 Obtain the join token from the hub cluster:
 
 ```bash
-clusteradm get token
+$ clusteradm get token
 ```
 
 **Output:**
@@ -112,8 +112,8 @@ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https:/
 On the `demo-worker` cluster, join it to the hub. Include the `RawFeedbackJsonString` feature gate for resource feedback:
 
 ```bash
-kubectl config use-context demo-worker
-clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
+$ kubectl config use-context demo-worker
+$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
 ```
 
 #### 5. Accept Spoke Cluster
@@ -121,8 +121,8 @@ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https:/
 On the `demo-controller` cluster, accept the `demo-worker` cluster:
 
 ```bash
-kubectl config use-context demo-controller
-clusteradm accept --clusters demo-worker
+$ kubectl config use-context demo-controller
+$ clusteradm accept --clusters demo-worker
 ```
 
 > **Note:** It may take a few attempts (e.g., retry every 10 seconds) if the cluster is not immediately available.
@@ -141,12 +141,12 @@ Your managed cluster demo-worker has joined the Hub successfully.
 Confirm that a namespace for `demo-worker` was created on the hub cluster:
 
 ```bash
-kubectl get ns
+$ kubectl get ns
 ```
 
 **Output:**
 
-```
+```bash
 NAME                          STATUS   AGE
 default                       Active   99m
 demo-worker                   Active   58s
@@ -162,15 +162,15 @@ open-cluster-management-hub   Active   5m32s
 Repeat the join and accept process for `demo-controller` so it can also act as a spoke cluster:
 
 ```bash
-kubectl config use-context demo-controller
-clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
-clusteradm accept --clusters demo-controller
+$ kubectl config use-context demo-controller
+$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
+$ clusteradm accept --clusters demo-controller
 ```
 
 Verify the namespace for `demo-controller`:
 
 ```bash
-kubectl get ns
+$ kubectl get ns
 ```
 
 **Output:**
@@ -194,7 +194,7 @@ open-cluster-management-hub           Active   10m
 If you did not follow the provided OCM installation steps, update the `klusterlet` resource to enable feedback retrieval:
 
 ```bash
-kubectl edit klusterlet klusterlet
+$ kubectl edit klusterlet klusterlet
 ```
 
 Add the following under the `spec` field:
@@ -213,7 +213,7 @@ workConfiguration:
 Verify the configuration:
 
 ```bash
-kubectl get klusterlet klusterlet -oyaml
+$ kubectl get klusterlet klusterlet -oyaml
 ```
 
 **Sample Output (abridged):**
@@ -255,7 +255,7 @@ kubeslice:
 Deploy the controller using Helm:
 
 ```bash
-helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-controller \
+$ helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-controller \
     --version v2026.1.15 \
     -f controller.yaml \
     --namespace kubeslice-controller \
@@ -296,18 +296,18 @@ spec:
 Apply the project:
 
 ```bash
-kubectl apply -f project.yaml
+$ kubectl apply -f project.yaml
 ```
 
 Verify:
 
 ```bash
-kubectl get project -n kubeslice-controller
+$ kubectl get project -n kubeslice-controller
 ```
 
 **Output:**
 
-```
+```bash 
 NAME                       AGE
 demo-distributed-mariadb   31s
 ```
@@ -315,7 +315,7 @@ demo-distributed-mariadb   31s
 Check service accounts:
 
 ```bash
-kubectl get sa -n kubeslice-demo-distributed-mariadb
+$ kubectl get sa -n kubeslice-demo-distributed-mariadb
 ```
 
 **Output:**
@@ -333,16 +333,16 @@ Assign the `kubeslice.io/node-type=gateway` label to the node where the worker o
 On `demo-controller`:
 
 ```bash
-kubectl get nodes
-kubectl label node demo-master kubeslice.io/node-type=gateway
+$ kubectl get nodes
+$ kubectl label node demo-master kubeslice.io/node-type=gateway
 ```
 
 On `demo-worker`:
 
 ```bash
-kubectl config use-context demo-worker
-kubectl get nodes
-kubectl label node demo-worker kubeslice.io/node-type=gateway
+$ kubectl config use-context demo-worker
+$ kubectl get nodes
+$ kubectl label node demo-worker kubeslice.io/node-type=gateway
 ```
 
 #### 4. Register Clusters with KubeSlice
@@ -414,13 +414,13 @@ spec:
 Apply on `demo-controller`:
 
 ```bash
-kubectl apply -f registration.yaml
+$ kubectl apply -f registration.yaml
 ```
 
 Verify:
 
 ```bash
-kubectl get clusters -n kubeslice-demo-distributed-mariadb
+$ kubectl get clusters -n kubeslice-demo-distributed-mariadb
 ```
 
 **Output:**
@@ -434,7 +434,7 @@ demo-worker       9s
 Verify the worker installation:
 
 ```bash
-kubectl get pods -n kubeslice-system
+$ kubectl get pods -n kubeslice-system
 ```
 
 **Output:**
@@ -503,7 +503,7 @@ spec:
 Apply the `SliceConfig`:
 
 ```bash
-kubectl apply -f sliceconfig.yaml
+$ kubectl apply -f sliceconfig.yaml
 ```
 
 #### 6. Configure DNS for KubeSlice
@@ -513,12 +513,12 @@ Update the network traffic rules to forward the `*.slice.local` suffix (KubeSlic
 First, get the KubeSlice DNS service IP address:
 
 ```bash
-kubectl get svc -n kubeslice-system -owide -l 'app=kubeslice-dns'
+$ kubectl get svc -n kubeslice-system -owide -l 'app=kubeslice-dns'
 ```
 
 **Output:**
 
-```
+```bash
 NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE   SELECTOR
 kubeslice-dns   ClusterIP   10.43.172.191   <none>        53/UDP,53/TCP   8d    app=kubeslice-dns
 ```
@@ -527,7 +527,7 @@ Traffic for `.slice.local` should be forwarded to `10.43.172.191` for this clust
 
 Add the following section to your CoreDNS configuration:
 
-```
+```bash
 slice.local:53 {
     errors
     cache 30
@@ -538,7 +538,7 @@ slice.local:53 {
 Example CoreDNS ConfigMap:
 
 ```bash
-kubectl get cm -n kube-system coredns -oyaml
+$ kubectl get cm -n kube-system coredns -oyaml
 ```
 
 **Output:**
@@ -593,7 +593,7 @@ Install the KubeDB Operator on the `demo-controller` cluster to manage the Maria
 Download a FREE license from the [AppsCode License Server](https://appscode.com/issue-license?p=kubedb). Obtain the license for the `demo-controller` cluster.
 
 ```bash
-helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+$ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --version v2026.2.26 \
     --namespace kubedb --create-namespace \
     --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
@@ -608,12 +608,12 @@ For additional details, refer to the [KubeDB Installation Guide](https://kubedb.
 Verify that the pods are running:
 
 ```bash
-kubectl get pods -n kubedb
+$ kubectl get pods -n kubedb
 ```
 
 **Output:**
 
-```
+```bash
 NAME                                           READY   STATUS    RESTARTS   AGE
 kubedb-kubedb-autoscaler-0                     1/2     Running   0          44s
 kubedb-kubedb-ops-manager-0                    1/2     Running   0          43s
@@ -624,8 +624,9 @@ kubedb-sidekick-5dbf7bcf64-4b8cw               2/2     Running   0          44s
 ```
 
 ### Step 5: Define a PlacementPolicy
+You can define the `storageClassName` under `spec.clusterSpreadConstraint.distributionRules` for each cluster. If not explicitly specified, the clusters will automatically select an appropriate storage class. Additionally, you can control replica placement by defining which replicas belong to which cluster. When scaling the number of replicas, the distribution must also be specified at the cluster level. In this example, we are using three replicas.
 
-Create a `PlacementPolicy` to control pod distribution across clusters. Create a `pod-placement-policy.yaml` file:
+To manage pod distribution across clusters, create a `PlacementPolicy`. For this purpose, define a `pod-placement-policy.yaml` file as shown below:
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1
@@ -638,10 +639,12 @@ spec:
   clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
+        storageClassName: local-path
         replicaIndices:
           - 0
           - 2
       - clusterName: demo-worker
+        storageClassName: local-path
         replicaIndices:
           - 1
     slice:
@@ -663,7 +666,7 @@ This policy schedules:
 Apply the policy on `demo-controller`:
 
 ```bash
-kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
+$ kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
 ### Step 6: Create a Distributed MariaDB Instance
@@ -697,7 +700,7 @@ spec:
 Apply the resource on `demo-controller`:
 
 ```bash
-kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube/config
+$ kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
 ### Step 7: Verify the Deployment
@@ -705,12 +708,12 @@ kubectl apply -f mariadb.yaml --context demo-controller --kubeconfig $HOME/.kube
 #### 1. Check MariaDB Resource and Pods on `demo-controller`
 
 ```bash
-kubectl get md,pods,secret -n demo --context demo-controller --kubeconfig $HOME/.kube/config
+$ kubectl get md,pods,secret -n demo --context demo-controller --kubeconfig $HOME/.kube/config
 ```
 
 **Output:**
 
-```
+```bash
 NAME                         VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb   11.5.2    Ready    99s
 
@@ -725,12 +728,12 @@ secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
 #### 2. Check Pods and Secrets on `demo-worker`
 
 ```bash
-kubectl get pods,secrets -n demo --context demo-worker --kubeconfig $HOME/.kube/config
+$ kubectl get pods,secrets -n demo --context demo-worker --kubeconfig $HOME/.kube/config
 ```
 
 **Output:**
 
-```
+```bash
 NAME        READY   STATUS    RESTARTS   AGE
 mariadb-1   3/3     Running   0          95s
 
@@ -743,7 +746,7 @@ secret/mariadb-auth   kubernetes.io/basic-auth   2      95s
 Connect to a MariaDB pod and check the Galera cluster status. The primary service DNS follows the format `<database-name>.<database-namespace>.svc`:
 
 ```bash
-kubectl exec -it -n demo pod/mariadb-0 --context demo-controller -- bash
+$ kubectl exec -it -n demo pod/mariadb-0 --context demo-controller -- bash
 mariadb -uroot -p$MYSQL_ROOT_PASSWORD -hmariadb.demo.svc
 ```
 
@@ -755,7 +758,7 @@ SHOW STATUS LIKE 'wsrep_cluster_status';
 
 **Output:**
 
-```
+```bash
 +----------------------+---------+
 | Variable_name        | Value   |
 +----------------------+---------+
