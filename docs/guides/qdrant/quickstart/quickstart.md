@@ -389,6 +389,54 @@ $ curl -H "api-key: $QDRANT_API_KEY" http://localhost:6333/collections
 {"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":0.00001235}
 ```
 
+Let's create a collection with some vector data:
+
+```bash
+$ curl -X PUT http://localhost:6333/collections/demo_vectors \
+  -H "Content-Type: application/json" \
+  -H "api-key: $QDRANT_API_KEY" \
+  -d '{
+    "vectors": {
+      "size": 8,
+      "distance": "Cosine"
+    }
+  }'
+{"result":true,"status":"ok","time":0.050803361}
+
+$ curl -X PUT "http://localhost:6333/collections/demo_vectors/points?wait=true" \
+  -H "Content-Type: application/json" \
+  -H "api-key: $QDRANT_API_KEY" \
+  -d '{
+    "points": [
+      {"id": 1, "vector": [0.15, 0.22, 0.31, 0.44, 0.51, 0.68, 0.73, 0.89], "payload": {"label": "apple"}},
+      {"id": 2, "vector": [0.12, 0.28, 0.35, 0.42, 0.53, 0.64, 0.71, 0.85], "payload": {"label": "banana"}},
+      {"id": 3, "vector": [0.18, 0.21, 0.33, 0.46, 0.50, 0.66, 0.77, 0.82], "payload": {"label": "cherry"}}
+    ]
+  }'
+{"result":{"operation_id":1,"status":"completed"},"status":"ok","time":0.001645376}
+```
+
+Now scroll through the points to verify they were stored:
+
+```bash
+$ curl -X POST http://localhost:6333/collections/demo_vectors/points/scroll \
+  -H "Content-Type: application/json" \
+  -H "api-key: $QDRANT_API_KEY" \
+  -d '{"limit": 5, "with_payload": true, "with_vector": false}' | jq
+{
+  "result": {
+    "points": [
+      {"id": 1, "payload": {"label": "apple"}, "version": 1},
+      {"id": 2, "payload": {"label": "banana"}, "version": 1},
+      {"id": 3, "payload": {"label": "cherry"}, "version": 1}
+    ],
+    "next_page_offset": null
+  },
+  "status": "ok",
+  "time": 0.000086921
+}
+```
+
 ## AppBinding
 
 KubeDB creates an [AppBinding](/docs/guides/qdrant/concepts/appbinding.md) CR that holds the necessary information to connect with the database.

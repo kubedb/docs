@@ -1,7 +1,7 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: restore-sample-qdrant
+  name: restore-qdrant-sample
   namespace: demo
 spec:
   target:

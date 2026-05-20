@@ -12,27 +12,68 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Qdrant Monitoring Overview
+# Monitoring Qdrant with KubeDB
 
-This guide will give an overview of how KubeDB supports monitoring for `Qdrant` databases.
+KubeDB has native support for monitoring via [Prometheus](https://prometheus.io/). You can use builtin [Prometheus](https://github.com/prometheus/prometheus) scraper or [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) to monitor KubeDB managed databases. This tutorial will show you how database monitoring works with KubeDB and how to configure Database CR to enable monitoring.
 
-## Before You Begin
+## Overview
 
-- You should be familiar with the following `KubeDB` concepts:
-  - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
+KubeDB uses Prometheus [exporter](https://prometheus.io/docs/instrumenting/exporters/#databases) images to export Prometheus metrics for respective databases. Following diagram shows the logical flow of database monitoring with KubeDB.
 
-## How KubeDB Monitoring Works
+<p align="center">
+  <img alt="Database Monitoring Flow"  src="/docs/images/concepts/monitoring/database-monitoring-overview.svg">
+</p>
 
-KubeDB uses Prometheus to monitor `Qdrant` databases. KubeDB operator watches the `Qdrant` CR and sets up monitoring as follows:
+When a user creates a database CR with `spec.monitor` section configured, KubeDB operator provisions the respective database and injects an exporter image as sidecar to the database pod. It also creates a dedicated stats service with name `{database-crd-name}-stats` for monitoring. Prometheus server can scrape metrics using this stats service.
 
-1. When a `Qdrant` database is deployed with `spec.monitor` configured, KubeDB creates a dedicated `stats` service (or uses the existing service) with the appropriate annotations for Prometheus scraping.
+## Configure Monitoring
 
-2. KubeDB supports two monitoring approaches:
-   - **Builtin Prometheus** — uses Prometheus' built-in auto-discovery mechanism (`prometheus.io/scrape` annotations on the stats service).
-   - **Prometheus Operator** — creates a `ServiceMonitor` CR that is picked up by the Prometheus Operator.
+In order to enable monitoring for a database, you have to configure `spec.monitor` section. KubeDB provides following options to configure `spec.monitor` section:
 
-3. The Qdrant stats service exposes Prometheus-compatible metrics at the `/metrics` endpoint, including metrics about collections, vectors, memory usage, and gRPC/REST request performance.
+|                Field                               |    Type    |                                                                                     Uses                                                      |
+| -------------------------------------------------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `spec.monitor.agent`                               | `Required` | Type of the monitoring agent that will be used to monitor this database. It can be `prometheus.io/builtin` or `prometheus.io/operator`. |
+| `spec.monitor.prometheus.exporter.port`            | `Optional` | Port number where the exporter side car will serve metrics.                                                                                   |
+| `spec.monitor.prometheus.exporter.args`            | `Optional` | Arguments to pass to the exporter sidecar.                                                                                                    |
+| `spec.monitor.prometheus.exporter.env`             | `Optional` | List of environment variables to set in the exporter sidecar container.                                                                       |
+| `spec.monitor.prometheus.exporter.resources`       | `Optional` | Resources required by exporter sidecar container.                                                                                             |
+| `spec.monitor.prometheus.exporter.securityContext` | `Optional` | Security options the exporter should run with.                                                                                                |
+| `spec.monitor.prometheus.serviceMonitor.labels`    | `Optional` | Labels for `ServiceMonitor` CR.                                                                                                               |
+| `spec.monitor.prometheus.serviceMonitor.interval`  | `Optional` | Interval at which metrics should be scraped.                                                                                                  |
 
-4. Prometheus scrapes the metrics from the stats service and makes them available for alerting and dashboards.
+## Sample Configuration
 
-In the next docs, we are going to show step-by-step guides on monitoring a Qdrant database using Builtin Prometheus and Prometheus Operator.
+A sample YAML for Qdrant CR with `spec.monitor` section configured to enable monitoring with [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) is shown below.
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-monitoring
+  namespace: demo
+spec:
+  version: "1.17.0"
+  replicas: 3
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  deletionPolicy: WipeOut
+```
+
+Here, we have specified that we are going to monitor this Qdrant cluster using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` CR in the same namespace and this `ServiceMonitor` will have `release: prometheus` label.
+
+## Next Steps
+
+- Learn how to monitor Qdrant with KubeDB using [Builtin Prometheus](/docs/guides/qdrant/monitoring/using-builtin-prometheus.md).
+- Learn how to monitor Qdrant with KubeDB using [Prometheus operator](/docs/guides/qdrant/monitoring/using-prometheus-operator.md).

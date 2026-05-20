@@ -29,55 +29,71 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/configuration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/configuration](/docs/examples/qdrant/configuration) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Overview
 
-Qdrant allows configuring the database via a YAML configuration file named `production.yaml`. When the Qdrant Docker image starts, it merges configuration from the default `config.yaml` with any `production.yaml` file present. KubeDB takes advantage of this feature to allow users to provide their custom configuration. To know more about configuring Qdrant, see [here](https://qdrant.tech/documentation/guides/configuration/).
+KubeDB supports three ways to provide custom configuration for Qdrant:
 
-At first, you have to create a config file named `production.yaml` with your desired configuration. Then create a Secret with this configuration file and provide its name in `spec.configSecret.name`. The operator reads this Secret and mounts it into the Qdrant pods automatically.
+| Method | Field | Priority |
+|--------|-------|----------|
+| **Config Secret** | `spec.configuration.secretName` | Medium |
+| **Inline Config** | `spec.configuration.inline` | Highest |
+| **Default Config** | (built into the Docker image) | Lowest |
 
-In this tutorial, we will configure `log_level` and `service.max_request_size_mb` via a custom config file.
+The priority order is: **Inline Config > Config Secret > Default Config**. When multiple configuration sources specify the same key, the value from the higher-priority source takes precedence. Inline config values are applied last, overriding any values from the config Secret or defaults.
 
-## Custom Configuration
+To know more about configuring Qdrant, see [here](https://qdrant.tech/documentation/guides/configuration/).
 
-At first, let's create a `production.yaml` file with custom settings:
+In this tutorial, we will configure `log_level` and `service.max_request_size_mb` using both a config Secret and inline configuration.
+
+## Custom Configuration via Config Secret
+
+At first, create a Secret with your custom configuration. Below is the YAML of the `Secret` that we are going to create:
 
 ```yaml
-log_level: INFO
-service:
-  max_request_size_mb: 64
-storage:
-  performance:
-    max_search_threads: 4
+apiVersion: v1
+stringData:
+  config.yaml: |
+    log_level: DEBUG
+    service:
+      max_request_size_mb: 64
+kind: Secret
+metadata:
+  name: qdrant-configuration
+  namespace: demo
+type: Opaque
 ```
 
-Now, create a Secret with this configuration file:
+Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl create secret generic -n demo qdrant-config \
-  --from-file=production.yaml=./production.yaml
-secret/qdrant-config created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/configuration-secret.yaml
+secret/qdrant-configuration created
 ```
 
 Verify the Secret has the configuration file:
 
 ```yaml
-$ kubectl get secret -n demo qdrant-config -o yaml
+$ kubectl get secret -n demo qdrant-configuration -o yaml
 apiVersion: v1
 data:
-  production.yaml: bG9nX2xldmVsOiBJTkZPCnNlcnZpY2U6CiAgbWF4X3JlcXVlc3Rfc2l6ZV9tYjogNjQK...
+  config.yaml: bG9nX2xldmVsOiBERUJVRwpzZXJ2aWNlOgogIG1heF9yZXF1ZXN0X3NpemVfbWI6IDY0Cg==
 kind: Secret
 metadata:
-  name: qdrant-config
+  creationTimestamp: "2026-05-19T06:39:07Z"
+  name: qdrant-configuration
   namespace: demo
+  resourceVersion: "3834858"
+  uid: 9cad78b6-e0e3-4e3e-b999-943c01bfb09c
+type: Opaque
 ```
 
-Now, create the `Qdrant` CR specifying `spec.configSecret.name` field:
+Now, create the `Qdrant` CR specifying `spec.configuration.secretName` field:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/qdrant-configuration.yaml
-qdrant.kubedb.com/custom-qdrant created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/qdrant.yaml
+qdrant.kubedb.com/qdrant-sample created
 ```
 
 Below is the YAML for the `Qdrant` CR we just created:
@@ -86,57 +102,93 @@ Below is the YAML for the `Qdrant` CR we just created:
 apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
-  name: custom-qdrant
+  name: qdrant-sample
   namespace: demo
 spec:
   version: "1.17.0"
   replicas: 3
-  configSecret:
-    name: qdrant-config
+  configuration:
+    secretName: qdrant-configuration
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
   deletionPolicy: WipeOut
 ```
 
-Now, wait a few minutes. KubeDB operator will create the necessary PVC, Petset, services, and secrets. If everything goes well, we will see that a pod with the name `custom-qdrant-0` has been created.
-
-Check that the Petset's pod is running:
+Now, wait a few minutes. KubeDB operator will create the necessary PVC, PetSet, services, and secrets. Let's check the status:
 
 ```bash
-$ kubectl get pod -n demo custom-qdrant-0
-NAME               READY   STATUS    RESTARTS   AGE
-custom-qdrant-0    1/1     Running   0          2m
-```
-
-Now, wait for the `Qdrant` CR to go into `Ready` state:
-
-```bash
-$ kubectl get qdrant -n demo custom-qdrant
+$ kubectl get qdrant -n demo
 NAME            VERSION   STATUS   AGE
-custom-qdrant   1.17.0    Ready    3m
+qdrant-sample   1.17.0    Ready    68s
 ```
 
-We can check that the Qdrant database is running with our custom configuration by accessing the telemetry endpoint:
+Check that all pods are running:
 
 ```bash
-$ kubectl port-forward -n demo pod/custom-qdrant-0 6333:6333 &
-$ curl http://localhost:6333/telemetry | jq '.result.app.max_request_size_mb'
-64
+$ kubectl get pod -n demo
+NAME              READY   STATUS    RESTARTS   AGE
+qdrant-sample-0   1/1     Running   0          61s
+qdrant-sample-1   1/1     Running   0          57s
+qdrant-sample-2   1/1     Running   0          42s
 ```
 
-The output confirms the database is using our custom `max_request_size_mb` value of `64`.
+Now, let's verify that the custom configuration has been applied by checking the config file inside the pod:
+
+```bash
+$ kubectl exec -n demo qdrant-sample-0 -- cat /qdrant/config/config.yaml
+log_level: DEBUG
+service:
+  max_request_size_mb: 64
+```
+
+The output confirms the database is running with our custom `log_level` and `max_request_size_mb` values.
+
+As noted in the [Overview](#overview), inline configuration has the highest priority. If both a config Secret and inline config specify the same key, the inline value takes precedence.
+
+## Inline Configuration
+
+You can also provide custom configuration inline within the `Qdrant` CR using `spec.configuration.inline`. This is useful for simple config changes without creating a separate Secret.
+
+Below is an example YAML of a `Qdrant` CR with inline configuration:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-sample
+  namespace: demo
+spec:
+  version: "1.17.0"
+  replicas: 3
+  configuration:
+    inline:
+      log_level: DEBUG
+      max_request_size_mb: "64"
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+```
+
+> **Note:** The `inline` field is a `map[string]string`, so values must be strings. To set the config key `max_request_size_mb` to `64`, write `max_request_size_mb: "64"`. The config Secret method (shown above) supports full nested YAML structure.
+
+When both `spec.configuration.secretName` and `spec.configuration.inline` are set, the inline values override the corresponding keys from the config Secret. Keys not specified in inline retain their values from the config Secret.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete qdrant -n demo custom-qdrant
-kubectl delete secret -n demo qdrant-config
+kubectl delete qdrant -n demo qdrant-sample
+kubectl delete secret -n demo qdrant-configuration
 kubectl delete ns demo
 ```

@@ -1,7 +1,7 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: sample-qdrant-backup
+  name: qdrant-sample-backup
   namespace: default
 spec:
   target:

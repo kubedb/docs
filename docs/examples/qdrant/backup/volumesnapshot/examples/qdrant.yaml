@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1
 kind: Qdrant
 metadata:
-  name: sample-qdrant
+  name: qdrant-sample
   namespace: demo
 spec:
   version: "1.17.0"
