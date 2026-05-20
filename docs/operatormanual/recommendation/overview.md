@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: overview
     name: Overview
-    parent: operatormanual
+    parent: recommendation
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
