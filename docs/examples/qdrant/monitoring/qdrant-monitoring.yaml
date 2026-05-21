@@ -5,9 +5,8 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
-  replicas: 3
   storage:
-    storageClassName: standard
+    storageClassName: "longhorn"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -16,6 +15,8 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
+      exporter:
+        port: 6333
       serviceMonitor:
         interval: 10s
         labels:

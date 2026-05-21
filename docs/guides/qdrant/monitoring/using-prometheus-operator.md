@@ -46,8 +46,8 @@ At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
 $ kubectl get prometheus --all-namespaces
-NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
-monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        16d
+NAMESPACE    NAME                                    VERSION              DESIRED   READY   RECONCILED   AVAILABLE   AGE
+monitoring   prometheus-kube-prometheus-prometheus   v3.11.3-distroless   1         1       True         True        5m
 ```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
@@ -64,35 +64,35 @@ metadata:
   annotations:
     meta.helm.sh/release-name: prometheus
     meta.helm.sh/release-namespace: monitoring
-  creationTimestamp: "2024-10-14T10:14:36Z"
+  creationTimestamp: "2026-05-21T04:46:30Z"
   generation: 1
   labels:
     app: kube-prometheus-stack-prometheus
     app.kubernetes.io/instance: prometheus
     app.kubernetes.io/managed-by: Helm
     app.kubernetes.io/part-of: kube-prometheus-stack
-    app.kubernetes.io/version: 65.2.0
-    chart: kube-prometheus-stack-65.2.0
+    app.kubernetes.io/version: 85.2.0
+    chart: kube-prometheus-stack-85.2.0
     heritage: Helm
     release: prometheus
   name: prometheus-kube-prometheus-prometheus
   namespace: monitoring
-  resourceVersion: "1004097"
-  uid: b7879d3e-e4bb-4425-8d78-f917561d95f7
+  resourceVersion: "2949092"
+  uid: 836261ee-e331-40ef-bb33-12417d16fa92
 spec:
   alerting:
     alertmanagers:
-      - apiVersion: v2
-        name: prometheus-kube-prometheus-alertmanager
-        namespace: monitoring
-        pathPrefix: /
-        port: http-web
+    - apiVersion: v2
+      name: prometheus-kube-prometheus-alertmanager
+      namespace: monitoring
+      pathPrefix: /
+      port: http-web
   automountServiceAccountToken: true
   enableAdminAPI: false
   evaluationInterval: 30s
   externalUrl: http://prometheus-kube-prometheus-prometheus.monitoring:9090
   hostNetwork: false
-  image: quay.io/prometheus/prometheus:v2.54.1
+  image: quay.io/prometheus/prometheus:v3.11.3-distroless
   listenLocal: false
   logFormat: logfmt
   logLevel: info
@@ -133,32 +133,32 @@ spec:
   shards: 1
   tsdb:
     outOfOrderTimeWindow: 0s
-  version: v2.54.1
+  version: v3.11.3-distroless
   walCompression: true
 status:
   availableReplicas: 1
   conditions:
-    - lastTransitionTime: "2024-10-31T07:38:36Z"
-      message: ""
-      observedGeneration: 1
-      reason: ""
-      status: "True"
-      type: Available
-    - lastTransitionTime: "2024-10-31T07:38:36Z"
-      message: ""
-      observedGeneration: 1
-      reason: ""
-      status: "True"
-      type: Reconciled
+  - lastTransitionTime: "2026-05-21T04:47:12Z"
+    message: ""
+    observedGeneration: 1
+    reason: ""
+    status: "True"
+    type: Available
+  - lastTransitionTime: "2026-05-21T04:46:40Z"
+    message: ""
+    observedGeneration: 1
+    reason: ""
+    status: "True"
+    type: Reconciled
   paused: false
   replicas: 1
   selector: app.kubernetes.io/instance=prometheus-kube-prometheus-prometheus,app.kubernetes.io/managed-by=prometheus-operator,app.kubernetes.io/name=prometheus,operator.prometheus.io/name=prometheus-kube-prometheus-prometheus,prometheus=prometheus-kube-prometheus-prometheus
   shardStatuses:
-    - availableReplicas: 1
-      replicas: 1
-      shardID: "0"
-      unavailableReplicas: 0
-      updatedReplicas: 1
+  - availableReplicas: 1
+    replicas: 1
+    shardID: "0"
+    unavailableReplicas: 0
+    updatedReplicas: 1
   shards: 1
   unavailableReplicas: 0
   updatedReplicas: 1
@@ -178,9 +178,8 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
-  replicas: 3
   storage:
-    storageClassName: standard
+    storageClassName: "longhorn"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -189,6 +188,8 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
+      exporter:
+        port: 6333
       serviceMonitor:
         interval: 10s
         labels:
@@ -199,6 +200,8 @@ spec:
 Here,
 
 - `monitor.agent: prometheus.io/operator` indicates that we are going to monitor this Qdrant cluster using Prometheus operator.
+
+- `monitor.prometheus.exporter.port` specifies the port for the Prometheus exporter. Qdrant exposes metrics on port `6333`.
 
 - `monitor.prometheus.serviceMonitor.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
 
@@ -216,16 +219,17 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get qdrant -n demo qdrant-monitoring
 NAME                VERSION   STATUS   AGE
-qdrant-monitoring   1.17.0    Ready    1m
+qdrant-monitoring   1.17.0    Ready    48s
 ```
 
 KubeDB will create a separate stats service with name `{qdrant cr name}-stats` for monitoring purpose.
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=qdrant-monitoring"
-NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-qdrant-monitoring           ClusterIP   10.96.225.130   <none>        6333/TCP    1m
-qdrant-monitoring-stats     ClusterIP   10.96.147.93    <none>        6333/TCP    1m
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
+qdrant-monitoring         ClusterIP   10.43.55.60     <none>        6333/TCP,6334/TCP   103s
+qdrant-monitoring-pods    ClusterIP   None            <none>        6335/TCP            103s
+qdrant-monitoring-stats   ClusterIP   10.43.130.160   <none>        6333/TCP            103s
 ```
 
 Here, `qdrant-monitoring-stats` service has been created for monitoring purpose.
@@ -239,16 +243,16 @@ $ kubectl describe svc -n demo qdrant-monitoring-stats
 Name:              qdrant-monitoring-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
-  app.kubernetes.io/instance=qdrant-monitoring
-  app.kubernetes.io/managed-by=kubedb.com
-  app.kubernetes.io/name=qdrants.kubedb.com
-  kubedb.com/role=stats
+                   app.kubernetes.io/instance=qdrant-monitoring
+                   app.kubernetes.io/managed-by=kubedb.com
+                   app.kubernetes.io/name=qdrants.kubedb.com
+                   kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          app.kubernetes.io/instance=qdrant-monitoring,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=qdrants.kubedb.com
 Type:              ClusterIP
 Port:              metrics  6333/TCP
-TargetPort:        metrics/TCP
-Endpoints:         10.244.0.47:6333,10.244.0.48:6333,10.244.0.49:6333
+TargetPort:        http/TCP
+Endpoints:         10.42.0.38:6333
 ```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
@@ -271,8 +275,8 @@ $ kubectl get servicemonitor -n demo qdrant-monitoring-stats -o yaml
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
-  creationTimestamp: "2024-10-31T07:38:36Z"
-  generation: 1
+  creationTimestamp: "2026-05-21T04:48:17Z"
+  generation: 24
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: qdrant-monitoring
@@ -282,23 +286,34 @@ metadata:
   name: qdrant-monitoring-stats
   namespace: demo
   ownerReferences:
-    - apiVersion: v1
-      blockOwnerDeletion: true
-      controller: true
-      kind: Service
-      name: qdrant-monitoring-stats
-      uid: 99193679-301b-41fd-aae5-a732b3070d19
-  resourceVersion: "1004080"
-  uid: 87635ad4-dfb2-4544-89af-e48b40783205
+  - apiVersion: v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: Service
+    name: qdrant-monitoring-stats
+    uid: d61b74c1-27ad-4ccb-9d9f-a098ee0c63b8
+  resourceVersion: "2949568"
+  uid: 1eecc46b-4bed-42cf-af30-f6ca90f82850
 spec:
   endpoints:
-    - honorLabels: true
-      interval: 10s
-      path: /metrics
-      port: metrics
+  - authorization:
+      credentials:
+        key: api-key
+        name: qdrant-monitoring-auth
+      type: Bearer
+    honorLabels: true
+    interval: 10s
+    path: /metrics
+    port: metrics
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_endpoint_address_target_name
+      targetLabel: pod
+    scheme: http
   namespaceSelector:
     matchNames:
-      - demo
+    - demo
   selector:
     matchLabels:
       app.kubernetes.io/component: database
@@ -318,8 +333,8 @@ At first, let's find out the respective Prometheus pod for `prometheus-kube-prom
 
 ```bash
 $ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
-NAME                                                 READY   STATUS    RESTARTS         AGE
-prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1                16d
+NAME                                                 READY   STATUS    RESTARTS   AGE
+prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   0          3m27s
 ```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -342,8 +357,9 @@ There are pre-built Grafana dashboards to monitor Qdrant databases managed by Ku
 
 - KubeDB / Qdrant / Summary: Shows overall summary of Qdrant instance.
 - KubeDB / Qdrant / Pod: Shows individual pod-level information.
+- KubeDB / Qdrant / Database: Shows Qdrant internal metrics for an instance.
 
-To use these dashboards, download them from [qdrant-dashboards](https://github.com/ops-center/grafana-dashboards/tree/master/qdrant) and import them into your Grafana instance.
+To use these dashboards, download them from [qdrant-dashboards](https://github.com/opnpulse/grafana-dashboards/tree/master/qdrant) and import them into your Grafana instance.
 
 ## Cleaning up
 
@@ -352,9 +368,6 @@ To clean up the Kubernetes resources created by this tutorial, run following com
 ```bash
 kubectl delete -n demo qdrant/qdrant-monitoring
 kubectl delete ns demo
-
-helm uninstall prometheus -n monitoring
-kubectl delete ns monitoring
 ```
 
 ## Next Steps
