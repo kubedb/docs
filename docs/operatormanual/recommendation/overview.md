@@ -1,8 +1,8 @@
 ---
-title: Overview
+title: Overview Recommendation
 menu:
   docs_{{ .version }}:
-    identifier: overview
+    identifier: overview-recommendation
     name: Overview
     parent: recommendation
     weight: 10

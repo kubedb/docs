@@ -12,7 +12,7 @@ section_menu_id: operatormanual
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Elasticsearch Version Update Recommendation
+# Version Update Recommendation
 
 Database versions often need to be updated due to several reasons. Older database versions may have vulnerabilities that hackers can exploit. New versions often include optimizations for query execution, indexing, and storage mechanisms. Modern databases frequently introduce new features, such as better data types, improved indexing methods, or advanced analytics capabilities. Database vendors release patches and updates to address these issues and introduce new features.
 

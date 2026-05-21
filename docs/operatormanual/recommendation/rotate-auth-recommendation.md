@@ -1,5 +1,5 @@
 ---
-title: Rotate Auth Recommendation
+title: Elasticsearch Version Update Recommendation
 menu:
   docs_{{ .version }}:
     identifier: rotate-auth-recommendation
