@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: recommendation
     name: Recommendation
-    weight: 10
-    parent: Operatormanual
+    weight: 2010
+    parent: operatormanual
 menu_name: docs_{{ .version }}
 ---
