@@ -18,7 +18,7 @@ This guide will give an overview of how KubeDB Ops-manager reconfigures TLS for 
 
 **QdrantOpsRequest CRD Specification:**
 
-KubeDB uses the following CRD fields to reconfigure TLS/SSL in `Qdrant`.
+KubeDB uses the following CRD fields to reconfigure TLS in `Qdrant`.
 
 - `spec:`
   - `type: ReconfigureTLS`
@@ -37,7 +37,7 @@ Read about the fields in detail from the [QdrantOpsRequest Concepts](/docs/guide
 - You should be familiar with the following `KubeDB` concepts:
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
-  - [TLS/SSL Overview](/docs/guides/qdrant/tls/overview.md)
+  - [TLS Overview](/docs/guides/qdrant/tls/overview.md)
 - Use the example files from `docs/examples/qdrant/quickstart/distributed.yaml` and `docs/examples/qdrant/reconfigure-tls/`.
 
 ```bash

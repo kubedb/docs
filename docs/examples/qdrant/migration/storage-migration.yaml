@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: sample-qdrant
+  migration:
+    storageClassName: longhorn-custom
+    oldPVReclaimPolicy: Delete

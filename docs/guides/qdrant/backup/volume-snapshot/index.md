@@ -58,7 +58,7 @@ spec:
 Apply the BackupStorage:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/backupstorage.yaml
 backupstorage.storage.kubestash.com/minio-storage created
 ```
 Note: Before applying this yaml, verify that a bucket named `qdrant-backups` is already created on your bucket provider.
@@ -81,7 +81,7 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/storage-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/storage-secret.yaml
 secret/s3-secret created
 ```
 
@@ -118,7 +118,7 @@ spec:
 Let's create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/retention-policy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
@@ -153,7 +153,7 @@ spec:
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/qdrant.yaml
 qdrant.kubedb.com/qdrant-sample created
 ```
 
@@ -255,7 +255,7 @@ Here,
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/backup-configuration.yaml
 backupconfiguration.core.kubestash.com/qdrant-sample-backup created
 ```
 
@@ -284,7 +284,7 @@ It will create a `VolumeSnapshot` for each PVC of the Qdrant database.
 Verify that the `VolumeSnapshot` has been created using the following command,
 
 ```bash
-$ kubectl get volumesnapshot -n demo
+$ kubectl get volume-snapshot -n demo
 NAME                             READYTOUSE   SOURCEPVC                      SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS              SNAPSHOTCONTENT                                    CREATIONTIME   AGE
 minio-qdrant-repo-xyz            true         data-qdrant-sample-0                        1Gi          longhorn-snapshot-vsc      snapcontent-xyz                                     2m            2m
 ```
@@ -339,7 +339,7 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/qdrant-restored.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/qdrant-restored.yaml
 qdrant.kubedb.com/restored-qdrant created
 ```
 
@@ -384,7 +384,7 @@ spec:
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volumesnapshot/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/volume-snapshot/examples/restore-session.yaml
 restoresession.core.kubestash.com/restore-qdrant-sample created
 ```
 

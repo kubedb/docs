@@ -16,9 +16,21 @@ section_menu_id: guides
 
 # Qdrant Backup & Restore Overview
 
-KubeDB uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
+KubeDB also uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes [restic](https://github.com/restic/restic) to securely backup stateful applications to any cloud or on-prem storage backends (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
+
+<figure align="center">
+  <img alt="KubeDB + KubeStash" src="/docs/guides/qdrant/images/kubedb_plus_kubestash.svg">
+<figcaption align="center">Fig: Backup KubeDB Databases Using KubeStash</figcaption>
+</figure>
 
 ## How Backup Works
+
+The following diagram shows how KubeStash takes backup of a `Qdrant` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Qdrant Backup Overview" src="/docs/guides/qdrant/images/backup_overview.png">
+  <figcaption align="center">Fig: Qdrant Backup Overview</figcaption>
+</figure>
 
 The backup process consists of the following steps:
 
@@ -56,6 +68,13 @@ The backup process consists of the following steps:
 
 ## How Restore Process Works
 
+The following diagram shows how KubeStash restores backed up data into a `Qdrant` database. Open the image in a new tab to see the enlarged version.
+
+<figure align="center">
+  <img alt="Database Restore Overview" src="/docs/guides/qdrant/images/restore_overview.png">
+  <figcaption align="center">Fig: Qdrant Restore Process Overview</figcaption>
+</figure>
+
 The restore process consists of the following steps:
 
 1. At first, a user creates a `Qdrant` database where the data will be restored or the user can use the same `Qdrant` database.
@@ -76,4 +95,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a `Qdrant` database using KubeStash by the following guides from [here](/docs/guides/qdrant/backup/logical/index.md).
+- Backup a `Qdrant` database using KubeStash by following the guides from [here](/docs/guides/qdrant/backup/logical/index.md).

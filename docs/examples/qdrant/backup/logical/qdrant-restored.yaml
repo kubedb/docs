@@ -1,17 +1,19 @@
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
-  name: qdrant-sample
+  name: restored-qdrant
   namespace: demo
 spec:
+  init:
+    waitForInitialRestore: true
   version: "1.17.0"
   mode: Distributed
   replicas: 3
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 200Mi
+        storage: 2Gi
   deletionPolicy: WipeOut

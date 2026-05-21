@@ -2,21 +2,21 @@ apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
   name: qdrant-sample-backup
-  namespace: default
+  namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Qdrant
-    namespace: default
+    namespace: demo
     name: qdrant-sample
   backends:
     - name: minio-backend
       storageRef:
-        namespace: default
+        namespace: demo
         name: minio-storage
       retentionPolicy:
         name: demo-retention
-        namespace: default
+        namespace: demo
   sessions:
     - name: frequent-backup
       scheduler:
@@ -29,11 +29,10 @@ spec:
           directory: /qdrant
           encryptionSecret:
             name: encrypt-secret
-            namespace: default
+            namespace: demo
       addon:
         name: qdrant-addon
         tasks:
           - name: logical-backup
             params:
               collections: "my_collection"
-

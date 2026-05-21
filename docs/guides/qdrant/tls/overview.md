@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Qdrant TLS Encryption
 
-**Prerequisite:** To configure TLS/SSL in `Qdrant`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. Install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/).
+**Prerequisite:** To configure TLS in `Qdrant`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. Install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/).
 
 To issue a certificate, the following CRDs of `cert-manager` are used:
 
@@ -24,7 +24,7 @@ To issue a certificate, the following CRDs of `cert-manager` are used:
 
 **Qdrant CRD Specification:**
 
-KubeDB uses the following CRD fields to enable TLS/SSL encryption in `Qdrant`.
+KubeDB uses the following CRD fields to enable TLS encryption in `Qdrant`.
 
 - `spec:`
   - `tls:`
@@ -50,16 +50,16 @@ Here,
 
 - `p2p` (optional, default `false`) enables TLS for peer-to-peer communication between Qdrant nodes. When set to `true`, inter-node communication within the Qdrant cluster will be encrypted using TLS.
 
-## How TLS/SSL Configures in Qdrant
+## How TLS Configures in Qdrant
 
-The following figure shows how `KubeDB` configures TLS/SSL in Qdrant. Open the image in a new tab to see the enlarged version.
+The following figure shows how `KubeDB` configures TLS in Qdrant. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy Qdrant with TLS/SSL" src="/docs/guides/qdrant/images/qdrant-tls.png">
-<figcaption align="center">Fig: Deploy Qdrant with TLS/SSL</figcaption>
+<img alt="Deploy Qdrant with TLS" src="/docs/guides/qdrant/images/qdrant-tls.png">
+<figcaption align="center">Fig: Deploy Qdrant with TLS</figcaption>
 </figure>
 
-Deploying Qdrant with TLS/SSL configuration process consists of the following steps:
+Deploying Qdrant with TLS configuration process consists of the following steps:
 
 1. At first, a user creates a `Issuer/ClusterIssuer` CR.
 
@@ -79,6 +79,6 @@ Deploying Qdrant with TLS/SSL configuration process consists of the following st
 
 9. `KubeDB-Provisioner` operator watches for the certificate secrets `tls-secrets`.
 
-10. When it finds all the tls-secrets, it creates the related `PetSet` so that the Qdrant database can be configured with TLS/SSL.
+10. When it finds all the tls-secrets, it creates the related `PetSet` so that the Qdrant database can be configured with TLS.
 
-In the next doc, we are going to show a step-by-step guide on how to configure a `Qdrant` database with TLS/SSL.
+In the next doc, we are going to show a step-by-step guide on how to configure a `Qdrant` database with TLS.

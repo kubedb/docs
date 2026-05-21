@@ -11,9 +11,9 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Backup and Restore Qdrant Database Using KubeStash
+# Backup and Restore Qdrant database using KubeStash
 
-KubeStash allows you to backup and restore `Qdrant` databases logically. This guide will show you how to take logical backup and restore your `Qdrant` databases using KubeStash.
+KubeStash allows you to backup and restore `Qdrant` databases. This guide will show you how to take logical backup and restore your `Qdrant` databases using `Kubestash`.
 
 ## Before You Begin
 
@@ -23,7 +23,7 @@ KubeStash allows you to backup and restore `Qdrant` databases logically. This gu
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Qdrant databases, please check the following guide [here](/docs/guides/qdrant/backup/overview/index.md).
 
-You should be familiar with the following `KubeStash` concepts:
+You should be familiar with the following `KubeStash` concepts: 
 
 - [BackupStorage](https://kubestash.com/docs/latest/concepts/crds/backupstorage/)
 - [BackupConfiguration](https://kubestash.com/docs/latest/concepts/crds/backupconfiguration/)
@@ -40,13 +40,13 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/backup/logical/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/backup/logical](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Qdrant
 
 KubeStash supports logical backup for `Qdrant` databases. In this demonstration, we'll backup a Qdrant database into a S3-compatible storage (MinIO).
 
-This section will demonstrate how to backup a `Qdrant` database. Here, we are going to deploy a `Qdrant` database using KubeDB. Then, we are going to backup this database into a `MinIO` bucket. Finally, we will restore the backed up data into another `Qdrant` database.
+This section will demonstrate how to backup a `Qdrant` database. Here, we are going to deploy a `Qdrant` database using KubeDB. Then, we are going to backup this database into a `MinIO` bucket. Finally, we are going to restore the backed up data into another `Qdrant` database.
 
 ### Deploy Sample Qdrant Database
 
@@ -57,7 +57,7 @@ Let's deploy a sample `Qdrant` database and insert some data into it.
 Below is the YAML of a sample `Qdrant` CRD that we are going to create for this tutorial:
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
   name: qdrant-sample
@@ -67,19 +67,19 @@ spec:
   mode: Distributed
   replicas: 3
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 200Mi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/qdrant.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant.yaml
 qdrant.kubedb.com/qdrant-sample created
 ```
 
@@ -120,31 +120,33 @@ qdrant-sample   9m24s
 
 **Insert Sample Data:**
 
-Now, we are going to exec into the database pod and create some sample data. At first, find out the database `Pod` using the following command,
+Now, we are going to create some sample data in the database. At first, find out the database `Pod` using the following command,
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=qdrant-sample"
-NAME                      READY   STATUS    RESTARTS   AGE
-qdrant-sample-0          1/1     Running   0          2m41s
-qdrant-sample-1          1/1     Running   0          2m35s
-qdrant-sample-2          1/1     Running   0          2m29s
+NAME              READY   STATUS    RESTARTS   AGE
+qdrant-sample-0   1/1     Running   0          2m41s
+qdrant-sample-1   1/1     Running   0          2m35s
+qdrant-sample-2   1/1     Running   0          2m29s
 ```
 
-Now, let's exec into the `Pod` to insert some sample data into Qdrant:
+Now, let's port-forward and create a collection with sample data:
 
 ```bash
-$ kubectl exec -it -n demo qdrant-sample-0 -- sh
-# Upload some sample points to a collection
-$ wget -qO- --header 'Content-Type: application/json' \
-  --post-data '{
-    "vectors": [
-      {"id": 1, "vector": [0.1, 0.2, 0.3, 0.4]},
-      {"id": 2, "vector": [0.5, 0.6, 0.7, 0.8]}
+$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+# Create a collection
+$ curl -X PUT 'http://localhost:6333/collections/demo_collection' \
+  -H 'Content-Type: application/json' \
+  -d '{"vectors": {"size": 4, "distance": "Cosine"}}'
+# Insert points
+$ curl -X PUT 'http://localhost:6333/collections/demo_collection/points' \
+  -H 'Content-Type: application/json' \
+  -d '{
+    "points": [
+      { "id": 1, "vector": [0.1, 0.2, 0.3, 0.4], "payload": {"label": "a"} },
+      { "id": 2, "vector": [0.5, 0.6, 0.7, 0.8], "payload": {"label": "b"} }
     ]
-  }' \
-  http://localhost:6333/collections/my_collection/points
-# Exit the pod
-$ exit
+  }'
 ```
 
 Now, we are ready to backup the database.
@@ -153,37 +155,20 @@ Now, we are ready to backup the database.
 
 We are going to store our backed up data into a MinIO bucket. We have to create a Secret with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
 
-**Deploy MinIO:**
+**Create Secret:**
 
-Let's deploy MinIO in the `demo` namespace:
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/minio.yaml
-deployment.apps/minio created
-service/minio created
-job.batch/minio-setup created
-```
-
-Verify MinIO is running:
+Let's create a secret called `storage-secret` with access credentials to our desired MinIO backend,
 
 ```bash
-$ kubectl get pods -n demo -l app=minio
-NAME                      READY   STATUS    RESTARTS   AGE
-minio-xxxxxxxxxx-xxxxx   1/1     Running   0          2m
-```
-
-**Create Storage Secret:**
-
-Create a secret with credentials to access the MinIO storage:
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/storage-secret.yaml
-secret/aws-secret created
+$ kubectl create secret generic -n demo storage-secret \
+    --from-literal=AWS_ACCESS_KEY_ID=minioadmin \
+    --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
+secret/storage-secret created
 ```
 
 **Create BackupStorage:**
 
-Create a `BackupStorage` CR to configure the backup storage:
+Now, create a `BackupStorage` using this secret. Below is the YAML of `BackupStorage` CR we are going to create,
 
 ```yaml
 apiVersion: storage.kubestash.com/v1alpha1
@@ -200,7 +185,7 @@ spec:
       insecureTLS: true
       prefix: backup/demo
       region: us-east-1
-      secretName: aws-secret
+      secretName: storage-secret
   usagePolicy:
     allowedNamespaces:
       from: All
@@ -208,23 +193,14 @@ spec:
   deletionPolicy: Delete
 ```
 
-Apply the BackupStorage:
+Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/backupstorage.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backupstorage.yaml
 backupstorage.storage.kubestash.com/minio-storage created
 ```
 
-**Create Encryption Secret:**
-
-Create a secret for encrypting the backup data:
-
-```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
-```
+Now, we are ready to backup our database to our desired backend.
 
 **Create RetentionPolicy:**
 
@@ -240,7 +216,8 @@ metadata:
   namespace: demo
 spec:
   default: true
-  maxNumberOfSnapshots: 5
+  successfulSnapshots:
+    last: 5
   usagePolicy:
     allowedNamespaces:
       from: All
@@ -249,13 +226,26 @@ spec:
 Let's create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/retentionpolicy.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/retentionpolicy.yaml
 retentionpolicy.storage.kubestash.com/demo-retention created
 ```
 
 ### Backup
 
 We have to create a `BackupConfiguration` targeting respective `qdrant-sample` Qdrant database. Then, KubeStash will create a `CronJob` for each session to take periodic backup of that database.
+
+At first, we need to create a secret with a Restic password for backup data encryption.
+
+**Create Secret:**
+
+Let's create a secret called `encrypt-secret` with the Restic password,
+
+```bash
+$ echo -n 'changeit' > RESTIC_PASSWORD
+$ kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+secret "encrypt-secret" created
+```
 
 **Create BackupConfiguration:**
 
@@ -298,23 +288,19 @@ spec:
         name: qdrant-addon
         tasks:
           - name: logical-backup
-            params:
-              collections: "my_collection"
 ```
 
-Here,
 - `.spec.sessions[*].schedule` specifies that we want to backup the database at `5 minutes` interval.
 - `.spec.target` refers to the targeted `qdrant-sample` Qdrant database that we created earlier.
-- `.spec.sessions[*].addon.tasks[*].name` specifies that the `logical-backup` task will be executed. The `params.collections` field can be used to specify which collection(s) to backup.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/qdrant-sample-backup created
 ```
 
-**Verify Backup Setup Successful:**
+**Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
@@ -329,7 +315,7 @@ Additionally, we can verify that the `Repository` specified in the `BackupConfig
 ```bash
 $ kubectl get repo -n demo
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-minio-qdrant-repo               0                0 B      Ready                            3m
+minio-qdrant-repo                 0                0 B      Ready                            3m
 ```
 
 **Verify CronJob:**
@@ -398,31 +384,29 @@ Now, we have to deploy the restored database similarly as we have deployed the o
 Below is the YAML for `Qdrant` CRD we are going deploy to initialize from backup,
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Qdrant
 metadata:
   name: restored-qdrant
   namespace: demo
 spec:
-  init:
-    waitForInitialRestore: true
   version: "1.17.0"
   mode: Distributed
   replicas: 3
   storage:
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 200Mi
+        storage: 2Gi
   deletionPolicy: WipeOut
 ```
 
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/qdrant-restored.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant-restored.yaml
 qdrant.kubedb.com/restored-qdrant created
 ```
 
@@ -464,10 +448,16 @@ spec:
       - name: logical-backup-restore
 ```
 
+Here,
+
+- `.spec.target` refers to the newly created `restored-qdrant` Qdrant object to where we want to restore backup data.
+- `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
+- `.spec.dataSource.snapshot` specifies to restore from latest `Snapshot`.
+
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/examples/restoresession.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/restoresession.yaml
 restoresession.core.kubestash.com/restore-qdrant-sample created
 ```
 
@@ -475,7 +465,7 @@ Once, you have created the `RestoreSession` object, KubeStash will create restor
 
 ```bash
 $ watch kubectl get restoresession -n demo
-Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
+Every 2.0s: kubectl get restoresession -n demo
 
 NAME                    REPOSITORY           FAILURE-POLICY   PHASE       DURATION   AGE
 restore-qdrant-sample   minio-qdrant-repo                     Succeeded   3s         53s
@@ -499,32 +489,30 @@ Now, find out the database `Pod` by the following command,
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-qdrant"
-NAME                      READY   STATUS    RESTARTS   AGE
-restored-qdrant-0         1/1     Running   0          39m
+NAME                READY   STATUS    RESTARTS   AGE
+restored-qdrant-0   1/1     Running   0          39m
 ```
 
-Now, let's exec into the Pod to enter into Qdrant and verify restored data,
+Now, let's port-forward to verify the restored data,
 
 ```bash
-$ kubectl exec -it -n demo restored-qdrant-0 -- sh
-# Check if the collection exists and has data
-$ wget -qO- http://localhost:6333/collections/my_collection
-# Exit the pod
-$ exit
+$ kubectl port-forward -n demo svc/restored-qdrant 6333:6333 &
+# Check if the collection exists
+$ curl 'http://localhost:6333/collections/demo_collection'
 ```
 
-So, from the above output, we can see that the `my_collection` collection we created earlier in the original database and now, it is restored successfully.
+So, from the above output, we can see that the `demo_collection` we created earlier in the original database is now restored successfully.
 
 ## Cleanup
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete backupconfigurations.core.kubestash.com  -n demo qdrant-sample-backup
-kubectl delete restoresessions.core.kubestash.com -n demo restore-qdrant-sample
-kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
+kubectl delete backupconfiguration.core.kubestash.com -n demo qdrant-sample-backup
+kubectl delete restoresession.core.kubestash.com -n demo restore-qdrant-sample
+kubectl delete retentionpolicy.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo minio-storage
-kubectl delete secret -n demo aws-secret
+kubectl delete secret -n demo storage-secret
 kubectl delete secret -n demo encrypt-secret
 kubectl delete qdrant -n demo restored-qdrant
 kubectl delete qdrant -n demo qdrant-sample

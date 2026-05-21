@@ -158,7 +158,7 @@ NAME     VERSION   DB_IMAGE                                       DEPRECATED   A
 
 ### spec.tls
 
-`spec.tls` specifies the TLS/SSL configurations for the Qdrant database. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
+`spec.tls` specifies the TLS configurations for the Qdrant database. KubeDB uses [cert-manager](https://cert-manager.io/) v1 api to provision and manage TLS certificates.
 
 The following fields are configurable in the `spec.tls` section:
 

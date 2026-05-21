@@ -2,18 +2,21 @@ apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
   name: qdrant-sample-backup
-  namespace: default
+  namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Qdrant
-    namespace: default
+    namespace: demo
     name: qdrant-sample
   backends:
-    - name: minio-storage
+    - name: minio-backend
       storageRef:
+        namespace: demo
         name: minio-storage
-        namespace: default
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
   sessions:
     - name: frequent-backup
       scheduler:
@@ -22,12 +25,14 @@ spec:
           backoffLimit: 1
       repositories:
         - name: minio-qdrant-repo
-          backend: minio-storage
+          backend: minio-backend
           directory: /qdrant
           encryptionSecret:
             name: encrypt-secret
-            namespace: default
+            namespace: demo
       addon:
         name: qdrant-addon
         tasks:
           - name: volume-snapshot
+            params:
+              volumeSnapshotClassName: "longhorn-snapshot-vsc"

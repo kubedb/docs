@@ -1,78 +1,58 @@
----
-# Minimal MinIO Deployment for Qdrant Snapshots
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: default
+  name: demo
 ---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: minio
-  namespace: default
+  namespace: demo
 spec:
   selector:
     matchLabels:
       app: minio
+  replicas: 1
   template:
     metadata:
       labels:
         app: minio
     spec:
       containers:
-        - name: minio
-          image: minio/minio:latest
-          args:
-            - server
-            - /data
-            - --console-address
-            - ":9001"
-          env:
-            - name: MINIO_ROOT_USER
-              value: minioadmin
-            - name: MINIO_ROOT_PASSWORD
-              value: minioadmin
-          ports:
-            - containerPort: 9000
-            - containerPort: 9001
-          volumeMounts:
-            - name: data
-              mountPath: /data
-      volumes:
+      - name: minio
+        image: minio/minio:latest
+        args:
+        - server
+        - /data
+        - --console-address
+        - ":9001"
+        env:
+        - name: MINIO_ROOT_USER
+          value: minio
+        - name: MINIO_ROOT_PASSWORD
+          value: minio123
+        ports:
+        - containerPort: 9000
+        - containerPort: 9001
+        volumeMounts:
         - name: data
-          emptyDir: {}
+          mountPath: /data
+      volumes:
+      - name: data
+        emptyDir: {}
 ---
 apiVersion: v1
 kind: Service
 metadata:
   name: minio
-  namespace: default
+  namespace: demo
 spec:
-  ports:
-    - name: api
-      port: 9000
-    - name: console
-      port: 9001
   selector:
     app: minio
----
-apiVersion: batch/v1
-kind: Job
-metadata:
-  name: minio-setup
-  namespace: default
-spec:
-  template:
-    spec:
-      containers:
-        - name: mc
-          image: minio/mc:latest
-          command:
-            - /bin/sh
-            - -c
-            - |
-              sleep 10
-              mc alias set myminio http://minio:9000 minioadmin minioadmin
-              mc mb myminio/qdrant-backups --ignore-existing
-              echo "Bucket created"
-      restartPolicy: Never
+  ports:
+  - port: 9000
+    targetPort: 9000
+    name: api
+  - port: 9001
+    targetPort: 9001
+    name: console
