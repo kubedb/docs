@@ -3,7 +3,7 @@ title: Reconfigure TLS of Qdrant
 menu:
   docs_{{ .version }}:
     identifier: qdrant-reconfigure-tls-cluster
-    name: Cluster
+    name: Reconfigure TLS
     parent: qdrant-reconfigure-tls
     weight: 30
 menu_name: docs_{{ .version }}

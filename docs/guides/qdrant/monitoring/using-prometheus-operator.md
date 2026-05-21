@@ -334,10 +334,6 @@ Forwarding from [::1]:9090 -> 9090
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `qdrant-monitoring-stats` service as one of the targets.
 
-<p align="center">
-  <img alt="Prometheus Target" src="/docs/images/qdrant/monitoring/qdrant-monitoring-targets.png" style="padding:10px">
-</p>
-
 Check the `endpoint` and `service` labels. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboards with collected metrics.
 
 ## Grafana Dashboards

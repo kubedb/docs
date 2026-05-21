@@ -3,7 +3,7 @@ title: Reconfigure Qdrant
 menu:
   docs_{{ .version }}:
     identifier: qdrant-reconfigure-cluster
-    name: Cluster
+    name: Reconfigure
     parent: qdrant-reconfigure
     weight: 30
 menu_name: docs_{{ .version }}

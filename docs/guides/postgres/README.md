@@ -54,7 +54,6 @@ aliases:
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
 - Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
-- Detail concepts of [PostgresAutoscaler object](/docs/guides/postgres/concepts/autoscaler.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
 

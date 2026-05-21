@@ -3,7 +3,7 @@ title: Expand Qdrant Volume
 menu:
   docs_{{ .version }}:
     identifier: qdrant-volume-expansion-cluster
-    name: Cluster
+    name: Volume Expansion
     parent: qdrant-volume-expansion
     weight: 20
 menu_name: docs_{{ .version }}
