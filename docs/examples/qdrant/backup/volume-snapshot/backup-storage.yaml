@@ -12,7 +12,7 @@ spec:
       insecureTLS: true
       prefix: backup/demo
       region: us-east-1
-      secretName: aws-secret
+      secretName: storage-secret
   usagePolicy:
     allowedNamespaces:
       from: All

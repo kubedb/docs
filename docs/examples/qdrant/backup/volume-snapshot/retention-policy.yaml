@@ -5,7 +5,8 @@ metadata:
   namespace: demo
 spec:
   default: true
-  maxNumberOfSnapshots: 5
+  successfulSnapshots:
+    last: 5
   usagePolicy:
     allowedNamespaces:
       from: All

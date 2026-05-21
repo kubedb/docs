@@ -35,4 +35,4 @@ spec:
         tasks:
           - name: logical-backup
             params:
-              collections: "my_collection"
+              collections: "demo_collection"

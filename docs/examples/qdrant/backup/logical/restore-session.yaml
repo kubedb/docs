@@ -8,7 +8,7 @@ spec:
     apiGroup: kubedb.com
     kind: Qdrant
     namespace: demo
-    name: restored-qdrant
+    name: qdrant-sample-restore
   dataSource:
     repository: minio-qdrant-repo
     snapshot: latest
