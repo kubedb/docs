@@ -515,7 +515,7 @@ writing new private key to './ca.key'
 
 - create a secret using the certificate files we have just generated,
 
-```yaml
+```bash
 apiVersion: v1
 kind: Secret
 metadata:

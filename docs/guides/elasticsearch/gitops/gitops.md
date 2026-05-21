@@ -677,11 +677,11 @@ writing new private key to './ca.key'
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
-```yaml
+```bash
 apiVersion: v1
 kind: Secret
 metadata:
-  name: Elasticsearch-ca
+  name: elasticsearch-ca
   namespace: demo
 type: kubernetes.io/tls
 data:
@@ -689,7 +689,7 @@ data:
   tls.key: <base64-encoded-ca.key>
 ```
 
-Now, Let's create an `Issuer` using the `Elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create an `Issuer` using the `elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -699,7 +699,7 @@ metadata:
   namespace: demo
 spec:
   ca:
-    secretName: Elasticsearch-ca
+    secretName: elasticsearch-ca
 ```
 
 Let's add that to our `kubedb/es-issuer.yaml` file. File structure will look like this,

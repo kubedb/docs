@@ -659,7 +659,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 
 - Now create a ca-secret using the certificate files you have just generated.
 
-```bash
+```
 apiVersion: v1
 kind: Secret
 metadata:

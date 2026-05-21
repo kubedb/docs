@@ -639,7 +639,7 @@ writing new private key to './ca.key'
 
 Now we are going to create a `ca-secret` using the certificate files that we have just generated.
 
-```yaml 
+```bash
 apiVersion: v1
 kind: Secret
 metadata:
