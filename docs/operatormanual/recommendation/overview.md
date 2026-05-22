@@ -1,4 +1,16 @@
 ---
+title: Recommendation
+menu:
+ docs_{{ .version }}:
+   identifier: recommendation
+   name: Recommendation
+   weight: 2010
+   parent: operatormanual
+menu_name: docs_{{ .version }}
+---
+
+
+<!-- ---
 title: Overview Recommendation
 menu:
   docs_{{ .version }}:
@@ -8,7 +20,8 @@ menu:
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
----
+--- -->
+
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
