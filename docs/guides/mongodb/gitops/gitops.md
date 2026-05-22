@@ -659,16 +659,10 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 
 - Now create a ca-secret using the certificate files you have just generated.
 
-```
-apiVersion: v1
-kind: Secret
-metadata:
-  name: mongo-ca
-  namespace: demo
-type: kubernetes.io/tls
-data:
-  tls.crt: <base64-encoded-ca.crt>
-  tls.key: <base64-encoded-ca.key>
+```bash
+$ kubectl create secret generic mongo-ca \
+  --from-file=ca.crt=ca.crt \
+  -n demo
 ```
 
 Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:

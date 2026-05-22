@@ -516,15 +516,10 @@ writing new private key to './ca.key'
 - create a secret using the certificate files we have just generated,
 
 ```bash
-apiVersion: v1
-kind: Secret
-metadata:
-  name: md-ca
-  namespace: demo
-type: kubernetes.io/tls
-data:
-  tls.crt: <base64-encoded-ca.crt>
-  tls.key: <base64-encoded-ca.key>
+$ kubectl create secret tls md-ca \
+  --cert=ca.crt \
+  --key=ca.key \
+  -n demo
 ```
 
 Now, we are going to create an `Issuer` using the `md-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
