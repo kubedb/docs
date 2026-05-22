@@ -58,7 +58,7 @@ To pull the Oracle image, create a secret with your Oracle credentials from <htt
 
 1. Log in to <https://container-registry.oracle.com> with your Oracle account
 2. Go to **My Profile** (top right) → **Generate Token** and copy the token. Create the secret:
-
+   ![Architecture](https://github.com/kubedb/docs/blob/add-oracle-image-pull-secret/docs/guides/oracle/quickstart/auth-token.png)
 ```shell
 kubectl create secret docker-registry orclcred \
   --docker-server=container-registry.oracle.com \
