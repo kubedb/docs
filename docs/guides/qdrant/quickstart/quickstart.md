@@ -484,8 +484,6 @@ items:
           port: 6333
           scheme: http
       secret:
-        apiGroup: ""
-        kind: Secret
         name: qdrant-sample-auth
       type: kubedb.com/qdrant
       version: 1.17.0

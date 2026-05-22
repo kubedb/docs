@@ -35,8 +35,9 @@ spec:
   replicas: 3
   authSecret:
     name: qdrant-sample-auth
-  configSecret:
-    name: qdrant-config
+    kind: Secret
+  configuration:
+    secretName: qdrant-config
   storageType: Durable
   storage:
     storageClassName: standard
@@ -118,16 +119,12 @@ NAME     VERSION   DB_IMAGE                                       DEPRECATED   A
 - `rotateAfter` — the duration after which the secret should be rotated.
 - `secretStoreName` — the name of the external secret store.
 
-### spec.configSecret
-
-`spec.configSecret` is an optional field that points to a Secret containing a custom `production.yaml` configuration file for Qdrant. See [Custom Configuration](/docs/guides/qdrant/configuration/using-config-file.md) for details.
-
 ### spec.configuration
 
 `spec.configuration` is an optional field for providing custom Qdrant configuration. It has the following sub-fields:
 
 - `inline` — a map of key-value pairs for inline configuration.
-- `secretName` — the name of a Secret containing the configuration.
+- `secretName` — the name of a Secret containing the custom `production.yaml` configuration file for Qdrant. See [Custom Configuration](/docs/guides/qdrant/configuration/using-config-file.md) for details.
 
 ### spec.storageType
 

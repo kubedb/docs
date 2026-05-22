@@ -77,8 +77,8 @@ metadata:
 spec:
   version: "1.17.0"
   replicas: 3
-  configSecret:
-    name: qdrant-configuration
+  configuration:
+    secretName: qdrant-configuration
   storage:
     accessModes:
       - ReadWriteOnce
@@ -169,7 +169,7 @@ qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-config created
 
 ### Verify the new configuration is working
 
-If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of the `Qdrant` object.
+If everything goes well, `KubeDB` Enterprise operator will update the `configuration.secretName` of the `Qdrant` object.
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
@@ -256,7 +256,7 @@ NAME                       TYPE          STATUS       AGE
 qdops-reconfigure-remove   Reconfigure   Successful   97s
 ```
 
-After this, the `Qdrant` CR will no longer reference a `configSecret` and the database will use its default configuration.
+After this, the `Qdrant` CR will no longer reference a configuration secret and the database will use its default configuration.
 
 ## Next Steps
 

@@ -175,6 +175,7 @@ spec:
   authentication:
     secretRef:
       name: my-custom-auth-secret
+      kind: Secret
 ```
 
 ```bash

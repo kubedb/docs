@@ -6,8 +6,8 @@ metadata:
 spec:
   version: "1.17.0"
   replicas: 3
-  configSecret:
-    name: qdrant-configuration
+  configuration:
+    secretName: qdrant-configuration
   storage:
     accessModes:
       - ReadWriteOnce
