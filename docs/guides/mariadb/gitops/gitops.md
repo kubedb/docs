@@ -417,8 +417,8 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 
 We will do that using gitops, create the file `kubedb/md-auth.yaml` with the following content,
 
-```bash
-$ apiVersion: v1
+```yaml
+apiVersion: v1
 kind: Secret
 metadata:
   name: mdauth

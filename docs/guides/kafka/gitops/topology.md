@@ -517,8 +517,8 @@ To do that, create a `kubernetes.io/basic-auth` type k8s secret with the new use
 
 We will create a secret named `kf-rotate-auth ` with the following content,
 
-```bash
-$ apiVersion: v1
+```yaml
+apiVersion: v1
 kind: Secret
 metadata:
   name: kf-rotate-auth
