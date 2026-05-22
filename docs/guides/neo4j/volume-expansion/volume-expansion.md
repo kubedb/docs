@@ -222,7 +222,7 @@ kubectl exec -n demo neo4j-test-0 -- df -h /data
 
 ## Troubleshooting
 
-If this OpsRequest does not finish, first inspect the affected PVC and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+If this OpsRequest does not finish, first inspect the affected PVC and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/concepts/opsrequest.md#troubleshooting).
 
 **OpsRequest stays in `Progressing` — PVC capacity does not change**
 

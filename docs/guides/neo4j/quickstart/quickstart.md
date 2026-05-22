@@ -220,6 +220,6 @@ namespace "demo" deleted
 ## Next Steps
 
 - If your cluster enforces RBAC, review required permissions in [RBAC for Neo4j](/docs/guides/neo4j/quickstart/rbac.md).
-- Learn how to perform day-2 operations such as version upgrades, scaling, volume expansion, TLS configuration, and more using the [Neo4j OpsRequest overview](/docs/guides/neo4j/ops-request/overview.md).
+- Learn how to perform day-2 operations such as version upgrades, scaling, volume expansion, TLS configuration, and more using the [Neo4j OpsRequest overview](/docs/guides/neo4j/concepts/opsrequest.md).
 - Detail concepts of the [Neo4j CRD](/docs/guides/neo4j/concepts/neo4j.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

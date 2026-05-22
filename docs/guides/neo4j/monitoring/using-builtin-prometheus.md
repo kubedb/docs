@@ -358,8 +358,6 @@ $ kubectl delete ns monitoring
 ```
 
 ## Next Steps
-
-- Learn about [backup and restore](/docs/guides/neo4j/backup/overview.md) Neo4j databases using Stash.
 - Monitor your Neo4j database with KubeDB using [`Prometheus operator`](/docs/guides/neo4j/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/neo4j/private-registry/using-private-registry.md) to deploy Neo4j with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

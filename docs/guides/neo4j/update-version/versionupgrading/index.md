@@ -186,7 +186,7 @@ neo4j-test   2025.12.1   Ready    21m
 
 ## Troubleshooting
 
-If this OpsRequest does not finish, first inspect the affected pod and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/ops-request/overview.md#troubleshooting).
+If this OpsRequest does not finish, first inspect the affected pod and then check the `kubedb-ops-manager` operator logs for the exact error. For a shared checklist, see the [Neo4j Ops Request Overview](/docs/guides/neo4j/concepts/opsrequest.md#troubleshooting).
 
 **OpsRequest stays in `Progressing` and never completes**
 

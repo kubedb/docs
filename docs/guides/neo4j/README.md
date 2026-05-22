@@ -77,7 +77,6 @@ spec:
 - [Prometheus Operator Monitoring](/docs/guides/neo4j/monitoring/using-prometheus-operator.md)
 - [TLS](/docs/guides/neo4j/tls/overview/) for protocol-level TLS guidance.
 - [Configure TLS](/docs/guides/neo4j/tls/configure/)
-- [Ops Request](/docs/guides/neo4j/ops-request/overview.md) for supported operational changes.
 - [Reconfigure](/docs/guides/neo4j/reconfigure/overview.md)
 - [Reconfigure Details](/docs/guides/neo4j/reconfigure/reconfigure.md)
 - [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md)

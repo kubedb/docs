@@ -380,7 +380,7 @@ Common `reason` values:
 
 ## Next Steps
 
-- See [Neo4j ops overview](/docs/guides/neo4j/ops-request/overview.md) for operation links.
+- See [Neo4j ops overview](/docs/guides/neo4j/concepts/opsrequest.md) for operation links.
 - Read the [Reconfigure guide](/docs/guides/neo4j/reconfigure/overview.md) for configuration changes.
 - Read the [Reconfigure TLS guide](/docs/guides/neo4j/reconfigure-tls/overview.md) for certificate rotation, removal, or issuer updates.
 - Read the [Restart guide](/docs/guides/neo4j/restart/restart.md), [Rotate Auth guide](/docs/guides/neo4j/rotate-auth/overview.md), and [Update Version guide](/docs/guides/neo4j/update-version/overview.md).
