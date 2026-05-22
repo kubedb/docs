@@ -678,10 +678,11 @@ writing new private key to './ca.key'
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls elasticsearch-ca \
-  --cert=ca.crt \
-  --key=ca.key \
-  -n demo
+$ kubectl create secret tls es-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
+secret/es-ca created
 ```
 
 Now, Let's create an `Issuer` using the `elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:

@@ -639,15 +639,11 @@ writing new private key to './ca.key'
 
 Now we are going to create a `ca-secret` using the certificate files that we have just generated.
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: kafka-ca
-  namespace: demo
-type: Opaque
-data:
-  ca.crt: <base64-encoded-ca.crt>
+```bash
+$ kubectl create secret tls kafka-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
 ```
 
 Now, Let's create an `Issuer` using the `Kafka-ca` secret that we have just created. The `YAML` file looks like this:

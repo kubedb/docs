@@ -160,16 +160,11 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 
 - Now create a ca-secret using the certificate files you have just generated.
 
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: redis-ca
-  namespace: demo
-type: kubernetes.io/tls
-data:
-  tls.crt: <base64-encoded-ca.crt>
-  tls.key: <base64-encoded-ca.key>
+```bash
+$ kubectl create secret tls redis-ca \
+     --cert=ca.crt \
+     --key=ca.key \
+     --namespace=demo
 ```
 
 Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:

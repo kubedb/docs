@@ -631,15 +631,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - create a secret using the certificate files we have just generated,
 
 ```bash
-apiVersion: v1
-kind: Secret
-metadata:
-  name: my-ca
-  namespace: demo
-type: kubernetes.io/tls
-data:
-  tls.crt: <base64-encoded-ca.crt>
-  tls.key: <base64-encoded-ca.key>
+$ kubectl create secret generic my-ca \
+  --from-file=ca.crt=ca.crt \
+  -n demo
 ```
 
 Now, we are going to create an `Issuer` using the `my-ca` secret that hols the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
