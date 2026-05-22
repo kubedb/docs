@@ -7,6 +7,7 @@ menu:
    weight: 2010
    parent: operatormanual
 menu_name: docs_{{ .version }}
+section_menu_id: operatormanual
 ---
 
 
