@@ -75,13 +75,15 @@ spec:
       - ReadWriteOnce
   podTemplate:
     spec:
-      resources:
-        requests:
-          cpu: "250m"
-          memory: "1Gi"
-        limits:
-          cpu: "500m"
-          memory: "1Gi"
+      containers:
+        - name: neo4j
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "1Gi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
   deletionPolicy: WipeOut
 ```
 

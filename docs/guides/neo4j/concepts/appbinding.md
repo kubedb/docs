@@ -49,8 +49,6 @@ spec:
       port: 7687
       scheme: neo4j
   secret:
-    apiGroup: ""
-    kind: Secret
     name: neo4j-test-auth
   type: kubedb.com/Neo4j
   version: 2025.12.1-enterprise
