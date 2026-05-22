@@ -7,12 +7,12 @@ spec:
   version: "1.17.0"
   mode: Distributed
   replicas: 3
-  init:
-    archiver:
-      recoveryTimestamp: "2026-12-12T00:00:00Z"
-      fullDBRepository:
-        name: minio-qdrant-repo
-        namespace: demo
+  # init:
+  #   archiver:
+  #     recoveryTimestamp: "2026-12-12T00:00:00Z"
+  #     fullDBRepository:
+  #       name: minio-qdrant-repo
+  #       namespace: demo
   storage:
     storageClassName: longhorn
     accessModes:

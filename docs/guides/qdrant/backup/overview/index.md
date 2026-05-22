@@ -1,11 +1,5 @@
 ---
 title: Backup & Restore Qdrant Using KubeStash
-menu:
-  docs_{{ .version }}:
-    identifier: guides-qdrant-backup-overview
-    name: Overview
-    parent: qdrant-backup
-    weight: 5
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -1,12 +1,6 @@
 ---
 title: Volume Snapshot Backup & Restore Qdrant
 description: Backup Qdrant database using Volume Snapshot
-menu:
-  docs_{{ .version }}:
-    identifier: guides-qdrant-volume-snapshot
-    name: Volume Snapshot
-    parent: qdrant-backup
-    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -379,12 +373,12 @@ spec:
   version: "1.17.0"
   mode: Distributed
   replicas: 3
-  init:
-    archiver:
-      recoveryTimestamp: "2026-12-12T00:00:00Z"
-      fullDBRepository:
-        name: minio-qdrant-repo
-        namespace: demo
+  # init:
+  #   archiver:
+  #     recoveryTimestamp: "2026-12-12T00:00:00Z"
+  #     fullDBRepository:
+  #       name: minio-qdrant-repo
+  #       namespace: demo
   storage:
     storageClassName: longhorn
     accessModes:
@@ -395,9 +389,10 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Here,
+<!-- Here,
 - `.spec.init.archiver.recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
 - `.spec.init.archiver.fullDBRepository` specifies the Repository object that holds the backed up data.
+-->
 
 Let's create the above database,
 
