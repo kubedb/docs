@@ -48,10 +48,28 @@ namespace/demo created
 KubeDB maintains an OracleVersion CRD with all supported Oracle versions:
 ```shell
 $ kubectl get oracleversions
-NAME     VERSION   DISTRIBUTION   DB_IMAGE                          DEPRECATED   AGE
-21.3.0   21.3.0                   ghcr.io/kubedb/oracle-ee:21.3.0                28d
+NAME     VERSION   DISTRIBUTION   DB_IMAGE                                                    DEPRECATED   AGE
+21.3.0   21.3.0                   container-registry.oracle.com/database/enterprise:21.3.0.0               28d
 
 ```
+## Create oracle image pull secret
+**License Disclaimer**: Oracle® and Oracle Database® are registered trademarks of Oracle Corporation. KubeDB is only orchestration tooling and does not distribute Oracle software. Users must provide their own Oracle container images and hold valid Oracle licenses. Users are solely responsible for Oracle licensing compliance.
+To pull the Oracle image, create a secret with your Oracle credentials from <https://container-registry.oracle.com>:
+
+1. Log in to <https://container-registry.oracle.com> with your Oracle account
+2. Go to **My Profile** (top right) → **Generate Token** and copy the token. Create the secret:
+
+```shell
+kubectl create secret docker-registry orclcred \
+  --docker-server=container-registry.oracle.com \
+  --docker-username="<oracle-account-email>" \
+  --docker-password='<token-from-container-registry.oracle.com>' \
+  --docker-email="<oracle-account-email>" \
+  --namespace=demo
+```
+
+Adjust the secret name and namespace as needed for your environment.
+
 
 ## Create an Oracle Database
 
@@ -69,6 +87,8 @@ spec:
   mode: Standalone
   podTemplate:
     spec:
+      imagePullSecrets:
+        - name: orclcred
       containers:
         - name: oracle
           resources:
