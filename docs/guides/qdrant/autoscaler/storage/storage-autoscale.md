@@ -32,7 +32,7 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Qdran
   - [Qdrant](/docs/guides/qdrant/concepts/)
   - [QdrantAutoscaler](/docs/guides/qdrant/concepts/autoscaler.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
-  - [Storage Autoscaling Overview](/docs/guides/qdrant/autoscaler/overview.md)
+  - [Storage Autoscaling Overview](/docs/guides/qdrant/autoscaler/storage/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 

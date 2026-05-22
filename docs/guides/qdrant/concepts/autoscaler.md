@@ -123,5 +123,5 @@ A `QdrantAutoscaler` object has the following fields in the `spec` section:
 
 ## Next Steps
 
-- Read the [Qdrant autoscaler overview](/docs/guides/qdrant/autoscaler/overview.md).
+- Read the [compute autoscaler overview](/docs/guides/qdrant/autoscaler/compute/overview.md) and [storage autoscaler overview](/docs/guides/qdrant/autoscaler/storage/overview.md).
 - See the [compute autoscaler guide](/docs/guides/qdrant/autoscaler/compute/compute-autoscale.md) and [storage autoscaler guide](/docs/guides/qdrant/autoscaler/storage/storage-autoscale.md).

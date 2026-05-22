@@ -25,7 +25,7 @@ This guide will show you how to use `KubeDB` ops-manager operator to update the 
 - You should be familiar with the following `KubeDB` concepts:
   - [Qdrant](/docs/guides/qdrant/concepts/qdrant.md)
   - [QdrantOpsRequest](/docs/guides/qdrant/concepts/opsrequest.md)
-  - [Updating Overview](/docs/guides/qdrant/update-version/overview/index.md)
+  - [Updating Overview](/docs/guides/qdrant/update-version/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 

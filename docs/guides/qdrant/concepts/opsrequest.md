@@ -269,5 +269,4 @@ Ops-manager Operator can skip an opsRequest only if its execution has not been s
 
 ## Next Steps
 
-- See [Qdrant ops request overview](/docs/guides/qdrant/ops-request/overview.md) for operation links.
 - Follow operation tutorials like [Restart](/docs/guides/qdrant/restart/restart.md) and [Volume Expansion](/docs/guides/qdrant/volume-expansion/volume-expansion.md).

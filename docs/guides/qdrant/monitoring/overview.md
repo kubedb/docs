@@ -75,5 +75,4 @@ Here, we have specified that we are going to monitor this Qdrant cluster using P
 
 ## Next Steps
 
-- Learn how to monitor Qdrant with KubeDB using [Builtin Prometheus](/docs/guides/qdrant/monitoring/using-builtin-prometheus.md).
 - Learn how to monitor Qdrant with KubeDB using [Prometheus operator](/docs/guides/qdrant/monitoring/using-prometheus-operator.md).

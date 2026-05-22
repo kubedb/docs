@@ -190,7 +190,7 @@ qdrant-sample        ClusterIP   10.43.69.124   <none>        6333/TCP,6334/TCP 
 qdrant-sample-pods   ClusterIP   None           <none>        6335/TCP            65s
 ```
 
-KubeDB creates an [AppBinding](/docs/guides/qdrant/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
+KubeDB creates an AppBinding CR that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 

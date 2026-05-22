@@ -439,7 +439,7 @@ $ curl -X POST http://localhost:6333/collections/demo_vectors/points/scroll \
 
 ## AppBinding
 
-KubeDB creates an [AppBinding](/docs/guides/qdrant/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+KubeDB creates an AppBinding CR that holds the necessary information to connect with the database.
 
 ```bash
 $ kubectl get appbinding -n demo -o yaml
