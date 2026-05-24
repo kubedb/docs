@@ -58,7 +58,7 @@ spec:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: vscale
+  name: neo4j-vertical-scaling
   namespace: demo
 spec:
   type: VerticalScaling
@@ -113,7 +113,7 @@ spec:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: neoops-hscale
+  name: neo4j-horizontal-scaling
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -134,7 +134,7 @@ Rotate authentication without a user-provided Secret:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: rotate-auth-generated
+  name: neo4j-rotate-auth
   namespace: demo
 spec:
   type: RotateAuth
@@ -150,7 +150,7 @@ Rotate authentication using a user-provided Secret:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: neoops-rotate-auth-user
+  name: neo4j-rotate-auth-custom
   namespace: demo
 spec:
   type: RotateAuth
@@ -172,7 +172,7 @@ Reconfigure using a new custom configuration Secret and inline overrides:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: reconfigure
+  name: neo4j-reconfigure
   namespace: demo
 spec:
   type: Reconfigure
@@ -194,7 +194,7 @@ Reconfigure using inline `applyConfig` values:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: reconfigure-apply
+  name: neo4j-reconfigure-inline
   namespace: demo
 spec:
   type: Reconfigure
@@ -215,7 +215,7 @@ spec:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: restart
+  name: neo4j-restart
   namespace: demo
 spec:
   type: Restart
@@ -233,7 +233,7 @@ Rotate TLS certificates and update Bolt mode:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: rotate
+  name: neo4j-rotate-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -251,7 +251,7 @@ Remove TLS from the database:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: remove
+  name: neo4j-remove-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -267,7 +267,7 @@ Add or replace TLS using a cert-manager issuer:
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
-  name: add-tls
+  name: neo4j-add-tls
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -312,7 +312,14 @@ spec:
 - `spec.configuration.configSecret.name` points to a Secret containing new custom configuration, `spec.configuration.removeCustomConfig` removes the existing custom config, and `spec.configuration.applyConfig` applies inline configuration changes.
 - `spec.tls.rotateCertificates`, `spec.tls.remove`, and `spec.tls.issuerRef` control TLS certificate rotation, removal, and issuer-based TLS configuration. Protocol-specific settings such as `spec.tls.bolt.mode` can also be updated there.
 - `spec.timeout` sets the timeout for each step of the operation.
-- `spec.apply` controls when KubeDB should execute the OpsRequest, and `spec.maxRetries` controls how many times the operator retries a failed step.
+- `spec.apply` controls when KubeDB should execute the OpsRequest:
+
+  | Value | Behavior |
+  |-------|----------|
+  | `IfReady` | Execute only when the database is in `Ready` state (safe default for most operations) |
+  | `Always` | Execute regardless of the current database state (useful for Restart) |
+
+- `spec.maxRetries` controls how many times the operator retries a failed step.
 
 ### Neo4jOpsRequest `Status`
 
@@ -343,6 +350,30 @@ spec:
 - `message`: human-readable details for the transition.
 - `lastTransitionTime`: timestamp for the latest state transition.
 - `observedGeneration`: generation observed for that condition update.
+
+Example `status.conditions` from a completed `VerticalScaling` request:
+
+```yaml
+status:
+  phase: Successful
+  conditions:
+    - type: VerticalScaling
+      status: "True"
+      reason: SuccessfullyPerformedVerticalScaling
+      message: Successfully performed vertical scaling on Neo4j
+      lastTransitionTime: "2026-05-14T08:00:00Z"
+    - type: ResumeDatabase
+      status: "True"
+      reason: OpsRequestProcessedSuccessfully
+      message: OpsRequest completed successfully
+      lastTransitionTime: "2026-05-14T08:01:30Z"
+```
+
+You can inspect conditions for any OpsRequest with:
+
+```bash
+kubectl get neo4jopsrequest -n demo <name> -o jsonpath='{.status.conditions}' | jq .
+```
 
 Common `type` values:
 
@@ -380,7 +411,6 @@ Common `reason` values:
 
 ## Next Steps
 
-- See [Neo4j ops overview](/docs/guides/neo4j/concepts/opsrequest.md) for operation links.
 - Read the [Reconfigure guide](/docs/guides/neo4j/reconfigure/overview.md) for configuration changes.
 - Read the [Reconfigure TLS guide](/docs/guides/neo4j/reconfigure-tls/overview.md) for certificate rotation, removal, or issuer updates.
 - Read the [Restart guide](/docs/guides/neo4j/restart/restart.md), [Rotate Auth guide](/docs/guides/neo4j/rotate-auth/overview.md), and [Update Version guide](/docs/guides/neo4j/update-version/overview.md).

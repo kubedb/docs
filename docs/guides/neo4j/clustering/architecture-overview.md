@@ -123,6 +123,22 @@ neo4j-test-1   1/1     Running   0          2m
 neo4j-test-2   1/1     Running   0          2m
 ```
 
+## Failover Behavior
+
+When a Neo4j pod becomes unavailable (node failure, eviction, rolling update), the remaining servers detect the loss through missed heartbeats. The Raft protocol then holds a new election to select a replacement leader for any database whose current leader was lost.
+
+**What happens during a single-pod failure in a 3-server cluster:**
+
+1. The lost server's headless Service entry stops resolving.
+2. The remaining 2 servers detect the failure and the affected database(s) hold a Raft election.
+3. One of the 2 surviving servers is elected as the new write leader.
+4. Writes continue uninterrupted — the cluster remains above the quorum threshold of 2.
+5. When the failed pod restarts (Kubernetes restarts it automatically), it rejoins the cluster, catches up on missed transactions, and participates in future elections.
+
+**During a rolling version upgrade or vertical scaling**, KubeDB takes pods down one at a time. Because the cluster stays above quorum throughout, client connections experience only short Bolt reconnection windows, not full unavailability.
+
+**Minimum replicas for fault tolerance:** A 1-replica deployment has no fault tolerance. Use at least 3 replicas for any workload that requires high availability.
+
 ## Verify Cluster Health
 
 Once the cluster is ready, connect via `cypher-shell` and inspect the cluster topology:

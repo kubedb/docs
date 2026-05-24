@@ -25,8 +25,15 @@ To issue certificates, the following cert-manager CRDs are used:
 
 KubeDB uses `spec.tls` in the `Neo4j` CR to enable transport encryption.
 
-- `spec.tls.issuerRef`
-- protocol-specific TLS settings under `spec.tls` (for example `bolt`, `https`, and cluster channels)
+- `spec.tls.issuerRef` — the cert-manager Issuer or ClusterIssuer that signs Neo4j certificates.
+- Protocol-specific TLS settings under `spec.tls` (for example `bolt`, `https`, and cluster channels).
+
+**TLS mode reference:**
+
+| Mode | What it means |
+|------|---------------|
+| `TLS` | Encrypts traffic. The server presents a certificate; clients do not need one. |
+| `mTLS` | Mutual TLS. Both the server and client present certificates signed by the same CA. Use this to restrict which clients can connect. |
 
 Read field details in [Neo4j concept](/docs/guides/neo4j/concepts/neo4j.md).
 

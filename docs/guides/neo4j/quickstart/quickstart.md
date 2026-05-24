@@ -103,6 +103,8 @@ neo4j-test   2025.12.1   Provisioning   10s
 neo4j-test   2025.12.1   Ready          2m
 ```
 
+> If the status stays `Provisioning` for more than a few minutes, run `kubectl describe neo4j -n demo neo4j-test` and check the `Events` section for errors. Common causes are insufficient cluster resources or a missing StorageClass.
+
 KubeDB operator watches for `Neo4j` objects using the Kubernetes API. When a `Neo4j` object is created, KubeDB provisions a PetSet, one PVC per replica, a ClusterIP Service for client access, and a headless governing Service for pod-to-pod communication. It also auto-generates an auth Secret for the `neo4j` superuser.
 
 ## Verify Neo4j Database
@@ -135,9 +137,13 @@ neo4j-test-2   ClusterIP   None           <none>        6362/TCP,7687/TCP,7474/T
 - **`neo4j-test`** — the primary ClusterIP Service exposing HTTP (`7474`), Bolt (`7687`), and backup (`6362`) for client access.
 - **`neo4j-test-0`, `neo4j-test-1`, `neo4j-test-2`** — per-pod headless Services exposing all cluster-internal ports including inter-node communication (`7000`), cluster discovery (`6000`), and intra-cluster Bolt (`7688`).
 
-## Connect with Neo4j
+## Connect to Neo4j
 
-KubeDB creates a Secret named `{neo4j-name}-auth` containing the `neo4j` superuser credentials. Retrieve them:
+KubeDB creates a Secret named `{neo4j-name}-auth` containing the `neo4j` superuser credentials.
+
+> Note: Auth Secret name format: `{neo4j-name}-auth`. The password is randomly generated on first provisioning.
+
+Retrieve the credentials:
 
 ```bash
 $ kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.username}' | base64 -d
@@ -146,8 +152,6 @@ neo4j
 $ kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d
 Xk9mR2qLpTz3vYwB
 ```
-
-> Note: Auth Secret name format: `{neo4j-name}-auth`. The password is randomly generated on first provisioning.
 
 ### Connect via cypher-shell
 
@@ -219,6 +223,7 @@ namespace "demo" deleted
 
 ## Next Steps
 
+- Understand the cluster topology, Raft consensus, and failover behavior in the [Cluster Architecture Overview](/docs/guides/neo4j/clustering/architecture-overview.md).
 - If your cluster enforces RBAC, review required permissions in [RBAC for Neo4j](/docs/guides/neo4j/quickstart/rbac.md).
 - Learn how to perform day-2 operations such as version upgrades, scaling, volume expansion, TLS configuration, and more using the [Neo4j OpsRequest overview](/docs/guides/neo4j/concepts/opsrequest.md).
 - Detail concepts of the [Neo4j CRD](/docs/guides/neo4j/concepts/neo4j.md).

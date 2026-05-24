@@ -14,63 +14,22 @@ section_menu_id: guides
 
 # RBAC Permissions for Neo4j
 
-If RBAC is enabled in your cluster, KubeDB creates Neo4j-specific RBAC resources so Neo4j pods can discover Services and Endpoints during cluster operations.
+When you deploy a `Neo4j` object, KubeDB **automatically** creates a `Role`, `ServiceAccount`, and `RoleBinding` for it — you do not need to create these manually. This page documents what gets created and why.
 
-Here are the additional permissions used by Neo4j pods:
+Neo4j pods need to watch `Services` and `Endpoints` in their namespace so each cluster member can discover its peers and build the routing table during startup and after pod restarts.
 
-| Kubernetes Resource | Resource Names | Permission required |
-|---------------------|----------------|---------------------|
-| services            |                | get, list, watch    |
-| endpoints           |                | get, list, watch    |
+| Kubernetes Resource | Permission required | Why Neo4j needs it |
+|---------------------|---------------------|--------------------|
+| services            | get, list, watch    | Discover peer pod addresses for cluster formation |
+| endpoints           | get, list, watch    | Resolve headless Service endpoints for Raft and discovery ports |
 
-## Before You Begin
+> If you want to provide your own ServiceAccount and Role instead of the auto-generated ones, see [Custom RBAC for Neo4j](/docs/guides/neo4j/custom-rbac/using-custom-rbac.md).
 
-At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+> Prerequisites: A running `neo4j-test` database in the `demo` namespace. If you haven't deployed one yet, follow the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) first.
 
-Now, install KubeDB CLI on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+## What KubeDB Creates
 
-To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
-
-```bash
-$ kubectl create ns demo
-namespace/demo created
-```
-
-> Note: YAML files used in this tutorial are stored in [docs/examples/neo4j/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-
-## Create a Neo4j Database
-
-Below is the Neo4j object used in this tutorial.
-
-```yaml
-apiVersion: kubedb.com/v1alpha2
-kind: Neo4j
-metadata:
-  name: neo4j-test
-  namespace: demo
-spec:
-  replicas: 3
-  version: "2025.12.1"
-  storage:
-    storageClassName: local-path
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 2Gi
-  deletionPolicy: WipeOut
-```
-
-Create the above Neo4j object with the following command:
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
-neo4j.kubedb.com/neo4j-test created
-```
-
-When this `Neo4j` object is created, KubeDB operator creates a `Role`, `ServiceAccount`, and `RoleBinding` with matching names and uses that ServiceAccount in the Neo4j pods.
-
-Let's inspect what KubeDB creates.
+When the `Neo4j` object is created, the operator provisions three RBAC resources with names matching the database name. Let's inspect each one.
 
 ### Role
 
@@ -177,15 +136,8 @@ subjects:
 
 This object binds Role `neo4j-test-role` with ServiceAccount `neo4j-test`.
 
-## Cleaning up
+## Next Steps
 
-To clean up the Kubernetes resources created by this tutorial, run:
-
-```bash
-$ kubectl delete -n demo neo4j/neo4j-test
-neo4j.kubedb.com "neo4j-test" deleted
-
-$ kubectl delete ns demo
-namespace "demo" deleted
-```
+- To use your own ServiceAccount and Role rather than the auto-generated ones, see [Custom RBAC for Neo4j](/docs/guides/neo4j/custom-rbac/using-custom-rbac.md).
+- To clean up, delete the database and namespace from the [quickstart cleanup step](/docs/guides/neo4j/quickstart/quickstart.md#cleaning-up).
 

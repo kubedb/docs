@@ -129,7 +129,14 @@ See [monitoring overview](/docs/guides/neo4j/monitoring/overview.md) for setup a
 `spec.tls` is an optional field for enabling and configuring TLS for Neo4j protocols.
 
 - `spec.tls.issuerRef` tells KubeDB which cert-manager issuer to use for certificates.
-- Protocol-specific TLS behavior (for example Bolt/HTTP) is configured under `spec.tls`.
+- `spec.tls.bolt.mode` and `spec.tls.cluster.mode` set the TLS mode for the Bolt and cluster channels respectively.
+
+**TLS mode values:**
+
+| Mode | Behavior |
+|------|----------|
+| `TLS` | Encrypts traffic in transit. Clients do not need to present a certificate. |
+| `mTLS` | Mutual TLS — both sides present certificates. Clients must have a valid certificate signed by the same CA. |
 
 See [TLS overview](/docs/guides/neo4j/tls/overview/) and [Reconfigure TLS](/docs/guides/neo4j/reconfigure-tls/overview.md).
 
@@ -152,10 +159,16 @@ To learn more:
 
 `spec.deletionPolicy` controls what KubeDB does when a `Neo4j` object is deleted.
 
-KubeDB supports standard database termination policies such as `DoNotTerminate`, `Halt`, `Delete`, and `WipeOut`.
+| Policy | What gets deleted |
+|--------|-------------------|
+| `DoNotTerminate` | Nothing — KubeDB blocks deletion of the `Neo4j` object entirely |
+| `Halt` | The database pods and services are removed, but PVCs and Secrets are kept |
+| `Delete` | Pods, services, and PVCs are removed, but the auth Secret is kept |
+| `WipeOut` | Everything is removed: pods, services, PVCs, and generated Secrets |
 
-Use `WipeOut` when you want full cleanup, including data and generated secrets. Use safer policies in production when you need to preserve data for recovery.
-For more details visit [HERE](https://appscode.com/blog/post/deletion-policy/)
+Use `WipeOut` for development clusters where you want full cleanup. Use `Halt` or `Delete` in production when you need to preserve data or credentials for recovery.
+
+For more details, see the [deletion policy reference](https://appscode.com/blog/post/deletion-policy/).
 
 ## Next Steps
 

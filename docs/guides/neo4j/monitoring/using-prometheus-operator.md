@@ -18,11 +18,11 @@ section_menu_id: guides
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+> Prerequisites: A running Kubernetes cluster with KubeDB installed. See the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) if you need to set up your environment.
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/neo4j/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit the [monitoring overview](/docs/guides/neo4j/monitoring/overview.md).
 
-- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy the database in the `demo` namespace.
+- Prometheus resources will be deployed in the `monitoring` namespace; the database will be in the `demo` namespace.
 
   ```bash
   $ kubectl create ns monitoring
@@ -32,9 +32,9 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-- We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have one, deploy it following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
+- A running [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance is required. If you don't have one, deploy it following [these docs](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
-- If you don't already have a Prometheus server running, deploy one following the tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
+- A running Prometheus server is also required. Deploy one following [this tutorial](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
 
 > Note: YAML files used in this tutorial are stored in the [docs/examples/neo4j](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j) folder in the GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 

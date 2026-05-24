@@ -18,15 +18,13 @@ This tutorial will show you how to monitor a Neo4j database using builtin [Prome
 
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
-
-- Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+> Prerequisites: A running Kubernetes cluster with KubeDB installed. See the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) if you need to set up your environment.
 
 - If you are not familiar with how to configure Prometheus to scrape metrics from various Kubernetes resources, please read the tutorial from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/builtin).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/neo4j/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit the [monitoring overview](/docs/guides/neo4j/monitoring/overview.md).
 
-- To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy the database in the `demo` namespace.
+- Prometheus resources will be deployed in the `monitoring` namespace; the database will be in the `demo` namespace.
 
   ```bash
   $ kubectl create ns monitoring
