@@ -101,6 +101,8 @@ metadata:
 spec:
   deletionPolicy: WipeOut
   authSecret:
+    kind: secret
+    name: mg-auth
     rotateAfter: 1h
   replicaSet:
     name: rs0
