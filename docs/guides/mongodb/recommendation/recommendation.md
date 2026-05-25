@@ -1,11 +1,11 @@
 ---
-title: MongoDB Recommendation
+title: MongoDB Recommendation Overview
 menu:
   docs_{{ .version }}:
-    identifier: mg-recommendation
-    name: Recommendation
-    parent: mg-mongodb-guides
-    weight: 215
+    identifier: mg-recommendation-overview
+    name: Recommendation Overview
+    parent: mg-recommendation
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
