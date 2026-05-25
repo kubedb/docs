@@ -130,5 +130,5 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 ### spec.stash
 
-`spec.stash` is an optional field that specifies the name of the task for stash backup and restore. Learn more about [Stash MariaDB addon](https://stash.run/docs/v2021.03.08/addons/mariadb/)
+`spec.stash` is an optional field that specifies the name of the task for stash backup and restore. Learn more about [Stash MariaDB addon](https://stash.run/)
 
