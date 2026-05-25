@@ -53,7 +53,6 @@ NAME     VERSION   DISTRIBUTION   DB_IMAGE                                      
 
 ```
 ## Create Oracle image pull secret (important)
-**License Disclaimer**: Oracle® and Oracle Database® are registered trademarks of Oracle Corporation. KubeDB is only orchestration tooling and does not distribute Oracle software. Users must provide their own Oracle container images and hold valid Oracle licenses. Users are solely responsible for Oracle licensing compliance.
 To pull the Oracle image, create a secret with your Oracle credentials from <https://container-registry.oracle.com>:
 
 1. Log in to <https://container-registry.oracle.com> with your Oracle account
@@ -328,3 +327,16 @@ $ kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}'
 $ kubectl delete oracle -n demo oracle
 $ kubectl delete ns demo
 ```
+
+> ## ⚠️ Legal Notice
+>
+> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.  
+> KubeDB is not affiliated with, endorsed by, or sponsored by Oracle Corporation.
+>
+> KubeDB provides only orchestration and management tooling for Kubernetes.  
+> It does not distribute, bundle, ship, or include any Oracle Database software or binaries.
+>
+> Users must provide their own Oracle container images and hold valid Oracle licenses.  
+> Users are solely responsible for compliance with Oracle’s licensing terms, including all rules regarding containers, Docker, and Kubernetes environments.
+>
+> KubeDB makes no representations or warranties regarding Oracle licensing compliance.
