@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-test
+  namespace: demo
+spec:
+  replicas: 3
+  deletionPolicy: WipeOut
+  version: "2025.12.1"
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+

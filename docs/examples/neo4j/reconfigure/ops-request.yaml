@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: neo4j-test
+  configuration:
+    configSecret:
+      name: new-custom-config
+    removeCustomConfig: true
+    applyConfig:
+      server.metrics.csv.interval: "40s"
+  timeout: 5m
+  apply: IfReady
