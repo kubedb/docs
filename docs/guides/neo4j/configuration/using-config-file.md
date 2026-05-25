@@ -156,7 +156,7 @@ $ kubectl exec -it -n demo custom-neo4j-0 -- \
     cypher-shell -u neo4j -p <your-password> \
     "SHOW SETTINGS
      YIELD name, value
-     WHERE name STARTS WITH 'server.directories'
+     WHERE name STARTS WITH 'server.jvm.additional'
      RETURN name, value
      ORDER BY name
      LIMIT 3;"
@@ -165,15 +165,28 @@ $ kubectl exec -it -n demo custom-neo4j-0 -- \
 Expected output:
 
 ```
-+---------------------------------------------------------------------+
-| name                                   | value                     |
-+---------------------------------------------------------------------+
-| "server.directories.data"              | "/var/lib/neo4j/data"     |
-| "server.directories.import"            | "/var/lib/neo4j/import"   |
-| "server.directories.logs"              | "/var/lib/neo4j/logs"     |
-+---------------------------------------------------------------------+
-
-3 rows
++-----------------------------------------------------------------------------+
+| name                    | value                                             |
++-----------------------------------------------------------------------------+
+| "server.jvm.additional" | "-XX:+UseG1GC                                     |
+|                         \ -XX:-OmitStackTraceInFastThrow                    |
+|                         \ -XX:+AlwaysPreTouch                               |
+|                         \ -XX:+UnlockExperimentalVMOptions                  |
+|                         \ -XX:+TrustFinalNonStaticFields                    |
+|                         \ -XX:+DisableExplicitGC                            |
+|                         \ -Djdk.nio.maxCachedBufferSize=1024                |
+|                         \ -Dio.netty.tryReflectionSetAccessible=true        |
+|                         \ -Djdk.tls.ephemeralDHKeySize=2048                 |
+|                         \ -Djdk.tls.rejectClientInitiatedRenegotiation=true |
+|                         \ -XX:FlightRecorderOptions=stackdepth=256          |
+|                         \ -XX:+UnlockDiagnosticVMOptions                    |
+|                         \ -XX:+DebugNonSafepoints                           |
+|                         \ --add-opens=java.base/java.nio=ALL-UNNAMED        |
+|                         \ --add-opens=java.base/java.io=ALL-UNNAMED         |
+|                         \ --add-opens=java.base/sun.nio.ch=ALL-UNNAMED      |
+|                         \ -Dlog4j2.disable.jmx=true"                        |
++-----------------------------------------------------------------------------+
+1 row
 ```
 
 ## Cleaning up

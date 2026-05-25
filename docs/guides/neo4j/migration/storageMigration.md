@@ -79,6 +79,43 @@ persistentvolumeclaim/data-neo4j-test-1   Bound    ...      2Gi        RWO      
 persistentvolumeclaim/data-neo4j-test-2   Bound    ...      2Gi        RWO            local-path     2m
 ```
 
+The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a database and seed some data.
+
+## Step 3 — Create a Database and Seed Data
+
+Open a shell into pod `neo4j-test-0` and run the following Cypher commands to:
+- Create a new database called `appdb`
+- Insert 2,000 test `User` nodes
+- Verify the count
+
+```bash
+# Retrieve the admin password
+PASS=$(kubectl get secret -n demo neo4j-test-auth \
+  -o jsonpath='{.data.password}' | base64 -d)
+
+# Create the database
+$ kubectl exec -n demo neo4j-test-0 -- \
+  cypher-shell -u neo4j -p "$PASS" \
+  "CREATE DATABASE appdb IF NOT EXISTS WAIT"
+
+# Seed 2,000 User nodes
+$ kubectl exec -n demo neo4j-test-0 -- \
+  cypher-shell -d appdb -u neo4j -p "$PASS" \
+  "UNWIND range(1,2000) AS i CREATE (:User {id:i, name:'user-'+toString(i)})"
+
+# Confirm the count
+$ kubectl exec -n demo neo4j-test-0 -- \
+  cypher-shell -d appdb -u neo4j -p "$PASS" \
+  "MATCH (u:User) RETURN count(u) AS totalUsers"
+```
+
+Expected output:
+
+```
+totalUsers
+2000
+```
+
 ## Apply StorageMigration OpsRequest
 
 To migrate `StorageClass`, create a `Neo4jOpsRequest`:
@@ -132,6 +169,19 @@ data-neo4j-test-2   Bound    ...      2Gi        RWO            custom-longhorn 
 ```
 
 The PVCs now use `custom-longhorn`, which confirms successful StorageClass migration.
+
+```bash
+$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+
+$ kubectl exec -n demo neo4j-test-0 -- \
+  cypher-shell -d appdb -u neo4j -p "$PASS" \
+  "MATCH (u:User) RETURN count(u) AS totalUsers"
+totalUsers
+2000
+```
+
+From the above output we can verify that data remains intact after the `StorageMigration` operation.
+
 
 ## Cleanup
 
