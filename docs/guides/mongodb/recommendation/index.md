@@ -115,7 +115,7 @@ spec:
         storage: 4Gi
     storageClassName: local-path
   storageType: Durable
-  version: 7.0.8
+  version: 8.0.17 
 ```
 
 In this configuration:
@@ -154,7 +154,7 @@ spec:
         storage: 4Gi
     storageClassName: local-path
   storageType: Durable
-  version: 7.0.8
+  version: 8.0.17 
 ```
 
 In this case:
@@ -186,7 +186,7 @@ spec:
         storage: 4Gi
     storageClassName: local-path
   storageType: Durable
-  version: 7.0.8
+  version: 8.0.17 
 ```
 
 For version updates:
