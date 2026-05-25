@@ -5,7 +5,7 @@ menu:
     identifier: neo4j-volume-expansion-cluster
     name: Cluster
     parent: neo4j-volume-expansion
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: neo4j-appbinding-concepts
     name: AppBinding
-    parent: neo4j-concepts-neo4j
+    parent: neo4j-concepts
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides

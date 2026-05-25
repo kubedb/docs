@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: neo4j-catalog-concepts
     name: Neo4jVersion
-    parent: neo4j-concepts-neo4j
-    weight: 15
+    parent: neo4j-concepts
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

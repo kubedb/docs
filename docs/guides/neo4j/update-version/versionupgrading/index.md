@@ -3,7 +3,7 @@ title: Upgrade Neo4j Version
 menu:
   docs_{{ .version }}:
     identifier: neo4j-version-upgrading
-    name: Version Upgrading
+    name: Version Updating
     parent: neo4j-update-version
     weight: 10
 menu_name: docs_{{ .version }}

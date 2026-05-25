@@ -4,8 +4,8 @@ menu:
   docs_{{ .version }}:
     identifier: neo4j-opsrequest-concepts
     name: Neo4jOpsRequest
-    parent: neo4j-concepts-neo4j
-    weight: 25
+    parent: neo4j-concepts
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

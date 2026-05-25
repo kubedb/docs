@@ -13,8 +13,9 @@ section_menu_id: guides
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Neo4j TLS/SSL Encryption
+## Before You Begin
 
-**Prerequisite:** To configure TLS/SSL in `Neo4j`, KubeDB uses `cert-manager` to issue certificates. Make sure `cert-manager` is installed in your cluster. You can install it by following the official guide [here](https://cert-manager.io/docs/installation/kubernetes/).
+To configure TLS/SSL in `Neo4j`, KubeDB uses `cert-manager` to issue certificates. Make sure `cert-manager` is installed in your cluster. You can install it by following the official guide [here](https://cert-manager.io/docs/installation/kubernetes/).
 
 To issue certificates, the following cert-manager CRDs are used:
 

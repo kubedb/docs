@@ -3,7 +3,7 @@ title: Rotate Auth of Neo4j
 menu:
   docs_{{ .version }}:
     identifier: neo4j-rotate-auth-cluster
-    name: Cluster
+    name: Guide
     parent: neo4j-rotate-auth
     weight: 30
 menu_name: docs_{{ .version }}
