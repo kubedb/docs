@@ -85,9 +85,9 @@ spec:
       fastStartFailoverThreshold: 15
     observer:
       podTemplate:
-        imagePullSecrets:
-          - name: orclcred
         spec:
+          imagePullSecrets:
+            - name: orclcred
           containers:
           - name: observer
             resources:
@@ -107,9 +107,9 @@ spec:
                 memory: 512Mi
 
   podTemplate:
-    imagePullSecrets:
-      - name: orclcred
     spec:
+      imagePullSecrets:
+        - name: orclcred
       serviceAccountName: oracle-sample
       securityContext:
         runAsUser: 54321

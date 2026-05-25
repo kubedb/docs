@@ -52,19 +52,25 @@ NAME     VERSION   DISTRIBUTION   DB_IMAGE                                      
 21.3.0   21.3.0                   container-registry.oracle.com/database/enterprise:21.3.0.0               28d
 
 ```
-## Create oracle image pull secret (important)
+## Create Oracle image pull secret (important)
 **License Disclaimer**: Oracle® and Oracle Database® are registered trademarks of Oracle Corporation. KubeDB is only orchestration tooling and does not distribute Oracle software. Users must provide their own Oracle container images and hold valid Oracle licenses. Users are solely responsible for Oracle licensing compliance.
 To pull the Oracle image, create a secret with your Oracle credentials from <https://container-registry.oracle.com>:
 
 1. Log in to <https://container-registry.oracle.com> with your Oracle account
-2. Go to **My Profile** (top right) → **Generate Token** and copy the token. Create the secret:
-<p align="center">   <img alt="lifecycle" src="docs/guides/oracle/quickstart/auth-token.png"> </p>
+2. Go to **My Profile** (top right) → **Generate Token** and copy the token
+
+<div style="text-align: center;">
+  <img alt="auth-token" src="/docs/guides/oracle/quickstart/auth-token.png">
+</div>
+
+3. Create the secret:
+
 ```shell
 kubectl create secret docker-registry orclcred \
   --docker-server=container-registry.oracle.com \
-  --docker-username="<oracle-account-email>" \
+  --docker-username="<your-oracle-account-email>" \
   --docker-password='<token-from-container-registry.oracle.com>' \
-  --docker-email="<oracle-account-email>" \
+  --docker-email="<your-oracle-account-email>" \
   --namespace=demo
 ```
 

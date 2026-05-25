@@ -71,9 +71,9 @@ spec:
       requests:
         storage: 30Gi
   podTemplate:
-    imagePullSecrets:
-      - name: orclcred
     spec:
+      imagePullSecrets:
+        - name: orclcred
       securityContext:
         fsGroup: 54321
         runAsGroup: 54321
@@ -119,9 +119,9 @@ spec:
       fastStartFailoverThreshold: 15
     observer:
       podTemplate:
-        imagePullSecrets:
-          - name: orclcred
         spec:
+          imagePullSecrets:
+            - name: orclcred
           containers:
           - name: observer
             resources:
@@ -147,9 +147,9 @@ spec:
         
   # Pod Configuration
   podTemplate:
-    imagePullSecrets:
-      - name: orclcred
     spec:
+      imagePullSecrets:
+        - name: orclcred
       securityContext:
         fsGroup: 54321
         runAsGroup: 54321
