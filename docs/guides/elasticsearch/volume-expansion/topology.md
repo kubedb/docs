@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Elasticsearch` combined cluster with version `xpack-8.19.9`.
 
@@ -75,7 +75,7 @@ spec:
     master:
       replicas: 3
       storage:
-        storageClassName: "standard"
+        storageClassName: "longhorn"
         accessModes:
         - ReadWriteOnce
         resources:
@@ -85,7 +85,7 @@ spec:
     data:
       replicas: 3
       storage:
-        storageClassName: "standard"
+        storageClassName: "longhorn"
         accessModes:
         - ReadWriteOnce
         resources:
@@ -94,7 +94,7 @@ spec:
     ingest:
       replicas: 3
       storage:
-        storageClassName: "standard"
+        storageClassName: "longhorn"
         accessModes:
         - ReadWriteOnce
         resources:
@@ -129,15 +129,15 @@ $ kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTe
 "1Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-11b48c6e-d996-45a7-8ba2-f8d71a655912   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   standard     <unset>                          22h
-pvc-1904104c-bbf2-4754-838a-8a647b2bd23e   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     standard     <unset>                          22h
-pvc-19aa694a-29c0-43d9-a495-c84c77df2dd8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   standard     <unset>                          22h
-pvc-33702b18-7e98-41b7-9b19-73762cb4f86a   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   standard     <unset>                          22h
-pvc-8604968f-f433-4931-82bc-8d240d6f52d8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     standard     <unset>                          22h
-pvc-ae5ccc43-d078-4816-a553-8a3cd1f674be   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   standard     <unset>                          22h
-pvc-b4225042-c69f-41df-99b2-1b3191057a85   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     standard     <unset>                          22h
-pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   standard     <unset>                          22h
-pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   standard     <unset>                          22h
+pvc-11b48c6e-d996-45a7-8ba2-f8d71a655912   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   longhorn     <unset>                          22h
+pvc-1904104c-bbf2-4754-838a-8a647b2bd23e   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     longhorn     <unset>                          22h
+pvc-19aa694a-29c0-43d9-a495-c84c77df2dd8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   longhorn     <unset>                          22h
+pvc-33702b18-7e98-41b7-9b19-73762cb4f86a   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   longhorn     <unset>                          22h
+pvc-8604968f-f433-4931-82bc-8d240d6f52d8   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     longhorn     <unset>                          22h
+pvc-ae5ccc43-d078-4816-a553-8a3cd1f674be   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   longhorn     <unset>                          22h
+pvc-b4225042-c69f-41df-99b2-1b3191057a85   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     longhorn     <unset>                          22h
+pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   longhorn     <unset>                          22h
+pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   longhorn     <unset>                          22h
 ```
 
 You can see the petsets have 1Gi storage, and the capacity of all the persistent volumes are also 1Gi.
@@ -712,15 +712,15 @@ $ kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTe
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-37f7398d-0251-4d3c-a439-d289b8cec6d2   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   standard       <unset>                          111m
-pvc-3a5d2b3e-dd39-4468-a8da-5274992a6502   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   standard       <unset>                          111m
-pvc-3cf21868-4b51-427b-b7ef-d0d26c753c8b   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   standard       <unset>                          111m
-pvc-56e6ed8f-a729-4532-bdec-92b8101f7813   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     standard       <unset>                          111m
-pvc-783d51f7-3bf2-4121-8f18-357d14d003ad   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   standard       <unset>                          111m
-pvc-81d6c1d3-0aa6-4190-9ee0-dd4a8d62b6b3   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   standard       <unset>                          111m
-pvc-942c6dce-4701-4e1a-b6f9-bf7d4ab56a11   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     standard       <unset>                          111m
-pvc-b706647d-c9ba-4296-94aa-2f6ef2230b6e   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   standard       <unset>                          111m
-pvc-c274f913-5452-47e1-ab42-ba584bdae297   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     standard       <unset>                          111m
+pvc-37f7398d-0251-4d3c-a439-d289b8cec6d2   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   longhorn       <unset>                          111m
+pvc-3a5d2b3e-dd39-4468-a8da-5274992a6502   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   longhorn       <unset>                          111m
+pvc-3cf21868-4b51-427b-b7ef-d0d26c753c8b   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-1   longhorn       <unset>                          111m
+pvc-56e6ed8f-a729-4532-bdec-92b8101f7813   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     longhorn       <unset>                          111m
+pvc-783d51f7-3bf2-4121-8f18-357d14d003ad   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-0   longhorn       <unset>                          111m
+pvc-81d6c1d3-0aa6-4190-9ee0-dd4a8d62b6b3   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   longhorn       <unset>                          111m
+pvc-942c6dce-4701-4e1a-b6f9-bf7d4ab56a11   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     longhorn       <unset>                          111m
+pvc-b706647d-c9ba-4296-94aa-2f6ef2230b6e   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   longhorn       <unset>                          111m
+pvc-c274f913-5452-47e1-ab42-ba584bdae297   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     longhorn       <unset>                          111m
 ```
 
 The above output verifies that we have successfully expanded the volume of the Elasticsearch.
