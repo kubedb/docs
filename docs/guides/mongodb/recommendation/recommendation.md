@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: mg-recommendation-overview
     name: Recommendation Overview
-    parent: mg-recommendation
+    parent: mg-recommendation-mongodb
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides

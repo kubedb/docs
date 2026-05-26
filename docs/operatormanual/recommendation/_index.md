@@ -4,13 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: recommendation
     name: Recommendation
-    weight: 10
     parent: operatormanual
-    pre: dropdown
+    weight: 10
 menu_name: docs_{{ .version }}
 ---
-
-
-
-
-

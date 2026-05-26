@@ -5,7 +5,7 @@ menu:
   docs_{{ .version }}:
     identifier: operatormanual
     name: Operator Manual
-    weight: 2000
+    weight: 60
     pre: dropdown
 menu_name: docs_{{ .version }}
 ---
