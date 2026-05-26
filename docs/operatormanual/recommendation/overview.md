@@ -31,5 +31,14 @@ KubeDB provides Three types of recommendation for KubeDB Databases:
 2. [TLS Certificate Rotation Recommendation](/docs/operatormanual/recommendation/rotate-tls-recommendation.md)
 3. [Authentication Secret Rotation Recommendation](/docs/operatormanual/recommendation/rotate-auth-recommendation.md)
 
-The next page describes these recommendations, how to approve/reject them, their generation mechanism and usability.
+## Recommendation Management
+
+For detailed understanding of the recommendation system, refer to:
+
+- [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md) - Complete field reference for Recommendation CRD
+- [Maintenance Window](/docs/operatormanual/recommendation/maintenance-window.md) - Namespace-scoped scheduling for automatic operations
+- [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md) - Cluster-wide default maintenance scheduling
+- [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) - Linking maintenance windows to resources for automatic recommendation execution
+
+The next pages describe these recommendations, how to approve/reject them, their generation mechanism and usability.
 
