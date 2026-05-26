@@ -1,5 +1,6 @@
 ---
 title: Operator Manual
+description: KubeDB CLI Reference
 menu:
   docs_{{ .version }}:
     identifier: operatormanual
