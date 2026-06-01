@@ -1,11 +1,11 @@
 ---
 title: Elasticsearch Recommendation Overview
 menu:
-docs_{{ .version }}:
-identifier: es-recommendation-overview-elasticsearch
-name: Elasticsearch Recommendation
-parent: es-recommendation-elasticsearch
-weight: 10
+  docs_{{ .version }}:
+    identifier: es-recommendation-overview-elasticsearch
+    name: Elasticsearch Recommendation
+    parent: es-recommendation-elasticsearch
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -138,6 +138,7 @@ metadata:
   name: es-combined
   namespace: demo
 spec:
+  version: xpack-9.1.9
   enableSSL: true
   tls:
     certificates:
