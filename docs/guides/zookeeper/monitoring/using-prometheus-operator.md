@@ -181,7 +181,7 @@ spec:
     resources:
       requests:
         storage: "100Mi"
-    storageClassName: longhorn
+    storageClassName: standard
     accessModes:
       - ReadWriteOnce
   deletionPolicy: WipeOut

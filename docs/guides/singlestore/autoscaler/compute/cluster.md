@@ -79,7 +79,7 @@ spec:
                   memory: "2Gi"
                   cpu: "0.7"
       storage:
-        storageClassName: "standard"
+        storageClassName: "longhorn"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -99,7 +99,7 @@ spec:
                   memory: "2Gi"
                   cpu: "0.7"
       storage:
-        storageClassName: "standard"
+        storageClassName: "longhorn"
         accessModes:
           - ReadWriteOnce
         resources:

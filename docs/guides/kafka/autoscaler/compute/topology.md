@@ -74,7 +74,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       replicas: 2
       podTemplate:
@@ -93,7 +93,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```

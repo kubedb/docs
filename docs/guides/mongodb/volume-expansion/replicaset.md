@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `MongoDB` replicaSet database with version `4.4.26`.
 
@@ -74,7 +74,7 @@ spec:
   replicas: 3
   storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "longhorn"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -105,9 +105,9 @@ $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates
 
 $ kubectl get pv -n demo                                                                                          
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   standard                10m
-pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   standard                9m45s
-pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   standard                10m
+pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   longhorn                10m
+pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   longhorn                9m45s
+pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   longhorn                10m
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -230,9 +230,9 @@ $ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates
 
 $ kubectl get pv -n demo                                                                                          
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
-pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   standard                19m
-pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   standard                18m
-pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   standard                19m
+pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   longhorn                19m
+pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   longhorn                18m
+pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   longhorn                19m
 ```
 
 The above output verifies that we have successfully expanded the volume of the MongoDB database.

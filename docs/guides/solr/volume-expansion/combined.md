@@ -104,8 +104,8 @@ $ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-02cddba5-1d6a-4f1b-91b2-a7e55857b6b7   1Gi        RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          23m
-pvc-61b8f97a-a588-4125-99f3-604f6a70d560   1Gi        RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>                          24m
+pvc-02cddba5-1d6a-4f1b-91b2-a7e55857b6b7   1Gi        RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   standard       <unset>                          23m
+pvc-61b8f97a-a588-4125-99f3-604f6a70d560   1Gi        RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   standard       <unset>                          24m
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -335,8 +335,8 @@ $ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTempla
 "11Gi"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-02cddba5-1d6a-4f1b-91b2-a7e55857b6b7   11Gi       RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          33m
-pvc-61b8f97a-a588-4125-99f3-604f6a70d560   11Gi       RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>                          33m
+pvc-02cddba5-1d6a-4f1b-91b2-a7e55857b6b7   11Gi       RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   standard       <unset>                          33m
+pvc-61b8f97a-a588-4125-99f3-604f6a70d560   11Gi       RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   standard       <unset>                          33m
 ```
 
 The above output verifies that we have successfully expanded the volume of the Solr.

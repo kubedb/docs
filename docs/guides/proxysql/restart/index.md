@@ -72,7 +72,7 @@ $ kubectl get my -n demo
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.3    Ready    7m6s
 ```
-> Here you can use MariaDB or PerconXtraDB as well as backend. Have a look at other [ProxySQL backend examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/)
+> Here you can use MariaDB or PerconXtraDB as well as backend. Have a look at other [ProxySQL backend examples](/docs/guides/proxysql/backends/)
 
 Now we are ready to deploy and test our ProxySQL server.
 
