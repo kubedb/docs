@@ -56,7 +56,7 @@ serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
-```yaml
+```bash
 $ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
 apiVersion: v1
 kind: ServiceAccount
@@ -115,7 +115,7 @@ rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
-```yaml
+```bash
 $ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
