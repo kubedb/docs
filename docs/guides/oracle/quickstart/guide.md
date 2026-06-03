@@ -79,7 +79,7 @@ To pull the Oracle image, create a secret with your Oracle credentials from <htt
 ```shell
 kubectl create secret docker-registry orclcred \
   --docker-server=container-registry.oracle.com \
-  --docker-username="<your-oracle-account-email>" \
+  --docker-username="<your-docker-account-email>" \
   --docker-password='<token-from-container-registry.oracle.com>' \
   --docker-email="<your-oracle-account-email>" \
   --namespace=demo

@@ -58,7 +58,7 @@ Then create the image pull secret:
 ```shell
 kubectl create secret docker-registry orclcred \
   --docker-server=container-registry.oracle.com \
-  --docker-username="<your-oracle-account-email>" \
+  --docker-username="<your-docker-account-email>" \
   --docker-password="<registry-token>" \
   --docker-email="<your-oracle-account-email>" \
   --namespace=demo
