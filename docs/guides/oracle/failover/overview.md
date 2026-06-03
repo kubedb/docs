@@ -49,6 +49,22 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 $ kubectl create ns demo
 ```
 
+Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:
+
+[here](https://kubedb-v2-hugo--pr873-add-oracle-image-pul-zvihwkcx.web.app/docs/v2026.4.27/guides/oracle/quickstart/guide/#create-oracle-image-pull-secret-important)
+
+Then create the image pull secret:
+
+```shell
+kubectl create secret docker-registry orclcred \
+  --docker-server=container-registry.oracle.com \
+  --docker-username="<your-oracle-account-email>" \
+  --docker-password="<registry-token>" \
+  --docker-email="<your-oracle-account-email>" \
+  --namespace=demo
+```
+
+
 ---
 
 ### Step 1: Deploy Oracle with Data Guard Enabled
@@ -87,7 +103,7 @@ spec:
       podTemplate:
         spec:
           imagePullSecrets:
-            - name: orclcred
+            - name: orclcred  #created this secret in the 'Before You Start' section
           containers:
           - name: observer
             resources:
@@ -109,7 +125,7 @@ spec:
   podTemplate:
     spec:
       imagePullSecrets:
-        - name: orclcred
+        - name: orclcred    #created this secret in the 'Before You Start' section
       serviceAccountName: oracle-sample
       securityContext:
         runAsUser: 54321
