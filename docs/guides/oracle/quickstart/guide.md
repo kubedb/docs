@@ -62,19 +62,19 @@ To pull the Oracle image, create a secret with your Oracle credentials from <htt
   <img alt="registry-home" src="/docs/guides/oracle/quickstart/registry-oracle-home.png">
 </div>
 
-3. Select the enterprise image and click **Continue**. Accept the terms and conditions to enable image pulling (indicated by a green tick mark).
+3\. Select the enterprise image and click **Continue**. Accept the terms and conditions to enable image pulling (indicated by a green tick mark).
 
 <div style="text-align: center;">
   <img alt="database-images" src="/docs/guides/oracle/quickstart/database-image-green-tick.png">
 </div>
 
-4. Navigate to **My Profile** (top right corner) → **Generate Token** and copy the authentication token.
+4\. Navigate to **My Profile** (top right corner) → **Generate Token** and copy the authentication token.
 
 <div style="text-align: center;">
   <img alt="auth-token" src="/docs/guides/oracle/quickstart/auth-token.png">
 </div>
 
-5. Create the Docker registry secret:
+5\. Create the Docker registry secret:
 
 ```shell
 kubectl create secret docker-registry orclcred \
