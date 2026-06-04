@@ -35,6 +35,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [Pgpool](/docs/guides/pgpool/README.md). Shows how to manage Pgpool using KubeDB.
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
+- [Qdrant](/docs/guides/qdrant/README.md). Shows how to manage Qdrant using KubeDB.
 - [RabbitMQ](/docs/guides/rabbitmq/README.md). Shows how to manage RabbitMQ using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
 - [SingleStore](/docs/guides/singlestore/README.md). Shows how to manage SingleStore using KubeDB.

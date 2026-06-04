@@ -1,0 +1,14 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: QdrantAutoscaler
+metadata:
+  name: qdrant-as-storage
+  namespace: demo
+spec:
+  databaseRef:
+    name: qdrant-sample
+  storage:
+    node:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 20
+      expansionMode: "Online"
