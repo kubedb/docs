@@ -203,7 +203,7 @@ Status:
     Status:                True
     Type:                  UpdateDatabase
     Last Transition Time:  2024-10-25T13:38:03Z
-    Message:               Successfully completed the HorizontalScaling for FerretDB
+    Message:               Successfully completed the HorizontalScaling for ZooKeeper
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -363,7 +363,7 @@ Status:
     Status:                True
     Type:                  UpdateDatabase
     Last Transition Time:  2024-10-25T14:00:23Z
-    Message:               Successfully completed the HorizontalScaling for FerretDB
+    Message:               Successfully completed the HorizontalScaling for ZooKeeper
     Observed Generation:   1
     Reason:                Successful
     Status:                True

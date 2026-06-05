@@ -75,7 +75,6 @@ kubectl-dba debug
 * [kubectl-dba debug clickhouse](/docs/reference/cli/kubectl-dba_debug_clickhouse.md)	 - Debug helper for ClickHouse database
 * [kubectl-dba debug druid](/docs/reference/cli/kubectl-dba_debug_druid.md)	 - Debug helper for Druid database
 * [kubectl-dba debug elasticsearch](/docs/reference/cli/kubectl-dba_debug_elasticsearch.md)	 - Debug helper for Elasticsearch database
-* [kubectl-dba debug ferretdb](/docs/reference/cli/kubectl-dba_debug_ferretdb.md)	 - Debug helper for FerretDB database
 * [kubectl-dba debug hazelcast](/docs/reference/cli/kubectl-dba_debug_hazelcast.md)	 - Debug helper for Hazelcast database
 * [kubectl-dba debug ignite](/docs/reference/cli/kubectl-dba_debug_ignite.md)	 - Debug helper for Ignite database
 * [kubectl-dba debug kafka](/docs/reference/cli/kubectl-dba_debug_kafka.md)	 - Debug helper for Kafka database
