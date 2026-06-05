@@ -51,7 +51,7 @@ $ kubectl create ns demo
 
 **Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:**
 
-[here](guides/oracle/quickstart/guide/#create-oracle-image-pull-secret-important)
+[here](/guides/oracle/quickstart/guide/#create-oracle-image-pull-secret-important)
 
 Then create the image pull secret:
 
