@@ -14,7 +14,7 @@ section_menu_id: operatormanual
 > New to KubeDB? Please start [here](/docs/README.md).
 
 # Recommendation for KubeDB 
-Databases on Kubernetes in production grade infrastructure often need to go through several administrative operations depending on specific resource requirements. Such operations include vertical scaling (cpu, memory) and storage expansion. Autoscaling support for KubeDB managed databases takes care of it. However, databases also need to go through some maintenance operations in order to ensure security, enhance performance, getting bug fixes and new features etc. Such operations mostly require organization's manual intervention. Even if these operations are automated, they need to be done in surveillance. KubeDB simplifies this by generating K8s Native Recommendations. 
+Databases on Kubernetes in production require regular maintenance operations to ensure security, compliance, and optimal performance. Older database versions may carry known vulnerabilities, making version updates essential to receive security patches, bug fixes, and new features. TLS certificates must be rotated before expiry to prevent service disruptions, maintain trust with Certificate Authorities, and meet compliance requirements. Authentication secrets also need periodic rotation to mitigate credential leakage, limit exposure of compromised credentials, and enforce updated security policies. While these operations are critical, they require careful scheduling and monitoring to minimize service disruption. KubeDB simplifies this by automatically generating K8s Native Recommendations for these maintenance tasks. 
 
 ## Overview
 
