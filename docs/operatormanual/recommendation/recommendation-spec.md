@@ -81,6 +81,24 @@ status:
 
 ## OperationPhaseRules
 
+Frist have a look on `operation` yaml,
+
+```shell
+$ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee -o jsonpath='{.spec.operation}' | yq -y
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: update-version
+  namespace: es
+spec:
+  databaseRef:
+    name: elastic
+  type: UpdateVersion
+  updateVersion:
+    targetVersion: xpack-9.2.3
+status: {}
+```
+
 * `spec.rules.success` (string) – specifies the rule to detect successful execution.
 
 * `spec.rules.inProgress` (string) – specifies the rule to detect ongoing execution.

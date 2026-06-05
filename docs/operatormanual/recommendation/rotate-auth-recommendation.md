@@ -26,22 +26,31 @@ Rotating authentication secrets in database management is vital to mitigate secu
 Let's go through a demo to see `RotateAuth` recommendations being generated. First, get the available versions provided by KubeDB.
 
 ```bash
-$  kubectl get elasticsearchversions | grep xpack
-xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                                  12d
-xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                                 12d
-xpack-7.17.28       7.17.28   ElasticStack   ghcr.io/appscode-images/elastic:7.17.28                                 12d
-xpack-8.17.10       8.17.10   ElasticStack   ghcr.io/appscode-images/elastic:8.17.10                                 12d
-xpack-8.17.6        8.17.6    ElasticStack   ghcr.io/appscode-images/elastic:8.17.6                                  12d
-xpack-8.18.2        8.18.2    ElasticStack   ghcr.io/appscode-images/elastic:8.18.2                                  12d
-xpack-8.18.8        8.18.8    ElasticStack   ghcr.io/appscode-images/elastic:8.18.8                                  12d
-xpack-8.19.9        8.19.9    ElasticStack   ghcr.io/appscode-images/elastic:8.19.9                                  12d
-xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                                   12d
-xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                                   12d
-xpack-9.0.2         9.0.2     ElasticStack   ghcr.io/appscode-images/elastic:9.0.2                                   12d
-xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0.8                                   12d
-xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   12d
-xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   12d
-xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   12d
+$  kubectl get elasticsearchversions
+NAME                VERSION   DISTRIBUTION   DB_IMAGE                                                   DEPRECATED   AGE
+opensearch-1.3.13   1.3.13    OpenSearch     ghcr.io/appscode-images/opensearch:1.3.13                               3m1s
+opensearch-1.3.20   1.3.20    OpenSearch     ghcr.io/appscode-images/opensearch:1.3.20                               3m1s
+opensearch-2.19.2   2.19.2    OpenSearch     ghcr.io/appscode-images/opensearch:2.19.2                               3m1s
+opensearch-2.5.0    2.5.0     OpenSearch     ghcr.io/appscode-images/opensearch:2.5.0                                3m1s
+opensearch-3.1.0    3.1.0     OpenSearch     ghcr.io/appscode-images/opensearch:3.1.0                                3m1s
+opensearch-3.4.0    3.4.0     OpenSearch     ghcr.io/appscode-images/opensearch:3.4.0                                3m1s
+searchguard-7.9.3   7.9.3     SearchGuard    docker.io/floragunncom/sg-elasticsearch:7.9.3-oss-47.1.0                3m1s
+xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                                  3m1s
+xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                                 3m1s
+xpack-7.17.28       7.17.28   ElasticStack   ghcr.io/appscode-images/elastic:7.17.28                                 3m1s
+xpack-8.17.10       8.17.10   ElasticStack   ghcr.io/appscode-images/elastic:8.17.10                                 3m1s
+xpack-8.17.6        8.17.6    ElasticStack   ghcr.io/appscode-images/elastic:8.17.6                                  3m1s
+xpack-8.18.2        8.18.2    ElasticStack   ghcr.io/appscode-images/elastic:8.18.2                                  3m1s
+xpack-8.18.8        8.18.8    ElasticStack   ghcr.io/appscode-images/elastic:8.18.8                                  3m1s
+xpack-8.19.9        8.19.9    ElasticStack   ghcr.io/appscode-images/elastic:8.19.9                                  3m1s
+xpack-8.2.3         8.2.3     ElasticStack   ghcr.io/appscode-images/elastic:8.2.3                                   3m1s
+xpack-8.5.3         8.5.3     ElasticStack   ghcr.io/appscode-images/elastic:8.5.3                                   3m1s
+xpack-9.0.2         9.0.2     ElasticStack   ghcr.io/appscode-images/elastic:9.0.2                                   3m1s
+xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0.8                                   3m1s
+xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   3m1s
+xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   3m1s
+xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   3m1s
+                                 12d
 ```
 
 Let's deploy an cluster with version `xpack-9.1.9`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
