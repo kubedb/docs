@@ -20,7 +20,6 @@ Guides to show you how to perform tasks with KubeDB:
 - [ClickHouse](/docs/guides/clickhouse/README.md). Shows how to manage ClickHouse using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
-- [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.
 - [Ignite](/docs/guides/ignite/README.md). Shows how to manage Ignite using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
