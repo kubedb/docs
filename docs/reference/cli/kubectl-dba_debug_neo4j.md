@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Zookeeper
+title: Kubectl-Dba Debug Neo4j
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-zookeeper
-    name: Kubectl-Dba Debug Zookeeper
+    identifier: kubectl-dba-debug-neo4j
+    name: Kubectl-Dba Debug Neo4j
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug zookeeper
+## kubectl-dba debug neo4j
 
-Debug helper for ZooKeeper database
+Debug helper for Neo4j database
 
 ```
-kubectl-dba debug zookeeper [flags]
+kubectl-dba debug neo4j [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
+kubectl dba debug neo4j -n demo sample-neo4j --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for zookeeper
+  -h, --help                        help for neo4j
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
