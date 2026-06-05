@@ -49,9 +49,9 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 $ kubectl create ns demo
 ```
 
-Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:
+**Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:**
 
-[here](https://kubedb-v2-hugo--pr873-add-oracle-image-pul-zvihwkcx.web.app/docs/v2026.4.27/guides/oracle/quickstart/guide/#create-oracle-image-pull-secret-important)
+[here](guides/oracle/quickstart/guide/#create-oracle-image-pull-secret-important)
 
 Then create the image pull secret:
 
