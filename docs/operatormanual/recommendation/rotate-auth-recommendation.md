@@ -1,5 +1,5 @@
 ---
-title: Elasticsearch Version Update Recommendation
+title: Rotate Auth Recommendation
 menu:
   docs_{{ .version }}:
     identifier: rotate-auth-recommendation
@@ -50,109 +50,97 @@ xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0
 xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   3m1s
 xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   3m1s
 xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   3m1s
-                                 12d
 ```
 
-Let's deploy an cluster with version `xpack-9.1.9`. We are going to create a cluster topology with 2 master nodes, 3 data nodes and 2 ingest node. We also have to provide an available storageclass for each of the node types.
-
-```yaml
- apiVersion: kubedb.com/v1
- kind: Elasticsearch
- metadata:
-   name: elastic
-   namespace: es
- spec:
-   version: xpack-9.1.9
-   storageType: Durable
-   deletionPolicy: WipeOut
-   authSecret:
-     kind: secret
-     name: es-auth
-     rotateAfter: 1h
-   topology:
-     master:
-       replicas: 2
-       storage:
-         storageClassName: "local-path"
-         accessModes:
-         - ReadWriteOnce
-         resources:
-           requests:
-             storage: 1Gi
-     data:
-       replicas: 2
-       storage:
-         storageClassName: "local-path"
-         accessModes:
-         - ReadWriteOnce
-         resources:
-           requests:
-             storage: 1Gi
-     ingest:
-       replicas: 1
-       storage:
-         storageClassName: "local-path"
-         accessModes:
-         - ReadWriteOnce
-         resources:
-           requests:
-             storage: 1Gi
-```
-
-Wait for a while till elasicsearch cluster gets into `Ready` state. Required time depends on image pulling and node's physical specifications.
+Let's deploy a cluster with version `xpack-9.1.9`. First create a credential:
 
 ```bash
-$ kubectl get es elastic -n es -w
-NAME      VERSION        STATUS         AGE
-elastic   xpack-9.1.9   Provisioning   98s
-elastic   xpack-9.1.9   Provisioning   5m43s
-elastic   xpack-9.1.9   Provisioning   8m7s
-.
-.
-.
-elastic   xpack-9.1.9   Ready          10m
-elastic   xpack-9.1.9   Ready          10m
+kubectl create secret generic es-auth -n demo \
+                                                  --type=kubernetes.io/basic-auth \
+                                                  --from-literal=username=elastic \
+                                                  --from-literal=password=testpassword
+
+secret/es-auth created
+```
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-rarecommendation
+  namespace: demo
+spec:
+  version: xpack-9.1.9
+  authSecret:
+     name: es-auth
+     rotateAfter: 1h
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+```
+
+Wait for a while till elasticsearch cluster gets into `Ready` state. Required time depends on image pulling and node's physical specifications.
+
+```bash
+$ kubectl get elasticsearch,pods -n demo
+NAME                                              VERSION       STATUS   AGE
+elasticsearch.kubedb.com/es-rarecommendation      xpack-9.1.9   Ready    3m24s
+
+NAME                           READY   STATUS    RESTARTS   AGE
+pod/es-rarecommendation-0      1/1     Running   0          3m20s
+pod/es-rarecommendation-1      1/1     Running   0          113s
+pod/es-rarecommendation-2      1/1     Running   0          104s
 ```
 
 Since, `.spec.authSecret.rotateAfter` is set as `1h`, it is expected that the recommendation engine will generate a rotate-auth recommendation at least after 40 minutes (two-third of lifespan) of the authsecret creation. Once generated you will get a similar recommendation as follows.
 
 ```bash
-$ kubectl get recommendation -n es | grep rotate-auth
-NAME                                              STATUS    OUTDATED   AGE
-elastic-x-elasticsearch-x-rotate-auth-2juuee      Pending   false      10m
+$ kubectl get recommendation -n demo
+NAME                                                          STATUS      OUTDATED   AGE
+es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b      Succeeded   true       73m
+es-rarecommendation-x-elasticsearch-x-rotate-auth-hbtptb      Succeeded   true       153m
+es-rarecommendation-x-elasticsearch-x-rotate-auth-zuh67o      Succeeded   false      11m
+es-rarecommendation-x-elasticsearch-x-update-version-jdz0h1   Pending     false      152m
 ```
 
 The `Recommendation` custom resource will be named as `<DB-name>-x-<DB type>-x-<Recommendation type>-<random hash>`. Initially, the KubeDB `Supervisor` controller will mark the `Status` of this object to `Pending`. Let's check the complete Recommendation custom resource manifest:
 
 ```yaml
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-rotate-auth-2juuee -oyaml
+$ kubectl get recommendation -n demo es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b -oyaml
 apiVersion: supervisor.appscode.com/v1alpha1
 kind: Recommendation
 metadata:
-  creationTimestamp: "2025-02-25T09:12:29Z"
+  creationTimestamp: "2026-06-05T10:23:51Z"
   generation: 1
   labels:
-    app.kubernetes.io/instance: elastic
+    app.kubernetes.io/instance: es-rarecommendation
     app.kubernetes.io/managed-by: kubedb.com
     app.kubernetes.io/type: rotate-auth
-  name: elastic-x-elasticsearch-x-rotate-auth-2juuee
-  namespace: es
-  resourceVersion: "80116"
-  uid: 12f24cf6-2f02-420f-863d-3523e32a08dd
+  name: es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b
+  namespace: demo
+  resourceVersion: "15975"
+  uid: 7ec40fc4-3291-4322-b142-bb650232d0c8
 spec:
-  backoffLimit: 5
-  deadline: "2025-02-25T09:20:53Z"
-  description: Recommending AuthSecret rotation,elastic-auth AuthSecret needs to be
-    rotated before 2025-02-25 09:30:53 +0000 UTC
+  backoffLimit: 10
+  deadline: "2026-06-05T09:54:05Z"
+  description: Recommending AuthSecret rotation,es-auth AuthSecret needs to be rotated
+    before 2026-06-05 10:04:05 +0000 UTC
   operation:
     apiVersion: ops.kubedb.com/v1alpha1
     kind: ElasticsearchOpsRequest
     metadata:
       name: rotate-auth
-      namespace: es
+      namespace: demo
     spec:
       databaseRef:
-        name: elastic
+        name: es-rarecommendation
       type: RotateAuth
     status: {}
   recommender:
@@ -165,105 +153,99 @@ spec:
   target:
     apiGroup: kubedb.com
     kind: Elasticsearch
-    name: elastic
+    name: es-rarecommendation
 status:
-  approvalStatus: Pending
+  approvalStatus: Approved
+  approvedWindow:
+    window: Immediate
+  conditions:
+  - lastTransitionTime: "2026-06-05T10:23:51Z"
+    message: OpsRequest is successfully created
+    reason: SuccessfullyCreatedOperation
+    status: "True"
+    type: SuccessfullyCreatedOperation
+  - lastTransitionTime: "2026-06-05T10:25:51Z"
+    message: OpsRequest is successfully executed
+    reason: SuccessfullyExecutedOperation
+    status: "True"
+    type: SuccessfullyExecutedOperation
+  createdOperationRef:
+    name: es-rarecommendation-1780655031-rotate-auth-auto
   failedAttempt: 0
-  outdated: false
+  observedGeneration: 1
+  outdated: true
   parallelism: Namespace
-  phase: Pending
-  reason: WaitingForApproval
+  phase: Succeeded
+  reason: SuccessfullyExecutedOperation
 ```
 
-In the generated Recommendation you will find a description, targeted db object, recommended operation or Ops-Request manifest, current status of the recommendation etc. Let's just focus on the recommendation description first.
+In the `spec.operation` field, the recommendation suggests rotating the authentication secret of `es-rarecommendation`. The recommended operation is an `ElasticsearchOpsRequest` of `RotateAuth` type.
 
-```shell
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-rotate-auth-2juuee -o jsonpath='{.spec.operation}' | yq -y
-apiVersion: ops.kubedb.com/v1alpha1
-kind: ElasticsearchOpsRequest
-metadata:
-  name: rotate-auth
-  namespace: es
-spec:
-  databaseRef:
-    name: elastic
-  type: RotateAuth
-status: {}
-```
+Notice that unlike version update recommendations, rotate-auth recommendations do **not** set `requireExplicitApproval`. This means KubeDB Supervisor automatically approves and executes the operation when the `deadline` is reached — ensuring authentication secrets are always rotated on time without requiring manual intervention.
 
-Let's check the status part of this recommendation.
+In this case, the `deadline` (`"2026-06-05T09:54:05Z"`) had already passed by the time the recommendation was created (`"2026-06-05T10:23:51Z"`), so Supervisor immediately set `approvalStatus: Approved` with `approvedWindow: Immediate` and triggered the OpsRequest automatically.
+
+You can also approve the recommendation manually before the deadline using kubectl CLI:
 
 ```bash
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-rotate-auth-2juuee -o jsonpath='{.status}' | yq -y
-approvalStatus: Pending
-failedAttempt: 0
-outdated: false
-parallelism: Namespace
-phase: Pending
-reason: WaitingForApproval
-```
-
-Now, This recommendation can be approved and operation can be executed immediately by setting `ApprovalStatus` to `Approved` and Setting `approvedWindow` to `Immediate`. You can approve this easily through Appscode UI or edit it manually. Also, You can use kubectl CLI for this -
-
-```bash
-$ kubectl patch Recommendation elastic-x-elasticsearch-x-rotate-auth-2juuee \
-                  -n es \
+$ kubectl patch Recommendation es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b \
+                  -n demo \
                   --type merge \
                   --subresource='status' \
                   -p '{"status":{"approvalStatus":"Approved","approvedWindow":{"window":"Immediate"}}}'
-recommendation.supervisor.appscode.com/elastic-x-elasticsearch-x-rotate-auth-2juuee patched
+recommendation.supervisor.appscode.com/es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b patched
 ```
 
 Now, check the status part again. You will find a condition have appeared which says `OpsRequest is successfully created`.
 
 ```bash
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-rotate-auth-2juuee -o jsonpath='{.status}' | yq -y
+$ kubectl get recommendation -n demo es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b -o jsonpath='{.status}' | yq -y
 approvalStatus: Approved
 approvedWindow:
   window: Immediate
 conditions:
-  - lastTransitionTime: '2025-02-25T09:23:29Z'
+  - lastTransitionTime: '2026-06-05T10:23:51Z'
     message: OpsRequest is successfully created
     reason: SuccessfullyCreatedOperation
     status: 'True'
     type: SuccessfullyCreatedOperation
 createdOperationRef:
-  name: elastic-1740475409-rotate-auth-auto
+  name: es-rarecommendation-1780655031-rotate-auth-auto
 failedAttempt: 0
-outdated: false
+outdated: true
 parallelism: Namespace
 phase: InProgress
 reason: StartedExecutingOperation
 ```
 
-You will find an `ElasticsearchOpsRequest` custom resource have been created and, it is rotating the authsecret of `elastic` cluster with negligible downtime. Let's wait for it to reach `Successful` status.
+You will find an `ElasticsearchOpsRequest` custom resource has been created and it is rotating the auth secret of `es-rarecommendation` cluster with negligible downtime. Let's wait for it to reach `Successful` status.
 
 ```bash
-$ kubectl get elasticsearchopsrequest -n es elastic-1740475409-rotate-auth-auto -w
-NAME                                     TYPE            STATUS        AGE
-elastic-1740475409-rotate-auth-auto      UpdateVersion   Progressing   3m12s
-elastic-1740475409-rotate-auth-auto      UpdateVersion   Progressing   3m34s
+$ kubectl get elasticsearchopsrequest -n demo es-rarecommendation-1780655031-rotate-auth-auto -w
+NAME                                              TYPE         STATUS        AGE
+es-rarecommendation-1780655031-rotate-auth-auto   RotateAuth   Progressing   60s
+es-rarecommendation-1780655031-rotate-auth-auto   RotateAuth   Progressing   114s
 .
 .
-elastic-1740475409-rotate-auth-auto      UpdateVersion   Successful    11m
+es-rarecommendation-1780655031-rotate-auth-auto   RotateAuth   Successful    5m
 ```
 
 Let's recheck the recommendation for one last time. We should find that `.status.phase` has been marked as `Succeeded`.
 
 ```bash
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-rotate-auth-2juuee
-NAME                                              STATUS      OUTDATED   AGE
-elastic-x-elasticsearch-x-rotate-auth-2juuee      Succeeded   false      78m
+$ kubectl get recommendation -n demo es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b
+NAME                                                       STATUS      OUTDATED   AGE
+es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b   Succeeded   true       78m
 ```
 
-You may not want to do trigger recommended operations manually. Rather, trigger them autonomously in a preferred schedule when infrastructure is idle or traffic rate is at the lowest. For this purpose, You can create a `MaintenanceWindow` custom resource where you can set your desired schedule/period for triggering these recommended operations automatically. See [Maintenance Window](/docs/operatormanual/recommendation/maintenance-window.md) for detailed documentation. Here's a sample one:
+You may not want to trigger recommended operations manually. Rather, trigger them autonomously in a preferred schedule when infrastructure is idle or traffic rate is at the lowest. For this purpose, You can create a `MaintenanceWindow` custom resource where you can set your desired schedule/period for triggering these recommended operations automatically. See [Maintenance Window](/docs/operatormanual/recommendation/maintenance-window.md) for detailed documentation. Here's a sample one:
 
 ```yaml
 apiVersion: supervisor.appscode.com/v1alpha1
 kind: MaintenanceWindow
 metadata:
   name: elastic-maintenance
-  namespace: es
+  namespace: demo
 spec:
   timezone: Asia/Dhaka
   days:
@@ -275,14 +257,14 @@ spec:
       end: 2025-01-25T23:41:18Z
 ```
 
-You can now create a `ApprovalPolicy` custom resource to refer this `MaintenanceWindow` for particular DB type. See [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) for detailed documentation. Following is a sample `ApprovalPolicy` for any `Elasticsearch` custom resource deployed in `es` namespace. This `ApprovalPolicy` custom resource is referring to the `elastic-maintenance` MaintenanceWindow created in the same namespace. You can also create `ClusterMaintenanceWindow` instead (see [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md)) which is effective for cluster-wide operations and refer it here. The following ApprovalPolicy will trigger recommended operations when referred maintenance window timeframe is reached.
+You can now create a `ApprovalPolicy` custom resource to refer this `MaintenanceWindow` for particular DB type. See [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) for detailed documentation. Following is a sample `ApprovalPolicy` for any `Elasticsearch` custom resource deployed in `demo` namespace. This `ApprovalPolicy` custom resource is referring to the `elastic-maintenance` MaintenanceWindow created in the same namespace. You can also create `ClusterMaintenanceWindow` instead (see [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md)) which is effective for cluster-wide operations and refer it here. The following ApprovalPolicy will trigger recommended operations when referred maintenance window timeframe is reached.
 
 ```yaml
 apiVersion: supervisor.appscode.com/v1alpha1
 kind: ApprovalPolicy
 metadata:
   name: es-policy
-  namespace: es
+  namespace: demo
 maintenanceWindowRef:
   name: elastic-maintenance
 targets:
@@ -296,12 +278,12 @@ targets:
 Lastly, If you want to reject a recommendation, you can just set `ApprovalStatus` to `Rejected` in the recommendation status section. Here's how you can do it using kubectl cli.
 
 ```bash
-$ kubectl patch Recommendation elastic-x-elasticsearch-x-rotate-auth-2juuee \
-                  -n es \
+$ kubectl patch Recommendation es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b \
+                  -n demo \
                   --type merge \
                   --subresource='status' \
                   -p '{"status":{"approvalStatus":"Rejected"}}'
-recommendation.supervisor.appscode.com/elastic-x-elasticsearch-x-rotate-auth-2juuee patched
+recommendation.supervisor.appscode.com/es-rarecommendation-x-elasticsearch-x-rotate-auth-eonv4b patched
 ```
 
 For complete reference on all Recommendation fields, phases, and status conditions, see [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md).

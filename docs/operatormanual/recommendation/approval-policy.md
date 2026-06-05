@@ -9,18 +9,7 @@ menu:
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---
----
 
-title: Approval Policy
-menu:
-docs_{{ .version }}:
-identifier: approval-policy
-name: Approval Policy
-parent: recommendation
-weight: 70
-menu_name: docs_{{ .version }}
-section_menu_id: operatormanual
--------------------------------
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
