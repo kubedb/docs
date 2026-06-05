@@ -1,8 +1,0 @@
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: fr-new-issuer
-  namespace: demo
-spec:
-  ca:
-    secretName: ferretdb-new-ca

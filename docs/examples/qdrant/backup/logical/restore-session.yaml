@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: restore-qdrant-sample
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Qdrant
+    namespace: demo
+    name: qdrant-sample-restore
+  dataSource:
+    repository: minio-qdrant-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: qdrant-addon
+    tasks:
+      - name: logical-backup-restore

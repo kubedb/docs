@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdrant-horizontal-scale
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: qdrant-sample
+  horizontalScaling:
+    node: 5
