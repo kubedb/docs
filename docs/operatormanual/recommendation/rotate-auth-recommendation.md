@@ -14,16 +14,27 @@ section_menu_id: operatormanual
 
 # Authentication Rotate Recommendation
 
-Rotating authentication secrets in database management is vital to mitigate security risks, such as credential leakage or unauthorized access, and to comply with regulatory requirements. Regular rotation limits the exposure of compromised credentials, reduces the risk of insider threats, and enforces updated security policies like stronger passwords or algorithms. It also ensures operational resilience by testing the rotation process and revoking stale or unused credentials. KubeDB provides `RotateAuth` which reduces manual errors, and strengthens database security with minimal effort. KubeDB Ops-manager generates Recommendation for rotating authentication secrets via this OpsRequest.
+Database credentials are a high-value target. Leaving them static — sometimes for years — magnifies the blast radius of any leak: backup tarballs, log lines, abandoned dev pods, or a compromised CI runner can all expose them. Regular rotation limits how long a stolen credential is useful, satisfies compliance audits, exercises the rotation code path itself (so it actually works when you need it), and revokes access for stale humans and services.
 
-> Note: We provide support for `Recommendation` across most database systems. Below is an example demonstrating how recommendations are applied for the [MongoDB](/docs/guides/mongodb) database.
+KubeDB ships the `RotateAuth` OpsRequest for this — and the Ops-manager generates a `Recommendation` to drive it automatically. Rotation is opt-in: it is only generated when the database CR sets `spec.authSecret.rotateAfter`.
 
-`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases  in a Kubernetes native way. The recommendation will only be created if `.spec.authSecret.rotateAfter` is set. KubeDB generates MongoDB Rotate Auth recommendation regarding two particular cases.
+KubeDB raises an auth-rotation recommendation when:
 
-1. AuthSecret lifespan is more than one month and, less than one month remaining till expiry
-2. AuthSecret lifespan is less than one month and, less than one third of lifespan remaining till expiry
+1. AuthSecret lifespan is **more than one month** and **less than one month** of life remains, or
+2. AuthSecret lifespan is **less than one month** and **less than one third** of life remains.
 
-Let's go through a demo to see `RotateAuth` recommendations being generated. 
+> **Note:** Recommendations work across most KubeDB-managed databases. The walkthrough below uses [MongoDB](/docs/guides/mongodb).
+
+## Before you begin
+
+- KubeDB and the **Supervisor** are installed (`--set supervisor.enabled=true`).
+- `kubectl` is configured against the cluster.
+- The target database CR must set `spec.authSecret.rotateAfter`. Without it, no rotation Recommendation is generated.
+
+## Deploy MongoDB with rotation enabled
+
+For the demo we use an aggressive `rotateAfter: 1h`. In production, pick something realistic like `2160h` (90 days).
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MongoDB
@@ -42,176 +53,133 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Wait for a while till MongoDB cluster gets into `Ready` state. Required time depends on image pulling and node's physical specifications.
+Wait until MongoDB reports `Ready`. The time depends on image pull speed.
 
 ```bash
 $ kubectl get mongodb,pods -n demo
-NAME                          VERSION   STATUS   AGE
-mongodb.kubedb.com/mg-rarecommendation   8.0.10    Ready    50m
+NAME                                     VERSION   STATUS   AGE
+mongodb.kubedb.com/mg-rarecommendation   8.0.10    Ready    10m
 
-NAME             READY   STATUS    RESTARTS   AGE
-pod/mg-rarecommendation-0   1/1     Running   0          19s
-
+NAME                        READY   STATUS    RESTARTS   AGE
+pod/mg-rarecommendation-0   1/1     Running   0          10m
 ```
 
-Since, `.spec.authSecret.rotateAfter` is set as `1h`, it is expected that the recommendation engine will generate a rotate-auth recommendation at least after 40 minutes (two-third of lifespan) of the authsecret creation. Once generated you will get a similar recommendation as follows.
+## A rotate-auth Recommendation appears
+
+With `rotateAfter: 1h`, the recommendation engine creates a rotation Recommendation roughly **40 minutes** after the auth secret was created (two-thirds of the lifespan). Once it appears, you will see something like:
 
 ```bash
-$ kubectl get mongodb,mongodbopsrequest,pods -n demo
-NAME                          VERSION   STATUS   AGE
-mongodb.kubedb.com/mg-rarecommendation   8.0.10    Ready    50m
-
-NAME                                                                       TYPE            STATUS       AGE
-mongodbopsrequest.ops.kubedb.com/mg-rarecommendation-1780896035-update-version-auto   UpdateVersion   Successful   39m
-mongodbopsrequest.ops.kubedb.com/mg-rarecommendation-1780898378-rotate-auth-auto      RotateAuth      Successful   38s
-
-NAME             READY   STATUS    RESTARTS   AGE
-pod/mg-rarecommendation-0   1/1     Running   0          19s
-
-$ kubectl get recommendation -n demo 
-NAME                                              STATUS      OUTDATED   AGE
-mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3           Succeeded   false      11m
-mg-rarecommendation-x-mongodb-x-update-same-version-6tbbbc   Pending     false      32m
-mg-rarecommendation-x-mongodb-x-update-version-c2pemb        Succeeded   false      49m
+$ kubectl get recommendation -n demo
+NAME                                                          STATUS      OUTDATED   AGE
+mg-rarecommendation-x-mongodb-x-rotate-auth-<HASH>            <STATUS>    false      <AGE>
+mg-rarecommendation-x-mongodb-x-update-version-<HASH>         Pending     false      <AGE>
 ```
 
-The `Recommendation` custom resource will be named as `<DB-name>-x-<DB type>-x-<Recommendation type>-<random hash>`.  Let's check the complete Recommendation custom resource manifest:
+The Recommendation name follows the pattern `<DB-name>-x-<DB-type>-x-<recommendation-type>-<random-suffix>`. Let's look at the full manifest:
 
 ```yaml
-$ kubectl get recommendation -n demo mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3 -oyaml
+$ kubectl get recommendation -n demo <ROTATE-AUTH-NAME> -oyaml
+<YAML-PLACEHOLDER>
+```
+
+What this manifest tells you:
+
+- `spec.description` — explains that the auth secret needs rotation before the secret's expiry timestamp.
+- `spec.deadline` — Supervisor will auto-approve and execute at or before this time so rotation finishes before the secret expires.
+- `spec.operation` — a `MongoDBOpsRequest` of type `RotateAuth`.
+- Notice that `spec.requireExplicitApproval` is **not set**. Auth secret rotation defaults to automatic approval — like TLS, missing the deadline is worse than running unattended.
+- When the deadline is reached, Supervisor sets `status.approvalStatus: Approved`, `status.approvedWindow.window: Immediate`, creates the OpsRequest, and reports progress via `status.conditions`.
+
+## Watching the OpsRequest
+
+After auto-approval, an `MongoDBOpsRequest` is created and reaches `Successful`:
+
+```bash
+$ kubectl get mongodbopsrequest -n demo
+NAME                                              TYPE         STATUS       AGE
+mg-rarecommendation-<TIMESTAMP>-rotate-auth-auto  RotateAuth   Successful   <AGE>
+```
+
+`RotateAuth` rotates the auth secret with negligible downtime — the database keeps accepting connections throughout the rolling restart.
+
+You can re-check the Recommendation status as JSON:
+
+```bash
+$ kubectl get recommendation <ROTATE-AUTH-NAME> \
+     -n demo -o json | jq '.status'
+```
+
+You will see `phase: Succeeded` and `reason: SuccessfullyExecutedOperation`.
+
+## Rejecting a recommendation
+
+If you need to skip a rotation (for example because you're about to change auth strategy), reject it:
+
+```bash
+$ kubectl patch recommendation <ROTATE-AUTH-NAME> \
+     -n demo \
+     --type merge \
+     --subresource='status' \
+     -p '{"status":{"approvalStatus":"Rejected"}}'
+recommendation.supervisor.appscode.com/<ROTATE-AUTH-NAME> patched
+```
+
+## Automating execution with a maintenance window
+
+Auto-approval is great, but `Immediate` execution can still be disruptive at the wrong hour. Pair a `MaintenanceWindow` with an `ApprovalPolicy` to keep rotations off-peak.
+
+### 1. Define a MaintenanceWindow
+
+```yaml
 apiVersion: supervisor.appscode.com/v1alpha1
-kind: Recommendation
+kind: MaintenanceWindow
 metadata:
-  creationTimestamp: "2026-06-08T05:49:38Z"
-  generation: 1
-  labels:
-    app.kubernetes.io/instance: mg-rarecommendation
-    app.kubernetes.io/managed-by: kubedb.com
-    app.kubernetes.io/type: rotate-auth
-  name: mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3
+  name: mongo-maintenance
   namespace: demo
-  resourceVersion: "90645"
-  uid: e31ea7fa-ac14-47d3-b30d-366b685a148d
 spec:
-  backoffLimit: 10
-  deadline: "2026-06-08T05:59:34Z"
-  description: Recommending AuthSecret rotation,mg-rarecommendation-auth AuthSecret needs to
-    be rotated before 2026-06-08 06:09:34 +0000 UTC
-  operation:
-    apiVersion: ops.kubedb.com/v1alpha1
-    kind: MongoDBOpsRequest
-    metadata:
-      name: rotate-auth
-      namespace: demo
-    spec:
-      databaseRef:
-        name: mg-rarecommendation
-      type: RotateAuth
-    status: {}
-  recommender:
-    name: kubedb-ops-manager
-  rules:
-    failed: has(self.status) && has(self.status.phase) && self.status.phase == 'Failed'
-    inProgress: has(self.status) && has(self.status.phase) && self.status.phase ==
-      'Progressing'
-    success: has(self.status) && has(self.status.phase) && self.status.phase == 'Successful'
-  target:
-    apiGroup: kubedb.com
+  isDefault: true
+  timezone: UTC
+  days:
+    Sunday:
+      - start: "00:00"
+        end: "04:00"
+    Saturday:
+      - start: "00:00"
+        end: "04:00"
+```
+
+See [Maintenance Window](/docs/operatormanual/recommendation/maintenance-window.md) for the complete reference.
+
+### 2. Auto-approve with an ApprovalPolicy
+
+This policy auto-approves `RotateAuth` (and any other MongoDB ops) and binds them to the window above.
+
+```yaml
+apiVersion: supervisor.appscode.com/v1alpha1
+kind: ApprovalPolicy
+metadata:
+  name: mongodb-policy
+  namespace: demo
+maintenanceWindowRef:
+  kind: MaintenanceWindow
+  name: mongo-maintenance
+  namespace: demo
+targets:
+  - group: kubedb.com
     kind: MongoDB
-    name: mg-rarecommendation
-status:
-  approvalStatus: Approved
-  approvedWindow:
-    window: Immediate
-  conditions:
-  - lastTransitionTime: "2026-06-08T05:59:38Z"
-    message: OpsRequest is successfully created
-    reason: SuccessfullyCreatedOperation
-    status: "True"
-    type: SuccessfullyCreatedOperation
-  - lastTransitionTime: "2026-06-08T06:00:38Z"
-    message: OpsRequest is successfully executed
-    reason: SuccessfullyExecutedOperation
-    status: "True"
-    type: SuccessfullyExecutedOperation
-  createdOperationRef:
-    name: mg-rarecommendation-1780898378-rotate-auth-auto
-  failedAttempt: 0
-  observedGeneration: 1
-  outdated: false
-  parallelism: Namespace
-  phase: Succeeded
-  reason: SuccessfullyExecutedOperation
+    operations:
+      - group: ops.kubedb.com
+        kind: MongoDBOpsRequest
 ```
 
-In the `spec.operation` field, the recommendation suggests rotating the authentication secret of `mg-rarecommendation`. The recommended operation is an `MongoDBOpsRequest` of `RotateAuth` type.
+See [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) for the complete reference.
 
-Notice that  rotate-auth recommendations do not set `requireExplicitApproval`. This means KubeDB Supervisor automatically approves and executes the operation when the `deadline` is reached, ensuring authentication secrets are always rotated on time without requiring manual intervention.
+### 3. Or use a cluster-wide default
 
-In this case, the `deadline` (`"2026-06-08T05:59:34Z"`) had already passed by the time the recommendation was created (`"2026-06-08T06:39:34Z"`), so Supervisor immediately set `approvalStatus: Approved` with `approvedWindow: Immediate` and triggered the OpsRequest automatically.
+If you would rather set one default for the whole cluster, replace the namespace-scoped `MaintenanceWindow` with a `ClusterMaintenanceWindow` and point `maintenanceWindowRef.kind` at it. See [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md).
 
+> **Important:** Make sure the window opens **before** the recommendation's `spec.deadline`. If the deadline passes first, Supervisor rotates immediately to keep the auth secret from expiring.
 
-Now, check the status part again. You will find a condition have appeared which says `OpsRequest is successfully created`.
+---
 
-```bash
-$ kubectl get recommendation mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3 \
-                                    -n demo -o json | jq '.status'
-{
-  "approvalStatus": "Approved",
-  "approvedWindow": {
-    "window": "Immediate"
-  },
-  "conditions": [
-    {
-      "lastTransitionTime": "2026-06-08T05:59:38Z",
-      "message": "OpsRequest is successfully created",
-      "reason": "SuccessfullyCreatedOperation",
-      "status": "True",
-      "type": "SuccessfullyCreatedOperation"
-    },
-    {
-      "lastTransitionTime": "2026-06-08T06:00:38Z",
-      "message": "OpsRequest is successfully executed",
-      "reason": "SuccessfullyExecutedOperation",
-      "status": "True",
-      "type": "SuccessfullyExecutedOperation"
-    }
-  ],
-  "createdOperationRef": {
-    "name": "mg-rarecommendation-1780898378-rotate-auth-auto"
-  },
-  "failedAttempt": 0,
-  "observedGeneration": 1,
-  "outdated": false,
-  "parallelism": "Namespace",
-  "phase": "Succeeded",
-  "reason": "SuccessfullyExecutedOperation"
-}
-```
-
-You will find an `MongoDBOpsRequest` custom resource has been created and it is rotating the auth secret of `mg-rarecommendation` cluster with negligible downtime. Let's wait for it to reach `Successful` status.
-
-```bash
-$ kubectl get mongodbopsrequest -n demo mg-rarecommendation-1780898378-rotate-auth-auto 
-NAME                                   TYPE         STATUS       AGE
-mg-rarecommendation-1780898378-rotate-auth-auto   RotateAuth   Successful   10m
-```
-
-
-You may not want to trigger recommended operations manually. Rather, trigger them autonomously in a preferred schedule when infrastructure is idle or traffic rate is at the lowest. For this purpose, You can create a `MaintenanceWindow` custom resource where you can set your desired schedule/period for triggering these recommended operations automatically. See [Maintenance Window](/docs/operatormanual/recommendation/maintenance-window.md) for detailed documentation. Here's a sample one:
-
-
-You can now create a `ApprovalPolicy` custom resource to refer this `MaintenanceWindow` for particular DB type. See [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) for detailed documentation. Following is a sample `ApprovalPolicy` for any `MongoDB` custom resource deployed in `demo` namespace. This `ApprovalPolicy` custom resource is referring to the `elastic-maintenance` MaintenanceWindow created in the same namespace. You can also create `ClusterMaintenanceWindow` instead (see [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md)) which is effective for cluster-wide operations and refer it here. The following ApprovalPolicy will trigger recommended operations when referred maintenance window timeframe is reached.
-
-Lastly, If you want to reject a recommendation, you can just set `ApprovalStatus` to `Rejected` in the recommendation status section. Here's how you can do it using kubectl cli.
-
-```bash
-$ kubectl patch recommendation mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3 \
-                                    -n demo \
-                                    --type merge \
-                                    --subresource='status' \
-                                    -p '{"status":{"approvalStatus":"Rejected"}}'
-recommendation.supervisor.appscode.com/mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3 patched
-```
-
-For complete reference on all Recommendation fields, phases, and status conditions, see [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md).
+For the complete field reference for Recommendation, see [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md).
