@@ -5,7 +5,7 @@ menu:
     identifier: recommendation-spec
     name: Recommendation Spec & Status
     parent: recommendation
-    weight: 40
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---

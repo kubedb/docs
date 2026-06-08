@@ -5,7 +5,7 @@ menu:
     identifier: maintenance-window
     name: Maintenance Window
     parent: recommendation
-    weight: 50
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---

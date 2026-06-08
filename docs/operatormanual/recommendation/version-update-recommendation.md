@@ -5,7 +5,7 @@ menu:
     identifier: es-version-update-recommendation
     name: Version Update
     parent: recommendation
-    weight: 40
+    weight: 80
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---

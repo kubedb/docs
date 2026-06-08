@@ -5,7 +5,7 @@ menu:
     identifier: approval-policy
     name: Approval Policy
     parent: recommendation
-    weight: 70
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---

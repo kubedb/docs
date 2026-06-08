@@ -5,7 +5,7 @@ menu:
     identifier: rotate-auth-recommendation
     name: Rotate Auth
     parent: recommendation
-    weight: 20
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---

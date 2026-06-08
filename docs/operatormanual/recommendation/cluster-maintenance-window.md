@@ -5,7 +5,7 @@ menu:
     identifier: cluster-maintenance-window
     name: Cluster Maintenance Window
     parent: recommendation
-    weight: 60
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual
 ---
