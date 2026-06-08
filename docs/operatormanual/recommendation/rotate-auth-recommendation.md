@@ -18,7 +18,7 @@ Rotating authentication secrets in database management is vital to mitigate secu
 
 > Note: We provide support for `Recommendation` across most database systems. Below is an example demonstrating how recommendations are applied for the [MongoDB](/docs/guides/mongodb) database.
 
-`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases  in a Kubernetes native way. The recommendation will only be created if `.spec.authSecret.rotateAfter` is set. KubeDB generates MongoDB/Opensearch Rotate Auth recommendation regarding two particular cases.
+`Recommendation` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative recommendation for KubeDB managed databases  in a Kubernetes native way. The recommendation will only be created if `.spec.authSecret.rotateAfter` is set. KubeDB generates MongoDB Rotate Auth recommendation regarding two particular cases.
 
 1. AuthSecret lifespan is more than one month and, less than one month remaining till expiry
 2. AuthSecret lifespan is less than one month and, less than one third of lifespan remaining till expiry
@@ -144,11 +144,11 @@ status:
   reason: SuccessfullyExecutedOperation
 ```
 
-In the `spec.operation` field, the recommendation suggests rotating the authentication secret of `mg-rarecommendation`. The recommended operation is an `ElasticsearchOpsRequest` of `RotateAuth` type.
+In the `spec.operation` field, the recommendation suggests rotating the authentication secret of `mg-rarecommendation`. The recommended operation is an `MongoDBOpsRequest` of `RotateAuth` type.
 
 Notice that  rotate-auth recommendations do not set `requireExplicitApproval`. This means KubeDB Supervisor automatically approves and executes the operation when the `deadline` is reached, ensuring authentication secrets are always rotated on time without requiring manual intervention.
 
-In this case, the `deadline` (`"2026-06-05T09:54:05Z"`) had already passed by the time the recommendation was created (`"2026-06-05T10:23:51Z"`), so Supervisor immediately set `approvalStatus: Approved` with `approvedWindow: Immediate` and triggered the OpsRequest automatically.
+In this case, the `deadline` (`"2026-06-08T05:59:34Z"`) had already passed by the time the recommendation was created (`"2026-06-08T06:39:34Z"`), so Supervisor immediately set `approvalStatus: Approved` with `approvedWindow: Immediate` and triggered the OpsRequest automatically.
 
 
 Now, check the status part again. You will find a condition have appeared which says `OpsRequest is successfully created`.
@@ -189,7 +189,7 @@ $ kubectl get recommendation mg-rarecommendation-x-mongodb-x-rotate-auth-1fwvy3 
 }
 ```
 
-You will find an `ElasticsearchOpsRequest` custom resource has been created and it is rotating the auth secret of `mg-rarecommendation` cluster with negligible downtime. Let's wait for it to reach `Successful` status.
+You will find an `MongoDBOpsRequest` custom resource has been created and it is rotating the auth secret of `mg-rarecommendation` cluster with negligible downtime. Let's wait for it to reach `Successful` status.
 
 ```bash
 $ kubectl get mongodbopsrequest -n demo mg-rarecommendation-1780898378-rotate-auth-auto 
