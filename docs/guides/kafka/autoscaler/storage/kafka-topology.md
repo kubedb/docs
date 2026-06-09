@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Kafka` topology using a supported version by `KubeDB` operator. Then we are going to apply `KafkaAutoscaler` to set up autoscaling.
 
@@ -78,7 +78,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       replicas: 2
       storage:
@@ -87,7 +87,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -238,14 +238,14 @@ We are autoscaling volume for both broker and controller. So we need to fill up 
 $ kubectl exec -it -n demo kafka-prod-broker-0 -- bash
 kafka@kafka-prod-broker-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  256K  958M   1% /var/log/kafka
+/dev/longhorn/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  256K  958M   1% /var/log/kafka
 kafka@kafka-prod-broker-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 5.58851 s, 113 MB/s
 kafka@kafka-prod-broker-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  601M  358M  63% /var/log/kafka
+/dev/longhorn/pvc-27fe9102-2e7d-41e0-b77d-729a82c64e21  974M  601M  358M  63% /var/log/kafka
 ```
 
 2. Let's exec into the controller pod and fill the cluster volume using the following commands:
@@ -254,14 +254,14 @@ Filesystem                                              Size  Used Avail Use% Mo
 $ kubectl exec -it -n demo kafka-prod-controller-0 -- bash
 kafka@kafka-prod-controller-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  192K  958M   1% /var/log/kafka
+/dev/longhorn/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  192K  958M   1% /var/log/kafka
 kafka@kafka-prod-controller-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 3.39618 s, 185 MB/s
 kafka@kafka-prod-controller-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  601M  358M  63% /var/log/kafka
+/dev/longhorn/pvc-3bb98ba1-9cea-46ad-857f-fc843c265d57  974M  601M  358M  63% /var/log/kafka
 ```
 
 So, from the above output we can see that the storage usage is 63% for both nodes, which exceeded the `usageThreshold` 60%.

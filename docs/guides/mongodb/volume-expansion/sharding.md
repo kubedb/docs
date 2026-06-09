@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
 
@@ -76,7 +76,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     mongos:
       replicas: 2
     shard:
@@ -86,7 +86,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
 ```
 
 Let's create the `MongoDB` CR we have shown above,
@@ -115,14 +115,14 @@ $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemp
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                  STORAGECLASS   REASON   AGE
-pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      standard                68s
-pvc-390b6343-f97e-4761-a516-e3c9607c55d6   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      standard                2m26s
-pvc-51ab98e8-d468-4a74-b176-3853dada41c2   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-1   standard                2m33s
-pvc-5209095e-561f-4601-a0bf-0c705234da5b   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-0      standard                3m6s
-pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-1      standard                2m32s
-pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      standard                44s
-pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      standard                3m7s
-pvc-87634059-0f95-4595-ae8a-121944961103   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   standard                3m7s
+pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      longhorn                68s
+pvc-390b6343-f97e-4761-a516-e3c9607c55d6   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      longhorn                2m26s
+pvc-51ab98e8-d468-4a74-b176-3853dada41c2   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-1   longhorn                2m33s
+pvc-5209095e-561f-4601-a0bf-0c705234da5b   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-0      longhorn                3m6s
+pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-1      longhorn                2m32s
+pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      longhorn                44s
+pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      longhorn                3m7s
+pvc-87634059-0f95-4595-ae8a-121944961103   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   longhorn                3m7s
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -258,14 +258,14 @@ $ kubectl get sts -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemp
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                  STORAGECLASS   REASON   AGE
-pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      standard                3m38s
-pvc-390b6343-f97e-4761-a516-e3c9607c55d6   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      standard                4m56s
-pvc-51ab98e8-d468-4a74-b176-3853dada41c2   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-1   standard                5m3s
-pvc-5209095e-561f-4601-a0bf-0c705234da5b   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-0      standard                5m36s
-pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-1      standard                5m2s
-pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      standard                3m14s
-pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      standard                5m37s
-pvc-87634059-0f95-4595-ae8a-121944961103   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   standard                5m37s
+pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      longhorn                3m38s
+pvc-390b6343-f97e-4761-a516-e3c9607c55d6   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      longhorn                4m56s
+pvc-51ab98e8-d468-4a74-b176-3853dada41c2   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-1   longhorn                5m3s
+pvc-5209095e-561f-4601-a0bf-0c705234da5b   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-0      longhorn                5m36s
+pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-1      longhorn                5m2s
+pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      longhorn                3m14s
+pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      longhorn                5m37s
+pvc-87634059-0f95-4595-ae8a-121944961103   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   longhorn                5m37s
 ```
 
 The above output verifies that we have successfully expanded the volume of the shard nodes and configServer nodes of the MongoDB database.

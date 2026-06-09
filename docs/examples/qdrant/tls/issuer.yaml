@@ -1,0 +1,8 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata:
+  name: qdrant-ca-issuer
+  namespace: demo
+spec:
+  ca:
+    secretName: qdrant-ca

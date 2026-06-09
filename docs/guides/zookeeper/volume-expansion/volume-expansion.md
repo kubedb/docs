@@ -49,8 +49,8 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   93s
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   90s
+standard (default)     driver.standard.io      Delete          Immediate              true                   93s
+standard-static        driver.standard.io      Delete          Immediate              true                   90s
 ```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
@@ -75,7 +75,7 @@ spec:
     resources:
       requests:
         storage: "1Gi"
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
   deletionPolicy: "WipeOut"
@@ -104,9 +104,9 @@ $ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-3551d7c0-0df6-4f94-b1e0-21834319ecab   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   longhorn       <unset>                          92s
-pvc-b5882e9e-3c61-4609-b5ba-0eb9f32edbbc   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   longhorn       <unset>                          58s
-pvc-dccf2b12-d695-4792-8e4b-de4342e7fed4   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   longhorn       <unset>                          74s
+pvc-3551d7c0-0df6-4f94-b1e0-21834319ecab   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   standard       <unset>                          92s
+pvc-b5882e9e-3c61-4609-b5ba-0eb9f32edbbc   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   standard       <unset>                          58s
+pvc-dccf2b12-d695-4792-8e4b-de4342e7fed4   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   standard       <unset>                          74s
 ```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
@@ -369,9 +369,9 @@ $ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTempla
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-1b112414-6162-4e75-99c9-3e62cb4efb4a   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   longhorn       <unset>                          16m
-pvc-3159b881-1954-4008-8594-599bee9fd11e   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   longhorn       <unset>                          17m
-pvc-43ba80bd-9029-413e-b89c-1f373fd0cd3d   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   longhorn       <unset>                          16m
+pvc-1b112414-6162-4e75-99c9-3e62cb4efb4a   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   standard       <unset>                          16m
+pvc-3159b881-1954-4008-8594-599bee9fd11e   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   standard       <unset>                          17m
+pvc-43ba80bd-9029-413e-b89c-1f373fd0cd3d   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   standard       <unset>                          16m
 ```
 
 The above output verifies that we have successfully expanded the volume of the ZooKeeper standalone database.

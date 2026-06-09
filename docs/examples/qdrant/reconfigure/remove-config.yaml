@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-reconfigure-remove
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: qdrant-sample
+  configuration:
+    removeCustomConfig: true

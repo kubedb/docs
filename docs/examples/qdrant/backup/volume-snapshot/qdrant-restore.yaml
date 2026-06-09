@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-sample
+  namespace: demo
+spec:
+  version: "1.17.0"
+  mode: Distributed
+  replicas: 3
+  # init:
+  #   archiver:
+  #     recoveryTimestamp: "2026-12-12T00:00:00Z"
+  #     fullDBRepository:
+  #       name: minio-qdrant-repo
+  #       namespace: demo
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 200Mi
+  deletionPolicy: WipeOut

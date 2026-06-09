@@ -101,7 +101,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: longhorn
+    storageClassName: standard
 ```
 
 Let's create the `Solr` CR we have shown above,

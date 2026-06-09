@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: qdrant-sample
+  configuration:
+    applyConfig:
+      config.yaml: |
+        log_level: DEBUG
+        performance:
+          max_search_threads: 6
+          update_rate_limit: 100

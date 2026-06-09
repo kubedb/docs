@@ -1,0 +1,25 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: qdrant-sample
+  tls:
+    issuerRef:
+      name: qdrant-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  timeout: 5m
+  apply: IfReady

@@ -1,0 +1,24 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-monitoring
+  namespace: demo
+spec:
+  version: "1.17.0"
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 6333
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus
+  deletionPolicy: WipeOut
