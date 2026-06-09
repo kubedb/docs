@@ -6,7 +6,6 @@ menu:
     name: Kubedb-Operator
     parent: reference-operator
     weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 url: /docs/{{ .version }}/reference/operator/
