@@ -20,7 +20,7 @@ A `Recommendation` is a Kubernetes-native CRD created by the **KubeDB Ops-Manage
 
 Nothing runs until the Recommendation is approved either by you (`status.approvalStatus: Approved`) or automatically through an `ApprovalPolicy` bound to a `MaintenanceWindow`. Once approved, the Supervisor creates the corresponding `MongoDBOpsRequest` and tracks it to completion.
 
-This page is the **MongoDB-specific** intro: which recommendations apply to MongoDB, which spec fields trigger them, and how to tune the Ops-Manager flags that control generation timing. For the architecture diagram, the full Recommendation lifecycle, and end-to-end walkthroughs, see the [operator manual Recommendation Overview](/docs/operatormanual/recommendation/overview.md).
+This page is the **MongoDB-specific** intro: which recommendations apply to MongoDB, which spec fields trigger them, and how to tune the Ops-Manager flags that control generation timing. For the architecture diagram, the full Recommendation lifecycle, and end-to-end walkthroughs, see the [operator manual Recommendation Overview](/docs/operatormanual/recommendation/README.md).
 
 <p align="center">
   <img alt="Recommendation Lifecycle" src="/docs/operatormanual/recommendation/images/recommendation-generation.png">
