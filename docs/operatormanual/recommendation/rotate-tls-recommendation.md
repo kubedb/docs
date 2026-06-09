@@ -21,7 +21,7 @@ KubeDB raises a TLS rotation recommendation when **at least one** certificate of
 - Lifespan is **more than one month** and **less than one month** of life remains.
 - Lifespan is **less than one month** and **less than one third** of life remains.
 
-> **Note:** Recommendations work across most KubeDB-managed databases. The walkthrough below uses Elasticsearch as a concrete example.
+> **Note:** Recommendations work across most KubeDB-managed databases. The walkthrough below uses [Elasticsearch](/docs/guides/elasticsearch) as a concrete example.
 
 ## Before you begin
 

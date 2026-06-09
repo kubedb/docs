@@ -16,7 +16,7 @@ section_menu_id: operatormanual
 
 A `Recommendation` is the Kubernetes-native record of a maintenance action that KubeDB wants to perform on a managed database. The `spec` describes **what** should happen; the `status` reflects **where the action stands** in its lifecycle.
 
-This page is the complete field reference. If you are new to recommendations, read the [Overview](/docs/operatormanual/recommendation/README.md) first, then come back here when you need to look up a specific field.
+This page is the complete field reference. If you are new to recommendations, read the [Overview](/docs/operatormanual/recommendation) first, then come back here when you need to look up a specific field.
 
 ---
 

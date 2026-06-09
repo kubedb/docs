@@ -14,7 +14,7 @@ section_menu_id: operatormanual
 
 # Version Update Recommendation
 
-Database versions often need to be updated. Older versions can carry CVEs that attackers exploit, newer versions include query/indexing/storage optimisations, and vendors keep shipping bug fixes and features. Staying on top of these upgrades is one of the most impactful — and most easily forgotten — maintenance tasks.
+Database versions often need to be updated. Older versions can carry CVEs that attackers exploit, newer versions include query/indexing/storage optimisations, and vendors keep shipping bug fixes and features. Staying on top of these upgrades is one of the most impactful and most easily forgotten maintenance tasks.
 
 KubeDB watches the versions you actually have running and generates a `Recommendation` when it notices any of these:
 
@@ -22,8 +22,7 @@ KubeDB watches the versions you actually have running and generates a `Recommend
 2. A newer major or minor version is available.
 3. A patch release is available for your current minor.
 
-> **Note:** `Recommendation` works for most KubeDB-managed databases. The walkthrough below uses Elasticsearch as a concrete example; the same flow applies to MongoDB, PostgreSQL, and others.
-
+> **Note:** `Recommendation` works for most KubeDB-managed databases. The walkthrough below uses [Elasticsearch](/docs/guides/elasticsearch)  as a concrete example.
 ## Before you begin
 
 - A Kubernetes cluster with **KubeDB** and the **Supervisor** installed. The easiest way is `--set supervisor.enabled=true` when installing KubeDB via Helm.

@@ -23,7 +23,7 @@ Nothing runs until the Recommendation is approved — either by you (`status.app
 This page is the **Elasticsearch-specific intro**: which recommendations apply to Elasticsearch and which spec fields trigger them. For prerequisites, Helm flags that control generation timing, and the full Recommendation lifecycle, see:
 
 - [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) — prerequisites, Supervisor CRD install, and all Helm flags.
-- [Recommendation Overview](/docs/operatormanual/recommendation/README.md) — architecture and lifecycle walkthrough.
+- [Recommendation Overview](/docs/operatormanual/recommendation) — architecture and lifecycle walkthrough.
 
 <p align="center">
   <img alt="Recommendation Lifecycle" src="/docs/operatormanual/recommendation/images/recommendation-generation.png">
@@ -196,4 +196,4 @@ Once approved, KubeDB creates an opsrequest to update the running workload autom
 
 ---
 
-For prerequisites, Helm configuration flags, and the full cross-database Recommendation lifecycle, see the [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) and [Recommendation Overview](/docs/operatormanual/recommendation/README.md) in the operator manual.
+For prerequisites, Helm configuration flags, and the full cross-database Recommendation lifecycle, see the [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) and [Recommendation Overview](/docs/operatormanual/recommendation) in the operator manual.
