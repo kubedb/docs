@@ -46,7 +46,7 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Elasticsearch CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$  kubectl get storageclass
+$ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d2h
 ```
