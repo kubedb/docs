@@ -14,7 +14,7 @@ section_menu_id: operatormanual
 
 # Authentication Rotate Recommendation
 
-Database credentials are a high-value target. Leaving them static — sometimes for years — magnifies the blast radius of any leak: backup tarballs, log lines, abandoned dev pods, or a compromised CI runner can all expose them. Regular rotation limits how long a stolen credential is useful, satisfies compliance audits, exercises the rotation code path itself (so it actually works when you need it), and revokes access for stale humans and services.
+Database credentials are a high-value target. Leaving them static sometimes for years magnifies the blast radius of any leak: backup tarballs, log lines, abandoned dev pods, or a compromised CI runner can all expose them. Regular rotation limits how long a stolen credential is useful, satisfies compliance audits, exercises the rotation code path itself (so it actually works when you need it), and revokes access for stale humans and services.
 
 KubeDB ships the `RotateAuth` OpsRequest for this — and the Ops-manager generates a `Recommendation` to drive it automatically. Rotation is opt-in: it is only generated when the database CR sets `spec.authSecret.rotateAfter`.
 
@@ -44,7 +44,8 @@ metadata:
 spec:
   version: "8.0.10"
   authSecret:
-    name: mg-rarecommendation-auth
+    kind: Secret
+    name: mg-auth
     rotateAfter: 1h
   storage:
     resources:
@@ -79,8 +80,70 @@ mg-rarecommendation-x-mongodb-x-update-version-<HASH>         Pending     false 
 The Recommendation name follows the pattern `<DB-name>-x-<DB-type>-x-<recommendation-type>-<random-suffix>`. Let's look at the full manifest:
 
 ```yaml
-$ kubectl get recommendation -n demo <ROTATE-AUTH-NAME> -oyaml
-<YAML-PLACEHOLDER>
+$ kubectl get recommendation -n demo mg-rarecommendation-x-mongodb-x-rotate-auth-2ynyce -oyaml
+apiVersion: supervisor.appscode.com/v1alpha1
+kind: Recommendation
+metadata:
+  creationTimestamp: "2026-06-08T19:03:27Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: mg-rarecommendation
+    app.kubernetes.io/managed-by: kubedb.com
+    app.kubernetes.io/type: rotate-auth
+  name: mg-rarecommendation-x-mongodb-x-rotate-auth-2ynyce
+  namespace: demo
+  resourceVersion: "119741"
+  uid: 2578ba41-2d0f-437a-bc69-a6aefa786713
+spec:
+  backoffLimit: 10
+  deadline: "2026-06-08T19:13:27Z"
+  description: Recommending AuthSecret rotation,mg-rarecommendation-auth AuthSecret
+    needs to be rotated before 2026-06-08 19:23:27 +0000 UTC
+  operation:
+    apiVersion: ops.kubedb.com/v1alpha1
+    kind: MongoDBOpsRequest
+    metadata:
+      name: rotate-auth
+      namespace: demo
+    spec:
+      databaseRef:
+        name: mg-rarecommendation
+      type: RotateAuth
+    status: {}
+  recommender:
+    name: kubedb-ops-manager
+  rules:
+    failed: has(self.status) && has(self.status.phase) && self.status.phase == 'Failed'
+    inProgress: has(self.status) && has(self.status.phase) && self.status.phase ==
+      'Progressing'
+    success: has(self.status) && has(self.status.phase) && self.status.phase == 'Successful'
+  target:
+    apiGroup: kubedb.com
+    kind: MongoDB
+    name: mg-rarecommendation
+status:
+  approvalStatus: Approved
+  approvedWindow:
+    window: Immediate
+  conditions:
+  - lastTransitionTime: "2026-06-08T19:13:27Z"
+    message: OpsRequest is successfully created
+    reason: SuccessfullyCreatedOperation
+    status: "True"
+    type: SuccessfullyCreatedOperation
+  - lastTransitionTime: "2026-06-08T19:14:27Z"
+    message: OpsRequest is successfully executed
+    reason: SuccessfullyExecutedOperation
+    status: "True"
+    type: SuccessfullyExecutedOperation
+  createdOperationRef:
+    name: mg-rarecommendation-1780946007-rotate-auth-auto
+  failedAttempt: 0
+  observedGeneration: 1
+  outdated: true
+  parallelism: Namespace
+  phase: Succeeded
+  reason: SuccessfullyExecutedOperation
 ```
 
 What this manifest tells you:

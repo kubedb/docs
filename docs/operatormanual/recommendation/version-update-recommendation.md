@@ -221,7 +221,7 @@ recommendation.supervisor.appscode.com/es-vurecommendation-x-elasticsearch-x-upd
 
 Approving every recommendation by hand defeats the point. For routine maintenance you can have the Supervisor approve and run recommendations automatically — but only inside a window of your choosing (off-peak hours, weekends, etc.).
 
-> **Note:** Because version updates set `requireExplicitApproval: true`, ApprovalPolicies do **not** auto-approve them. The pattern below applies to recommendation types where a human approval is not mandatory (e.g. TLS or auth secret rotation). It is shown here for reference because the same `MaintenanceWindow` resource is used for those flows.
+> **Note:** Because version updates set `requireExplicitApproval: true`, ApprovalPolicies do not auto-approve them. The pattern below applies to recommendation types where a human approval is not mandatory (e.g. TLS or auth secret rotation). It is shown here for reference because the same `MaintenanceWindow` resource is used for those flows.
 
 ### 1. Define a MaintenanceWindow
 

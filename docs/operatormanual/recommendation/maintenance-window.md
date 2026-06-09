@@ -14,7 +14,7 @@ section_menu_id: operatormanual
 
 # Maintenance Window
 
-A `MaintenanceWindow` defines **when** an approved `Recommendation` is allowed to execute inside a namespace. It ensures that potentially disruptive `OpsRequest`s — version upgrades, TLS rotations, auth secret rotations — only run inside predefined time ranges, so they never collide with peak usage.
+A `MaintenanceWindow` defines  when an approved `Recommendation` is allowed to execute inside a namespace. It ensures that potentially disruptive `OpsRequest`s  version upgrades, TLS rotations, auth secret rotations only run inside predefined time ranges, so they never collide with peak usage.
 
 Pair a `MaintenanceWindow` with an [ApprovalPolicy](/docs/operatormanual/recommendation/approval-policy.md) to fully automate routine maintenance.
 
@@ -106,7 +106,7 @@ dates:
 
 ## Behavior
 
-* `spec.days` and `spec.dates` are combined with logical **OR** — execution is allowed if either condition matches.
+* `spec.days` and `spec.dates` are combined with logical OR  execution is allowed if either condition matches.
 * If both are empty → no execution window exists and approved recommendations stay in `Waiting`.
 * If `spec.isDefault: true` → the window is used automatically when a Recommendation does not specify one.
 * Timezone interpretation:
@@ -142,7 +142,7 @@ When a `Recommendation` is processed:
 
 ## Usage with ApprovalPolicy
 
-A `MaintenanceWindow` controls **when** an action runs; an `ApprovalPolicy` controls **what gets auto-approved**. Use them together:
+A `MaintenanceWindow` controls when an action runs; an `ApprovalPolicy` controls **what gets auto-approved**. Use them together:
 
 ```yaml
 apiVersion: supervisor.appscode.com/v1alpha1

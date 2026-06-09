@@ -16,11 +16,11 @@ section_menu_id: guides
 
 ## Overview
 
-A `Recommendation` is a Kubernetes-native CRD created by the **KubeDB Ops-Manager** and reconciled by the **KubeDB Supervisor**. For an MongoDB cluster managed by KubeDB, the Ops-Manager watches the database's state and emits a Recommendation whenever it detects an action you should take — a newer version, an expiring TLS certificate, or an authentication secret nearing its rotation deadline.
+A `Recommendation` is a Kubernetes-native CRD created by the **KubeDB Ops-Manager** and reconciled by the **KubeDB Supervisor**. For an MongoDB cluster managed by KubeDB, the Ops-Manager watches the database's state and emits a Recommendation whenever it detects an action you should take a newer version, an expiring TLS certificate, or an authentication secret nearing its rotation deadline.
 
-Nothing runs until the Recommendation is approved — either by you (`status.approvalStatus: Approved`) or automatically through an `ApprovalPolicy` bound to a `MaintenanceWindow`. Once approved, the Supervisor creates the corresponding `ElasticsearchOpsRequest` and tracks it to completion.
+Nothing runs until the Recommendation is approved either by you (`status.approvalStatus: Approved`) or automatically through an `ApprovalPolicy` bound to a `MaintenanceWindow`. Once approved, the Supervisor creates the corresponding `ElasticsearchOpsRequest` and tracks it to completion.
 
-This page is the **MongoDB-specific intro**: which recommendations apply to MongoDB, which spec fields trigger them, and how to tune the Ops-Manager flags that control generation timing. For the architecture diagram, the full Recommendation lifecycle, and end-to-end walkthroughs, see the [operator manual Recommendation Overview](/docs/operatormanual/recommendation/overview.md).
+This page is the `MongoDB` specific intro: which recommendations apply to MongoDB, which spec fields trigger them, and how to tune the Ops-Manager flags that control generation timing. For the architecture diagram, the full Recommendation lifecycle, and end-to-end walkthroughs, see the [operator manual Recommendation Overview](/docs/operatormanual/recommendation/overview.md).
 
 <p align="center">
   <img alt="Recommendation Lifecycle" src="/docs/operatormanual/recommendation/images/recommendation-generation.png">
@@ -112,7 +112,8 @@ metadata:
 spec:
   version: "8.0.10"
   authSecret:
-    name: mg-alone-auth
+    kind: secret 
+    name: mg-auth
     rotateAfter: 1h
   storage:
     resources:
@@ -132,7 +133,8 @@ spec:
 
  * If the secret lifespan is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
- Once approved, KubeDB creates an opsrequest to rotate the credentials automatically, ensuring:
+This behavior is configurable, and users can customize the recommendation timing using the RotateAuth flags mentioned in the corresponding section.
+Once approved, KubeDB creates an opsrequest to rotate the credentials automatically, ensuring:
 
  * No expired credentials
 
@@ -171,6 +173,7 @@ KubeDB monitors the configured lifecycle and generates a RotateTLS Recommendatio
 
 * If the certificate duration is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
+This behavior is configurable, and users can customize the recommendation timing using the RotateAuth flags mentioned in the corresponding section.
 Once approved, KubeDB creates an opsrequest to reconfigure TLS automatically, ensuring:
 
 * Continuous secure communication

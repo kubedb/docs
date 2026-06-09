@@ -112,6 +112,8 @@ metadata:
 spec:
   version: xpack-9.1.9
   authSecret:
+    kind: Secret
+    name: es-auth
     rotateAfter: 1h
 ```
 
@@ -125,6 +127,7 @@ KubeDB monitors the configured lifecycle and generates a RotateAuth Recommendati
 
 * If the secret lifespan is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
+This behavior is configurable, and users can customize the recommendation timing using the RotateAuth flags mentioned in the corresponding section.
 Once approved, KubeDB creates an opsrequest to rotate the credentials automatically, ensuring:
 
 * No expired credentials
@@ -166,6 +169,7 @@ KubeDB monitors the configured lifecycle and generates a RotateTLS Recommendatio
 
 * If the certificate duration is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
+This behavior is configurable, and users can customize the recommendation timing using the RotateAuth flags mentioned in the corresponding section.
 Once approved, KubeDB creates an opsrequest to reconfigure TLS automatically, ensuring:
 
 * Continuous secure communication
