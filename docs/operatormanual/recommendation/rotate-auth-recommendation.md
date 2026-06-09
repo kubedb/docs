@@ -44,6 +44,7 @@ metadata:
 spec:
   version: "8.0.10"
   authSecret:
+    name: mg-rarecommendation-auth
     rotateAfter: 1h
   storage:
     resources:

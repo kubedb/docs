@@ -157,6 +157,7 @@ apiVersion: supervisor.appscode.com/v1alpha1
 kind: ApprovalPolicy
 metadata:
   name: cluster-policy
+  namespace: default
 maintenanceWindowRef:
   kind: ClusterMaintenanceWindow
   name: cluster-default-maintenance

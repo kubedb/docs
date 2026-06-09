@@ -117,6 +117,7 @@ metadata:
 spec:
   version: "8.0.10"
   authSecret:
+    name: mg-alone-auth
     rotateAfter: 1h
   storage:
     resources:
@@ -149,16 +150,15 @@ Once approved, KubeDB creates an opsrequest to rotate the credentials automatica
 apiVersion: kubedb.com/v1
 kind: MongoDB
 metadata:
-  name: es-combined
+  name: mg-tls
   namespace: demo
 spec:
-  version: xpack-9.1.9
-  enableSSL: true
+  version: "8.0.10"
   tls:
     certificates:
       - alias: client
         duration: 1h20m
-      - alias: http
+      - alias: server
         duration: 2h10m
 ```
 
