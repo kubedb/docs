@@ -20,7 +20,10 @@ A `Recommendation` is a Kubernetes-native CRD created by the **KubeDB Ops-Manage
 
 Nothing runs until the Recommendation is approved either by you (`status.approvalStatus: Approved`) or automatically through an `ApprovalPolicy` bound to a `MaintenanceWindow`. Once approved, the Supervisor creates the corresponding `MongoDBOpsRequest` and tracks it to completion.
 
-This page is the **MongoDB-specific** intro: which recommendations apply to MongoDB, which spec fields trigger them, and how to tune the Ops-Manager flags that control generation timing. For the architecture diagram, the full Recommendation lifecycle, and end-to-end walkthroughs, see the [operator manual Recommendation Overview](/docs/operatormanual/recommendation/README.md).
+This page is the **MongoDB-specific** intro: which recommendations apply to MongoDB and which spec fields trigger them. For prerequisites, Helm flags that control generation timing, and the full Recommendation lifecycle, see:
+
+- [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) — prerequisites, Supervisor CRD install, and all Helm flags.
+- [Recommendation Overview](/docs/operatormanual/recommendation/README.md) — architecture and lifecycle walkthrough.
 
 <p align="center">
   <img alt="Recommendation Lifecycle" src="/docs/operatormanual/recommendation/images/recommendation-generation.png">
@@ -28,61 +31,12 @@ This page is the **MongoDB-specific** intro: which recommendations apply to Mong
 
 ---
 
-## Prerequisites
+## Relevant KubeDB concepts
 
-Before proceeding, ensure that:
-
-* You have a running Kubernetes cluster with `kubectl` configured (e.g. via [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)).
-* KubeDB is installed following the [setup guide](/docs/setup/install/kubedb.md), with the Supervisor enabled:
-
-  ```bash
-  --set supervisor.enabled=true
-  ```
-
-* A demo namespace exists for examples:
-
-  ```bash
-  $ kubectl create namespace demo
-  $ kubectl get namespace
-  ```
-
-* You are familiar with the relevant KubeDB concepts:
-  - [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
-  - [MongoDBRotateAuth](/docs/guides/mongodb/rotate-auth/rotateauth.md)
-  - [MongoDBReconfigureTLS](/docs/guides/mongodb/tls/overview.md)
-  - [MongoDBUpdateVersion](/docs/guides/mongodb/update-version/overview.md)
-
-### Install the Supervisor CRDs first
-
-Enabling the Supervisor with `--set supervisor.enabled=true` requires the four Supervisor CRDs to be present in the cluster **before** the Helm install/upgrade runs. Apply them up front — every Helm command later on this page assumes these CRDs exist.
-
-> Apply the CRDs first; *then* run any of the `helm upgrade --install` commands shown below.
-
-```bash
-# ApprovalPolicy
-kubectl apply -f https://raw.githubusercontent.com/kubeops/supervisor/refs/heads/master/crds/supervisor.appscode.com_approvalpolicies.yaml
-
-# Recommendation
-kubectl apply -f https://raw.githubusercontent.com/kubeops/supervisor/refs/heads/master/crds/supervisor.appscode.com_recommendations.yaml
-
-# MaintenanceWindow
-kubectl apply -f https://raw.githubusercontent.com/kubeops/supervisor/refs/heads/master/crds/supervisor.appscode.com_maintenancewindows.yaml
-
-# ClusterMaintenanceWindow
-kubectl apply -f https://raw.githubusercontent.com/kubeops/supervisor/refs/heads/master/crds/supervisor.appscode.com_clustermaintenancewindows.yaml
-```
-
-If you are upgrading an existing install, re-apply these manifests to pull in any new fields — out-of-date CRDs are the most common cause of "unknown field" errors when applying a Recommendation or MaintenanceWindow.
-
----
-
-## Find Available StorageClass
-
-You will need to provide a `StorageClass` in the MongoDB spec. List what's available:
-
-```bash
-$ kubectl get storageclass
-```
+- [MongoDBOpsRequest](/docs/guides/mongodb/concepts/opsrequest.md)
+- [MongoDBRotateAuth](/docs/guides/mongodb/rotate-auth/rotateauth.md)
+- [MongoDBReconfigureTLS](/docs/guides/mongodb/tls/overview.md)
+- [MongoDBUpdateVersion](/docs/guides/mongodb/update-version/overview.md)
 
 ---
 
@@ -133,7 +87,6 @@ spec:
 
  * If the secret lifespan is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
-This behavior is configurable, and users can customize the recommendation timing using the RotateAuth flags mentioned in the corresponding section.
 Once approved, KubeDB creates an opsrequest to rotate the credentials automatically, ensuring:
 
  * No expired credentials
@@ -173,7 +126,6 @@ KubeDB monitors the configured lifecycle and generates a RotateTLS Recommendatio
 
 * If the certificate duration is less than one month, a recommendation is generated when approximately one-third of its validity remains
 
-This behavior is configurable, and users can customize the recommendation timing using the RotateTLS flags mentioned in the corresponding section.
 Once approved, KubeDB creates an opsrequest to reconfigure TLS automatically, ensuring:
 
 * Continuous secure communication
@@ -228,108 +180,4 @@ This significantly reduces operational overhead while improving the reliability,
 
 ---
 
-## Configuring Recommendation Generation
-
-KubeDB lets you tune when recommendations are generated through Ops-Manager flags set at install/upgrade time. Each subsection below shows the **Helm install** form first and the **raw flag reference** below it.
-
-> All flags live under the Helm path `kubedb-ops-manager.operator.args.<flag>` when set via the KubeDB Helm chart.
-
-### Global
-
-Controls how often the operator re-evaluates managed databases for new recommendations.
-
-```bash
-helm upgrade --install kubedb appscode/kubedb \
-  --namespace kubedb \
-  --set supervisor.enabled=true \
-  --set kubedb-ops-manager.operator.args.recommendation-resync-period=1h0m0s
-```
-
-| Raw flag                          | Default   | Description                                                                                |
-| --------------------------------- | --------- | ------------------------------------------------------------------------------------------ |
-| `--recommendation-resync-period`  | `1h0m0s`  | How often the Ops-Manager re-scans every managed database to look for new recommendations. |
-
-### TLS Certificate Rotation (RotateTLS)
-
-The three `before-expiry-*` flags are **added together** to define a single lead time: "create a RotateTLS Recommendation this long before the certificate expires." By default that lead is **1 month** (`year=0`, `month=1`, `day=0`) and is fully configurable.
-
-> **Short-duration fallback.** If the certificate's total lifespan is **less than the configured lead time** (e.g. a `1h20m` cert under the default 1-month lead), the configured lead would never fire. In that case the operator falls back to a proportional rule: the recommendation is generated after **2/3 of the lifespan has elapsed** (i.e. when ~1/3 remains). This keeps short-lived demo certificates rotating predictably without any flag changes.
-
-```bash
-helm upgrade --install kubedb appscode/kubedb \
-  --namespace kubedb \
-  --set supervisor.enabled=true \
-  --set kubedb-ops-manager.operator.args.gen-rotate-tls-recommendation-before-expiry-year=0 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-tls-recommendation-before-expiry-month=1 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-tls-recommendation-before-expiry-day=0
-```
-
-| Raw flag                                                  | Default | Description                                                |
-| --------------------------------------------------------- | ------- | ---------------------------------------------------------- |
-| `--gen-rotate-tls-recommendation-before-expiry-year`      | `0`     | Years before certificate expiry to emit the recommendation. |
-| `--gen-rotate-tls-recommendation-before-expiry-month`     | `1`     | Months before certificate expiry to emit the recommendation. |
-| `--gen-rotate-tls-recommendation-before-expiry-day`       | `0`     | Days before certificate expiry to emit the recommendation. |
-
-### Authentication Secret Rotation (RotateAuth)
-
-The three `before-expiry-*` flags are added together to define a single lead time before the auth secret's rotation deadline. Defaults match the RotateTLS shape — **1 month** — and are fully configurable.
-
-> **Short-duration fallback.** Same rule as RotateTLS: if `spec.authSecret.rotateAfter` is **shorter than the configured lead time** (e.g. `rotateAfter: 1h` under the default 1-month lead), the operator falls back to **2/3 of the lifespan** — the recommendation lands when ~1/3 of the secret's lifetime remains. With `rotateAfter: 1h` that means a recommendation about 40 minutes after the secret was created.
-
-```bash
-helm upgrade --install kubedb appscode/kubedb \
-  --namespace kubedb \
-  --set supervisor.enabled=true \
-  --set kubedb-ops-manager.operator.args.gen-rotate-auth-recommendation-before-expiry-year=0 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-auth-recommendation-before-expiry-month=1 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-auth-recommendation-before-expiry-day=0
-```
-
-| Raw flag                                                   | Default | Description                                                  |
-| ---------------------------------------------------------- | ------- | ------------------------------------------------------------ |
-| `--gen-rotate-auth-recommendation-before-expiry-year`      | `0`     | Years before auth secret deadline to emit the recommendation. |
-| `--gen-rotate-auth-recommendation-before-expiry-month`     | `1`     | Months before auth secret deadline to emit the recommendation. |
-| `--gen-rotate-auth-recommendation-before-expiry-day`       | `0`     | Days before auth secret deadline to emit the recommendation. |
-
-### Same-Version Update (UpdateVersion within same version)
-
-Same-version updates (e.g. patched rebuilds of the current image) are governed by two deadline-related flags. Disable deadline enforcement to skip these recommendations entirely, or change the evaluation window to control how far ahead the operator looks.
-
-```bash
-helm upgrade --install kubedb appscode/kubedb \
-  --namespace kubedb \
-  --set supervisor.enabled=true \
-  --set kubedb-ops-manager.operator.args.enable-deadline=false \
-  --set kubedb-ops-manager.operator.args.max-evaluation-period-before-deadline=168h0m0s
-```
-
-| Raw flag                                  | Default     | Description                                                                                                       |
-| ----------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------- |
-| `--enable-deadline`                       | `false`     | When `true`, the Supervisor enforces deadlines for same-version-update recommendations.                            |
-| `--max-evaluation-period-before-deadline` | `168h0m0s`  | How far ahead of the deadline the operator looks when deciding whether to emit a same-version-update recommendation. |
-
-### Worked example
-
-The following install sets non-default values for several knobs at once:
-
-```bash
-helm upgrade --install kubedb appscode/kubedb \
-  --namespace kubedb \
-  --set supervisor.enabled=true \
-  --set kubedb-ops-manager.operator.args.recommendation-resync-period=30m \
-  --set kubedb-ops-manager.operator.args.gen-rotate-tls-recommendation-before-expiry-month=2 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-auth-recommendation-before-expiry-month=1 \
-  --set kubedb-ops-manager.operator.args.gen-rotate-auth-recommendation-before-expiry-day=15 \
-  --set kubedb-ops-manager.operator.args.enable-deadline=true
-```
-
-What this changes:
-
-* The operator re-scans every **30 minutes** instead of hourly.
-* TLS rotation recommendations land **2 months** before expiry (more headroom for change-management approvals).
-* Auth secret rotation recommendations land **~1.5 months** before the rotation deadline (`month=1`, `day=15`).
-* Same-version update recommendations are **enabled** and use the default 168h evaluation window.
-
----
-
-For the complete cross-database Recommendation lifecycle, scheduling model, and field reference, see the [Recommendation Overview](/docs/operatormanual/recommendation/README.md) and [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md) in the operator manual.
+For prerequisites, Helm configuration flags, and the full cross-database Recommendation lifecycle, see the [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) and [Recommendation Overview](/docs/operatormanual/recommendation/README.md) in the operator manual.

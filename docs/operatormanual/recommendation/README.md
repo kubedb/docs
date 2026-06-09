@@ -54,6 +54,10 @@ KubeDB generates three kinds of recommendations:
 2. [TLS Certificate Rotation Recommendation](/docs/operatormanual/recommendation/rotate-tls-recommendation.md) — rotate certificates before expiry.
 3. [Authentication Secret Rotation Recommendation](/docs/operatormanual/recommendation/rotate-auth-recommendation.md) — rotate database credentials.
 
+## Setup and configuration
+
+- [Recommendation Configuration](/docs/operatormanual/recommendation/configuration.md) — install Supervisor CRDs, enable the Supervisor via Helm, and tune generation timing flags.
+
 ## Configuring scheduling and approval
 
 For automation and execution control, refer to:
