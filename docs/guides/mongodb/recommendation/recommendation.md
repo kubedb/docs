@@ -332,4 +332,4 @@ What this changes:
 
 ---
 
-For the complete cross-database Recommendation lifecycle, scheduling model, and field reference, see the [Recommendation Overview](/docs/operatormanual/recommendation/overview.md) and [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md) in the operator manual.
+For the complete cross-database Recommendation lifecycle, scheduling model, and field reference, see the [Recommendation Overview](/docs/operatormanual/recommendation/README.md) and [Recommendation Spec & Status](/docs/operatormanual/recommendation/recommendation-spec.md) in the operator manual.
