@@ -289,7 +289,7 @@ See [Approval Policy](/docs/operatormanual/recommendation/approval-policy.md) fo
 
 If you would rather set one default for the whole cluster, replace the namespace-scoped `MaintenanceWindow` with a `ClusterMaintenanceWindow` and point `maintenanceWindowRef.kind` at it. See [Cluster Maintenance Window](/docs/operatormanual/recommendation/cluster-maintenance-window.md).
 
-> **Important:** Make sure the configured window is long enough — and frequent enough — to land **before** the certificate deadline. If your TLS lifespan is short and the window is weekly, the deadline can pass before the next window opens, and the Supervisor will rotate immediately to keep the cluster healthy.
+> **Important:** Make sure the configured window is long enough and frequent enough  to land before the certificate deadline. If your TLS lifespan is short and the window is weekly, the deadline can pass before the next window opens, and the Supervisor will rotate immediately to keep the cluster healthy.
 
 ---
 

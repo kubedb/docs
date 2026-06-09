@@ -17,7 +17,7 @@ section_menu_id: operatormanual
 
 An `ApprovalPolicy` is a Kubernetes custom resource that **automatically approves Recommendations** for selected target resources and binds them to a maintenance window. It lets you say, in one place: *"For every Elasticsearch in this namespace, auto-approve recommendations and run them during the `daily-maintenance` window."*
 
-> **Heads up — no `spec` field.** Unlike most Kubernetes resources, `ApprovalPolicy` puts all configuration **at the top level**. Use `maintenanceWindowRef` and `targets` directly, **not** under `spec:`.
+> Unlike most Kubernetes resources, `ApprovalPolicy` puts all configuration **at the top level**. Use `maintenanceWindowRef` and `targets` directly, **not** under `spec:`.
 
 ---
 

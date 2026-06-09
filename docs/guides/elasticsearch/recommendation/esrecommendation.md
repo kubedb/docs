@@ -112,12 +112,26 @@ metadata:
 spec:
   version: xpack-9.1.9
   authSecret:
-    kind: secret
-    name: es-auth
     rotateAfter: 1h
 ```
 
-KubeDB watches the configured `rotateAfter` lifespan and emits a **RotateAuth Recommendation** before it expires. The exact lead time is controlled by the [RotateAuth flags](#authentication-secret-rotation-rotateauth) below.
+In this configuration:
+
+* The `rotateAfter` field defines how long the authentication secret remains valid
+
+KubeDB monitors the configured lifecycle and generates a RotateAuth Recommendation based on the following conditions:
+
+* If the secret lifespan is greater than one month, a recommendation is generated when less than one month of validity remains
+
+* If the secret lifespan is less than one month, a recommendation is generated when approximately one-third of its validity remains
+
+Once approved, KubeDB creates an opsrequest to rotate the credentials automatically, ensuring:
+
+* No expired credentials
+
+* Improved security posture
+
+* Reduced manual intervention
 
 ### TLS Certificate Rotation
 
@@ -142,7 +156,23 @@ spec:
         duration: 2h10m
 ```
 
-KubeDB tracks each certificate independently and emits a **RotateTLS Recommendation** before any one expires. TLS rotation requires cert-manager-provisioned certificates. The exact lead time is controlled by the [RotateTLS flags](#tls-certificate-rotation-rotatetls) below.
+In this configuration:
+
+* The `spec.tls.certificates.duration` field defines how long each certificate remains valid
+
+KubeDB monitors the configured lifecycle and generates a RotateTLS Recommendation based on the following conditions:
+
+* If the certificate duration is greater than one month, a recommendation is generated when less than one month of validity remains
+
+* If the certificate duration is less than one month, a recommendation is generated when approximately one-third of its validity remains
+
+Once approved, KubeDB creates an opsrequest to reconfigure TLS automatically, ensuring:
+
+* Continuous secure communication
+
+* No unexpected certificate expiry
+
+* Seamless certificate renewal
 
 ### Version Update
 
@@ -156,7 +186,29 @@ spec:
   version: xpack-9.1.9
 ```
 
-KubeDB continuously checks whether a newer major, minor, or patch version exists for your declared `spec.version` and emits a **Version Update Recommendation** with `targetVersion` set accordingly (e.g. upgrading `xpack-9.1.9` → `xpack-9.2.3`).
+In this configuration:
+
+* KubeDB monitors the running version of the database
+
+KubeDB monitors the configured lifecycle and generates a VersionUpdate Recommendation based on the following conditions:
+
+* If a newer container image is available for the current version, a recommendation is generated
+
+* If a patch version is released, a recommendation is generated
+
+* If a newer minor or major version becomes available, a recommendation is generated
+
+* If changes are introduced in the existing version image (e.g., security fixes or image updates without a version bump), a recommendation is generated
+
+For example: Recommending version update from `xpack-9.1.9` to `xpack-9.2.3`
+
+Once approved, KubeDB creates an opsrequest to perform the version upgrade automatically, ensuring:
+
+* Timely adoption of security patches and fixes
+
+* Access to new features and improvements
+
+* Consistent performance and stability across deployments
 
 ### Same-Version Update
 
@@ -170,9 +222,21 @@ spec:
   version: xpack-9.1.9
 ```
 
-A Same-Version Update Recommendation fires when the container image backing your *current* version is updated — for example, a security-patched rebuild of `xpack-9.1.9` without a version bump. This case is governed by the [Same-Version Update flags](#same-version-update-updateversion-within-same-version) below, which let you disable deadline enforcement entirely or change how far ahead the operator looks.
+In this configuration:
 
----
+* KubeDB monitors the container image of the current database version
+
+KubeDB monitors the configured lifecycle and generates a SameVersionUpdate Recommendation based on the following conditions:
+
+* If the container image backing the current version is updated (e.g., security patches or rebuilds without a version change), a recommendation is generated
+
+Once approved, KubeDB creates an opsrequest to update the running workload automatically, ensuring:
+
+* Security patches are applied without requiring a version upgrade
+
+* Consistency with the latest available container image
+
+* Improved reliability and maintainability
 
 ## Configuring Recommendation Generation
 
