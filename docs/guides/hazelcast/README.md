@@ -20,25 +20,21 @@ aliases:
 Hazelcast is an open-source, Java-based, information retrieval library with support for limited relational, graph, statistical, data analysis or storage related use cases. Hazelcast is designed to drive powerful document retrieval or analytical applications involving unstructured data, semi-structured data or a mix of unstructured and structured data. Hazelcast is highly reliable, scalable and fault tolerant, providing distributed indexing, replication and load-balanced querying, automated failover and recovery, centralized configuration and more. Hazelcast powers the search and navigation features of many of the world's largest internet sites.
 
 ## Supported Hazelcast Features
-| Features                                           | Availability |
-|----------------------------------------------------|:------------:|
-| Clustering                                         |   &#10003;   |
-| Authentication & Authorization                     |   &#10003;   |
-| Reconfigurable Health Checker                      |   &#10003;   |
-| Custom Configuration                               |   &#10003;   |
-| Externally manageable Auth Secret                  |   &#10003;   |
-| Rotate Authentication                              |   &#10003;   |
-| Persistent Volume                                  |   &#10003;   |
-| Monitoring with Prometheus & Grafana               |   &#10003;   |
-| Builtin Prometheus Discovery                       |   &#10003;   |
-| Using Prometheus operator                          |   &#10003;   |
-| Automated Version Update                           |   &#10003;   |
-| Automatic Vertical Scaling                         |   &#10003;   |
-| Automated Horizontal Scaling                       |   &#10003;   |
-| Automated Volume Expansion                         |   &#10003;   |
-| Autoscaling (vertically, volume)                   |   &#10003;   |
-| TLS: Add, Remove, Update, Rotate ( Cert Manager )  |   &#10003;   |
-| Restart                                            |   &#10003;   |
+| Features                                                  | Availability |
+|-----------------------------------------------------------|:------------:|
+| Clustering                                                |   &#10003;   |
+| Authentication & Authorization                            |   &#10003;   |
+| Auth Secret Management & Rotation                         |   &#10003;   |
+| Reconfigurable Health Checker                             |   &#10003;   |
+| Custom Configuration                                      |   &#10003;   |
+| Persistent Volume                                         |   &#10003;   |
+| Monitoring (Prometheus & Grafana)                         |   &#10003;   |
+| Automated Version Update                                  |   &#10003;   |
+| Horizontal & Vertical Scaling                             |   &#10003;   |
+| Automated Volume Expansion                                |   &#10003;   |
+| Autoscaling (Compute & Storage)                           |   &#10003;   |
+| TLS/SSL Encryption (Add, Remove, Update, Rotate)          |   &#10003;   |
+| Restart                                                   |   &#10003;   |
 
 ## Life Cycle of a Hazelcast Object
 

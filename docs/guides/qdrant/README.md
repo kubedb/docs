@@ -26,20 +26,16 @@ Qdrant is a high-performance open-source vector database designed for similarity
 | Standalone Provisioning       |   &#10003;   |
 | Distributed Provisioning      |   &#10003;   |
 | Custom Configuration          |   &#10003;   |
-| TLS                           |   &#10003;   |
-| Logical Backup                |   &#10003;   |
-| Volume Snapshot               |   &#10003;   |
-| Monitoring                    |   &#10003;   |
-| Horizontal Scaling            |   &#10003;   |
-| Vertical Scaling              |   &#10003;   |
+| TLS/SSL Encryption            |   &#10003;   |
+| Backup & Recovery             |   &#10003;   |
+| Monitoring (Prometheus)       |   &#10003;   |
+| Horizontal & Vertical Scaling |   &#10003;   |
 | Volume Expansion              |   &#10003;   |
 | Reconfigure                   |   &#10003;   |
-| Reconfigure TLS               |   &#10003;   |
 | Update Version                |   &#10003;   |
 | Restart                       |   &#10003;   |
 | Rotate Authentication         |   &#10003;   |
-| Compute Autoscaling           |   &#10003;   |
-| Storage Autoscaling           |   &#10003;   |
+| Autoscaling                   |   &#10003;   |
 | StorageClass Migration        |   &#10003;   |
 
 ## Supported Qdrant Versions

@@ -23,31 +23,25 @@ KubeDB operator now comes bundled with PgBouncer crd to handle connection poolin
 
 ## PgBouncer Features
 
-| Features                                                    | Availability |
-|-------------------------------------------------------------| :----------: |
-| Multiple PgBouncer Versions                                 |   &#10003;   |
-| Custom Configuration                                        |   &#10003;   |
-| Externally manageable Auth Secret                           |   &#10003;   |
-| Reconfigurable Health Checker                               |   &#10003;   |
-| Integrate with externally managed PostgreSQL                |   &#10003;   |
-| Sync Postgres Users to PgBouncer                            |   &#10003;   |
-| Custom docker images                                        |   &#10003;   |
-| TLS: Add ( [Cert Manager]((https://cert-manager.io/docs/))) |   &#10003;   |
-| Reconfigure TLS                                             |   &#10003;   |
-| Monitoring with Prometheus & Grafana                        |   &#10003;   |
-| Builtin Prometheus Discovery                                |   &#10003;   |
-| Using Prometheus operator                                   |   &#10003;   |
-| Alert Dashboard                                             |   &#10003;   |
-| Grafana Dashboard                                           |   &#10003;   |
-| Update PgBouncer Version                                    |   &#10003;   |
-| Horizontal Scaling                                          |   &#10003;   |
-| Vertical Scaling                                            |   &#10003;   |
-| Autoscaling (Compute Resources)                             |   &#10003;   |
-| Restart                                                     |   &#10003;   |
-| Rotate Authentication Credentials                           |   &#10003;   |
-| Initialization from Git Repository                          |   &#10003;   |
-| Virtual Secrets                                             |   &#10003;   |
-| Private Docker Registry                                     |   &#10003;   |
+| Features                                                                 | Availability |
+|--------------------------------------------------------------------------| :----------: |
+| Multiple PgBouncer Versions                                              |   &#10003;   |
+| Custom Configuration                                                     |   &#10003;   |
+| Externally manageable Auth Secret                                        |   &#10003;   |
+| Reconfigurable Health Checker                                            |   &#10003;   |
+| Integrate with externally managed PostgreSQL                             |   &#10003;   |
+| Sync Postgres Users to PgBouncer                                         |   &#10003;   |
+| Custom Docker Images                                                     |   &#10003;   |
+| TLS/SSL Encryption ([Cert Manager](https://cert-manager.io/docs/))       |   &#10003;   |
+| Monitoring (Builtin Prometheus, Prometheus Operator, Grafana Dashboards) |   &#10003;   |
+| Update PgBouncer Version                                                 |   &#10003;   |
+| Horizontal & Vertical Scaling                                            |   &#10003;   |
+| Autoscaling (Compute Resources)                                          |   &#10003;   |
+| Restart                                                                  |   &#10003;   |
+| Rotate Authentication Credentials                                        |   &#10003;   |
+| Initialization from Git Repository                                       |   &#10003;   |
+| Virtual Secrets                                                          |   &#10003;   |
+| Private Docker Registry                                                  |   &#10003;   |
 
 ## User Guide
 

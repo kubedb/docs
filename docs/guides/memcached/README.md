@@ -23,20 +23,17 @@ aliases:
 | Features                                              | Availability |
 | ----------------------------------------------------- | :----------: |
 | Custom Configuration                                  |   &#10003;   |
-| Externally manageable Auth Secret                     |   &#10003;   |
-| Reconfigurable Health Checker                         |   &#10003;   |
-| Using Custom docker image                             |   &#10003;   |
-| Builtin Prometheus Discovery                          |   &#10003;   |
-| Operator Managed Prometheus Discovery                 |   &#10003;   |
-| Automated Version Update                              |   &#10003;   |
-| Automated Vertical Scaling                            |   &#10003;   |
-| Automated Horizontal Scaling                          |   &#10003;   |
-| Automated db-configure Reconfiguration                |   &#10003;   |
 | Authentication & Authorization                        |   &#10003;   |
-| TLS: Add, Remove, Update, Rotate ( Cert Manager )     |   &#10003;   |
-| Autoscaling (Vertically)                              |   &#10003;   |
+| Externally Manageable Auth Secret                     |   &#10003;   |
+| Reconfigurable Health Checker                         |   &#10003;   |
+| Using Custom Docker Image                             |   &#10003;   |
 | Multiple Memcached Versions                           |   &#10003;   |
-| Monitoring using Prometheus and Grafana               |   &#10003;   |
+| Automated Version Update                              |   &#10003;   |
+| Horizontal & Vertical Scaling                         |   &#10003;   |
+| Compute Autoscaling                                   |   &#10003;   |
+| Reconfiguration (db-configure)                        |   &#10003;   |
+| TLS/SSL Encryption (Add, Remove, Update, Rotate)      |   &#10003;   |
+| Monitoring (Builtin Prometheus & Prometheus Operator) |   &#10003;   |
 | Restart                                               |   &#10003;   |
 | Custom RBAC                                           |   &#10003;   |
 

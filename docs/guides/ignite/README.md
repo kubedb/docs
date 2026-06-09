@@ -24,14 +24,12 @@ aliases:
 | Externally manageable Auth Secret                 |   &#10003;   |
 | Reconfigurable Health Checker                     |   &#10003;   |
 | Using Custom docker image                         |   &#10003;   |
-| Builtin Prometheus Discovery                      |   &#10003;   |
-| Using Prometheus operator                         |   &#10003;   |
-| Automated Horizontal Scaling                      |   &#10003;   |
-| Automatic Vertical Scaling                        |   &#10003;   |
+| Monitoring (Prometheus)                           |   &#10003;   |
+| Horizontal & Vertical Scaling                     |   &#10003;   |
 | Automated Volume Expansion                        |   &#10003;   |
-| Autoscaling (compute, storage)                    |   &#10003;   |
+| Autoscaling (Compute & Storage)                   |   &#10003;   |
 | Reconfigure                                       |   &#10003;   |
-| TLS: Add, Remove, Update, Rotate ( Cert Manager ) |   &#10003;   |
+| TLS/SSL Encryption (Cert Manager)                 |   &#10003;   |
 | Restart                                           |   &#10003;   |
 | Custom RBAC                                       |   &#10003;   |
 

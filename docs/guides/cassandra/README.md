@@ -24,21 +24,15 @@ Apache Cassandra is a highly scalable, distributed NoSQL database designed to ha
 |---------------------------------------------------------------|:------------:|
 | Clustering                                                    |   &#10003;   |
 | Custom Configuration                                          |   &#10003;   |
-| Backup/Recovery                                               |   &#10003;   |
-| Monitoring using Prometheus and Grafana                       |   &#10003;   |
-| Builtin Prometheus Discovery                                  |   &#10003;   |
-| Operator managed Prometheus Discovery                         |   &#10003;   |
-| Authentication & Authorization (TLS)                          |   &#10003;   |
-| Externally manageable Auth Secret                             |   &#10003;   |
-| Rotate Authentication                                         |   &#10003;   |
-| Persistent volume                                             |   &#10003;   |
-| Grafana Dashboards (Alerts and Monitoring)                    |   &#10003;   |
+| Backup & Recovery                                             |   &#10003;   |
+| Monitoring (Prometheus & Grafana Dashboards)                  |   &#10003;   |
+| TLS/SSL Encryption (Add, Remove, Rotate, Update)              |   &#10003;   |
+| Auth Secret Management & Rotation                             |   &#10003;   |
+| Persistent Volume                                             |   &#10003;   |
 | Automated Version Update                                      |   &#10003;   |
-| Automated Vertical Scaling                                    |   &#10003;   |
-| Automated Horizontal Scaling                                  |   &#10003;   |
+| Horizontal & Vertical Scaling                                 |   &#10003;   |
 | Automated Volume Expansion                                    |   &#10003;   |
-| Autoscaling ( Compute resources & Storage )                   |   &#10003;   |
-| Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
+| Autoscaling (Compute & Storage)                               |   &#10003;   |
 | Reconfigure                                                   |   &#10003;   |
 | Restart                                                       |   &#10003;   |
 

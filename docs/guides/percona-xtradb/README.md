@@ -18,28 +18,24 @@ aliases:
 
 ## Supported PerconaXtraDB Features
 
-| Features                     | Availability |
-|------------------------------|:------------:|
-| Clustering                   |   &#10003;   |
-| Persistent Volume            |   &#10003;   |
-| TLS/SSL Encryption           |   &#10003;   |
-| Custom Configuration         |   &#10003;   |
-| Using Pod Template           |   &#10003;   |
-| Using Custom docker image    |   &#10003;   |
-| Builtin Prometheus Discovery |   &#10003;   |
-| Using Prometheus operator    |   &#10003;   |
-| Horizontal Scaling           |   &#10003;   |
-| Vertical Scaling             |   &#10003;   |
-| Volume Expansion             |   &#10003;   |
-| Compute Autoscaling          |   &#10003;   |
-| Storage Autoscaling          |   &#10003;   |
-| Reconfigure                  |   &#10003;   |
-| Reconfigure TLS/SSL          |   &#10003;   |
-| Update Version               |   &#10003;   |
-| Restart                      |   &#10003;   |
-| Rotate Authentication        |   &#10003;   |
-| Failover / High Availability |   &#10003;   |
-| Custom RBAC                  |   &#10003;   |
+| Features                        | Availability |
+|---------------------------------|:------------:|
+| Clustering                      |   &#10003;   |
+| Persistent Volume               |   &#10003;   |
+| TLS/SSL Encryption              |   &#10003;   |
+| Custom Configuration            |   &#10003;   |
+| Using Pod Template              |   &#10003;   |
+| Using Custom docker image       |   &#10003;   |
+| Monitoring (Prometheus)         |   &#10003;   |
+| Horizontal & Vertical Scaling   |   &#10003;   |
+| Volume Expansion                |   &#10003;   |
+| Autoscaling                     |   &#10003;   |
+| Reconfigure                     |   &#10003;   |
+| Update Version                  |   &#10003;   |
+| Restart                         |   &#10003;   |
+| Rotate Authentication           |   &#10003;   |
+| Failover / High Availability    |   &#10003;   |
+| Custom RBAC                     |   &#10003;   |
 
 ## Life Cycle of a PerconaXtraDB Object
 

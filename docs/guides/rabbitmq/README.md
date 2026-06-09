@@ -20,30 +20,24 @@ RabbitMQ is a robust and flexible open-source message broker software that facil
 
 ## Supported RabbitMQ Features
 
-| Features                                                      | Availability |
-|---------------------------------------------------------------|:------------:|
-| Clustering                                                    |   &#10003;   |
-| Custom Configuration                                          |   &#10003;   |
-| Custom PodTemplate Configuration                              |   &#10003;   |
-| Custom Plugin configurations                                  |   &#10003;   |
-| Monitoring using Prometheus and Grafana                       |   &#10003;   |
-| Builtin Prometheus Discovery                                  |   &#10003;   |
-| Operator managed Prometheus Discovery                         |   &#10003;   |
-| Authentication & Authorization (TLS)                          |   &#10003;   |
-| Externally manageable Auth Secret                             |   &#10003;   |
-| Rotate Authentication Credentials                             |   &#10003;   |
-| Persistent volume                                             |   &#10003;   |
-| Grafana Dashboards (Alerts and Monitoring)                    |   &#10003;   |
-| Pre-Enabled Dashboard ( Management UI )                       |   &#10003;   |
-| Pre-Enabled utility plugins ( Shovel, Federation )            |   &#10003;   |
-| Pre-Enabled Protocols with web dispatch ( AMQP, MQTT, STOMP ) |   &#10003;   |
-| Automated Vertical & Horizontal Scaling                       |   &#10003;   |
-| Automated Volume Expansion                                    |   &#10003;   |
-| Autoscaling ( Compute resources & Storage )                   |   &#10003;   |
-| Reconfigurable Health Checker                                 |   &#10003;   |
-| Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
-| Updating RabbitMQ Version                                     |   &#10003;   |
-| Rolling Restart                                               |   &#10003;   |
+| Features                                                        | Availability |
+|-----------------------------------------------------------------|:------------:|
+| Clustering                                                      |   &#10003;   |
+| Custom Configuration (Config File, PodTemplate, Plugins)        |   &#10003;   |
+| Monitoring with Prometheus & Grafana (Builtin & Operator)       |   &#10003;   |
+| Authentication & Authorization (Managed Auth Secret, Rotation)  |   &#10003;   |
+| TLS/SSL Encryption (Configure & Reconfigure)                    |   &#10003;   |
+| Persistent Volume                                               |   &#10003;   |
+| Pre-Enabled Dashboard (Management UI)                           |   &#10003;   |
+| Pre-Enabled Utility Plugins (Shovel, Federation)                |   &#10003;   |
+| Pre-Enabled Protocols via Web Dispatch (AMQP, MQTT, STOMP)      |   &#10003;   |
+| Horizontal & Vertical Scaling                                   |   &#10003;   |
+| Volume Expansion                                                |   &#10003;   |
+| Autoscaling (Compute & Storage)                                 |   &#10003;   |
+| Reconfigure Cluster                                             |   &#10003;   |
+| Reconfigurable Health Checker                                   |   &#10003;   |
+| Version Update                                                  |   &#10003;   |
+| Rolling Restart                                                 |   &#10003;   |
 
 ## Supported RabbitMQ Versions
 

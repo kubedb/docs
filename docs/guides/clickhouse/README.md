@@ -17,25 +17,21 @@ aliases:
 
 ## Supported ClickHouse Features
 
-| Features                                                      | Availability |
-|---------------------------------------------------------------|:------------:|
-| ClusterTopology                                               |   &#10003;   |
-| Initialize using Script (\*.sql, \*sql.gz and/or \*.sh)       |   &#10003;   |
-| Custom Configuration                                          |   &#10003;   |
-| Builtin Prometheus Discovery                                  |   &#10003;   |
-| Using Prometheus operator                                     |   &#10003;   |
-| Authentication & Authorization (TLS)                          |   &#10003;   |
-| Externally manageable Auth Secret                             |   &#10003;   |
-| Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
-| Reconfigure                                                   |   &#10003;   |
-| Horizontal Scaling                                            |   &#10003;   |
-| Vertical Scaling                                              |   &#10003;   |
-| Volume Expansion                                              |   &#10003;   |
-| Update Version                                                |   &#10003;   |
-| Restart                                                       |   &#10003;   |
-| Rotate Authentication                                         |   &#10003;   |
-| Compute Autoscaling                                           |   &#10003;   |
-| Storage Autoscaling                                           |   &#10003;   |
+| Features                                                | Availability |
+|---------------------------------------------------------|:------------:|
+| ClusterTopology                                         |   &#10003;   |
+| Initialize using Script (\*.sql, \*sql.gz and/or \*.sh) |   &#10003;   |
+| Custom Configuration                                    |   &#10003;   |
+| Monitoring (Prometheus)                                 |   &#10003;   |
+| TLS/SSL Encryption                                      |   &#10003;   |
+| Externally manageable Auth Secret                       |   &#10003;   |
+| Reconfigure                                             |   &#10003;   |
+| Horizontal & Vertical Scaling                           |   &#10003;   |
+| Volume Expansion                                        |   &#10003;   |
+| Update Version                                          |   &#10003;   |
+| Restart                                                 |   &#10003;   |
+| Rotate Authentication                                   |   &#10003;   |
+| Autoscaling                                             |   &#10003;   |
 
 ## Supported ClickHouse Versions
 

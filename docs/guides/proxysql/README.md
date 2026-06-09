@@ -17,26 +17,18 @@ aliases:
 
 ## Supported ProxySQL Features
 
-| Features                             | Availability |
-|--------------------------------------|:------------:|
-| Load balance MySQL Group Replication |   &#10003;   |
-| Load balance PerconaXtraDB Cluster   |   &#10003;   |
-| Load balance MariaDB Galera Cluster  |   &#10003;   |
-| Custom Configuration                 |   &#10003;   |
-| Declarative Configuration            |   &#10003;   |
-| Version Update                       |   &#10003;   |
-| Builtin Prometheus Discovery         |   &#10003;   |
-| Using Prometheus operator            |   &#10003;   |
-| ProxySQL server cluster              |   &#10003;   |
-| ProxySQL server failure recovery     |   &#10003;   |
-| TLS secured connection for backend   |   &#10003;   |
-| TLS secured connection for frontend  |   &#10003;   |
-| Reconfigure TLS                      |   &#10003;   |
-| Horizontal Scaling                   |   &#10003;   |
-| Vertical Scaling                     |   &#10003;   |
-| Autoscaling (Compute)                |   &#10003;   |
-| Custom RBAC Resources                |   &#10003;   |
-| Restart                              |   &#10003;   |
+| Features                                                          | Availability |
+|-------------------------------------------------------------------|:------------:|
+| Load Balancing (MySQL Group Replication, PerconaXtraDB, MariaDB) |   &#10003;   |
+| Custom & Declarative Configuration                                |   &#10003;   |
+| Version Update                                                    |   &#10003;   |
+| Monitoring (Prometheus)                                           |   &#10003;   |
+| Clustering & Failure Recovery                                     |   &#10003;   |
+| TLS/SSL Encryption (Frontend & Backend, Reconfigure)              |   &#10003;   |
+| Horizontal & Vertical Scaling                                     |   &#10003;   |
+| Autoscaling (Compute)                                             |   &#10003;   |
+| Custom RBAC Resources                                             |   &#10003;   |
+| Restart                                                           |   &#10003;   |
 
 ## User Guide
 

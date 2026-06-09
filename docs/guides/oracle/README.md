@@ -17,16 +17,14 @@ aliases:
 
 ## Supported Oracle Features
 
-| Features                           | Availability |
-|------------------------------------|:------------:|
-| Standalone Mode                    |   &#10003;   |
-| Data Guard (High Availability)     |   &#10003;   |
-| Physical Standby                   |   &#10003;   |
-| Synchronous Replication            |   &#10003;   |
-| Automatic Failover (FSFO)          |   &#10003;   |
-| Persistent Volume                  |   &#10003;   |
-| Resource Management (CPU/Memory)   |   &#10003;   |
-| Deletion Policy                    |   &#10003;   |
+| Features                                          | Availability |
+|---------------------------------------------------|:------------:|
+| Deployment Modes (Standalone & DataGuard)         |   &#10003;   |
+| Physical Standby & Synchronous Replication        |   &#10003;   |
+| Automatic Failover (FSFO)                         |   &#10003;   |
+| Persistent Volume                                 |   &#10003;   |
+| Resource Management (CPU/Memory)                  |   &#10003;   |
+| Deletion Policy                                   |   &#10003;   |
 
 ## Life Cycle of a Oracle Object
 

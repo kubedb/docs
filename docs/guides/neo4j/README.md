@@ -21,26 +21,22 @@ KubeDB supports graph database deployment with Neo4j using the `Neo4j` CRD.
 
 ## Supported Neo4j Features
 
-| Features                                                      | Availability |
-|---------------------------------------------------------------|:------------:|
-| Standalone provisioning                                       |   &#10003;   |
-| Cluster provisioning                                          |   &#10003;   |
-| Custom Configuration                                          |   &#10003;   |
-| Custom RBAC                                                   |   &#10003;   |
-| Private Registry                                              |   &#10003;   |
-| Monitoring using Prometheus and Grafana                       |   &#10003;   |
-| Builtin Prometheus Discovery                                  |   &#10003;   |
-| Operator managed Prometheus Discovery                         |   &#10003;   |
-| Authentication & Authorization (TLS)                          |   &#10003;   |
-| Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
-| Rotate Authentication                                         |   &#10003;   |
-| Automated Version Update                                      |   &#10003;   |
-| Automated Horizontal Scaling                                  |   &#10003;   |
-| Automated Vertical Scaling                                    |   &#10003;   |
-| Automated Volume Expansion                                    |   &#10003;   |
-| StorageClass Migration                                        |   &#10003;   |
-| Reconfigure                                                   |   &#10003;   |
-| Restart                                                       |   &#10003;   |
+| Features                                          | Availability |
+|---------------------------------------------------|:------------:|
+| Standalone & Cluster Provisioning                 |   &#10003;   |
+| Custom Configuration                              |   &#10003;   |
+| Custom RBAC                                       |   &#10003;   |
+| Private Registry                                  |   &#10003;   |
+| Monitoring (Builtin & Prometheus Operator)        |   &#10003;   |
+| TLS/SSL Encryption                                |   &#10003;   |
+| Reconfigure TLS (Add, Remove, Rotate, Update)     |   &#10003;   |
+| Rotate Authentication                             |   &#10003;   |
+| Automated Version Update                          |   &#10003;   |
+| Horizontal & Vertical Scaling                     |   &#10003;   |
+| Volume Expansion                                  |   &#10003;   |
+| StorageClass Migration                            |   &#10003;   |
+| Reconfigure                                       |   &#10003;   |
+| Restart                                           |   &#10003;   |
 
 ## Supported Ops Requests
 
