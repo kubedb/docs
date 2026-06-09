@@ -19,24 +19,29 @@ aliases:
 
 | Features                                                                           | Kafka    | ConnectCluster |
 |------------------------------------------------------------------------------------|----------|----------------|
-| Clustering - Combined (shared controller and broker nodes)                         | &#10003; | &#45;          |
-| Clustering - Topology (dedicated controllers and broker nodes)                     | &#10003; | &#45;          |
+| Clustering (Combined & Topology)                                                   | &#10003; | &#45;          |
 | Custom Configuration                                                               | &#10003; | &#10003;       |
-| Automated Version Update                                                           | &#10003; | &#10007;       |
-| Automatic Vertical Scaling                                                         | &#10003; | &#10007;       |
-| Automated Horizontal Scaling                                                       | &#10003; | &#10007;       |
-| Automated Volume Expansion                                                         | &#10003; | &#45;          |
 | Custom Docker Image                                                                | &#10003; | &#10003;       |
 | Authentication & Authorization                                                     | &#10003; | &#10003;       |
-| TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) | &#10003; | &#10003;       |
+| TLS/SSL Encryption ( [Cert Manager](https://cert-manager.io/docs/) )               | &#10003; | &#10003;       |
+| Reconfigure TLS/SSL                                                                | &#10003; | &#10007;       |
 | Reconfigurable Health Checker                                                      | &#10003; | &#10003;       |
 | Externally manageable Auth Secret                                                  | &#10003; | &#10003;       |
-| Pre-Configured JMX Exporter for Metrics                                            | &#10003; | &#10003;       |
+| Rotate Authentication                                                              | &#10003; | &#10007;       |
 | Monitoring with Prometheus & Grafana                                               | &#10003; | &#10003;       |
-| Autoscaling (vertically, volume)	                                                  | &#10003; | &#10007;       |
-| Custom Volume                                                                      | &#10003; | &#10003;       |
-| Persistent Volume                                                                  | &#10003; | &#45;          |
+| Horizontal & Vertical Scaling                                                      | &#10003; | &#10007;       |
+| Automated Version Update                                                           | &#10003; | &#10007;       |
+| Autoscaling (Compute & Storage)                                                    | &#10003; | &#10007;       |
+| Volume Expansion                                                                   | &#10003; | &#45;          |
+| Custom & Persistent Volume                                                         | &#10003; | &#10003;       |
+| Restart                                                                            | &#10003; | &#10007;       |
+| Reconfigure                                                                        | &#10003; | &#10007;       |
 | Connectors                                                                         | &#45;    | &#10003;       |
+| Tiered Storage (S3, GCS, Azure)                                                    | &#10003; | &#45;          |
+| Schema Registry                                                                    | &#10003; | &#45;          |
+| Rest Proxy                                                                         | &#10003; | &#45;          |
+| GitOps                                                                             | &#10003; | &#45;          |
+| Migration                                                                          | &#10003; | &#10003;       |
 
 ## Lifecycle of Kafka Object
 

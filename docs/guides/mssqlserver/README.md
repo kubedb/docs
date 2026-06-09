@@ -20,31 +20,33 @@ Microsoft SQL Server is one of the most popular relational database management s
 
 ## Supported Microsoft SQL Server Features
 
-| Features                                                           | Availability |
-|--------------------------------------------------------------------|:------------:|
-| Standalone and Availability Group Cluster (HA configuration)       |   &#10003;   |
-| Synchronous Replication                                            |   &#10003;   |
-| Automatic Fail over                                                |   &#10003;   |
-| Arbiter Node for quorum in even-sized clusters                     |   &#10003;   |
-| Custom Configuration                                               |   &#10003;   |
-| Authentication & Authorization                                     |   &#10003;   |
-| Externally manageable Auth Secret                                  |   &#10003;   |
-| Instant and Scheduled Backup ([KubeStash](https://kubestash.com/)) |   &#10003;   |
-| Continuous Archiving using `wal-g`                                 |   &#10003;   |
-| Initialization from WAL archive                                    |   &#10003;   |
-| Initializing from Snapshot ([KubeStash](https://kubestash.com/))   |   &#10003;   |
-| Reconfigurable Health Checker                                      |   &#10003;   |
-| Persistent Volume                                                  |   &#10003;   |
-| Builtin Prometheus Discovery                                       |   &#10003;   |
-| Using Prometheus operator                                          |   &#10003;   |
-| Automated Version Update                                           |   &#10003;   |
-| Automated Vertical Scaling, Volume Expansion                       |   &#10003;   |
-| Automated Horizontal Scaling                                       |   &#10003;   |
-| Autoscaling Compute and Storage Resources                          |   &#10003;   |
-| Reconfiguration                                                    |   &#10003;   |
-| TLS configuration ([Cert Manager](https://cert-manager.io/docs/))  |   &#10003;   |
-| Reconfiguration of TLS: Add, Remove, Update, Rotate                |   &#10003;   |
-| Grafana Dashboards                                                 |   &#10003;   |
+| Features                                                                    | Availability |
+|-----------------------------------------------------------------------------|:------------:|
+| Standalone and Availability Group Cluster (HA configuration)                |   &#10003;   |
+| Distributed Availability Group (DAG) Cluster                                |   &#10003;   |
+| Synchronous Replication                                                     |   &#10003;   |
+| Automatic Failover                                                          |   &#10003;   |
+| Arbiter Node for quorum in even-sized clusters                              |   &#10003;   |
+| Custom Configuration                                                        |   &#10003;   |
+| Authentication & Authorization                                              |   &#10003;   |
+| Externally manageable Auth Secret                                           |   &#10003;   |
+| Rotate Authentication Credentials                                           |   &#10003;   |
+| Initialization using Script                                                 |   &#10003;   |
+| Backup & Recovery ([KubeStash](https://kubestash.com/))                     |   &#10003;   |
+| Point-in-Time Recovery (PITR) via Continuous Archiving                      |   &#10003;   |
+| Initializing from Snapshot ([KubeStash](https://kubestash.com/))            |   &#10003;   |
+| Reconfigurable Health Checker                                               |   &#10003;   |
+| Persistent Volume                                                           |   &#10003;   |
+| Monitoring (Prometheus: Builtin & Operator)                                 |   &#10003;   |
+| Grafana Dashboards                                                          |   &#10003;   |
+| Automated Version Update                                                    |   &#10003;   |
+| Horizontal & Vertical Scaling                                               |   &#10003;   |
+| Volume Expansion                                                            |   &#10003;   |
+| Autoscaling (Compute & Storage)                                             |   &#10003;   |
+| Reconfiguration                                                             |   &#10003;   |
+| TLS/SSL Encryption & Reconfiguration ([Cert Manager](https://cert-manager.io/docs/)) |   &#10003;   |
+| Restart                                                                     |   &#10003;   |
+| GitOps                                                                      |   &#10003;   |
 
 
 ## Supported Microsoft SQL Server Versions

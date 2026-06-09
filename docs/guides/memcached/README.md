@@ -23,22 +23,19 @@ aliases:
 | Features                                              | Availability |
 | ----------------------------------------------------- | :----------: |
 | Custom Configuration                                  |   &#10003;   |
-| Externally manageable Auth Secret	                    |   &#10003;   |
-| Reconfigurable Health Checker		                      |   &#10003;   |
-| Using Custom docker image                             |   &#10003;   |
-| Builtin Prometheus Discovery                          |   &#10003;   |
-| Operator Managed Prometheus Discovery                 |   &#10003;   |
-| Automated Version Update                              |   &#10003;   |
-| Automated Vertical Scaling                            |   &#10003;   |
-| Automated Horizontal Scaling                          |   &#10003;   |
-| Automated db-configure Reconfiguration                |   &#10003;   |
 | Authentication & Authorization                        |   &#10003;   |
-| TLS: Add, Remove, Update, Rotate ( Cert Manager )	    |   &#10003;   |
-| Autoscaling (Vertically)                              |   &#10003;   |
+| Externally Manageable Auth Secret                     |   &#10003;   |
+| Reconfigurable Health Checker                         |   &#10003;   |
+| Using Custom Docker Image                             |   &#10003;   |
 | Multiple Memcached Versions                           |   &#10003;   |
-| Monitoring using Prometheus and Grafana               |   &#10003;   |
-| Monitoring Grafana Dashboard                          |   &#10003;   |
-| Alert Grafana Dashboard	                              |   &#10003;   |
+| Automated Version Update                              |   &#10003;   |
+| Horizontal & Vertical Scaling                         |   &#10003;   |
+| Compute Autoscaling                                   |   &#10003;   |
+| Reconfiguration (db-configure)                        |   &#10003;   |
+| TLS/SSL Encryption (Add, Remove, Update, Rotate)      |   &#10003;   |
+| Monitoring (Builtin Prometheus & Prometheus Operator) |   &#10003;   |
+| Restart                                               |   &#10003;   |
+| Custom RBAC                                           |   &#10003;   |
 
 ## Life Cycle of a Memcached Object
 
@@ -54,4 +51,14 @@ aliases:
 - Use [private Docker registry](/docs/guides/memcached/private-registry/using-private-registry.md) to deploy Memcached with KubeDB.
 - Use [kubedb cli](/docs/guides/memcached/cli/cli.md) to manage databases like kubectl for Kubernetes.
 - Detail concepts of [Memcached object](/docs/guides/memcached/concepts/memcached.md).
+- [Horizontal Scale](/docs/guides/memcached/scaling/horizontal-scaling/horizontal-scaling.md) your Memcached cluster.
+- [Vertical Scale](/docs/guides/memcached/scaling/vertical-scaling/vertical-scaling.md) your Memcached cluster.
+- [Autoscale](/docs/guides/memcached/autoscaler/compute/compute-autoscale.md) compute resources of your Memcached cluster.
+- [Update Version](/docs/guides/memcached/update-version/update-version.md) of your Memcached cluster.
+- [Reconfigure](/docs/guides/memcached/reconfigure/reconfigure.md) your Memcached cluster.
+- Configure [TLS/SSL Encryption](/docs/guides/memcached/tls/tls.md) for your Memcached cluster.
+- [Reconfigure TLS](/docs/guides/memcached/reconfigure-tls/reconfigure-tls.md) for your Memcached cluster.
+- [Restart](/docs/guides/memcached/restart/restart.md) your Memcached cluster.
+- [Rotate Authentication](/docs/guides/memcached/rotate-auth/rotateauth.md) credentials of your Memcached cluster.
+- Use [Custom RBAC](/docs/guides/memcached/custom-rbac/using-custom-rbac.md) to manage Memcached with fine-grained access control.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

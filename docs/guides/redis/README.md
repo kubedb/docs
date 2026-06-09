@@ -16,31 +16,33 @@ aliases:
 > New to KubeDB? Please start [here](/docs/README.md).
 
 ## Supported Redis Features
-| Features                                                          | Availability |
-|-------------------------------------------------------------------|:------------:|
-| Clustering (Sharding, Replication)                                |   &#10003;   |
-| Redis in Sentinel Mode (Use separate Sentinel Cluster for Redis)  |   &#10003;   |
-| Standalone Mode                                                   |   &#10003;   |
-| External Client Connection                                        |   &#10003;   |
-| Custom Configuration                                              |   &#10003;   |
-| Using Custom Docker Image                                         |   &#10003;   |
-| Initialization From Script (shell or lua script)                  |   &#10003;   |
-| Initializing from Snapshot ([KubeStash](https://kubestash.com/))  |   &#10003;   |
-| Authentication & Authorization                                    |   &#10003;   |
-| Externally manageable Authentication Secret                       |   &#10003;   |
-| Persistent Volume                                                 |   &#10003;   |
-| Reconfigurable Health Checker                                     |   &#10003;   |
-| Backup (Instant, Scheduled)                                       |   &#10003;   |
-| Builtin Prometheus Discovery                                      |   &#10003;   |
-| Using Prometheus Operator                                         |   &#10003;   |
-| Automated Version Update                                          |   &#10003;   |
-| Automatic Vertical Scaling, Volume Expansion                      |   &#10003;   |
-| Automated Horizontal Scaling                                      |   &#10003;   |
-| Automated db-configure Reconfiguration                            |   &#10003;   |
-| TLS configuration ([Cert Manager](https://cert-manager.io/docs/)) |   &#10003;   |
-| Reconfiguration of TLS: Add, Remove, Update, Rotate               |   &#10003;   |
-| Autoscaling Compute and Storage Resources (vertically)            |   &#10003;   |
-| Grafana Dashboards                                                |   &#10003;   |
+| Features                                                                          | Availability |
+|-----------------------------------------------------------------------------------|:------------:|
+| Clustering (Sharding, Replication)                                                |   &#10003;   |
+| Redis in Sentinel Mode (Use separate Sentinel Cluster for Redis)                  |   &#10003;   |
+| Standalone Mode                                                                   |   &#10003;   |
+| External Client Connection                                                        |   &#10003;   |
+| Custom Configuration                                                              |   &#10003;   |
+| Using Custom Docker Image                                                         |   &#10003;   |
+| Initialization (Script & Git Sync)                                                |   &#10003;   |
+| Initializing from Snapshot ([KubeStash](https://kubestash.com/))                  |   &#10003;   |
+| Authentication & Credential Management (Auth, External Secret, Rotate Credential) |   &#10003;   |
+| Access Control Lists (ACL)                                                        |   &#10003;   |
+| Virtual Secrets (External Secret Management)                                      |   &#10003;   |
+| Persistent Volume                                                                 |   &#10003;   |
+| Reconfigurable Health Checker                                                     |   &#10003;   |
+| Backup (Instant, Scheduled)                                                       |   &#10003;   |
+| Monitoring (Prometheus — Builtin & Operator)                                      |   &#10003;   |
+| Grafana Dashboards                                                                |   &#10003;   |
+| Automated Version Update                                                          |   &#10003;   |
+| Horizontal & Vertical Scaling                                                     |   &#10003;   |
+| Volume Expansion                                                                  |   &#10003;   |
+| Automated db-configure Reconfiguration                                            |   &#10003;   |
+| TLS/SSL Encryption ([Cert Manager](https://cert-manager.io/docs/))                |   &#10003;   |
+| Autoscaling (Compute & Storage)                                                   |   &#10003;   |
+| Custom RBAC Resources                                                             |   &#10003;   |
+| Restart via OpsRequest                                                            |   &#10003;   |
+| GitOps                                                                            |   &#10003;   |
 
 `Note`: If you want to use `Valkey` you need to install KubeDB version greater than or equal to `v2025.4.30`
 
