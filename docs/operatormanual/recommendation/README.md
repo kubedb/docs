@@ -2,9 +2,9 @@
 title: Recommendation
 menu:
   docs_{{ .version }}:
-    identifier: readme-recommendation
+    identifier: recommendation
     name: Recommendation
-    parent: recommendation
+    parent: operatormanual
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: operatormanual

@@ -2,7 +2,7 @@
 title: Version Update Recommendation
 menu:
   docs_{{ .version }}:
-    identifier: es-version-update-recommendation
+    identifier: version-update-recommendation
     name: Version Update
     parent: recommendation
     weight: 80
