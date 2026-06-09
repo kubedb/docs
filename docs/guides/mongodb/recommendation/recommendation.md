@@ -33,7 +33,7 @@ This page is the **MongoDB-specific** intro: which recommendations apply to Mong
 Before proceeding, ensure that:
 
 * You have a running Kubernetes cluster with `kubectl` configured (e.g. via [kind](https://kind.sigs.k8s.io/docs/user/quick-start/)).
-* KubeDB is installed following the [setup guide](/docs/setup/install/_index.md), with the Supervisor enabled:
+* KubeDB is installed following the [setup guide](/docs/setup/install/kubedb.md), with the Supervisor enabled:
 
   ```bash
   --set supervisor.enabled=true
