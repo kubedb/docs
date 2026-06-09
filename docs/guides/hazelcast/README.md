@@ -23,16 +23,14 @@ Hazelcast is an open-source, Java-based, information retrieval library with supp
 | Features                                           | Availability |
 |----------------------------------------------------|:------------:|
 | Clustering                                         |   &#10003;   |
-| Customized Docker Image                            |   &#10003;   |
-| Authentication & Autorization                      |   &#10003;   | 
+| Authentication & Authorization                     |   &#10003;   |
 | Reconfigurable Health Checker                      |   &#10003;   |
-| Custom Configuration                               |   &#10003;   | 
-| Grafana Dashboards                                 |   &#10003;   | 
+| Custom Configuration                               |   &#10003;   |
 | Externally manageable Auth Secret                  |   &#10003;   |
+| Rotate Authentication                              |   &#10003;   |
 | Persistent Volume                                  |   &#10003;   |
 | Monitoring with Prometheus & Grafana               |   &#10003;   |
-| Builtin Prometheus Discovery                       |   &#10003;   | 
-| Alert Dashboard                                    |   &#10003;   |
+| Builtin Prometheus Discovery                       |   &#10003;   |
 | Using Prometheus operator                          |   &#10003;   |
 | Automated Version Update                           |   &#10003;   |
 | Automatic Vertical Scaling                         |   &#10003;   |
@@ -40,6 +38,8 @@ Hazelcast is an open-source, Java-based, information retrieval library with supp
 | Automated Volume Expansion                         |   &#10003;   |
 | Autoscaling (vertically, volume)                   |   &#10003;   |
 | TLS: Add, Remove, Update, Rotate ( Cert Manager )  |   &#10003;   |
+| Restart                                            |   &#10003;   |
+
 ## Life Cycle of a Hazelcast Object
 
 <p align="center">

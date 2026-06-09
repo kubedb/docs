@@ -28,14 +28,21 @@ SingleStore, a distributed SQL database for real-time analytics, transactional w
 | Backup/Recovery: Instant, Scheduled ( [KubeStash](https://kubestash.com/)) |   &#10003;   |
 | Custom Configuration                                                       |   &#10003;   |
 | Initializing from Snapshot ( [KubeStash](https://kubestash.com/))          |   &#10003;   |
-| TLS: Add ( [Cert Manager]((https://cert-manager.io/docs/)))                |   &#10003;   |
+| TLS: Add, Reconfigure ( [Cert Manager](https://cert-manager.io/docs/))     |   &#10003;   |
 | Monitoring with Prometheus & Grafana                                       |   &#10003;   |
 | Builtin Prometheus Discovery                                               |   &#10003;   |
 | Using Prometheus operator                                                  |   &#10003;   |
 | Externally manageable Auth Secret                                          |   &#10003;   |
 | Reconfigurable Health Checker                                              |   &#10003;   |
-| Persistent volume                                                          |   &#10003;   | 
+| Persistent volume                                                          |   &#10003;   |
 | SingleStore Studio (UI)                                                    |   &#10003;   |
+| Reconfigure                                                                |   &#10003;   |
+| Horizontal Scaling                                                         |   &#10003;   |
+| Vertical Scaling                                                           |   &#10003;   |
+| Volume Expansion                                                           |   &#10003;   |
+| Version Update                                                             |   &#10003;   |
+| Autoscaling (Compute & Storage)                                            |   &#10003;   |
+| Restart                                                                    |   &#10003;   |
 
 
 ## Supported SingleStore Versions

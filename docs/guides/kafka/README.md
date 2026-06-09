@@ -37,6 +37,13 @@ aliases:
 | Custom Volume                                                                      | &#10003; | &#10003;       |
 | Persistent Volume                                                                  | &#10003; | &#45;          |
 | Connectors                                                                         | &#45;    | &#10003;       |
+| Restart                                                                            | &#10003; | &#10007;       |
+| Rotate Authentication                                                              | &#10003; | &#10007;       |
+| Tiered Storage (S3, GCS, Azure)                                                    | &#10003; | &#45;          |
+| Schema Registry                                                                    | &#10003; | &#45;          |
+| Rest Proxy                                                                         | &#10003; | &#45;          |
+| GitOps                                                                             | &#10003; | &#45;          |
+| Migration                                                                          | &#10003; | &#10003;       |
 
 ## Lifecycle of Kafka Object
 

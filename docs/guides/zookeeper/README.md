@@ -20,9 +20,8 @@ aliases:
 |------------------------------------------------------------------------------------|:------------:|
 | Ensemble                                                                           |   &#10003;   |
 | Standalone                                                                         |   &#10003;   |
-| Authentication & Autorization                                                      |   &#10003;   | 
-| Custom Configuration                                                               |   &#10003;   | 
-| Grafana Dashboards                                                                 |   &#10003;   | 
+| Authentication & Autorization                                                      |   &#10003;   |
+| Custom Configuration                                                               |   &#10003;   |
 | Externally manageable Auth Secret                                                  |   &#10003;   |
 | Reconfigurable Health Checker                                                      |   &#10003;   |
 | TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) |   &#10003;   |
@@ -30,11 +29,11 @@ aliases:
 | Automatic Vertical Scaling                                                         |   &#10003;   |
 | Automated Horizontal Scaling                                                       |   &#10003;   |
 | Automated Volume Expansion                                                         |   &#10003;   |
-| Backup/Recovery: Instant, Scheduled ([KubeStash](https://kubestash.com/))          |   &#10003;   | 
+| Backup/Recovery: Instant, Scheduled ([KubeStash](https://kubestash.com/))          |   &#10003;   |
 | Persistent Volume                                                                  |   &#10003;   |
-| Initializing from Snapshot ( [Stash](https://stash.run/) )                         |   &#10003;   |
-| Builtin Prometheus Discovery                                                       |   &#10003;   | 
+| Builtin Prometheus Discovery                                                       |   &#10003;   |
 | Using Prometheus operator                                                          |   &#10003;   |
+| Restart                                                                            |   &#10003;   |
 
 ## Life Cycle of a ZooKeeper Object
 

@@ -25,12 +25,15 @@ aliases:
 | Custom Configuration                                                               |   &#10003;   |
 | Using Custom Docker Image                                                          |   &#10003;   |
 | Initialization From Script (\*.js and/or \*.sh)                                    |   &#10003;   |
+| Initialization From Git Repository                                                 |   &#10003;   |
 | Initializing from Snapshot ( [Stash](https://stash.run/) )                         |   &#10003;   |
 | Authentication & Autorization                                                      |   &#10003;   |
 | Arbiter support                                                                    |   &#10003;   |
+| Hidden Node support                                                                |   &#10003;   |
 | Persistent Volume                                                                  |   &#10003;   |
 | Instant Backup                                                                     |   &#10003;   |
 | Scheduled Backup                                                                   |   &#10003;   |
+| Continuous Archiving & Point-in-time Recovery                                      |   &#10003;   |
 | Builtin Prometheus Discovery                                                       |   &#10003;   |
 | Using Prometheus operator                                                          |   &#10003;   |
 | Automated Version Update                                                           |   &#10003;   |
@@ -41,6 +44,15 @@ aliases:
 | Automated Reprovision                                                              |   &#10003;   |
 | Automated Volume Expansion                                                         |   &#10003;   |
 | Autoscaling (vertically)                                                           |   &#10003;   |
+| Autoscaling (storage)                                                              |   &#10003;   |
+| Rotate Authentication Credentials                                                  |   &#10003;   |
+| Restart                                                                            |   &#10003;   |
+| Custom RBAC                                                                        |   &#10003;   |
+| Schema Manager                                                                     |   &#10003;   |
+| Encryption at Rest with Vault KMIP                                                 |   &#10003;   |
+| External Connections (MongoDB Horizon)                                             |   &#10003;   |
+| GitOps                                                                             |   &#10003;   |
+| Failure & Disaster Recovery                                                        |   &#10003;   |
 
 
 ## Life Cycle of a MongoDB Object

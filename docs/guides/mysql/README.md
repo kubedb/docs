@@ -21,21 +21,34 @@ aliases:
 |------------------------------------------------------------------------------------|:------------:|
 | Group Replication                                                                  |   &#10003;   |
 | Innodb Cluster                                                                     |   &#10003;   |
-| SemiSynchronous cluster                                                            |   &#10003;   |
-| Read Replicas                                                                      |   &#10003;   |
+| SemiSynchronous Cluster                                                            |   &#10003;   |
+| Read Replicas (Remote Replica)                                                     |   &#10003;   |
+| Replication Mode Transform                                                         |   &#10003;   |
+| Failure and Disaster Recovery / Auto-failover                                      |   &#10003;   |
 | TLS: Add, Remove, Update, Rotate ( [Cert Manager](https://cert-manager.io/docs/) ) |   &#10003;   |
-| Automated Version update                                                           |   &#10003;   |
+| Reconfigure TLS                                                                    |   &#10003;   |
+| Automated Version Update                                                           |   &#10003;   |
 | Automatic Vertical Scaling                                                         |   &#10003;   |
 | Automated Horizontal Scaling                                                       |   &#10003;   |
 | Automated Volume Expansion                                                         |   &#10003;   |
+| Compute Autoscaling                                                                |   &#10003;   |
+| Storage Autoscaling                                                                |   &#10003;   |
 | Backup/Recovery: Instant, Scheduled ( [Stash](https://stash.run/) )                |   &#10003;   |
-| Continuous Archiving using `wal-g`                                                 |   &#10003;   |
-| Initialize using Snapshot                                                          |   &#10003;   |
+| Backup/Recovery using KubeStash                                                    |   &#10003;   |
+| Continuous Archiving and Point-in-time Recovery                                    |   &#10003;   |
 | Initialize using Script (\*.sql, \*sql.gz and/or \*.sh)                            |   &#10003;   |
+| Initialize using Git Repository                                                    |   &#10003;   |
 | Custom Configuration                                                               |   &#10003;   |
-| Using Custom docker image                                                          |   &#10003;   |
+| Reconfigure Custom Configuration                                                   |   &#10003;   |
+| Schema Manager                                                                     |   &#10003;   |
+| Storage Class Migration                                                            |   &#10003;   |
+| Restart                                                                            |   &#10003;   |
+| Rotate Authentication Credentials                                                  |   &#10003;   |
+| Custom RBAC                                                                        |   &#10003;   |
+| Using Private Docker Registry                                                      |   &#10003;   |
 | Builtin Prometheus Discovery                                                       |   &#10003;   |
-| Using Prometheus operator                                                          |   &#10003;   |
+| Using Prometheus Operator                                                          |   &#10003;   |
+| GitOps                                                                             |   &#10003;   |
 
 ## Life Cycle of a MySQL Object
 

@@ -30,6 +30,7 @@ Apache Cassandra is a highly scalable, distributed NoSQL database designed to ha
 | Operator managed Prometheus Discovery                         |   &#10003;   |
 | Authentication & Authorization (TLS)                          |   &#10003;   |
 | Externally manageable Auth Secret                             |   &#10003;   |
+| Rotate Authentication                                         |   &#10003;   |
 | Persistent volume                                             |   &#10003;   |
 | Grafana Dashboards (Alerts and Monitoring)                    |   &#10003;   |
 | Automated Version Update                                      |   &#10003;   |
@@ -38,6 +39,8 @@ Apache Cassandra is a highly scalable, distributed NoSQL database designed to ha
 | Automated Volume Expansion                                    |   &#10003;   |
 | Autoscaling ( Compute resources & Storage )                   |   &#10003;   |
 | Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
+| Reconfigure                                                   |   &#10003;   |
+| Restart                                                       |   &#10003;   |
 
 ## Supported Cassandra Versions
 

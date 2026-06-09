@@ -21,20 +21,30 @@ Qdrant is a high-performance open-source vector database designed for similarity
 
 ## Supported Qdrant Features
 
-| Features                 | Availability |
-|--------------------------|:------------:|
-| Standalone provisioning  |   &#10003;   |
-| Distributed provisioning |   &#10003;   |
-| TLS                      |   &#10003;   |
-| Logical Backup           |   &#10003;   |
-| Volume Snapshot          |   &#10003;   |
-| Monitoring               |   &#10003;   |
-| Ops Requests             |   &#10003;   |
-| Autoscaler               |   &#10003;   |
+| Features                      | Availability |
+|-------------------------------|:------------:|
+| Standalone Provisioning       |   &#10003;   |
+| Distributed Provisioning      |   &#10003;   |
+| Custom Configuration          |   &#10003;   |
+| TLS                           |   &#10003;   |
+| Logical Backup                |   &#10003;   |
+| Volume Snapshot               |   &#10003;   |
+| Monitoring                    |   &#10003;   |
+| Horizontal Scaling            |   &#10003;   |
+| Vertical Scaling              |   &#10003;   |
+| Volume Expansion              |   &#10003;   |
+| Reconfigure                   |   &#10003;   |
+| Reconfigure TLS               |   &#10003;   |
+| Update Version                |   &#10003;   |
+| Restart                       |   &#10003;   |
+| Rotate Authentication         |   &#10003;   |
+| Compute Autoscaling           |   &#10003;   |
+| Storage Autoscaling           |   &#10003;   |
+| StorageClass Migration        |   &#10003;   |
 
-## Supported Microsoft SQL Server Versions
+## Supported Qdrant Versions
 
-KubeDB supports the following Microsoft SQL Server Version.
+KubeDB supports the following Qdrant versions.
 - `1.15.4`
 - `1.16.2`
 - `1.17.0`
@@ -50,5 +60,20 @@ KubeDB supports the following Microsoft SQL Server Version.
 
 - [Quickstart Qdrant](/docs/guides/qdrant/quickstart/quickstart.md) with KubeDB operator.
 - Deploy [Distributed Qdrant](/docs/guides/qdrant/distributed-deployment/overview.md) cluster.
+- Configure [Custom Configuration](/docs/guides/qdrant/configuration/using-config-file.md) for Qdrant.
+- Configure [TLS/SSL](/docs/guides/qdrant/tls/overview.md) for Qdrant.
+- [Backup and Restore](/docs/guides/qdrant/backup/overview/index.md) Qdrant databases using KubeStash.
+- [Monitor Qdrant](/docs/guides/qdrant/monitoring/overview.md) with KubeDB.
+- [Horizontal Scaling](/docs/guides/qdrant/scaling/horizontal-scaling/overview.md) of Qdrant.
+- [Vertical Scaling](/docs/guides/qdrant/scaling/vertical-scaling/overview.md) of Qdrant.
+- [Volume Expansion](/docs/guides/qdrant/volume-expansion/overview.md) of Qdrant.
+- [Reconfigure](/docs/guides/qdrant/reconfigure/overview.md) Qdrant.
+- [Reconfigure TLS](/docs/guides/qdrant/reconfigure-tls/overview.md) for Qdrant.
+- [Update Version](/docs/guides/qdrant/update-version/overview.md) of Qdrant.
+- [Restart](/docs/guides/qdrant/restart/restart.md) Qdrant.
+- [Rotate Authentication](/docs/guides/qdrant/rotate-auth/overview.md) credentials for Qdrant.
+- [Compute Autoscaling](/docs/guides/qdrant/autoscaler/compute/overview.md) for Qdrant.
+- [Storage Autoscaling](/docs/guides/qdrant/autoscaler/storage/overview.md) for Qdrant.
+- [StorageClass Migration](/docs/guides/qdrant/migration/storageMigration.md) for Qdrant.
 - Detail concepts of [Qdrant Object](/docs/guides/qdrant/concepts/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

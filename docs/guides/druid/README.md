@@ -44,6 +44,10 @@ Apache Druid is a real-time analytics database designed for fast slice-and-dice 
 | Automated Reprovision                                                              |  &#10003;  |
 | Automated Volume Expansion                                                         |  &#10003;  |
 | Autoscaling (vertically)                                                           |  &#10003;  |
+| Autoscaling (storage)                                                              |  &#10003;  |
+| Failover & Disaster Recovery                                                       |  &#10003;  |
+| Restart                                                                            |  &#10003;  |
+| Rotate Authentication                                                              |  &#10003;  |
 
 ## Supported Druid Versions
 

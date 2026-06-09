@@ -23,12 +23,15 @@ Microsoft SQL Server is one of the most popular relational database management s
 | Features                                                           | Availability |
 |--------------------------------------------------------------------|:------------:|
 | Standalone and Availability Group Cluster (HA configuration)       |   &#10003;   |
+| Distributed Availability Group (DAG) Cluster                       |   &#10003;   |
 | Synchronous Replication                                            |   &#10003;   |
 | Automatic Fail over                                                |   &#10003;   |
 | Arbiter Node for quorum in even-sized clusters                     |   &#10003;   |
 | Custom Configuration                                               |   &#10003;   |
 | Authentication & Authorization                                     |   &#10003;   |
 | Externally manageable Auth Secret                                  |   &#10003;   |
+| Rotate Authentication Credentials                                  |   &#10003;   |
+| Initialization using Script                                        |   &#10003;   |
 | Instant and Scheduled Backup ([KubeStash](https://kubestash.com/)) |   &#10003;   |
 | Continuous Archiving using `wal-g`                                 |   &#10003;   |
 | Initialization from WAL archive                                    |   &#10003;   |
@@ -44,6 +47,8 @@ Microsoft SQL Server is one of the most popular relational database management s
 | Reconfiguration                                                    |   &#10003;   |
 | TLS configuration ([Cert Manager](https://cert-manager.io/docs/))  |   &#10003;   |
 | Reconfiguration of TLS: Add, Remove, Update, Rotate                |   &#10003;   |
+| Restart                                                            |   &#10003;   |
+| GitOps                                                             |   &#10003;   |
 | Grafana Dashboards                                                 |   &#10003;   |
 
 

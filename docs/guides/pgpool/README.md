@@ -27,12 +27,24 @@ KubeDB operator now comes bundled with Pgpool crd to manage all the essential fe
 |-------------------------------------------------------------|:------------:|
 | Multiple Pgpool Versions                                    |   &#10003;   |
 | Custom Configuration                                        |   &#10003;   |
+| Custom PodTemplate                                          |   &#10003;   |
 | Externally manageable Auth Secret                           |   &#10003;   |
 | Reconfigurable Health Checker                               |   &#10003;   |
 | Integrate with externally managed PostgreSQL                |   &#10003;   |
 | Sync Postgres Users to Pgpool                               |   &#10003;   |
 | Custom docker images                                        |   &#10003;   |
+| Custom RBAC                                                 |   &#10003;   |
+| Initialization via Git Repository                           |   &#10003;   |
+| Virtual Secret Support                                      |   &#10003;   |
 | TLS: Add ( [Cert Manager]((https://cert-manager.io/docs/))) |   &#10003;   |
+| Reconfigure TLS                                             |   &#10003;   |
+| Horizontal Scaling                                          |   &#10003;   |
+| Vertical Scaling                                            |   &#10003;   |
+| Compute Autoscaling                                         |   &#10003;   |
+| Reconfigure                                                 |   &#10003;   |
+| Update Version                                              |   &#10003;   |
+| Restart                                                     |   &#10003;   |
+| Rotate Authentication                                       |   &#10003;   |
 | Monitoring with Prometheus & Grafana                        |   &#10003;   |
 | Builtin Prometheus Discovery                                |   &#10003;   |
 | Using Prometheus operator                                   |   &#10003;   |
