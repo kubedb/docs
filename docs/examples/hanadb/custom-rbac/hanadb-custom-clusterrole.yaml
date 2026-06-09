@@ -1,0 +1,21 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: my-custom-clusterrole
+rules:
+- apiGroups:
+  - catalog.kubedb.com
+  resources:
+  - hanadbversions
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
+  - kubedb.com
+  resources:
+  - hanadbs
+  verbs:
+  - get
+  - list
+  - watch
