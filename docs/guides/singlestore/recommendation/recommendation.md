@@ -64,6 +64,7 @@ metadata:
 spec:
   version: "8.5.7"
   licenseSecret:
+    kind: Secret
     name: license-secret
   tls:
     issuerRef:
@@ -106,6 +107,7 @@ metadata:
 spec:
   version: "8.5.7"
   licenseSecret:
+    kind: Secret
     name: license-secret
 ```
 
@@ -144,6 +146,7 @@ metadata:
 spec:
   version: "8.5.7"
   licenseSecret:
+    kind: Secret
     name: license-secret
 ```
 
