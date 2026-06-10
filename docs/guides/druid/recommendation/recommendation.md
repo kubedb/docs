@@ -65,6 +65,10 @@ metadata:
   namespace: demo
 spec:
   version: "28.0.1"
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
   authSecret:
     kind: Secret
     name: druid-auth
@@ -99,6 +103,10 @@ metadata:
   namespace: demo
 spec:
   version: "28.0.1"
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -139,6 +147,10 @@ metadata:
   namespace: demo
 spec:
   version: "28.0.1"
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
 ```
 
 In this configuration:
@@ -175,6 +187,10 @@ metadata:
   namespace: demo
 spec:
   version: "28.0.1"
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
 ```
 
 In this configuration:

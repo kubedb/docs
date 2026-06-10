@@ -65,6 +65,12 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
   authSecret:
     kind: Secret
     name: pgbouncer-auth
@@ -99,6 +105,12 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -139,6 +151,12 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
 ```
 
 In this configuration:
@@ -175,6 +193,12 @@ metadata:
   namespace: demo
 spec:
   version: "1.18.0"
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
 ```
 
 In this configuration:

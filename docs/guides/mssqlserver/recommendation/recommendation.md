@@ -65,6 +65,12 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mssqlserver-ca-issuer
+    clientTLS: false
   authSecret:
     kind: Secret
     name: mssqlserver-auth
@@ -139,6 +145,12 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mssqlserver-ca-issuer
+    clientTLS: false
 ```
 
 In this configuration:
@@ -175,6 +187,12 @@ metadata:
   namespace: demo
 spec:
   version: "2022-cu12"
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: mssqlserver-ca-issuer
+    clientTLS: false
 ```
 
 In this configuration:

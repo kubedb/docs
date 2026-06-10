@@ -63,6 +63,8 @@ metadata:
   namespace: demo
 spec:
   version: "8.5.7"
+  licenseSecret:
+    name: license-secret
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -103,6 +105,8 @@ metadata:
   namespace: demo
 spec:
   version: "8.5.7"
+  licenseSecret:
+    name: license-secret
 ```
 
 In this configuration:
@@ -139,6 +143,8 @@ metadata:
   namespace: demo
 spec:
   version: "8.5.7"
+  licenseSecret:
+    name: license-secret
 ```
 
 In this configuration:
