@@ -106,14 +106,14 @@ $ clusteradm get token
 ```
 token=<Your_Clusteradm_Join_Token>
 please log on spoke and run:
-clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name <cluster_name>
+clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://<hub-apiserver-ip>:6443 --cluster-name <cluster_name>
 ```
 
 On the `demo-worker` cluster, join it to the hub. Include the `RawFeedbackJsonString` feature gate for resource feedback:
 
 ```bash
 $ kubectl config use-context demo-worker
-$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
+$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://<hub-apiserver-ip>:6443 --cluster-name demo-worker --feature-gates=RawFeedbackJsonString=true
 ```
 
 #### 5. Accept Spoke Cluster
@@ -163,7 +163,7 @@ Repeat the join and accept process for `demo-controller` so it can also act as a
 
 ```bash
 $ kubectl config use-context demo-controller
-$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://10.2.0.56:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
+$ clusteradm join --hub-token <Your_Clusteradm_Join_Token> --hub-apiserver https://<hub-apiserver-ip>:6443 --cluster-name demo-controller --feature-gates=RawFeedbackJsonString=true
 $ clusteradm accept --clusters demo-controller
 ```
 
@@ -189,25 +189,44 @@ open-cluster-management-agent-addon   Active   34s
 open-cluster-management-hub           Active   10m
 ```
 
-### Step 2: Configure OCM WorkConfiguration (Optional)
+#### 8. Verify OCM Roles
 
-If you did not follow the provided OCM installation steps, update the `klusterlet` resource to enable feedback retrieval:
+After registration, use these commands to confirm which cluster is the hub and which are spokes:
 
 ```bash
-$ kubectl edit klusterlet klusterlet
+# Hub: lists all registered spoke clusters
+$ kubectl get managedclusters
+
+# Spoke: shows this cluster's registered name
+$ kubectl get klusterlet klusterlet -o jsonpath='{.spec.clusterName}'
+
+# Hub components run only on the hub cluster
+$ kubectl get pods -n open-cluster-management-hub
+
+# Spoke agent runs on every spoke cluster
+$ kubectl get pods -n open-cluster-management-agent
 ```
 
-Add the following under the `spec` field:
+### Step 2: Configure OCM WorkConfiguration
 
-```yaml
-workConfiguration:
-  featureGates:
-    - feature: RawFeedbackJsonString
-      mode: Enable
-  hubKubeAPIBurst: 100
-  hubKubeAPIQPS: 50
-  kubeAPIBurst: 100
-  kubeAPIQPS: 50
+Run this on **every spoke cluster** (`demo-controller` and `demo-worker`). This enables the `RawFeedbackJsonString` feature gate that KubeDB requires to read pod status across clusters, and raises the API rate limits to prevent throttling.
+
+> **Note:** Even if you passed `--feature-gates=RawFeedbackJsonString=true` during `clusteradm join`, the rate limit fields are not set by that flag. Run this patch on all spokes regardless.
+>
+> **Why this matters:** KubeDB uses OCM's ManifestWork feedback mechanism to watch the status of MariaDB pods on remote spoke clusters. Without `RawFeedbackJsonString`, the KubeDB provisioner on the hub never receives pod status updates from spokes and the distributed MariaDB CR will stay in a non-Ready state indefinitely. The rate limits prevent the klusterlet agent from being API-throttled during initial cluster formation.
+
+```bash
+$ kubectl patch klusterlet klusterlet --type=merge -p '{
+  "spec": {
+    "workConfiguration": {
+      "featureGates": [{"feature": "RawFeedbackJsonString", "mode": "Enable"}],
+      "hubKubeAPIBurst": 100,
+      "hubKubeAPIQPS": 50,
+      "kubeAPIBurst": 100,
+      "kubeAPIQPS": 50
+    }
+  }
+}'
 ```
 
 Verify the configuration:
@@ -241,7 +260,13 @@ KubeSlice enables pod-to-pod communication across clusters. Install the KubeSlic
 
 #### 1. Install KubeSlice Controller
 
-On `demo-controller`, create a `controller.yaml` file:
+On `demo-controller`, get the hub API server address first:
+
+```bash
+$ kubectl cluster-info | grep 'Kubernetes control plane'
+```
+
+Use the IP and port from that output as the `endpoint` value. Create a `controller.yaml` file:
 
 ```yaml
 kubeslice:
@@ -249,7 +274,7 @@ kubeslice:
     loglevel: info
     rbacResourcePrefix: kubeslice-rbac
     projectnsPrefix: kubeslice
-    endpoint: https://10.2.0.56:6443
+    endpoint: https://<hub-apiserver-ip>:6443
 ```
 
 Deploy the controller using Helm:
@@ -267,7 +292,7 @@ $ helm upgrade -i kubeslice-controller oci://ghcr.io/appscode-charts/kubeslice-c
 Verify the installation:
 
 ```bash
-kubectl get pods -n kubeslice-controller
+$ kubectl get pods -n kubeslice-controller
 ```
 
 **Output:**
@@ -334,7 +359,7 @@ On `demo-controller`:
 
 ```bash
 $ kubectl get nodes
-$ kubectl label node demo-master kubeslice.io/node-type=gateway
+$ kubectl label node <node-name> kubeslice.io/node-type=gateway
 ```
 
 On `demo-worker`:
@@ -342,15 +367,15 @@ On `demo-worker`:
 ```bash
 $ kubectl config use-context demo-worker
 $ kubectl get nodes
-$ kubectl label node demo-worker kubeslice.io/node-type=gateway
+$ kubectl label node <node-name> kubeslice.io/node-type=gateway
 ```
 
 #### 4. Register Clusters with KubeSlice
 
-Identify the network interface for both clusters by running the following command on the node:
+Identify the network interface for each cluster by running the following command **on the gateway node of each cluster**:
 
 ```bash
-ip route get 8.8.8.8 | awk '{ print $5 }'
+$ ip route get 8.8.8.8 | awk '{ print $5 }'
 ```
 
 **Output (example):**
@@ -359,11 +384,15 @@ ip route get 8.8.8.8 | awk '{ print $5 }'
 enp1s0
 ```
 
+> **Important:** The `networkInterface` value must match the primary network interface of each cluster's gateway node. Run the command above on **each cluster separately** and use that cluster's output as its `networkInterface` value. Each cluster may have a **different interface name** — do not assume they are the same. Using the wrong interface name will cause the WireGuard gateway to silently fail and cross-cluster MariaDB replication will never connect.
+>
+> Example: if `demo-controller` returns `enp3s0` and `demo-worker` returns `eth0`, use those exact values in the YAML below.
+
 Create a `registration.yaml` file:
 
-> **Important:**
+> **Note:**
 > - The cluster name must exactly match the name of the OCM (spoke) cluster.
-> - The corresponding `ManagedClusterAddOn` resource must be created in the namespace that bears the same name as the cluster to setup kubeslice worker automatically.
+> - The corresponding `ManagedClusterAddOn` resource must be created in the namespace that bears the same name as the cluster to set up the KubeSlice worker automatically.
 
 ```yaml
 apiVersion: controller.kubeslice.io/v1alpha1
@@ -372,7 +401,7 @@ metadata:
   name: demo-controller
   namespace: kubeslice-demo-distributed-mariadb
 spec:
-  networkInterface: enp1s0
+  networkInterface: <demo-controller-interface>   # replace with output of ip route command
   clusterProperty: {}
 ---
 apiVersion: controller.kubeslice.io/v1alpha1
@@ -381,7 +410,7 @@ metadata:
   name: demo-worker
   namespace: kubeslice-demo-distributed-mariadb
 spec:
-  networkInterface: enp1s0
+  networkInterface: <demo-worker-interface>   # replace with output of ip route command
   clusterProperty: {}
 ---
 apiVersion: addon.open-cluster-management.io/v1alpha1
@@ -417,27 +446,28 @@ Apply on `demo-controller`:
 $ kubectl apply -f registration.yaml
 ```
 
-Verify:
+Verify OCM is deploying the KubeSlice worker manifests to each cluster:
 
 ```bash
-$ kubectl get clusters -n kubeslice-demo-distributed-mariadb
+$ kubectl get managedclusteraddon -A
 ```
 
 **Output:**
 
 ```
-NAME              AGE
-demo-controller   9s
-demo-worker       9s
+NAMESPACE         NAME        AVAILABLE   DEGRADED   PROGRESSING
+demo-controller   kubeslice   Unknown                True
+demo-worker       kubeslice   Unknown                True
 ```
 
-Verify the worker installation:
+`PROGRESSING: True` means OCM is actively deploying. Wait until `kubeslice-operator` shows `2/2 Running` on both clusters before proceeding:
 
 ```bash
-$ kubectl get pods -n kubeslice-system
+# Run on each spoke cluster
+$ kubectl get pods -n kubeslice-system --watch
 ```
 
-**Output:**
+**Expected output (after KubeSlice worker is fully deployed):**
 
 ```
 NAME                                 READY   STATUS      RESTARTS   AGE
@@ -446,8 +476,6 @@ kubeslice-dns-6bd9749f4d-pvh7g       1/1     Running     0          4m43s
 kubeslice-install-crds-szhvc         0/1     Completed   0          4m56s
 kubeslice-netop-g4dfn                1/1     Running     0          4m43s
 kubeslice-operator-949b7d6f7-9wj7h   2/2     Running     0          4m43s
-kubeslice-postdelete-job-ctlzt       0/1     Completed   0          20m
-nsm-delete-webhooks-ndksl            0/1     Completed   0          20m
 nsc-grpc-server-sbjj7                1/1     Running     0          4m43s
 nsm-install-crds-5z4j9               0/1     Completed   0          4m53s
 nsmgr-zzwgh                          2/2     Running     0          4m43s
@@ -506,11 +534,15 @@ Apply the `SliceConfig`:
 $ kubectl apply -f sliceconfig.yaml
 ```
 
+After the SliceConfig is applied, a `vl3-slice-router` pod will appear in `kubeslice-system` on each cluster, indicating the slice VPN tunnel is being established.
+
 #### 6. Configure DNS for KubeSlice
 
-Update the network traffic rules to forward the `*.slice.local` suffix (KubeSlice default domain) to the KubeSlice gateway.
+Update CoreDNS to forward `*.slice.local` traffic to the KubeSlice DNS service. Run the following steps on **every cluster** in the slice.
 
-First, get the KubeSlice DNS service IP address:
+> **Important:** CoreDNS must be updated and restarted on all clusters before proceeding to Step 4 (KubeDB install). Galera nodes use `.slice.local` DNS names to discover each other across clusters. If DNS is not configured before MariaDB pods start, replication will not form.
+
+Get the KubeSlice DNS service IP address on each cluster:
 
 ```bash
 $ kubectl get svc -n kubeslice-system -owide -l 'app=kubeslice-dns'
@@ -523,11 +555,9 @@ NAME            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)         AGE   
 kubeslice-dns   ClusterIP   10.43.172.191   <none>        53/UDP,53/TCP   8d    app=kubeslice-dns
 ```
 
-Traffic for `.slice.local` should be forwarded to `10.43.172.191` for this cluster.
+Add the following block to the **top** of your CoreDNS `Corefile` ConfigMap (replace the IP with the one from your cluster):
 
-Add the following section to your CoreDNS configuration:
-
-```bash
+```
 slice.local:53 {
     errors
     cache 30
@@ -535,7 +565,7 @@ slice.local:53 {
 }
 ```
 
-Example CoreDNS ConfigMap:
+Example of the full CoreDNS ConfigMap after editing:
 
 ```bash
 $ kubectl get cm -n kube-system coredns -oyaml
@@ -582,28 +612,44 @@ metadata:
   namespace: kube-system
 ```
 
-> **Note:** Follow the same procedure to update the DNS configuration for all clusters in the slice.
+After editing the ConfigMap, restart CoreDNS to apply the change:
+
+```bash
+$ kubectl rollout restart deploy/coredns -n kube-system
+```
+
+Repeat the DNS configuration steps on every cluster in the slice.
 
 ### Step 4: Install the KubeDB Operator
 
-Install the KubeDB Operator on the `demo-controller` cluster to manage the MariaDB instance.
+> **Note:** Install the KubeDB operator only on the hub cluster (`demo-controller`). The operator manages MariaDB pods on spoke clusters through OCM — no KubeDB installation is needed on `demo-worker`.
 
 #### Get a Free License
 
-Download a FREE license from the [AppsCode License Server](https://appscode.com/issue-license?p=kubedb). Obtain the license for the `demo-controller` cluster.
+The KubeDB license is tied to the `kube-system` namespace UID of the hub cluster and has an expiry date. Get your cluster UID and verify the license before installing:
+
+```bash
+# Get your cluster UID (required when requesting the license)
+$ kubectl get ns kube-system -o jsonpath='{.metadata.uid}'
+
+# Verify the license is not expired
+$ openssl x509 -noout -enddate -in $HOME/Downloads/kubedb-license-<uid>.txt
+```
+
+If expired or not yet obtained, download a FREE license from the [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) using the cluster UID above.
 
 ```bash
 $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --version v2026.2.26 \
     --namespace kubedb --create-namespace \
-    --set-file global.license=$HOME/Downloads/kubedb-license-cd548cce-5141-4ed3-9276-6d9578707f12.txt \
+    --set-file global.license=$HOME/Downloads/kubedb-license-<uid>.txt \
     --set petset.features.ocm.enabled=true \
     --wait --burst-limit=10000 --debug
 ```
 
 > **Note:** The `--set petset.features.ocm.enabled=true` flag must be set to enable the MariaDB Distributed feature.
 
-For additional details, refer to the [KubeDB Installation Guide](https://kubedb.com/docs/v2025.6.30/setup/install/kubedb/).
+For additional details, refer to the [KubeDB Installation Guide](https://kubedb.com/docs/v2026.4.27/setup/).
 
 Verify that the pods are running:
 
@@ -624,6 +670,7 @@ kubedb-sidekick-5dbf7bcf64-4b8cw               2/2     Running   0          44s
 ```
 
 ### Step 5: Define a PlacementPolicy
+
 You can define the `storageClassName` under `spec.clusterSpreadConstraint.distributionRules` for each cluster. If not explicitly specified, the clusters will automatically select an appropriate storage class. Additionally, you can control replica placement by defining which replicas belong to which cluster. When scaling the number of replicas, the distribution must also be specified at the cluster level. In this example, we are using three replicas.
 
 To manage pod distribution across clusters, create a `PlacementPolicy`. For this purpose, define a `pod-placement-policy.yaml` file as shown below:
@@ -639,12 +686,12 @@ spec:
   clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
-        storageClassName: local-path
+        storageClassName: local-path   # optional; omit to use the cluster's default storage class
         replicaIndices:
           - 0
           - 2
       - clusterName: demo-worker
-        storageClassName: local-path
+        storageClassName: local-path   # optional; omit to use the cluster's default storage class
         replicaIndices:
           - 1
     slice:
@@ -670,6 +717,12 @@ $ kubectl apply -f pod-placement-policy.yaml --context demo-controller --kubecon
 ```
 
 ### Step 6: Create a Distributed MariaDB Instance
+
+Create the `demo` namespace first:
+
+```bash
+$ kubectl create namespace demo
+```
 
 Define a MariaDB custom resource with `spec.distributed` set to `true` and reference the `PlacementPolicy`. Create a `mariadb.yaml` file:
 
@@ -773,20 +826,7 @@ Check additional Galera status variables:
 SHOW STATUS LIKE 'wsrep%';
 ```
 
-**Key Indicators:**
 
-- `wsrep_cluster_status: Primary` — The cluster is fully operational.
-- `wsrep_cluster_size: 3` — All three nodes are part of the cluster.
-- `wsrep_connected: ON` — The node is connected to the cluster.
-- `wsrep_ready: ON` — The node is ready to accept queries.
-- `wsrep_incoming_addresses` — Lists the IP addresses of all nodes (e.g., `10.1.0.3:0,10.1.0.4:0,10.1.16.4:0`).
-
-## Troubleshooting
-
-- **Pods Not Running**: Check pod logs (`kubectl logs -n demo mariadb-0`) for errors related to storage, networking, or configuration.
-- **Cluster Not Joining**: Ensure the `RawFeedbackJsonString` feature gate is enabled and verify network connectivity between clusters.
-- **KubeSlice Issues**: Confirm that the network interface (e.g., `enp1s0`) matches your cluster's configuration and that sidecar containers are injected.
-- **MariaDB Not Synced**: Check `wsrep_local_state_comment` (should be `Synced`) and ensure all nodes have the same `wsrep_cluster_state_uuid`.
 
 ## Next Steps
 
@@ -795,4 +835,3 @@ SHOW STATUS LIKE 'wsrep%';
 - **Monitoring**: Integrate KubeDB with monitoring tools like Prometheus for cluster health insights.
 
 For further details, refer to the [KubeDB Documentation](https://kubedb.com/docs/v2025.7.31/).
-
