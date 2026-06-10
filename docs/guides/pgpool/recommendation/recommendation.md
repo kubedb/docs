@@ -65,6 +65,9 @@ metadata:
   namespace: demo
 spec:
   version: "4.5.0"
+  postgresRef:
+    name: quick-postgres
+    namespace: demo
   authSecret:
     kind: Secret
     name: pgpool-auth
@@ -99,6 +102,9 @@ metadata:
   namespace: demo
 spec:
   version: "4.5.0"
+  postgresRef:
+    name: quick-postgres
+    namespace: demo
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -139,6 +145,9 @@ metadata:
   namespace: demo
 spec:
   version: "4.5.0"
+  postgresRef:
+    name: quick-postgres
+    namespace: demo
 ```
 
 In this configuration:
@@ -175,6 +184,9 @@ metadata:
   namespace: demo
 spec:
   version: "4.5.0"
+  postgresRef:
+    name: quick-postgres
+    namespace: demo
 ```
 
 In this configuration:
