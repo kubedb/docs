@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Zookeeper
+title: Kubectl-Dba Debug Hanadb
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-zookeeper
-    name: Kubectl-Dba Debug Zookeeper
+    identifier: kubectl-dba-debug-hanadb
+    name: Kubectl-Dba Debug Hanadb
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug zookeeper
+## kubectl-dba debug hanadb
 
-Debug helper for ZooKeeper database
+Debug helper for HanaDB database
 
 ```
-kubectl-dba debug zookeeper [flags]
+kubectl-dba debug hanadb [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
+kubectl dba debug hanadb -n demo sample-hanadb --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for zookeeper
+  -h, --help                        help for hanadb
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

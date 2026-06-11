@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Zookeeper
+title: Kubectl-Dba Debug Weaviate
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-zookeeper
-    name: Kubectl-Dba Debug Zookeeper
+    identifier: kubectl-dba-debug-weaviate
+    name: Kubectl-Dba Debug Weaviate
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug zookeeper
+## kubectl-dba debug weaviate
 
-Debug helper for ZooKeeper database
+Debug helper for Weaviate database
 
 ```
-kubectl-dba debug zookeeper [flags]
+kubectl-dba debug weaviate [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
+kubectl dba debug weaviate -n demo sample-weaviate --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for zookeeper
+  -h, --help                        help for weaviate
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
