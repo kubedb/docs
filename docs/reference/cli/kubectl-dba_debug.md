@@ -78,7 +78,6 @@ kubectl-dba debug
 * [kubectl-dba debug documentdb](/docs/reference/cli/kubectl-dba_debug_documentdb.md)	 - Debug helper for DocumentDB database
 * [kubectl-dba debug druid](/docs/reference/cli/kubectl-dba_debug_druid.md)	 - Debug helper for Druid database
 * [kubectl-dba debug elasticsearch](/docs/reference/cli/kubectl-dba_debug_elasticsearch.md)	 - Debug helper for Elasticsearch database
-* [kubectl-dba debug ferretdb](/docs/reference/cli/kubectl-dba_debug_ferretdb.md)	 - Debug helper for FerretDB database
 * [kubectl-dba debug hanadb](/docs/reference/cli/kubectl-dba_debug_hanadb.md)	 - Debug helper for HanaDB database
 * [kubectl-dba debug hazelcast](/docs/reference/cli/kubectl-dba_debug_hazelcast.md)	 - Debug helper for Hazelcast database
 * [kubectl-dba debug ignite](/docs/reference/cli/kubectl-dba_debug_ignite.md)	 - Debug helper for Ignite database
