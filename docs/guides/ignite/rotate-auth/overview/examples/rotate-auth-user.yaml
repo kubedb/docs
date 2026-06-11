@@ -6,10 +6,10 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: sample-ignite
+    name: ignite-quickstart
   authentication:
     secretRef:
       kind: Secret
-      name: sample-ignite-auth-user
+      name: ignite-quickstart-auth-user
   timeout: 5m
   apply: IfReady

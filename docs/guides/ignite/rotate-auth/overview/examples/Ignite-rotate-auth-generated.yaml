@@ -6,6 +6,6 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: sample-ignite
+    name: ignite-quickstart
   timeout: 5m
   apply: IfReady
