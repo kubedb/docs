@@ -62,7 +62,7 @@ metadata:
   name: zookeeper-recommendation
   namespace: demo
 spec:
-  version: "3.9.1"
+  version: "3.8.3"
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -102,7 +102,7 @@ metadata:
   name: zookeeper-recommendation
   namespace: demo
 spec:
-  version: "3.9.1"
+  version: "3.8.3"
 ```
 
 In this configuration:
@@ -119,7 +119,7 @@ KubeDB monitors the configured lifecycle and generates a VersionUpdate Recommend
 
 * If changes are introduced in the existing version image (e.g., security fixes or image updates without a version bump), a recommendation is generated
 
-For example: Recommending version update from `3.9.1` to `3.9.2`
+For example: Recommending version update from `3.8.3` to `3.9.1`
 
 Once approved, KubeDB creates an opsrequest to perform the version upgrade automatically, ensuring:
 
@@ -138,7 +138,7 @@ metadata:
   name: zookeeper-recommendation
   namespace: demo
 spec:
-  version: "3.9.1"
+  version: "3.8.3"
 ```
 
 In this configuration:

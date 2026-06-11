@@ -173,7 +173,7 @@ KubeDB monitors the configured lifecycle and generates a VersionUpdate Recommend
 
 * If changes are introduced in the existing version image (e.g., security fixes or image updates without a version bump), a recommendation is generated
 
-For example: Recommending version update from `1.18.0` to `1.18.1`
+For example: Recommending version update from `1.18.0` to `1.23.1`
 
 Once approved, KubeDB creates an opsrequest to perform the version upgrade automatically, ensuring:
 
