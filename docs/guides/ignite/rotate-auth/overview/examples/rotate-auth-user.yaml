@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: IgniteOpsRequest
+metadata:
+  name: igops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: sample-ignite
+  authentication:
+    secretRef:
+      kind: Secret
+      name: sample-ignite-auth-user
+  timeout: 5m
+  apply: IfReady
