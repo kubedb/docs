@@ -320,17 +320,6 @@ NAME          READY   STATUS    RESTARTS   AGE
 mariadb-1     3/3     Running   0          20m
 ```
 
-Let's verify the cluster size from inside a MariaDB pod:
-
-```bash
-$ kubectl exec -it -n demo mariadb-0 -c mariadb --context demo-controller -- bash
-root@mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 3     |
-+--------------------+-------+
-```
 
 From all the above outputs we can see that the cluster now has `3` replicas. We have successfully scaled down the distributed MariaDB cluster.
 
