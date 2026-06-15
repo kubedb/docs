@@ -62,7 +62,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-kubectl create secret tls es-ca \
+$ kubectl create secret tls es-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
@@ -142,7 +142,6 @@ KubeDB creates a client certificate secret for Elasticsearch. Let's check it:
 
 ```bash
 $ kubectl describe secret -n demo es-combined-tls-client-cert
-
 Name:         es-combined-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -151,40 +150,40 @@ Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/name=elasticsearches.kubedb.com
               controller.cert-manager.io/fao=true
 Annotations:  cert-manager.io/alt-names:
-                *.es-combined-tls-pods.demo.svc.cluster.local,es-combined-tls,es-combined-tls.demo.svc,es-combined-tls.demo.svc.cluster.local,localhost
+                *.es-combined-tls-pods.demo.svc,*.es-combined-tls-pods.demo.svc.cluster.local,es-combined-tls,es-combined-tls.demo.svc,localhost
               cert-manager.io/certificate-name: es-combined-tls-client-cert
-              cert-manager.io/common-name: es-combined-tls.demo.svc
+              cert-manager.io/common-name: es-combined-tls
               cert-manager.io/ip-sans: 127.0.0.1
               cert-manager.io/issuer-group: cert-manager.io
               cert-manager.io/issuer-kind: Issuer
               cert-manager.io/issuer-name: es-ca-issuer
+              cert-manager.io/subject-organizations: kubedb
+              cert-manager.io/uri-sans: 
 
 Type:  kubernetes.io/tls
 
 Data
 ====
-ca.crt:   1184 bytes
-tls.crt:  1452 bytes
-tls.key:  1704 bytes
+tls.key:  1708 bytes
+ca.crt:   1172 bytes
+tls.crt:  1387 bytes
 ```
 
 Now, let's exec into an Elasticsearch pod and verify the configuration that TLS is enabled for both transport and HTTP layers.
 
 ```bash
 $ kubectl exec -n demo es-combined-tls-0 -c elasticsearch -- \
-    cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
-
-Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
+                                      cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
 xpack.security.enabled: true
 
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: certs/transport/tls.key
-xpack.security.transport.ssl.certificate: certs/transport/tls.crt
+xpack.security.transport.ssl.certificate: certs/transport/tls.crt 
 xpack.security.transport.ssl.certificate_authorities: [ "certs/transport/ca.crt" ]
 
 xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.key: certs/http/tls.key
+xpack.security.http.ssl.key:  certs/http/tls.key
 xpack.security.http.ssl.certificate: certs/http/tls.crt
 xpack.security.http.ssl.certificate_authorities: [ "certs/http/ca.crt" ]
 ```
@@ -194,23 +193,33 @@ We can see from the above output that both `xpack.security.transport.ssl.enabled
 Now, let's connect to the Elasticsearch cluster using HTTPS to confirm it is accessible with TLS.
 
 ```bash
-$ kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
+$  kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:es-combined-tls-auth"
 {
-  "cluster_name" : "es-combined-tls",
-  "status" : "green",
-  "timed_out" : false,
-  "number_of_nodes" : 3,
-  "number_of_data_nodes" : 3,
-  "active_primary_shards" : 1,
-  "active_shards" : 2,
-  "relocating_shards" : 0,
-  "initializing_shards" : 0,
-  "unassigned_shards" : 0,
-  "delayed_unassigned_shards" : 0,
-  "number_of_pending_tasks" : 0,
-  "number_of_in_flight_fetch" : 0,
-  "task_max_waiting_in_queue_millis" : 0,
-  "active_shards_percent_as_number" : 100.0
+  "error" : {
+    "root_cause" : [
+      {
+        "type" : "security_exception",
+        "reason" : "unable to authenticate user [elastic] for REST request [/_cluster/health?pretty]",
+        "header" : {
+          "WWW-Authenticate" : [
+            "Basic realm=\"security\", charset=\"UTF-8\"",
+            "Bearer realm=\"security\"",
+            "ApiKey"
+          ]
+        }
+      }
+    ],
+    "type" : "security_exception",
+    "reason" : "unable to authenticate user [elastic] for REST request [/_cluster/health?pretty]",
+    "header" : {
+      "WWW-Authenticate" : [
+        "Basic realm=\"security\", charset=\"UTF-8\"",
+        "Bearer realm=\"security\"",
+        "ApiKey"
+      ]
+    }
+  },
+  "status" : 401
 }
 ```
 
