@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Horizontal Scale Distributed MariaDB
 
-This guide will show you how to use `KubeDB` Enterprise operator to horizontally scale a distributed MariaDB Galera cluster across multiple Kubernetes clusters.
+This guide will show you how to use `KubeDB` Opsrequest operator to horizontally scale a distributed MariaDB Galera cluster across multiple Kubernetes clusters.
 
 > **Note:** All other `OpsRequest` operations behave consistently in a distributed environment. Only `HorizontalScaling` has cluster-specific considerations covered in this guide.
 
@@ -47,7 +47,7 @@ Here, we are going to deploy a distributed `MariaDB` Galera cluster and then app
 
 ### Deploy PlacementPolicy
 
-For a distributed MariaDB cluster, the `PlacementPolicy` must be created **before** deploying the database. It defines which replica index is scheduled on which cluster and acts as the upper bound for scaling — the actual running replicas can be any number less than or equal to the total indices defined in the policy.
+For a distributed MariaDB cluster, the `PlacementPolicy` must be created before deploying the database. It defines which replica index is scheduled on which cluster and acts as the upper bound for scaling, the actual running replicas can be any number less than or equal to the total indices defined in the policy.
 
 In this example, the `PlacementPolicy` is configured with **five** replica indices distributed across two clusters. The MariaDB cluster will start with **three** replicas (indices `0`, `1`, `2`), and can be scaled up to **five** (indices `0`–`4`) without modifying the policy.
 
@@ -94,7 +94,7 @@ placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
-In this section, we are going to deploy a distributed MariaDB Galera cluster with version `11.5.2`. Note that `spec.distributed` is set to `true` and `spec.replicas` is `3` — which is less than the five indices defined in the `PlacementPolicy`. The operator will only create pods for indices `0`, `1`, and `2`.
+In this section, we are going to deploy a distributed MariaDB Galera cluster with version `11.5.2`. Note that `spec.distributed` is set to `true` and `spec.replicas` is `3`  which is less than the five indices defined in the `PlacementPolicy`. The operator will only create pods for indices `0`, `1`, and `2`.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -142,7 +142,7 @@ Now, wait until `mariadb` has status `Ready`:
 ```bash
 $ kubectl get mariadb -n demo --context demo-controller
 NAME             VERSION   STATUS   AGE
-mariadb   11.5.2    Ready    2m36s
+mariadb          11.5.2    Ready    2m36s
 ```
 
 Let's check the number of replicas this database has from the MariaDB object:
@@ -165,19 +165,9 @@ NAME          READY   STATUS    RESTARTS   AGE
 mariadb-1     3/3     Running   0          2m30s
 ```
 
-We can also verify the cluster size from inside a MariaDB pod:
 
-```bash
-$ kubectl exec -it -n demo mariadb-0 -c mariadb --context demo-controller -- bash
-root@mariadb-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
-+--------------------+-------+
-| Variable_name      | Value |
-+--------------------+-------+
-| wsrep_cluster_size | 3     |
-+--------------------+-------+
-```
 
-We can see the cluster has 3 nodes. We are now ready to apply `MariaDBOpsRequest` to scale this database.
+We can see the cluster has 3 pods. We are now ready to apply `MariaDBOpsRequest` to scale this database.
 
 ## Scale Up Replicas
 

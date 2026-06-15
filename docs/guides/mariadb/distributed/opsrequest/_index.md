@@ -1,10 +1,10 @@
 ---
-title: Horizontal Scaling 
+title: Horizontal Scaling
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed-horizontalscaling
-    name: Autoscaling
+    name: Horizontal Scaling
     parent: guides-mariadb-distributed
-    weight: 47
+    weight: 50
 menu_name: docs_{{ .version }}
 ---
