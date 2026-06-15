@@ -92,6 +92,11 @@ jobs:
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/config.virtual-secrets.dev_secretstores.yaml
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secretmounts.yaml
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secrets.yaml
+          # argocd crds
+          kubectl create -f https://github.com/argoproj/argo-cd/raw/v3.4.3/manifests/crds/application-crd.yaml
+          # fluxcd crds
+          kubectl create -f https://github.com/fluxcd/helm-controller/raw/v1.3.0/config/crd/bases/helm.toolkit.fluxcd.io_helmreleases.yaml
+          kubectl create -f https://github.com/fluxcd/source-controller/raw/v1.6.2/config/crd/bases/source.toolkit.fluxcd.io_helmrepositories.yaml
 
       - name: Check codespan schema
         run: |
