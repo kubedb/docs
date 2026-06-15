@@ -159,21 +159,22 @@ Exec into the master node and check the cluster setting:
 
 ```bash
 $ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
-  "cluster.max_shards_per_node" : "2000"
+          "max_shards_per_node" : "2000",
 ```
 
 Exec into a data node and check the index settings:
 
 ```bash
 $ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
-  "indices.query.bool.max_clause_count" : "2048"
+              "max_clause_count" : "2048"
+              "max_clause_count" : "2048"
 ```
 
 Exec into the ingest node and check the HTTP settings:
 
 ```bash
 $ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
-  "max_content_length" : "200mb"
+          "max_content_length" : "200mb",
 ```
 
 Here, we can see that our given configurations are applied to the respective node roles.
@@ -281,101 +282,108 @@ Annotations:  <none>
 API Version:  ops.kubedb.com/v1alpha1
 Kind:         ElasticsearchOpsRequest
 Metadata:
-  Creation Timestamp:  2024-08-02T05:08:37Z
+  Creation Timestamp:  2026-06-15T11:13:59Z
   Generation:          1
-  Resource Version:    332491
-  UID:                 b6e8cb1b-d29f-445e-bb01-60d29012c7eb
+  Resource Version:    434719
+  UID:                 a050a578-420c-4bb8-a390-3b32b369ec65
 Spec:
   Apply:  IfReady
   Configuration:
     Config Secret:
-      Name:  new-es-topology-custom-config
+      Name:   new-es-topology-custom-config
+    Restart:  auto
   Database Ref:
-    Name:   es-topology
-  Timeout:  5m
-  Type:     Reconfigure
+    Name:       es-topology
+  Max Retries:  1
+  Timeout:      5m
+  Type:         Reconfigure
 Status:
   Conditions:
-    Last Transition Time:  2024-08-02T05:08:37Z
-    Message:               Elasticsearch ops-request has started to reconfigure elasticsearch nodes
+    Last Transition Time:  2026-06-15T11:13:59Z
+    Message:               Elasticsearch ops request is Reconfiguring
     Observed Generation:   1
     Reason:                Reconfigure
     Status:                True
     Type:                  Reconfigure
-    Last Transition Time:  2024-08-02T05:09:42Z
-    Message:               successfully reconciled the Elasticsearch with new configure
+    Last Transition Time:  2026-06-15T11:14:09Z
+    Message:               Successfully updated petSets
     Observed Generation:   1
     Reason:                UpdatePetSets
     Status:                True
     Type:                  UpdatePetSets
-    Last Transition Time:  2024-08-02T05:09:47Z
-    Message:               get pod; ConditionStatus:True; PodName:es-topology-master-0
+    Last Transition Time:  2026-06-15T11:14:19Z
+    Message:               pod exists; ConditionStatus:True; PodName:es-topology-ingest-0
     Observed Generation:   1
     Status:                True
-    Type:                  GetPod--es-topology-master-0
-    Last Transition Time:  2024-08-02T05:09:47Z
-    Message:               evict pod; ConditionStatus:True; PodName:es-topology-master-0
+    Type:                  PodExists--es-topology-ingest-0
+    Last Transition Time:  2026-06-15T11:14:19Z
+    Message:               create es client; ConditionStatus:True; PodName:es-topology-ingest-0
     Observed Generation:   1
     Status:                True
-    Type:                  EvictPod--es-topology-master-0
-    Last Transition Time:  2024-08-02T05:10:02Z
-    Message:               check pod running; ConditionStatus:True; PodName:es-topology-master-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--es-topology-master-0
-    Last Transition Time:  2024-08-02T05:10:07Z
-    Message:               get pod; ConditionStatus:True; PodName:es-topology-data-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--es-topology-data-0
-    Last Transition Time:  2024-08-02T05:10:07Z
-    Message:               evict pod; ConditionStatus:True; PodName:es-topology-data-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--es-topology-data-0
-    Last Transition Time:  2024-08-02T05:10:22Z
-    Message:               check pod running; ConditionStatus:True; PodName:es-topology-data-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--es-topology-data-0
-    Last Transition Time:  2024-08-02T05:10:27Z
-    Message:               get pod; ConditionStatus:True; PodName:es-topology-data-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--es-topology-data-1
-    Last Transition Time:  2024-08-02T05:10:27Z
-    Message:               evict pod; ConditionStatus:True; PodName:es-topology-data-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  EvictPod--es-topology-data-1
-    Last Transition Time:  2024-08-02T05:10:42Z
-    Message:               check pod running; ConditionStatus:True; PodName:es-topology-data-1
-    Observed Generation:   1
-    Status:                True
-    Type:                  CheckPodRunning--es-topology-data-1
-    Last Transition Time:  2024-08-02T05:10:47Z
-    Message:               get pod; ConditionStatus:True; PodName:es-topology-ingest-0
-    Observed Generation:   1
-    Status:                True
-    Type:                  GetPod--es-topology-ingest-0
-    Last Transition Time:  2024-08-02T05:10:47Z
+    Type:                  CreateEsClient--es-topology-ingest-0
+    Last Transition Time:  2026-06-15T11:14:19Z
     Message:               evict pod; ConditionStatus:True; PodName:es-topology-ingest-0
     Observed Generation:   1
     Status:                True
     Type:                  EvictPod--es-topology-ingest-0
-    Last Transition Time:  2024-08-02T05:11:02Z
-    Message:               check pod running; ConditionStatus:True; PodName:es-topology-ingest-0
+    Last Transition Time:  2026-06-15T11:14:59Z
+    Message:               create es client; ConditionStatus:True
     Observed Generation:   1
     Status:                True
-    Type:                  CheckPodRunning--es-topology-ingest-0
-    Last Transition Time:  2024-08-02T05:11:07Z
+    Type:                  CreateEsClient
+    Last Transition Time:  2026-06-15T11:14:34Z
+    Message:               pod exists; ConditionStatus:True; PodName:es-topology-data-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  PodExists--es-topology-data-0
+    Last Transition Time:  2026-06-15T11:14:34Z
+    Message:               create es client; ConditionStatus:True; PodName:es-topology-data-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CreateEsClient--es-topology-data-0
+    Last Transition Time:  2026-06-15T11:14:34Z
+    Message:               evict pod; ConditionStatus:True; PodName:es-topology-data-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--es-topology-data-0
+    Last Transition Time:  2026-06-15T11:14:49Z
+    Message:               pod exists; ConditionStatus:True; PodName:es-topology-data-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  PodExists--es-topology-data-1
+    Last Transition Time:  2026-06-15T11:14:49Z
+    Message:               create es client; ConditionStatus:True; PodName:es-topology-data-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  CreateEsClient--es-topology-data-1
+    Last Transition Time:  2026-06-15T11:14:49Z
+    Message:               evict pod; ConditionStatus:True; PodName:es-topology-data-1
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--es-topology-data-1
+    Last Transition Time:  2026-06-15T11:15:04Z
+    Message:               pod exists; ConditionStatus:True; PodName:es-topology-master-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  PodExists--es-topology-master-0
+    Last Transition Time:  2026-06-15T11:15:04Z
+    Message:               create es client; ConditionStatus:True; PodName:es-topology-master-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  CreateEsClient--es-topology-master-0
+    Last Transition Time:  2026-06-15T11:15:04Z
+    Message:               evict pod; ConditionStatus:True; PodName:es-topology-master-0
+    Observed Generation:   1
+    Status:                True
+    Type:                  EvictPod--es-topology-master-0
+    Last Transition Time:  2026-06-15T11:15:14Z
     Message:               Successfully restarted all nodes
     Observed Generation:   1
     Reason:                RestartNodes
     Status:                True
     Type:                  RestartNodes
-    Last Transition Time:  2024-08-02T05:11:09Z
-    Message:               Successfully completed reconfigure elasticsearch
+    Last Transition Time:  2026-06-15T11:15:15Z
+    Message:               Successfully completed the modification process.
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -383,44 +391,44 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:
-  Type     Reason                                                                       Age    From                         Message
-  ----     ------                                                                       ----   ----                         -------
-  Normal   Starting                                                                     3m7s   KubeDB Ops-manager Operator  Start processing for ElasticsearchOpsRequest: demo/esops-reconfigure-topology
-  Normal   Starting                                                                     3m7s   KubeDB Ops-manager Operator  Pausing Elasticsearch database: demo/es-topology
-  Normal   Successful                                                                   3m7s   KubeDB Ops-manager Operator  Successfully paused Elasticsearch database: demo/es-topology for ElasticsearchOpsRequest: esops-reconfigure-topology
-  Normal   UpdatePetSets                                                                2m2s   KubeDB Ops-manager Operator  successfully reconciled the Elasticsearch with new configure
-  Warning  get pod; ConditionStatus:True; PodName:es-topology-master-0                 117s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:es-topology-master-0
-  Warning  evict pod; ConditionStatus:True; PodName:es-topology-master-0               117s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-master-0
-  Warning  check pod running; ConditionStatus:False; PodName:es-topology-master-0      112s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:es-topology-master-0
-  Warning  check pod running; ConditionStatus:True; PodName:es-topology-master-0       102s   KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:es-topology-master-0
-  Warning  get pod; ConditionStatus:True; PodName:es-topology-data-0                   97s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:es-topology-data-0
-  Warning  evict pod; ConditionStatus:True; PodName:es-topology-data-0                 97s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-data-0
-  Warning  check pod running; ConditionStatus:False; PodName:es-topology-data-0        92s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:es-topology-data-0
-  Warning  check pod running; ConditionStatus:True; PodName:es-topology-data-0         82s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:es-topology-data-0
-  Warning  get pod; ConditionStatus:True; PodName:es-topology-data-1                   77s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:es-topology-data-1
-  Warning  evict pod; ConditionStatus:True; PodName:es-topology-data-1                 77s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-data-1
-  Warning  check pod running; ConditionStatus:False; PodName:es-topology-data-1        72s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:es-topology-data-1
-  Warning  check pod running; ConditionStatus:True; PodName:es-topology-data-1         62s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:es-topology-data-1
-  Warning  get pod; ConditionStatus:True; PodName:es-topology-ingest-0                 57s    KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:es-topology-ingest-0
-  Warning  evict pod; ConditionStatus:True; PodName:es-topology-ingest-0               57s    KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-ingest-0
-  Warning  check pod running; ConditionStatus:False; PodName:es-topology-ingest-0      52s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:False; PodName:es-topology-ingest-0
-  Warning  check pod running; ConditionStatus:True; PodName:es-topology-ingest-0       42s    KubeDB Ops-manager Operator  check pod running; ConditionStatus:True; PodName:es-topology-ingest-0
-  Normal   RestartNodes                                                                 37s    KubeDB Ops-manager Operator  Successfully restarted all nodes
-  Normal   Starting                                                                     35s    KubeDB Ops-manager Operator  Resuming Elasticsearch database: demo/es-topology
-  Normal   Successful                                                                   35s    KubeDB Ops-manager Operator  Successfully resumed Elasticsearch database: demo/es-topology for ElasticsearchOpsRequest: esops-reconfigure-topology
+  Type     Reason                                                                Age    From                         Message
+  ----     ------                                                                ----   ----                         -------
+  Normal   PauseDatabase                                                         4m47s  KubeDB Ops-manager Operator  Pausing Elasticsearch demo/es-topology
+  Warning  pod exists; ConditionStatus:True; PodName:es-topology-ingest-0        4m29s  KubeDB Ops-manager Operator  pod exists; ConditionStatus:True; PodName:es-topology-ingest-0
+  Warning  create es client; ConditionStatus:True; PodName:es-topology-ingest-0  4m29s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True; PodName:es-topology-ingest-0
+  Warning  evict pod; ConditionStatus:True; PodName:es-topology-ingest-0         4m29s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-ingest-0
+  Warning  create es client; ConditionStatus:False                               4m24s  KubeDB Ops-manager Operator  create es client; ConditionStatus:False
+  Warning  create es client; ConditionStatus:True                                4m19s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True
+  Warning  pod exists; ConditionStatus:True; PodName:es-topology-data-0          4m14s  KubeDB Ops-manager Operator  pod exists; ConditionStatus:True; PodName:es-topology-data-0
+  Warning  create es client; ConditionStatus:True; PodName:es-topology-data-0    4m14s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True; PodName:es-topology-data-0
+  Warning  evict pod; ConditionStatus:True; PodName:es-topology-data-0           4m14s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-data-0
+  Warning  create es client; ConditionStatus:False                               4m9s   KubeDB Ops-manager Operator  create es client; ConditionStatus:False
+  Warning  create es client; ConditionStatus:True                                4m4s   KubeDB Ops-manager Operator  create es client; ConditionStatus:True
+  Warning  pod exists; ConditionStatus:True; PodName:es-topology-data-1          3m59s  KubeDB Ops-manager Operator  pod exists; ConditionStatus:True; PodName:es-topology-data-1
+  Warning  create es client; ConditionStatus:True; PodName:es-topology-data-1    3m59s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True; PodName:es-topology-data-1
+  Warning  evict pod; ConditionStatus:True; PodName:es-topology-data-1           3m59s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-data-1
+  Warning  create es client; ConditionStatus:False                               3m54s  KubeDB Ops-manager Operator  create es client; ConditionStatus:False
+  Warning  create es client; ConditionStatus:True                                3m49s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True
+  Warning  pod exists; ConditionStatus:True; PodName:es-topology-master-0        3m44s  KubeDB Ops-manager Operator  pod exists; ConditionStatus:True; PodName:es-topology-master-0
+  Warning  create es client; ConditionStatus:True; PodName:es-topology-master-0  3m44s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True; PodName:es-topology-master-0
+  Warning  evict pod; ConditionStatus:True; PodName:es-topology-master-0         3m44s  KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:es-topology-master-0
+  Warning  create es client; ConditionStatus:True                                3m39s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True
+  Normal   RestartNodes                                                          3m34s  KubeDB Ops-manager Operator  Successfully restarted all nodes
+  Normal   Successful                                                            3m33s  KubeDB Ops-manager Operator  Successfully reconfigured all elasticsearch nodes.
 ```
 
 Now let's exec into a master node, a data node, and the ingest node to verify the new configuration.
 
 ```bash
 $ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
-  "cluster.max_shards_per_node" : "3000"
+          "max_shards_per_node" : "3000",
 
 $ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
-  "indices.query.bool.max_clause_count" : "4096"
+              "max_clause_count" : "4096"
+              "max_clause_count" : "4096"
 
 $ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
-  "max_content_length" : "300mb"
+          "max_content_length" : "300mb",
 ```
 
 As we can see, the values have been updated on their respective node roles. So the reconfiguration of the cluster is successful.
@@ -472,22 +480,23 @@ elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-apply-topology created
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.
 
 ```bash
-$ kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-topology
+$  kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-topology
 NAME                               TYPE          STATUS       AGE
-esops-reconfigure-apply-topology   Reconfigure   Successful   55s
+esops-reconfigure-apply-topology   Reconfigure   Successful   6m52s
 ```
 
 Now let's verify the updated values on each node role.
 
 ```bash
 $ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
-  "cluster.max_shards_per_node" : "4000"
+          "max_shards_per_node" : "4000",
 
 $ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
-  "indices.query.bool.max_clause_count" : "8192"
+              "max_clause_count" : "8192"
+              "max_clause_count" : "8192"
 
-$ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
-  "max_content_length" : "400mb"
+$ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:X4am_*ihVy~M)m0j" | grep max_content_length
+          "max_content_length" : "400mb",
 ```
 
 As we can see, `cluster.max_shards_per_node` has been changed from `3000` to `4000` on master nodes, `indices.query.bool.max_clause_count` has been changed from `4096` to `8192` on data nodes, and `http.max_content_length` has been changed from `300mb` to `400mb` on ingest nodes. So the reconfiguration using the `applyConfig` field is successful.
