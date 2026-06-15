@@ -775,6 +775,7 @@ apiVersion: installer.kubedb.com/v1
 kind: Kubedb
 metadata:
   name: kubedb
+  namespace: kubedb
 spec:
   global:
     featureGates:
