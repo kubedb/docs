@@ -24,13 +24,13 @@ Download a FREE license from [AppsCode License Server](https://appscode.com/issu
 
 KubeDB can be installed in several ways. Pick the one that fits your workflow:
 
-- [Helm 3](/docs/setup/install/kubedb/helm/) — recommended for most users.
-- [YAML](/docs/setup/install/kubedb/yaml/) — render manifests and apply with `kubectl`.
-- [ArgoCD](/docs/setup/install/kubedb/argocd/) — GitOps via ArgoCD `Application` resources.
-- [FluxCD](/docs/setup/install/kubedb/fluxcd/) — GitOps via the Flux Helm Controller.
-- [OpenShift](/docs/setup/install/kubedb/openshift/) — standard chart, Red Hat certified chart, or OperatorHub.
+- [Helm 3](/docs/setup/install/kubedb/helm.md) — recommended for most users.
+- [YAML](/docs/setup/install/kubedb/yaml.md) — render manifests and apply with `kubectl`.
+- [ArgoCD](/docs/setup/install/kubedb/argocd.md) — GitOps via ArgoCD `Application` resources.
+- [FluxCD](/docs/setup/install/kubedb/fluxcd.md) — GitOps via the Flux Helm Controller.
+- [OpenShift](/docs/setup/install/kubedb/openshift.md) — standard chart, Red Hat certified chart, or OperatorHub.
 
-After installing, see [Common Configuration](/docs/setup/install/kubedb/configuration/) to enable database engines and verify the installation.
+After installing, see [Common Configuration](/docs/setup/install/kubedb/configuration.md) to enable database engines and verify the installation.
 
 ## Purchase KubeDB License
 

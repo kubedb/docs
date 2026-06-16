@@ -124,4 +124,4 @@ Apply it with:
 $ oc apply -f kubedb.yaml
 ```
 
-Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration/).
+Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration.md).

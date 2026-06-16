@@ -14,7 +14,7 @@ section_menu_id: setup
 
 # Common Configuration
 
-The steps below apply regardless of which [installation method](/docs/setup/install/kubedb/) you used.
+The steps below apply regardless of which [installation method](/docs/setup/install/kubedb/_index.md) you used.
 
 ## Enable Database Engines
 

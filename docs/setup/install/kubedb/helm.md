@@ -62,4 +62,4 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
 
-Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration/).
+Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration.md).

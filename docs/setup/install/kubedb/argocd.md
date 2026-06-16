@@ -247,4 +247,4 @@ spec:
 
 To see the detailed configuration options for each chart, visit the [AppsCode Charts repository](https://github.com/appscode/charts).
 
-Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration/).
+Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration.md).
