@@ -334,212 +334,6 @@ spec:
     - /spec/template/metadata/annotations/reload
 ```
 
-### 4. (Optional) Install KubeStash for Backup
-
-To enable backup and restore for KubeDB-managed databases, deploy the `kubestash` chart via ArgoCD:
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: kubestash
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: kubestash
-    repoURL: ghcr.io/appscode-charts
-    targetRevision: v2026.2.26
-    helm:
-      values: |
-        ace-user-roles:
-          enabled: false
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: kubestash
-  syncPolicy:
-    automated: {}
-    syncOptions:
-    - CreateNamespace=true
-
-  ignoreDifferences:
-  - jsonPointers:
-    - /data
-    kind: Secret
-    name: kubestash-kubestash-operator-cert
-    namespace: kubestash
-  - group: apps
-    kind: Deployment
-    name: kubestash-kubestash-operator-operator
-    namespace: kubestash
-    jsonPointers:
-    - /spec/template/metadata/annotations/reload
-  - group: apps
-    kind: Deployment
-    name: kubestash-kubestash-operator-webhook-server
-    namespace: kubestash
-    jsonPointers:
-    - /spec/template/metadata/annotations/reload
-
-  - group: admissionregistration.k8s.io
-    kind: MutatingWebhookConfiguration
-    name: kubestash-kubestash-operator
-    jqPathExpressions:
-    - .webhooks[].clientConfig.caBundle
-  - group: admissionregistration.k8s.io
-    kind: ValidatingWebhookConfiguration
-    name: kubestash-kubestash-operator
-    jqPathExpressions:
-    - .webhooks[].clientConfig.caBundle
-```
-
-### 5. (Optional) Install Monitoring Stack
-
-To enable monitoring for KubeDB-managed databases, deploy the following three components in order.
-
-#### 5a. Install `kube-prometheus-stack`
-
-Deploy the upstream [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) chart from the `prometheus-community` repository. The `panopticon` and `monitoring-operator` charts below expect its `ServiceMonitor` selector label `release: kube-prometheus-stack`.
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: kube-prometheus-stack
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: kube-prometheus-stack
-    repoURL: https://prometheus-community.github.io/helm-charts
-    targetRevision: 65.1.1
-    helm:
-      values: |
-        prometheus:
-          prometheusSpec:
-            serviceMonitorSelectorNilUsesHelmValues: false
-            serviceMonitorSelector:
-              matchLabels:
-                release: kube-prometheus-stack
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: monitoring
-  syncPolicy:
-    automated: {}
-    syncOptions:
-    - CreateNamespace=true
-    - ServerSideApply=true
-```
-
-#### 5b. Install `panopticon`
-
-`panopticon` exposes KubeDB-specific Prometheus metrics for databases managed by KubeDB.
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: panopticon
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: panopticon
-    repoURL: ghcr.io/appscode-charts
-    targetRevision: v2026.1.15
-    helm:
-      values: |
-        ace-user-roles:
-          enabled: false
-        monitoring:
-          agent: prometheus.io/operator
-          enabled: true
-          serviceMonitor:
-            labels:
-              release: kube-prometheus-stack
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: monitoring
-  syncPolicy:
-    automated: {}
-    syncOptions:
-    - CreateNamespace=true
-
-  ignoreDifferences:
-  - jsonPointers:
-    - /data
-    kind: Secret
-    name: panopticon-apiserver-cert
-    namespace: monitoring
-  - group: apiregistration.k8s.io
-    kind: APIService
-    name: v1alpha1.validators.metrics.appscode.com
-    jsonPointers:
-    - /spec/caBundle
-  - group: apps
-    kind: Deployment
-    name: panopticon
-    namespace: monitoring
-    jsonPointers:
-    - /spec/template/metadata/annotations/checksum~1apiregistration.yaml
-  - group: apiextensions.k8s.io
-    kind: CustomResourceDefinition
-    name: servicemonitors.monitoring.coreos.com
-    jsonPointers:
-    - /metadata/annotations
-    - /spec
-```
-
-#### 5c. Install `monitoring-operator`
-
-`monitoring-operator` provisions Grafana dashboards and the OpenViz UI integration for KubeDB databases.
-
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: monitoring-operator
-  namespace: argocd
-spec:
-  project: default
-  source:
-    chart: monitoring-operator
-    repoURL: ghcr.io/appscode-charts
-    targetRevision: v2026.1.15
-    helm:
-      values: |
-        monitoring:
-          agent: "prometheus.io/operator"
-          serviceMonitor:
-            labels:
-              release: kube-prometheus-stack
-  destination:
-    server: "https://kubernetes.default.svc"
-    namespace: monitoring
-  syncPolicy:
-    automated: {}
-    syncOptions:
-    - CreateNamespace=true
-
-  ignoreDifferences:
-  - jsonPointers:
-    - /data
-    kind: Secret
-    name: monitoring-operator-apiserver-cert
-    namespace: monitoring
-  - group: apiregistration.k8s.io
-    kind: APIService
-    name: v1alpha1.ui.openviz.dev
-    jsonPointers:
-    - /spec/caBundle
-  - group: apps
-    kind: Deployment
-    name: monitoring-operator
-    namespace: monitoring
-    jsonPointers:
-    - /spec/template/metadata/annotations/checksum~1apiregistration.yaml
-```
-
 To see the detailed configuration options for each chart, visit the [AppsCode Charts repository](https://github.com/appscode/charts).
 
 </div>
@@ -622,6 +416,136 @@ If you use a private Docker registry with self-signed certificates, add the regi
       insecureRegistries:
       - hub.example.com
       - hub2.example.com
+```
+
+### (Alternative) Use License Proxyserver instead of a license Secret
+
+Instead of creating a per-cluster license Secret (steps 2–3 above), you can deploy the `license-proxyserver` chart. It distributes license tokens to KubeDB and other AppsCode operators inside the cluster, so the `kubedb` `HelmRelease` no longer needs to mount a license. Use this approach in place of the `kubedb-license` Secret.
+
+#### a. Install `ace-user-roles`
+
+The `ace-user-roles` chart provisions the cluster roles required by KubeDB and the license-proxyserver.
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: ace-user-roles
+  namespace: kubeops
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: ace-user-roles
+      version: v2026.2.16
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts
+        namespace: flux-system
+  install:
+    createNamespace: true
+  values:
+    enableClusterRoles:
+      ace: false
+      appcatalog: true
+      catalog: false
+      cert-manager: false
+      kubedb: true
+      kubedb-ui: false
+      kubestash: true # enable if used
+      kubevault: true # enable if used
+      license-proxyserver: true
+      metrics: true
+      prometheus: false
+      secrets-store: false
+      stash: true # enable if used
+      virtual-secrets: false
+    annotations:
+      "helm.sh/hook": null
+      "helm.sh/hook-delete-policy": null
+```
+
+#### b. Install `license-proxyserver`
+
+Generate an online license-proxyserver token from `https://appscode.com/billing/{org}/license-proxy-server`, then store it in a Secret that the `HelmRelease` references via `valuesFrom`:
+
+```bash
+$ cat > license-proxyserver.yaml <<'EOF'
+platform:
+  baseURL: https://appscode.com
+  token: '****************************************'
+EOF
+
+$ kubectl create secret generic ace-licenseserver-cred \
+  --from-file=license-proxyserver.yaml \
+  -n kubeops
+```
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: license-proxyserver
+  namespace: kubeops
+spec:
+  interval: 5m
+  chart:
+    spec:
+      chart: license-proxyserver
+      version: v2026.2.16
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts
+        namespace: flux-system
+  install:
+    createNamespace: true
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    registryFQDN: ghcr.io
+  valuesFrom:
+  - kind: Secret
+    name: ace-licenseserver-cred
+    valuesKey: license-proxyserver.yaml
+    optional: true
+```
+
+#### c. Install KubeDB without a license Secret
+
+With the proxyserver running, deploy the `kubedb` `HelmRelease` without the `valuesFrom` license Secret — drop step 2 and the `valuesFrom` block from step 3:
+
+```yaml
+apiVersion: helm.toolkit.fluxcd.io/v2
+kind: HelmRelease
+metadata:
+  name: kubedb
+  namespace: kubedb
+spec:
+  interval: 1h
+  chart:
+    spec:
+      chart: kubedb
+      version: {{< param "info.version" >}}
+      sourceRef:
+        kind: HelmRepository
+        name: appscode-charts
+        namespace: flux-system
+  install:
+    createNamespace: true
+    crds: CreateReplace
+  upgrade:
+    crds: CreateReplace
+  values:
+    global:
+      featureGates:
+        Elasticsearch: true
+        Kafka: true
+        MariaDB: true
+        MongoDB: true
+        MySQL: true
+        Postgres: true
+        Redis: true
 ```
 
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
