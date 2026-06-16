@@ -1,10 +1,10 @@
 ---
-title: MySQL Database Migration Guide
+title: MariaDB Database Migration Guide
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-migration-database
-    name: MySQL Database Migration
-    parent: guides-mysql-migration
+    identifier: guides-mariadb-migration-database
+    name: MariaDB Database Migration
+    parent: guides-mariadb-migration
     weight: 11
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -12,9 +12,9 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# MySQL Database Migration
+# MariaDB Database Migration
 
-This guide will show you how to use `KubeDB` Migrator to migrate an existing `MySQL` database — such as one running on AWS RDS or any external instance — entirely into a KubeDB-managed `MySQL` with minimal downtime. 
+This guide will show you how to use `KubeDB` Migrator to migrate an existing `MariaDB` database — such as one running on AWS RDS or any external instance — entirely into a KubeDB-managed `MariaDB` with minimal downtime.
 
 ## Before You Begin
 
@@ -22,13 +22,13 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
 
 - Install `KubeDB` operator with the Migrator operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
-- The source `MySQL` instance must be network-reachable from within your Kubernetes cluster.
+- The source `MariaDB` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MySQL` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges.
+- The source `MariaDB` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges.
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [AppBinding](/docs/guides/mysql/concepts/appbinding/)
-    - [MySQL](/docs/guides/mysql/concepts/mysqldatabase)
+    - [AppBinding](/docs/guides/mariadb/concepts/appbinding/)
+    - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -38,80 +38,82 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Prepare Source Connection Information 
+## Prepare Source Connection Information
 
-First, create an authentication secret to communicate with the source MySQL database:
+First, create an authentication secret to communicate with the source MariaDB database:
 
 ```bash
-$ kubectl create secret generic source-mysql-auth -n demo \
+$ kubectl create secret generic source-mariadb-auth -n demo \
                 --type=kubernetes.io/basic-auth \
                 --from-literal=username=<username> \
                 --from-literal=password=<password>
 ```
 
-Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MySQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MariaDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
-  name: source-mysql
+  name: source-mariadb
   namespace: demo
 spec:
-  type: mysql
-  version: "8.0.4"
+  type: mariadb
+  version: "10.5.23"
   clientConfig:
-    url: "mysql://host:port"
+    url: "mariadb://host:port"
   secret:
-    name: source-mysql-auth
+    name: source-mariadb-auth
 ```
 
 Here,
 
-- `spec.clientConfig.url` is the connection URL of the source MySQL instance.
-- `spec.secret.name` is the reference to the secret we created earlier, containing the MySQL authentication information.
+- `spec.clientConfig.url` is the connection URL of the source MariaDB instance.
+- `spec.secret.name` is the reference to the secret we created earlier, containing the MariaDB authentication information.
 
 > For a `KubeDB`-managed database, an `AppBinding` is created by default. So there is no need to create one for the target database.
 
-## Create Target MySQL Database
+## Create Target MariaDB Database
 
-KubeDB implements a `MySQL` CRD to define the specification of a MySQL database. Follow the `MySQL` object to create the target database.
+KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB database. Follow the `MariaDB` object to create the target database.
 
 ```yaml
 apiVersion: kubedb.com/v1
-kind: MySQL
+kind: MariaDB
 metadata:
-  name: target-mysql
+  name: target-mariadb
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "10.5.23"
   storageType: Durable
   storage:
+    storageClassName: "local-path"
     accessModes:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 30Gi
-  deletionPolicy: Delete
+        storage: 20Gi
+  deletionPolicy: WipeOut
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
-mysql.kubedb.com/mysql-quickstart created
+$ kubectl apply -f target-mariadb.yaml
+mariadb.kubedb.com/target-mariadb created
 ```
-> Note: Adjust the `resources.requests.storage` based on source database.
 
-Wait untill target-mysql has status `Ready`
+> Note: Adjust the `resources.requests.storage` based on the source database size.
+
+Wait until `target-mariadb` has status `Ready`.
 
 ## Apply Migrator CR
 
-To Migrate database we have to create a `Migrator` CR. Below is the YAML of the `Migrator` CR that we are going to create,
+To migrate the database we have to create a `Migrator` CR. Below is the YAML of the `Migrator` CR that we are going to create:
 
 ```yaml
 apiVersion: migrator.kubedb.com/v1alpha1
 kind: Migrator
 metadata:
-  name: mysql-migrate
+  name: mariadb-migrate
   namespace: demo
 spec:
   jobTemplate:
@@ -119,10 +121,10 @@ spec:
       securityContext:
         fsGroup: 65534
   source:
-    mysql:
+    mariadb:
       connectionInfo:
         appBinding:
-          name: source-mysql
+          name: source-mariadb
           namespace: demo
         dbName: "mysql"
         maxConnections: 100
@@ -142,10 +144,10 @@ spec:
         enabled: true
 
   target:
-    mysql:
+    mariadb:
       connectionInfo:
         appBinding:
-          name: target-mysql
+          name: target-mariadb
           namespace: demo
         dbName: "mysql"
         maxConnections: 100
@@ -154,14 +156,14 @@ spec:
 Here,
 
 **`spec.source` / `spec.target` — connectionInfo:**
-- `appBinding.name` / `appBinding.namespace` — references the `AppBinding` for the source or target MySQL instance.
+- `appBinding.name` / `appBinding.namespace` — references the `AppBinding` for the source or target MariaDB instance.
 - `dbName` — the internal database used as the initial connection entry point.
-- `maxConnections` — limits the number of concurrent connections the migrator opens to this MySQL instance.
+- `maxConnections` — limits the number of concurrent connections the migrator opens to this MariaDB instance.
 
 **`spec.source.schema` — schema migration phase:**
 - `enabled: true` — enables the schema migration phase.
 - `database` — list of databases to include; empty means all databases.
-- `excludeDatabase` — list of databases to exclude from schema migration.
+- `excludeDatabase` — list of databases to exclude from migration.
 
 **`spec.source.snapshot` — bulk snapshot phase:**
 - `enabled: true` — enables the initial bulk snapshot phase.
@@ -176,13 +178,13 @@ Here,
 
 ## Watch Migration Progress
 
-Let's wait for the `LAG` to reach near zero . Run the following command to watch `Migrator` CR,
+Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migrator` CR:
 
 ```bash
-Every 2.0s: kubectl get migrator -n demo 
+Every 2.0s: kubectl get migrator -n demo
 
-NAME            PHASE     DBTYPE   STAGE       LAG   PROGRESS   AGE
-mysql-migrate   Running   mysql    Streaming   0B               4h36m
+NAME              PHASE     DBTYPE    STAGE       LAG   PROGRESS   AGE
+mariadb-migrate   Running   mariadb   Streaming   0B               4h36m
 ```
 
 ## Cutover
@@ -192,8 +194,8 @@ Once the `LAG` drops to near zero, stop all writes to the source database. Wait 
 Now delete the `Migrator` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migrator -n demo mysql-migrate
-migrator.migrator.kubedb.com "mysql-migrate" deleted
+$ kubectl delete migrator -n demo mariadb-migrate
+migrator.migrator.kubedb.com "mariadb-migrate" deleted
 ```
 
-Finally, update your application's connection string to point to the target KubeDB-managed `MySQL` database. The migration is complete.
+Finally, update your application's connection string to point to the target KubeDB-managed `MariaDB` database. The migration is complete.

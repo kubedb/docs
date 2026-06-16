@@ -51,3 +51,13 @@ Add `--set kubedb-migrator.enabled=true` to the [Kubedb helm upgrade](/docs/setu
 5. **Wait for lag to reach zero** — once lag is exactly zero, the two databases are fully in sync.
 6. **Switch endpoints** — update your application connection string to point to the new KubeDB-managed database.
 7. **Downtime is minimal** — the only downtime is the window between steps 4 and 6, which is typically just a few minutes.
+
+## Supported Database
+
+The following database has migration support.
+
+[PostgreSQL](/docs/guides/postgres/migration/databaseMigration.md)
+
+[MySQL](/docs/guides/mysql/migration/databaseMigration.md)
+
+[MariaDB](/docs/guides/mariadb/migration/databaseMigration.md)
