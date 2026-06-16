@@ -188,12 +188,6 @@ spec:
     name: v1alpha1.proxyserver.licenses.appscode.com
     jsonPointers:
     - /spec/caBundle
-  - group: apiextensions.k8s.io
-    kind: CustomResourceDefinition
-    name: servicemonitors.monitoring.coreos.com
-    jsonPointers:
-    - /metadata/annotations
-    - /spec
 ```
 
 ### 3. Install KubeDB
@@ -672,11 +666,11 @@ spec:
       Hazelcast: false
       Ignite: false
       Kafka: true
-      MSSQLServer: false
       MariaDB: true
       Memcached: false
       Milvus: false
       MongoDB: true
+      MSSQLServer: false
       MySQL: true
       Neo4j: false
       Oracle: false
