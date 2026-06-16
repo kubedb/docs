@@ -101,6 +101,8 @@ To see the detailed configuration options, visit [here](https://github.com/kubed
 
 KubeDB can be deployed via [ArgoCD](https://argo-cd.readthedocs.io/) using the [Helm chart support](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/) for `Application` resources. Deploy the following `Application` manifests in order to your ArgoCD cluster.
 
+Ready-to-use `Application` manifests for KubeDB and the rest of the AppsCode stack (e.g. `kubestash`, `kubevault`, `stash`, `panopticon`, `monitoring-operator`) are maintained in the [appscode/gitops](https://github.com/appscode/gitops/tree/2025-06/argocd/helm) repository. Install `ace-user-roles` and `license-proxyserver` first, then pick whichever component manifests you need from there.
+
 ### 1. Install `ace-user-roles`
 
 The `ace-user-roles` chart provisions the cluster roles required by KubeDB and related operators. Create the following ArgoCD `Application`:
@@ -422,50 +424,7 @@ If you use a private Docker registry with self-signed certificates, add the regi
 
 Instead of creating a per-cluster license Secret (steps 2–3 above), you can deploy the `license-proxyserver` chart. It distributes license tokens to KubeDB and other AppsCode operators inside the cluster, so the `kubedb` `HelmRelease` no longer needs to mount a license. Use this approach in place of the `kubedb-license` Secret.
 
-#### a. Install `ace-user-roles`
-
-The `ace-user-roles` chart provisions the cluster roles required by KubeDB and the license-proxyserver.
-
-```yaml
-apiVersion: helm.toolkit.fluxcd.io/v2
-kind: HelmRelease
-metadata:
-  name: ace-user-roles
-  namespace: kubeops
-spec:
-  interval: 1h
-  chart:
-    spec:
-      chart: ace-user-roles
-      version: v2026.2.16
-      sourceRef:
-        kind: HelmRepository
-        name: appscode-charts
-        namespace: flux-system
-  install:
-    createNamespace: true
-  values:
-    enableClusterRoles:
-      ace: false
-      appcatalog: true
-      catalog: false
-      cert-manager: false
-      kubedb: true
-      kubedb-ui: false
-      kubestash: true # enable if used
-      kubevault: true # enable if used
-      license-proxyserver: true
-      metrics: true
-      prometheus: false
-      secrets-store: false
-      stash: true # enable if used
-      virtual-secrets: false
-    annotations:
-      "helm.sh/hook": null
-      "helm.sh/hook-delete-policy": null
-```
-
-#### b. Install `license-proxyserver`
+#### a. Install `license-proxyserver`
 
 Generate an online license-proxyserver token from `https://appscode.com/billing/{org}/license-proxy-server`, then store it in a Secret that the `HelmRelease` references via `valuesFrom`:
 
@@ -511,7 +470,7 @@ spec:
     optional: true
 ```
 
-#### c. Install KubeDB without a license Secret
+#### b. Install KubeDB without a license Secret
 
 With the proxyserver running, deploy the `kubedb` `HelmRelease` without the `valuesFrom` license Secret — drop step 2 and the `valuesFrom` block from step 3:
 
