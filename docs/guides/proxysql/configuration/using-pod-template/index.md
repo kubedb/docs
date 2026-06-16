@@ -148,14 +148,14 @@ Check that the annotation has been set on the pod.
 
 ```bash
 $ kubectl get pod -n demo sample-proxysql-0 -o jsonpath='{.metadata.annotations}'
-map[passMe:ToProxySQLPod]
+{"passMe":"ToProxySQLPod"}⏎   
 ```
 
 Check that the resource requests have been set on the `proxysql` container.
 
 ```bash
 $ kubectl get pod -n demo sample-proxysql-0 -o jsonpath='{.spec.containers[?(@.name=="proxysql")].resources}'
-{"requests":{"cpu":"250m","memory":"256Mi"}}
+{"limits":{"memory":"256Mi"},"requests":{"cpu":"250m","memory":"256Mi"}}
 ```
 
 We can see that both the annotation and the resource requests we provided through `spec.podTemplate` have been applied to the pod.

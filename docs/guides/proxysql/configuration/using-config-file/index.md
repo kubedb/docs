@@ -85,13 +85,6 @@ mysql-server   8.4.3     Ready    7m6s
 At first, let's create a `MySQLVariables.cnf` file setting `mysql-max_connections`.
 
 ```bash
-cat <<EOF > MySQLVariables.cnf
-mysql_variables=
-{
-    max_connections=2048
-}
-EOF
-
 $ cat MySQLVariables.cnf
 mysql_variables=
 {
