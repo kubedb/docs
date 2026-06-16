@@ -193,33 +193,24 @@ We can see from the above output that both `xpack.security.transport.ssl.enabled
 Now, let's connect to the Elasticsearch cluster using HTTPS to confirm it is accessible with TLS.
 
 ```bash
-$  kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:es-combined-tls-auth"
+$  kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
 {
-  "error" : {
-    "root_cause" : [
-      {
-        "type" : "security_exception",
-        "reason" : "unable to authenticate user [elastic] for REST request [/_cluster/health?pretty]",
-        "header" : {
-          "WWW-Authenticate" : [
-            "Basic realm=\"security\", charset=\"UTF-8\"",
-            "Bearer realm=\"security\"",
-            "ApiKey"
-          ]
-        }
-      }
-    ],
-    "type" : "security_exception",
-    "reason" : "unable to authenticate user [elastic] for REST request [/_cluster/health?pretty]",
-    "header" : {
-      "WWW-Authenticate" : [
-        "Basic realm=\"security\", charset=\"UTF-8\"",
-        "Bearer realm=\"security\"",
-        "ApiKey"
-      ]
-    }
-  },
-  "status" : 401
+  "cluster_name" : "es-combined-tls",
+  "status" : "green",
+  "timed_out" : false,
+  "number_of_nodes" : 3,
+  "number_of_data_nodes" : 3,
+  "active_primary_shards" : 4,
+  "active_shards" : 8,
+  "relocating_shards" : 0,
+  "initializing_shards" : 0,
+  "unassigned_shards" : 0,
+  "unassigned_primary_shards" : 0,
+  "delayed_unassigned_shards" : 0,
+  "number_of_pending_tasks" : 0,
+  "number_of_in_flight_fetch" : 0,
+  "task_max_waiting_in_queue_millis" : 0,
+  "active_shards_percent_as_number" : 100.0
 }
 ```
 
@@ -239,6 +230,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/_index.md).
+- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/combined-cluster/index.md).
 - Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

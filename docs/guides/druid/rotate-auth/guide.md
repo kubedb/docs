@@ -374,7 +374,7 @@ spec:
   authentication:
     secretRef:
       kind: Secret
-      name: sample-druid-auth-user
+      name: druid-quickstart-auth-user
   timeout: 5m
   apply: IfReady
 ```
@@ -417,7 +417,7 @@ Spec:
   Apply:  IfReady
   Authentication:
     Secret Ref:
-      Name:  sample-druid-auth-user
+      Name:  druid-quickstart-auth-user
   Database Ref:
     Name:   druid-quickstart
   Timeout:  5m
