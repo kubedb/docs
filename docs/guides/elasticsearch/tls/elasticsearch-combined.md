@@ -49,6 +49,8 @@ Read about the fields in details in [elasticsearch concept](/docs/guides/elastic
 
 Users must specify the `tls.issuerRef` field. KubeDB uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificates` to generate certificate secrets. These certificate secrets are then used to configure TLS for both the transport layer (node-to-node communication) and the HTTP layer (client-to-node communication), containing `ca.crt`, `tls.crt` and `tls.key`.
 
+> Note: `tls.issuerRef` is optional. A user can deploy Elasticsearch without creating an `Issuer`/`ClusterIssuer` by just setting `enableSSL: true`. In that case, the KubeDB Elasticsearch operator automatically creates a self-signed CA and the necessary certificate secrets.
+
 ## Create Issuer/ ClusterIssuer
 
 We are going to create an example `Issuer` that will be used throughout the duration of this tutorial to enable SSL/TLS in Elasticsearch. Alternatively, you can follow this [cert-manager tutorial](https://cert-manager.io/docs/configuration/ca/) to create your own `Issuer`.
