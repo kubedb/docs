@@ -162,7 +162,6 @@ KubeDB creates a client certificate secret for Elasticsearch. Let's check it:
 
 ```bash
 $ kubectl describe secret -n demo es-topology-tls-client-cert
-
 Name:         es-topology-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -171,40 +170,40 @@ Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/name=elasticsearches.kubedb.com
               controller.cert-manager.io/fao=true
 Annotations:  cert-manager.io/alt-names:
-                *.es-topology-tls-pods.demo.svc.cluster.local,es-topology-tls,es-topology-tls.demo.svc,es-topology-tls.demo.svc.cluster.local,localhost
+                *.es-topology-tls-pods.demo.svc,*.es-topology-tls-pods.demo.svc.cluster.local,es-topology-tls,es-topology-tls.demo.svc,localhost
               cert-manager.io/certificate-name: es-topology-tls-client-cert
-              cert-manager.io/common-name: es-topology-tls.demo.svc
+              cert-manager.io/common-name: es-topology-tls
               cert-manager.io/ip-sans: 127.0.0.1
               cert-manager.io/issuer-group: cert-manager.io
               cert-manager.io/issuer-kind: Issuer
               cert-manager.io/issuer-name: es-ca-issuer
+              cert-manager.io/subject-organizations: kubedb
+              cert-manager.io/uri-sans: 
 
 Type:  kubernetes.io/tls
 
 Data
 ====
-ca.crt:   1184 bytes
-tls.crt:  1460 bytes
-tls.key:  1708 bytes
+ca.crt:   1172 bytes
+tls.crt:  1387 bytes
+tls.key:  1704 bytes
 ```
 
 Now, let's exec into the master node and verify the configuration that TLS is enabled for both transport and HTTP layers.
 
 ```bash
 $ kubectl exec -n demo es-topology-tls-master-0 -c elasticsearch -- \
-    cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
-
-Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
+                                      cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.securit
 xpack.security.enabled: true
 
 xpack.security.transport.ssl.enabled: true
 xpack.security.transport.ssl.verification_mode: certificate
 xpack.security.transport.ssl.key: certs/transport/tls.key
-xpack.security.transport.ssl.certificate: certs/transport/tls.crt
+xpack.security.transport.ssl.certificate: certs/transport/tls.crt 
 xpack.security.transport.ssl.certificate_authorities: [ "certs/transport/ca.crt" ]
 
 xpack.security.http.ssl.enabled: true
-xpack.security.http.ssl.key: certs/http/tls.key
+xpack.security.http.ssl.key:  certs/http/tls.key
 xpack.security.http.ssl.certificate: certs/http/tls.crt
 xpack.security.http.ssl.certificate_authorities: [ "certs/http/ca.crt" ]
 ```

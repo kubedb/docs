@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 
 - You should be familiar with the following `KubeDB` concepts:
     - [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md)
-    - [Topology Cluster](/docs/guides/elasticsearch/clustering/topology-cluster/index.md)
+    - [Topology Cluster](/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/index.md)
     - [ElasticsearchOpsRequest](/docs/guides/elasticsearch/concepts/elasticsearch-ops-request/index.md)
     - [Reconfigure Overview](/docs/guides/elasticsearch/reconfigure/overview.md)
 
@@ -516,6 +516,6 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [Elasticsearch object](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
-- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering/_index.md).
+- Different Elasticsearch topology clustering modes [here](/docs/guides/elasticsearch/clustering).
 - Monitor your Elasticsearch database with KubeDB using [out-of-the-box Prometheus operator](/docs/guides/elasticsearch/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

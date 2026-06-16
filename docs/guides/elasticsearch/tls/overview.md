@@ -41,7 +41,7 @@ When `enableSSL` is set to `true`, the users must specify the `tls.issuerRef` fi
 The following figure shows how `KubeDB` enterprise used to configure TLS/SSL in Elasticsearch. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-<img alt="Deploy Elasticsearch with TLS/SSL" src="/docs/images/day-2-operation/elasticsearch/es-tls.svg">
+<img alt="Deploy Elasticsearch with TLS/SSL" src="/docs/images/elasticsearch/es-tls.svg">
 <figcaption align="center">Fig: Deploy Elasticsearch with TLS/SSL</figcaption>
 </figure>
 
