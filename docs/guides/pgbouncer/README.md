@@ -32,7 +32,7 @@ KubeDB operator now comes bundled with PgBouncer crd to handle connection poolin
 | Integrate with externally managed PostgreSQL                |   &#10003;   |
 | Sync Postgres Users to PgBouncer                            |   &#10003;   |
 | Custom docker images                                        |   &#10003;   |
-| TLS: Add ( [Cert Manager]((https://cert-manager.io/docs/))) |   &#10003;   |
+| TLS: Add ( [Cert Manager](https://cert-manager.io/docs/) ) |   &#10003;   |
 | Monitoring with Prometheus & Grafana                        |   &#10003;   |
 | Builtin Prometheus Discovery                                |   &#10003;   |
 | Using Prometheus operator                                   |   &#10003;   |

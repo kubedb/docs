@@ -114,11 +114,11 @@ jobs:
 
       - name: Check links
         run: |
-          lychee --root-dir $(pwd) --max-concurrency 10 --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*)$' 'docs/**/*.md'
+          lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'
           max_retries=5
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if lychee --root-dir $(pwd) --max-concurrency 10 --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*)$' 'docs/**/*.md'; then
+            if lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'; then
               echo "Link check passed"
               exit 0
             fi
