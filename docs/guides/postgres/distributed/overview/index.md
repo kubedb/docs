@@ -23,7 +23,7 @@ This guide provides a step-by-step process to deploy a distributed Postgres clus
 
 In an **Open Cluster Management (OCM)** setup, clusters are categorized as:
 
-* **Hub Cluster**: The central control plane where policies, [applications](), and resources are defined and managed. It orchestrates the lifecycle of applications deployed across spoke clusters.
+* **Hub Cluster**: The central control plane where policies, applications, and resources are defined and managed. It orchestrates the lifecycle of applications deployed across spoke clusters.
 * **Spoke Cluster**: Managed clusters registered with the hub, running the actual workloads (e.g., Postgres pods).
 
 When a spoke cluster (e.g., `demo-worker`) is joined to the hub using the `clusteradm join` command, OCM creates a namespace on the hub cluster matching the spoke cluster's name (e.g., `demo-worker`). This namespace is used to manage resources specific to the spoke cluster from the hub.
