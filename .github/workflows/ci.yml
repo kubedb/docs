@@ -28,9 +28,11 @@ jobs:
 
       - name: Install link checker
         run: |
-          curl -fsSL -o liche https://github.com/appscodelabs/liche/releases/download/v0.1.0/liche-linux-amd64
-          chmod +x liche
-          sudo mv liche /usr/local/bin/liche
+          curl -fsSL -o lychee.tar.gz https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf lychee.tar.gz --strip-components=1
+          chmod +x lychee
+          sudo mv lychee /usr/local/bin/lychee
+          rm lychee.tar.gz
 
       - name: Install codespan schema checker
         run: |
@@ -112,11 +114,11 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'
+          lychee --base $(pwd) --max-concurrency 10 --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$' 'docs/**/*.md'
           max_retries=5
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'; then
+            if lychee --base $(pwd) --max-concurrency 10 --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$' 'docs/**/*.md'; then
               echo "Link check passed"
               exit 0
             fi
