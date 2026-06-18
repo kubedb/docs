@@ -191,7 +191,7 @@ Forwarding from [::1]:9090 -> 9090
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `pg-grafana-demo-stats`. Its state should be **UP**.
 
 <p align="center">
-  <img alt="Prometheus Target" src="/docs/images/postgres/monitoring/pg-coreos-prom-target.png" style="padding:10px">
+  <img alt="Prometheus Target" src="/docs/images/postgres/monitoring/pg-prom-targets.png" style="padding:10px">
 </p>
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
@@ -216,6 +216,16 @@ $ kubectl get secret -n monitoring prometheus-grafana \
 |----------|-----------------------------|
 | Username | `admin`                     |
 | Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/postgres/monitoring/pg-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/postgres/monitoring/pg-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -255,6 +265,12 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-import.png" style="padding:10px">
+</p>
+
 After importing all three files, they will appear under `Dashboards` in the left sidebar.
 
 | Dashboard Name                  | Description                                                                         |
@@ -283,11 +299,25 @@ Once you set these, all panels update automatically. Below is what each dashboar
 - **CPU / Memory / Storage Usage** — resource consumption vs. requests and limits
 - **Network** — receive and transmit bandwidth
 
+<p align="center">
+  <img alt="KubeDB Postgres Summary Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Postgres Summary Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Postgres / Pod** — drill into a specific pod
 - **Server Up / Role** — whether the pod is alive and whether it is the primary or a replica
 - **Max Connections** — connection limit configured for this pod
 - **CPU / Memory Usage** — per-pod resource usage over time
 - **Settings** — active runtime config: shared buffers, effective cache, work mem, max WAL size
+
+<p align="center">
+  <img alt="KubeDB Postgres Pod Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Postgres Pod Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Postgres / Database** — drill into a specific database
 - **QPS** — queries per second hitting this database
@@ -297,6 +327,13 @@ Once you set these, all panels update automatically. Below is what each dashboar
 - **Lock Tables** — tables with active locks (high counts can indicate contention)
 - **Conflicts / Deadlocks** — events that abort transactions; spikes indicate application issues
 - **Rows** — insert, update, delete, fetch, and return activity per second
+
+<p align="center">
+  <img alt="KubeDB Postgres Database Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Postgres Database Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 
