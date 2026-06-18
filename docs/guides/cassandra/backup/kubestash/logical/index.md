@@ -21,7 +21,7 @@ This guide will give you how you can take backup and restore your `Cassandra` da
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
-- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
+- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Cassandra databases, please check the following guide [here](/docs/guides/cassandra/backup/kubestash/overview/index.md).
 

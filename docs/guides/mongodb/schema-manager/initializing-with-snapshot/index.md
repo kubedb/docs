@@ -20,7 +20,7 @@ This guide will show you how to create database and initialize snapshot with Mon
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install `KubeDB` in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/install/kubedb/).
+- Install `KubeDB` in your cluster following the steps [here](https://kubedb.com/docs/latest/setup/).
 - Install `KubeVault` in your cluster following the steps [here](https://kubevault.com/docs/latest/setup/install/kubevault/).
 
 - You should be familiar with the following concepts:
