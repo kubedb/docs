@@ -19,7 +19,7 @@ KubeStash v0.1.0+ supports backup and restoration of MongoDB databases. This gui
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using Minikube.
 - Install KubeDB in your cluster following the steps [here](/docs/setup/README.md).
-- Install KubeStash Enterprise in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/).
+- Install KubeStash Enterprise in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash/).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore MongoDB databases, please check the following guide [here](/docs/guides/mongodb/backup/kubestash/overview/index.md).
 

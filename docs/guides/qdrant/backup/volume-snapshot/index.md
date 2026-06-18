@@ -13,7 +13,7 @@ KubeStash allows you to take volume snapshot backups of Qdrant databases. Volume
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
-- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup).
+- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 - To install `External-snapshotter`  in your cluster following the steps [here](https://github.com/kubernetes-csi/external-snapshotter/tree/release-5.0).
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-{{< notice type="warning" message="Please install [KubeStash](https://kubestash.com/docs/latest/setup/) to try this feature. Database backup with KubeStash is already included in the KubeDB license. So, you don't need a separate license for KubeStash." >}}
+{{< notice type="warning" message="Please install [KubeStash](https://kubestash.com/docs/latest/setup/install/kubestash/) to try this feature. Database backup with KubeStash is already included in the KubeDB license. So, you don't need a separate license for KubeStash." >}}
 
 # PostgreSQL Backup & Restore Overview
 
