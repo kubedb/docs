@@ -49,6 +49,16 @@ $ kubectl create secret generic source-mysql-auth -n demo \
                 --from-literal=password=<password>
 ```
 
+If your database has TLS enabled, create a secret with the CA certificate:
+
+```bash
+kubectl create secret generic ca-secret \
+  --from-file=ca.crt=$CERT_PATH/ca.crt \
+  --namespace=demo
+```
+
+> **Note:** For mTLS, also include the client certificate and key by appending `--from-file=tls.crt=$CERT_PATH/tls.crt --from-file=tls.key=$CERT_PATH/tls.key` to the command above.
+
 Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MySQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
@@ -64,6 +74,8 @@ spec:
     url: "mysql://host:port"
   secret:
     name: source-mysql-auth
+  tlsSecret: # omit if TLS is disabled
+    name: ca-secret
 ```
 
 Here,
