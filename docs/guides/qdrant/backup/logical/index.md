@@ -13,7 +13,7 @@ KubeStash allows you to backup and restore `Qdrant` databases. This guide will s
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
 - Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md).
-- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
+- Install `KubeStash` in your cluster following the steps [here](https://kubestash.com/docs/latest/setup).
 - Install KubeStash `kubectl` plugin following the steps [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - If you are not familiar with how KubeStash backup and restore Qdrant databases, please check the following guide [here](/docs/guides/qdrant/backup/overview/index.md).
 
