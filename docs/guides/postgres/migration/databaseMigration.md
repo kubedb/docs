@@ -57,6 +57,14 @@ $ kubectl create secret generic source-postgres-auth -n demo \
                 --from-literal=password=<password>
 ```
 
+If your database has TLS enabled, create a secret with the CA certificate:
+
+```bash
+kubectl create secret generic ca-secret \
+  --from-file=ca.crt=$CERT_PATH/ca.crt \
+  --namespace=demo
+```
+
 Now create an `AppBinding` with the necessary information. The Migrator operator reads the source PostgreSQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
@@ -72,6 +80,8 @@ spec:
     url: "postgresql://host:port"
   secret:
     name: source-postgres-auth
+  tlsSecret: # omit if TLS is disabled
+    name: ca-secret
 ```
 
 Here,
