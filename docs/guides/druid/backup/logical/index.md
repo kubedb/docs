@@ -564,10 +564,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: d10ab158ce2667d03b08cb35573a6f049a2cef9ef2e96be847caed6660bbb904
-          size: 4.322 MiB
-          uploaded: 4.323 MiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: d10ab158ce2667d03b08cb35573a6f049a2cef9ef2e96be847caed6660bbb904
+            size: 4.322 MiB
+            uploaded: 4.323 MiB
       size: 712.824 KiB
   ...
 ```
