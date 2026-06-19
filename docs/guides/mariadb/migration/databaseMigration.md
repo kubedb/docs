@@ -24,7 +24,36 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
 
 - The source `MariaDB` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MariaDB` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges.
+- The source `MariaDB` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges. There is no single procedure to configure this — it depends on your deployment environment.
+
+  <details>
+  <summary>How to configure this on your source instance</summary>
+
+  **Self-hosted MariaDB**
+
+  Add the following to your `my.cnf` and restart MariaDB:
+  ```ini
+  [mysqld]
+  log_bin          = mysql-bin
+  binlog_format    = ROW
+  binlog_row_image = FULL
+  ```
+
+  Then grant the required privileges to the migration user:
+  ```sql
+  GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '<migration-user>'@'%';
+  FLUSH PRIVILEGES;
+  ```
+
+  **AWS RDS MariaDB**
+  Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
+
+  **Azure Database for MariaDB**
+  Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mariadb/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
+
+  See the official [MariaDB Binary Log](https://mariadb.com/kb/en/binary-log/) docs for more details.
+
+  </details>
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mariadb/concepts/appbinding/)

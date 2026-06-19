@@ -24,7 +24,32 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
 
 - The source `MongoDB` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MongoDB` instance must be part of a replica set with the oplog enabled. The database user provided for migration must have appropriate read privileges on all databases.
+- The source `MongoDB` instance must be part of a replica set with the oplog enabled. The database user provided for migration must have appropriate read privileges on all databases. There is no single procedure to configure this — it depends on your deployment environment.
+
+  <details>
+  <summary>How to configure this on your source instance</summary>
+
+  **Self-hosted MongoDB**
+
+  A standalone `mongod` must first be [converted to a single-node replica set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Once running as a replica set, the oplog is enabled automatically. Then create the migration user:
+  ```js
+  use admin
+  db.createUser({
+    user: "<migration-user>",
+    pwd: "<password>",
+    roles: [
+      { role: "readAnyDatabase", db: "admin" },
+      { role: "clusterMonitor", db: "admin" }
+    ]
+  })
+  ```
+
+  **MongoDB Atlas**
+  Atlas clusters run as replica sets by default — no extra configuration needed. Create a database user with **Read Any Database** built-in role in **Database Access** settings.
+
+  See the official [MongoDB Replica Set](https://www.mongodb.com/docs/manual/replication/) docs for more details.
+
+  </details>
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mongodb/concepts/appbinding/)
