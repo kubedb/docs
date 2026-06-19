@@ -71,27 +71,36 @@ kubectl-dba debug
 ### SEE ALSO
 
 * [kubectl-dba](/docs/reference/cli/kubectl-dba.md)	 - kubectl plugin for KubeDB
+* [kubectl-dba debug aerospike](/docs/reference/cli/kubectl-dba_debug_aerospike.md)	 - Debug helper for Aerospike database
 * [kubectl-dba debug cassandra](/docs/reference/cli/kubectl-dba_debug_cassandra.md)	 - Debug helper for Cassandra database
 * [kubectl-dba debug clickhouse](/docs/reference/cli/kubectl-dba_debug_clickhouse.md)	 - Debug helper for ClickHouse database
+* [kubectl-dba debug db2](/docs/reference/cli/kubectl-dba_debug_db2.md)	 - Debug helper for DB2 database
+* [kubectl-dba debug documentdb](/docs/reference/cli/kubectl-dba_debug_documentdb.md)	 - Debug helper for DocumentDB database
 * [kubectl-dba debug druid](/docs/reference/cli/kubectl-dba_debug_druid.md)	 - Debug helper for Druid database
 * [kubectl-dba debug elasticsearch](/docs/reference/cli/kubectl-dba_debug_elasticsearch.md)	 - Debug helper for Elasticsearch database
+* [kubectl-dba debug hanadb](/docs/reference/cli/kubectl-dba_debug_hanadb.md)	 - Debug helper for HanaDB database
 * [kubectl-dba debug hazelcast](/docs/reference/cli/kubectl-dba_debug_hazelcast.md)	 - Debug helper for Hazelcast database
 * [kubectl-dba debug ignite](/docs/reference/cli/kubectl-dba_debug_ignite.md)	 - Debug helper for Ignite database
 * [kubectl-dba debug kafka](/docs/reference/cli/kubectl-dba_debug_kafka.md)	 - Debug helper for Kafka database
 * [kubectl-dba debug mariadb](/docs/reference/cli/kubectl-dba_debug_mariadb.md)	 - Debug helper for MariaDB database
 * [kubectl-dba debug memcached](/docs/reference/cli/kubectl-dba_debug_memcached.md)	 - Debug helper for Memcached database
+* [kubectl-dba debug milvus](/docs/reference/cli/kubectl-dba_debug_milvus.md)	 - Debug helper for Milvus database
 * [kubectl-dba debug mongodb](/docs/reference/cli/kubectl-dba_debug_mongodb.md)	 - Debug helper for MongoDB database
 * [kubectl-dba debug mssqlserver](/docs/reference/cli/kubectl-dba_debug_mssqlserver.md)	 - Debug helper for MSSQLServer database
 * [kubectl-dba debug mysql](/docs/reference/cli/kubectl-dba_debug_mysql.md)	 - Debug helper for MySQL database
+* [kubectl-dba debug neo4j](/docs/reference/cli/kubectl-dba_debug_neo4j.md)	 - Debug helper for Neo4j database
 * [kubectl-dba debug oracle](/docs/reference/cli/kubectl-dba_debug_oracle.md)	 - Debug helper for Oracle database
 * [kubectl-dba debug perconaxtradb](/docs/reference/cli/kubectl-dba_debug_perconaxtradb.md)	 - Debug helper for PerconaXtraDB database
 * [kubectl-dba debug pgbouncer](/docs/reference/cli/kubectl-dba_debug_pgbouncer.md)	 - Debug helper for PgBouncer database
 * [kubectl-dba debug pgpool](/docs/reference/cli/kubectl-dba_debug_pgpool.md)	 - Debug helper for Pgpool database
 * [kubectl-dba debug postgres](/docs/reference/cli/kubectl-dba_debug_postgres.md)	 - Debug helper for Postgres database
 * [kubectl-dba debug proxysql](/docs/reference/cli/kubectl-dba_debug_proxysql.md)	 - Debug helper for ProxySQL database
-* [kubectl-dba debug rabbitmq](/docs/reference/cli/kubectl-dba_debug_rabbitmq.md)	 - Debug helper for Rabbitmq database
+* [kubectl-dba debug qdrant](/docs/reference/cli/kubectl-dba_debug_qdrant.md)	 - Debug helper for Qdrant database
+* [kubectl-dba debug rabbitmq](/docs/reference/cli/kubectl-dba_debug_rabbitmq.md)	 - Debug helper for RabbitMQ database
 * [kubectl-dba debug redis](/docs/reference/cli/kubectl-dba_debug_redis.md)	 - Debug helper for Redis database
+* [kubectl-dba debug redissentinel](/docs/reference/cli/kubectl-dba_debug_redissentinel.md)	 - Debug helper for RedisSentinel database
 * [kubectl-dba debug singlestore](/docs/reference/cli/kubectl-dba_debug_singlestore.md)	 - Debug helper for Singlestore database
 * [kubectl-dba debug solr](/docs/reference/cli/kubectl-dba_debug_solr.md)	 - Debug helper for Solr database
-* [kubectl-dba debug zookeeper](/docs/reference/cli/kubectl-dba_debug_zookeeper.md)	 - Debug helper for Zookeeper database
+* [kubectl-dba debug weaviate](/docs/reference/cli/kubectl-dba_debug_weaviate.md)	 - Debug helper for Weaviate database
+* [kubectl-dba debug zookeeper](/docs/reference/cli/kubectl-dba_debug_zookeeper.md)	 - Debug helper for ZooKeeper database
 
