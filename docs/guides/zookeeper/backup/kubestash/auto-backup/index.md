@@ -450,10 +450,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-interim/data
-          id: 280cbe5908773859259f0921d89e677f4c0ab40c3e4bedee6b95ab2c9ef474e9
-          size: 718 B
-          uploaded: 1.075 KiB
+        - summary:
+            hostPath: /kubestash-interim/data
+            id: 280cbe5908773859259f0921d89e677f4c0ab40c3e4bedee6b95ab2c9ef474e9
+            size: 718 B
+            uploaded: 1.075 KiB
       size: 1.835 KiB
   conditions:
     - lastTransitionTime: "2024-09-19T08:55:01Z"
@@ -799,10 +800,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-interim/data
-          id: 5356f92f84ad9b1ce170a99796eee91983e6df62e224d592d85fb0811a2fbb38
-          size: 719 B
-          uploaded: 1.075 KiB
+        - summary:
+            hostPath: /kubestash-interim/data
+            id: 5356f92f84ad9b1ce170a99796eee91983e6df62e224d592d85fb0811a2fbb38
+            size: 719 B
+            uploaded: 1.075 KiB
       size: 1.839 KiB
   conditions:
     - lastTransitionTime: "2024-09-19T10:40:01Z"

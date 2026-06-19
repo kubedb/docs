@@ -448,10 +448,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: c4d4c26ad6e03f372b60dfc8bb7901900c4be9b791d44c68564753fb9e9e424c
-          size: 2.206 KiB
-          uploaded: 2.498 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: c4d4c26ad6e03f372b60dfc8bb7901900c4be9b791d44c68564753fb9e9e424c
+            size: 2.206 KiB
+            uploaded: 2.498 KiB
       size: 2.190 KiB
   conditions:
     - lastTransitionTime: "2024-09-18T05:34:18Z"
@@ -801,10 +802,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 6aa144d43ea5d70fd1018390d4d22f98f6ab568c74eee9a386d6a9b29ad21d8b
-          size: 4.887 MiB
-          uploaded: 4.887 MiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: 6aa144d43ea5d70fd1018390d4d22f98f6ab568c74eee9a386d6a9b29ad21d8b
+            size: 4.887 MiB
+            uploaded: 4.887 MiB
       size: 907.341 KiB
   conditions:
     - lastTransitionTime: "2024-09-18T06:23:24Z"
