@@ -522,10 +522,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.resp
-          id: dc0c7e16ffea238d80f2f0e23b94d5eee1a598a4b5b9bc3f9edc2e9059e1d9e2
-          size: 381 B
-          uploaded: 680 B
+        - summary:
+            hostPath: dumpfile.resp
+            id: dc0c7e16ffea238d80f2f0e23b94d5eee1a598a4b5b9bc3f9edc2e9059e1d9e2
+            size: 381 B
+            uploaded: 680 B
       size: 416 B
   conditions:
     - lastTransitionTime: "2024-09-18T09:28:07Z"

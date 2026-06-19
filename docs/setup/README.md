@@ -18,14 +18,14 @@ aliases:
 # Setup
 
 <div style="text-align: center;">
-  <a class="button is-info is-medium is-active has-text-weight-normal" href="/docs/setup/install/kubedb/_index.md"  style="background:#FC6011; width: 18rem;">Install KubeDB</a>
+  <a class="button is-info is-medium is-active has-text-weight-normal" href="/docs/setup/install/kubedb/"  style="background:#FC6011; width: 18rem;">Install KubeDB</a>
 </div>
 <br>
 
 The setup section contains instructions for installing the KubeDB and its various components in Kubernetes. This section has been divided into the following sub-sections:
 
 - **Install KubeDB:** Installation instructions for KubeDB and its various components.
-  - [KubeDB](/docs/setup/install/kubedb/_index.md): Installation instructions for KubeDB.
+  - [KubeDB](/docs/setup/install/kubedb/): Installation instructions for KubeDB.
   - [KubeDB kubectl Plugin](/docs/setup/install/kubectl_plugin.md): Installation instructions for KubeDB `kubectl` plugin.
   - [Troubleshooting](/docs/setup/install/troubleshoting.md): Troubleshooting guide for various installation problems.
 
