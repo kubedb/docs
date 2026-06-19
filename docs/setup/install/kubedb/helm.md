@@ -197,6 +197,78 @@ The operator also pulls a small helper image from Docker Hub (`docker.io/tianon/
 
 To keep the set as small as possible, enable only the engines you need through `global.featureGates.<Engine>` (see [Common Configuration](/docs/setup/install/kubedb/configuration.md)), then re-run the step 2 command (or pull the matching per-engine lists) to capture the exact image tags.
 
+### Example: Postgres, PgBouncer, and Neo4j
+
+Suppose you only need three engines in the air-gapped cluster: Postgres, PgBouncer, and Neo4j. Narrowing the engine set narrows both the images you mirror and the proxies you set.
+
+These three engines pull from three registries:
+
+- `ghcr.io`: the operator, the Postgres and PgBouncer server images, and their KubeDB helpers (coordinator, archiver, init).
+- `docker.io`: the Postgres helper images (PostGIS, TimescaleDB, the Postgres exporter) and the operator's `toybox` helper.
+- `docker.io/library`: the Neo4j server image (`docker.io/library/neo4j`).
+
+So you set the `ghcr`, `dockerHub`, and `dockerLibrary` proxies and can skip `quay`, `kubernetes`, `microsoft`, `appscode`, `oracle`, and `weaviate`.
+
+First, mirror only the operator plus these three engines. Each one has its own script directory (see step 1), so copy just what you need:
+
+```bash
+export IMAGE_REGISTRY=registry.example.com
+for component in operator postgres pgbouncer neo4j; do
+  wget https://github.com/kubedb/installer/raw/{{< param "info.installer" >}}/catalog/scripts/${component}/copy-images.sh -O copy-${component}.sh
+  chmod +x copy-${component}.sh
+  ./copy-${component}.sh
+done
+```
+
+For a fully air-gapped cluster, use each directory's `export-images.sh` and `import-images.sh` the same way.
+
+Next, enable only these engines so the catalog references just the images you mirrored. Save a `values.yaml` that turns the three on and the default engines off:
+
+```yaml
+global:
+  featureGates:
+    Postgres: true
+    PgBouncer: true
+    Neo4j: true
+    Elasticsearch: false
+    Kafka: false
+    MariaDB: false
+    MongoDB: false
+    MySQL: false
+    Redis: false
+```
+
+Render the chart first to confirm every image resolves to your registry:
+
+```bash
+$ helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --values values.yaml \
+  --set global.registryFQDN=registry.example.com \
+  --set kubedb-catalog.proxies.ghcr=registry.example.com \
+  --set kubedb-catalog.proxies.dockerHub=registry.example.com \
+  --set kubedb-catalog.proxies.dockerLibrary=registry.example.com \
+  --set kubedb-kubestash-catalog.proxies.ghcr=registry.example.com \
+  | grep 'image:' | sort | uniq
+```
+
+Once the output is clean, install KubeDB with the same values and proxies plus the license:
+
+```bash
+$ helm upgrade -i kubedb oci://registry.example.com/appscode-charts/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt \
+  --values values.yaml \
+  --set global.registryFQDN=registry.example.com \
+  --set kubedb-catalog.proxies.ghcr=registry.example.com \
+  --set kubedb-catalog.proxies.dockerHub=registry.example.com \
+  --set kubedb-catalog.proxies.dockerLibrary=registry.example.com \
+  --set kubedb-kubestash-catalog.proxies.ghcr=registry.example.com \
+  --wait --burst-limit=10000 --debug
+```
+
 To see the detailed configuration options, visit [here](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb).
 
 Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration.md).
