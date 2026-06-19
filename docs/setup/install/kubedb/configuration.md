@@ -80,6 +80,46 @@ $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 The same `global.featureGates` map works with the ArgoCD `Application` manifests under the `spec.source.helm.values` block, with the `kubedb-certified` chart on OpenShift, and with the `Kubedb` installer CR used by the OperatorHub bundle.
 
+## Network Policy
+
+KubeDB can optionally generate NetworkPolicies that restrict traffic to and from the KubeDB operator and database pods so only the required communication is allowed. This is disabled by default. Enable it through `global.networkPolicy`:
+
+```yaml
+global:
+  # Controls the network policy creation
+  networkPolicy:
+    enabled: false
+    # flavor selects which network policy API is used.
+    # Accepted values: "kubernetes" (default) or "cilium".
+    flavor: kubernetes
+```
+
+Set `enabled: true` to create the policies. The `flavor` field selects which API the generated policies target: `kubernetes` (the built-in `networking.k8s.io` `NetworkPolicy`, the default) or `cilium` (Cilium's `CiliumNetworkPolicy`, for clusters running the Cilium CNI).
+
+Enable it inline with `--set`:
+
+```bash
+$ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+  --version {{< param "info.version" >}} \
+  --namespace kubedb --create-namespace \
+  --set-file global.license=/path/to/the/license.txt \
+  --set global.networkPolicy.enabled=true \
+  --set global.networkPolicy.flavor=kubernetes \
+  --wait --burst-limit=10000 --debug
+```
+
+### Required network communication
+
+KubeDB can run fully disconnected from the internet, as long as every required image is cached in a registry the cluster can reach (users commonly use Harbor or JFrog Artifactory for this, see the [offline installation guide](/docs/setup/install/kubedb/helm.md)).
+
+Within the cluster, the following paths must stay open. When `global.networkPolicy.enabled` is `true`, the generated policies allow exactly these; if you maintain your own policies, make sure to permit them yourself:
+
+1. KubeDB operator to the kube-apiserver.
+2. KubeDB operator to the database pods, for health checks.
+3. Database pods to the kube-apiserver, for failover handling (a pod updates its own label when it becomes the primary replica).
+4. Backup jobs and pods to the database pods, over the network and at the node level so they can reach the shared disks, and to an object storage backend (S3, MinIO, and similar).
+5. Database pods to DNS.
+
 ## Verify installation
 
 To check if KubeDB operator pods have started, run the following command:
