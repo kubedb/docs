@@ -17,25 +17,36 @@ aliases:
 
 ## Supported PostgreSQL Features
 
-| Features                           | Availability |
-|------------------------------------|:------------:|
-| Clustering                         |   &#10003;   |
-| Warm Standby                       |   &#10003;   |
-| Hot Standby                        |   &#10003;   |
-| Synchronous Replication            |   &#10003;   |
-| Streaming Replication              |   &#10003;   |
-| Automatic Failover                 |   &#10003;   |
-| Continuous Archiving using `wal-g` |   &#10003;   |
-| Initialization from WAL archive    |   &#10003;   |
-| Persistent Volume                  |   &#10003;   |
-| Instant Backup                     |   &#10003;   |
-| Scheduled Backup                   |   &#10003;   |
-| Initialization from Snapshot       |   &#10003;   |
-| Initialization using Script        |   &#10003;   |
-| Builtin Prometheus Discovery       |   &#10003;   |
-| Using Prometheus operator          |   &#10003;   |
-| Custom Configuration               |   &#10003;   |
-| Using Custom docker image          |   &#10003;   |
+| Features                                                   | Availability |
+|------------------------------------------------------------|:------------:|
+| HA Clustering (Warm/Hot Standby, Automatic Failover)       |   &#10003;   |
+| Synchronous Replication                                    |   &#10003;   |
+| Streaming Replication                                      |   &#10003;   |
+| Arbiter Node Support                                       |   &#10003;   |
+| Remote Replica                                             |   &#10003;   |
+| Distributed Cluster (Multi-Cluster)                        |   &#10003;   |
+| Continuous Archiving using `wal-g`                         |   &#10003;   |
+| Point-in-Time Recovery (PITR)                              |   &#10003;   |
+| Initialization from WAL archive                            |   &#10003;   |
+| Persistent Volume                                          |   &#10003;   |
+| Backup & Recovery (Instant, Scheduled, Auto-Backup)        |   &#10003;   |
+| Initialization (Script / Snapshot)                         |   &#10003;   |
+| Monitoring (Prometheus)                                    |   &#10003;   |
+| TLS/SSL Encryption                                         |   &#10003;   |
+| Custom & Auto Configuration Tuning (pgtune)                |   &#10003;   |
+| Reconfigure Database Parameters                            |   &#10003;   |
+| Version Upgrade                                            |   &#10003;   |
+| Horizontal & Vertical Scaling                              |   &#10003;   |
+| Volume Expansion                                           |   &#10003;   |
+| StorageClass Migration                                     |   &#10003;   |
+| Autoscaling (Compute & Storage)                            |   &#10003;   |
+| Restart                                                    |   &#10003;   |
+| Rotate Authentication                                      |   &#10003;   |
+| Virtual Secrets                                            |   &#10003;   |
+| GitOps                                                     |   &#10003;   |
+| Custom RBAC                                                |   &#10003;   |
+| Custom Docker Image & Private Registry                     |   &#10003;   |
+| Failure and Disaster Recovery                              |   &#10003;   |
 
 ## Life Cycle of a PostgreSQL Object
 

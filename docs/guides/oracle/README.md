@@ -17,16 +17,14 @@ aliases:
 
 ## Supported Oracle Features
 
-| Features                           | Availability |
-|------------------------------------|:------------:|
-| Clustering                         |   &#10003;   |
-| Data Guard                         |   &#10003;   |
-| Synchronous Replication            |   &#10003;   |
-| Streaming Replication              |   &#10003;   |
-| Automatic Failover                 |   &#10003;   |
-| Persistent Volume                  |   &#10003;   |
-| Initialization using Script        |   &#10003;   |
-| Using Custom docker image          |   &#10003;   |
+| Features                                          | Availability |
+|---------------------------------------------------|:------------:|
+| Deployment Modes (Standalone & DataGuard)         |   &#10003;   |
+| Physical Standby & Synchronous Replication        |   &#10003;   |
+| Automatic Failover (FSFO)                         |   &#10003;   |
+| Persistent Volume                                 |   &#10003;   |
+| Resource Management (CPU/Memory)                  |   &#10003;   |
+| Deletion Policy                                   |   &#10003;   |
 
 ## Life Cycle of a Oracle Object
 
@@ -37,5 +35,7 @@ aliases:
 ## User Guide
 
 - [Quickstart Oracle](/docs/guides/oracle/quickstart/guide.md) with KubeDB Operator.
+- [Oracle CRD Concepts](/docs/guides/oracle/concepts/oracle.md) - Understand the Oracle CRD specification.
+- [Failover and Disaster Recovery](/docs/guides/oracle/failover/overview.md) - Data Guard based HA and auto-failover.
 
 
