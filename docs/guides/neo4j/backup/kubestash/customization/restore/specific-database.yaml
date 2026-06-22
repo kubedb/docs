@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: neo4j-restore-session
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Neo4j
+    namespace: demo
+    name: neo4j-restore
+  dataSource:
+    repository: s3-neo4j-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: neo4j-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          seedServerName: "neo4j-restore-0" ## Neo4j Pod Name
+          databases: "movies"
+    jobTemplate:
+      spec:
+        volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: data-neo4j-restore-0 # PVC Name
+        volumeMounts:
+          - mountPath: /data
+            name: data
+            subPath: data
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 7474
