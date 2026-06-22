@@ -1,0 +1,19 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: http://minio.demo.svc.cluster.local:80
+      bucket: kubestash
+      prefix: demo
+      region: us-east-1
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: true
+  deletionPolicy: Delete
