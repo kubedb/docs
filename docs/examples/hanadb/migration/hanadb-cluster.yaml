@@ -1,0 +1,60 @@
+apiVersion: kubedb.com/v1alpha2
+kind: HanaDB
+metadata:
+  name: hanadb-cluster
+  namespace: demo
+spec:
+  version: "2.0.82"
+  replicas: 2
+  storageType: Durable
+  topology:
+    mode: SystemReplication
+    systemReplication:
+      replicationMode: fullsync
+      operationMode: logreplay_readaccess
+  healthChecker:
+    disableWriteCheck: true
+    periodSeconds: 20
+    timeoutSeconds: 20
+    failureThreshold: 1
+  podTemplate:
+    spec:
+      initContainers:
+      - name: fix-volume-permissions
+        image: docker.io/saplabs/hanaexpress:2.00.082.00.20250528.1
+        imagePullPolicy: IfNotPresent
+        command:
+        - /bin/sh
+        - -ec
+        - chown -R 12000:79 /hana/mounts && chmod -R u+rwX,g+rwX /hana/mounts
+        securityContext:
+          runAsUser: 0
+          runAsNonRoot: false
+          allowPrivilegeEscalation: false
+          capabilities:
+            add:
+            - CHOWN
+            - DAC_OVERRIDE
+            - FOWNER
+          seccompProfile:
+            type: RuntimeDefault
+        volumeMounts:
+        - name: data
+          mountPath: /hana/mounts
+      containers:
+      - name: hanadb
+        resources:
+          requests:
+            cpu: "1500m"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "14Gi"
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 64Gi
+    storageClassName: longhorn-single
+  deletionPolicy: WipeOut

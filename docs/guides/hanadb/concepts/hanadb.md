@@ -50,5 +50,6 @@ spec:
 - `spec.topology.mode` supports `Standalone` and `SystemReplication`. If `topology` is omitted, KubeDB runs a standalone instance.
 - `spec.topology.systemReplication` configures replication and operation mode.
 - `spec.storageType` and `spec.storage` define persistent data configuration.
+- `spec.tls` configures cert-manager issued TLS certificates for SAP HANA SQL traffic, KubeDB client connections, and the exporter.
 - `spec.authSecret`, `spec.configuration`, `spec.podTemplate`, and `spec.monitor` are optional tuning controls.
 - `spec.deletionPolicy` controls cleanup behavior.
