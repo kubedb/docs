@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Neo4j
 metadata:
-  name: neo4j-restore
+  name: restored-neo4j
   namespace: demo
 spec:
   init:

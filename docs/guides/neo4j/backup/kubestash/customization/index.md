@@ -31,14 +31,14 @@ The below example shows how you can pass `--keep-failed=true` and `--parallel-re
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -57,9 +57,6 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /neo4j
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         tasks:
@@ -78,14 +75,14 @@ The below example shows how you can back up only the `neo4j` and `movies` databa
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -104,9 +101,6 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /neo4j
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         tasks:
@@ -121,20 +115,20 @@ spec:
 
 By default, KubeStash takes the backup from the server resolved through the database `AppBinding` (over the backup port `6362`). If you want to take the backup from a specific server, for example to offload the backup load from the leader to a particular replica, you can set the `from` parameter under the `addon.tasks[*].params` section to the desired server address.
 
-The below example shows how you can take the backup from the `neo4j-backup-2` pod.
+The below example shows how you can take the backup from the `sample-neo4j-2` pod.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -153,15 +147,12 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /neo4j
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         tasks:
           - name: logical-backup
             params:
-              from: "neo4j-backup-2.demo.svc:6362"
+              from: "sample-neo4j-2.demo.svc:6362"
 ```
 
 > The `from` address must point to a server that exposes the backup port (`6362`).
@@ -174,14 +165,14 @@ If your cluster requires running the backup job as a specific user, you can prov
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -200,9 +191,6 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /neo4j
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         jobTemplate:
@@ -222,14 +210,14 @@ If you want to specify the Memory/CPU limit/request for your backup job, you can
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -248,9 +236,6 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /neo4j
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         jobTemplate:
@@ -272,7 +257,7 @@ spec:
 
 `KubeStash` uses the `neo4j-admin database restore` command during the restore process and then seeds the restored store into the cluster from a single bootstrap pod. In this section, we are going to show how you can restore a specific snapshot, restore specific databases, pass arguments to the restore process, run the restore job as a specific user, etc.
 
-> **Note:** For a clustered `Neo4j` restore, KubeStash restores the store files into the seed pod's data volume and then bootstraps the other replicas from it. Therefore, in every `RestoreSession` you need to set the `seedServerName` parameter to the target seed pod (e.g. `neo4j-restore-0`) and mount that pod's data PVC into the restore `Job` as shown in the examples below.
+> **Note:** For a clustered `Neo4j` restore, KubeStash restores the store files into the seed pod's data volume and then bootstraps the other replicas from it. Therefore, in every `RestoreSession` you need to set the `seedServerName` parameter to the target seed pod (e.g. `restored-neo4j-0`) and mount that pod's data PVC into the restore `Job` as shown in the examples below.
 
 ### Restore specific snapshot
 
@@ -281,10 +266,10 @@ You can also restore a specific snapshot. At first, list the available snapshots
 ```bash
 $ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=s3-neo4j-repo
 NAME                                                          REPOSITORY      SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-s3-neo4j-repo-neo4j-backup-config-frequent-backup-1725257849   s3-neo4j-repo   frequent-backup   2024-09-02T06:18:01Z   Delete            Succeeded   15m
-s3-neo4j-repo-neo4j-backup-config-frequent-backup-1725258000   s3-neo4j-repo   frequent-backup   2024-09-02T06:20:00Z   Delete            Succeeded   13m
-s3-neo4j-repo-neo4j-backup-config-frequent-backup-1725258300   s3-neo4j-repo   frequent-backup   2024-09-02T06:25:00Z   Delete            Succeeded   8m34s
-s3-neo4j-repo-neo4j-backup-config-frequent-backup-1725258600   s3-neo4j-repo   frequent-backup   2024-09-02T06:30:00Z   Delete            Succeeded   3m34s
+s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1725257849   s3-neo4j-repo   frequent-backup   2024-09-02T06:18:01Z   Delete            Succeeded   15m
+s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1725258000   s3-neo4j-repo   frequent-backup   2024-09-02T06:20:00Z   Delete            Succeeded   13m
+s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1725258300   s3-neo4j-repo   frequent-backup   2024-09-02T06:25:00Z   Delete            Succeeded   8m34s
+s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1725258600   s3-neo4j-repo   frequent-backup   2024-09-02T06:30:00Z   Delete            Succeeded   3m34s
 ```
 
 The below example shows how you can pass a specific snapshot name in the `.spec.dataSource` section.
@@ -293,32 +278,29 @@ The below example shows how you can pass a specific snapshot name in the `.spec.
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: neo4j-restore-session
+  name: sample-neo4j-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-restore
+    name: restored-neo4j
   dataSource:
     repository: s3-neo4j-repo
-    snapshot: s3-neo4j-repo-neo4j-backup-config-frequent-backup-1725258000
-    encryptionSecret:
-      name: encrypt-secret
-      namespace: demo
+    snapshot: s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1725258000
   addon:
     name: neo4j-addon
     tasks:
       - name: logical-backup-restore
         params:
-          seedServerName: "neo4j-restore-0" ## Neo4j Pod Name
+          seedServerName: "restored-neo4j-0" ## Neo4j Pod Name
     jobTemplate:
       spec:
         volumes:
           - name: data
             persistentVolumeClaim:
-              claimName: data-neo4j-restore-0 # PVC Name
+              claimName: data-restored-neo4j-0 # PVC Name
         volumeMounts:
           - mountPath: /data
             name: data
@@ -340,33 +322,30 @@ The below example shows how you can restore only the `movies` database.
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: neo4j-restore-session
+  name: sample-neo4j-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-restore
+    name: restored-neo4j
   dataSource:
     repository: s3-neo4j-repo
     snapshot: latest
-    encryptionSecret:
-      name: encrypt-secret
-      namespace: demo
   addon:
     name: neo4j-addon
     tasks:
       - name: logical-backup-restore
         params:
-          seedServerName: "neo4j-restore-0" ## Neo4j Pod Name
+          seedServerName: "restored-neo4j-0" ## Neo4j Pod Name
           databases: "movies"
     jobTemplate:
       spec:
         volumes:
           - name: data
             persistentVolumeClaim:
-              claimName: data-neo4j-restore-0 # PVC Name
+              claimName: data-restored-neo4j-0 # PVC Name
         volumeMounts:
           - mountPath: /data
             name: data
@@ -386,33 +365,30 @@ A common use case is restoring into a database that already exists. Passing `--o
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: neo4j-restore-session
+  name: sample-neo4j-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-restore
+    name: restored-neo4j
   dataSource:
     repository: s3-neo4j-repo
     snapshot: latest
-    encryptionSecret:
-      name: encrypt-secret
-      namespace: demo
   addon:
     name: neo4j-addon
     tasks:
       - name: logical-backup-restore
         params:
-          seedServerName: "neo4j-restore-0" ## Neo4j Pod Name
+          seedServerName: "restored-neo4j-0" ## Neo4j Pod Name
           neo4jAdminArgs: "--overwrite-destination=true"
     jobTemplate:
       spec:
         volumes:
           - name: data
             persistentVolumeClaim:
-              claimName: data-neo4j-restore-0 # PVC Name
+              claimName: data-restored-neo4j-0 # PVC Name
         volumeMounts:
           - mountPath: /data
             name: data
@@ -430,26 +406,23 @@ Similar to the backup process, you can also provide the `resources` field under 
 apiVersion: core.kubestash.com/v1alpha1
 kind: RestoreSession
 metadata:
-  name: neo4j-restore-session
+  name: sample-neo4j-restore
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-restore
+    name: restored-neo4j
   dataSource:
     repository: s3-neo4j-repo
     snapshot: latest
-    encryptionSecret:
-      name: encrypt-secret
-      namespace: demo
   addon:
     name: neo4j-addon
     tasks:
       - name: logical-backup-restore
         params:
-          seedServerName: "neo4j-restore-0" ## Neo4j Pod Name
+          seedServerName: "restored-neo4j-0" ## Neo4j Pod Name
     jobTemplate:
       spec:
         resources:
@@ -462,7 +435,7 @@ spec:
         volumes:
           - name: data
             persistentVolumeClaim:
-              claimName: data-neo4j-restore-0 # PVC Name
+              claimName: data-restored-neo4j-0 # PVC Name
         volumeMounts:
           - mountPath: /data
             name: data

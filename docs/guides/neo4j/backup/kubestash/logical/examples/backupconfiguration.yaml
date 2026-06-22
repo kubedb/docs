@@ -1,14 +1,14 @@
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
-  name: neo4j-backup-config
+  name: sample-neo4j-backup
   namespace: demo
 spec:
   target:
     apiGroup: kubedb.com
     kind: Neo4j
     namespace: demo
-    name: neo4j-backup
+    name: sample-neo4j
   backends:
     - name: s3-backend
       storageRef:
@@ -27,9 +27,6 @@ spec:
         - name: s3-neo4j-repo
           backend: s3-backend
           directory: /backup
-          encryptionSecret:
-            name: encrypt-secret
-            namespace: demo
       addon:
         name: neo4j-addon
         tasks:

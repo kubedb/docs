@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Neo4j
 metadata:
-  name: neo4j-backup
+  name: sample-neo4j
   namespace: demo
 spec:
   version: 2025.11.2

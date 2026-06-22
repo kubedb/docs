@@ -7,13 +7,13 @@ spec:
   storage:
     provider: s3
     s3:
-      bucket: kubestash
+      bucket: kubestash-qa
       region: us-east-2
       endpoint: https://s3.us-east-2.amazonaws.com
       secretName: s3-secret
-      prefix: rabbi-neo4j-test
+      prefix: demo
   usagePolicy:
     allowedNamespaces:
       from: All
   default: false
-  deletionPolicy: WipeOut
+  deletionPolicy: Delete
