@@ -164,8 +164,6 @@ spec:
       port: 7687
       scheme: noe4j
   secret:
-    apiGroup: ""
-    kind: Secret
     name: neo4j-backup-auth
   type: kubedb.com/Neo4j
   version: 2025.11.2-enterprise
