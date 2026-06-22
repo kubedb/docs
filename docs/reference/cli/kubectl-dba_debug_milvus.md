@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Zookeeper
+title: Kubectl-Dba Debug Milvus
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-zookeeper
-    name: Kubectl-Dba Debug Zookeeper
+    identifier: kubectl-dba-debug-milvus
+    name: Kubectl-Dba Debug Milvus
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug zookeeper
+## kubectl-dba debug milvus
 
-Debug helper for ZooKeeper database
+Debug helper for Milvus database
 
 ```
-kubectl-dba debug zookeeper [flags]
+kubectl-dba debug milvus [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
+kubectl dba debug milvus -n demo sample-milvus --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for zookeeper
+  -h, --help                        help for milvus
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 

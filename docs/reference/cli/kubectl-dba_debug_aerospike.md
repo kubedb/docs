@@ -1,31 +1,31 @@
 ---
-title: Kubectl-Dba Debug Zookeeper
+title: Kubectl-Dba Debug Aerospike
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba-debug-zookeeper
-    name: Kubectl-Dba Debug Zookeeper
+    identifier: kubectl-dba-debug-aerospike
+    name: Kubectl-Dba Debug Aerospike
     parent: reference-cli
 menu_name: docs_{{ .version }}
 section_menu_id: reference
 ---
-## kubectl-dba debug zookeeper
+## kubectl-dba debug aerospike
 
-Debug helper for ZooKeeper database
+Debug helper for Aerospike database
 
 ```
-kubectl-dba debug zookeeper [flags]
+kubectl-dba debug aerospike [flags]
 ```
 
 ### Examples
 
 ```
-kubectl dba debug zookeeper -n demo sample-zookeeper --operator-namespace kubedb
+kubectl dba debug aerospike -n demo sample-aerospike --operator-namespace kubedb
 ```
 
 ### Options
 
 ```
-  -h, --help                        help for zookeeper
+  -h, --help                        help for aerospike
   -o, --operator-namespace string   the namespace where the kubedb operator is installed (default "kubedb")
 ```
 
