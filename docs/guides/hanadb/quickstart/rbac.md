@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # RBAC Permissions for HanaDB
 
@@ -34,7 +34,7 @@ They also require cluster-scoped read access to `hanadbversions` and `hanadbs`.
 
 - Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the steps [here](/docs/setup/README.md).
+- Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the [setup guide](/docs/setup/README.md).
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 

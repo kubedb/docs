@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # AppBinding
 
@@ -48,6 +48,7 @@ spec:
       port: 39017
       scheme: tcp
   secret:
+    kind: Secret
     name: hanadb-cluster-auth
   type: kubedb.com/hanadb
   version: "2.0.82"
@@ -58,7 +59,7 @@ spec:
 - `spec.type` identifies the application type as `kubedb.com/hanadb`.
 - `spec.appRef` points back to the source `HanaDB` object.
 - `spec.clientConfig.service` contains the in-cluster service endpoint for SAP HANA.
-- `spec.secret.name` points to the secret containing the database credentials.
+- `spec.secret` points to the Kubernetes Secret containing the database credentials.
 - `spec.version` is the SAP HANA version resolved from the `HanaDBVersion` catalog.
 
 ## Next Steps

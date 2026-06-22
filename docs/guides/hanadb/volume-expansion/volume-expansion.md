@@ -3,14 +3,14 @@ title: HanaDB Volume Expansion
 menu:
   docs_{{ .version }}:
     identifier: hanadb-volume-expansion-guide
-    name: Volume Expansion
+    name: Standalone
     parent: hanadb-volume-expansion
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # HanaDB Volume Expansion
 
@@ -19,7 +19,7 @@ This guide shows how to expand HanaDB persistent volumes using a `HanaDBOpsReque
 ## Before You Begin
 
 - Prepare a Kubernetes cluster and configure `kubectl`.
-- Install KubeDB following the steps [here](/docs/setup/README.md).
+- Install KubeDB by following the [setup guide](/docs/setup/README.md).
 - Use a `StorageClass` that supports volume expansion.
 - Create a namespace:
 
@@ -67,7 +67,7 @@ kubectl wait -n demo hanadb/hanadb-standalone --for=jsonpath='{.status.phase}'=R
 
 ```bash
 kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-standalone
-kubectl get petset -n demo hanadb-standalone -o jsonpath='{.spec.volumeClaimTemplates[?(@.metadata.name=="data")].spec.resources.requests.storage}'
+kubectl get petsets.apps.k8s.appscode.com -n demo hanadb-standalone -o jsonpath='{.spec.volumeClaimTemplates[?(@.metadata.name=="data")].spec.resources.requests.storage}'
 ```
 
 ## Cleanup

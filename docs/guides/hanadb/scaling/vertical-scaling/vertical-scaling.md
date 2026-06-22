@@ -3,14 +3,14 @@ title: Vertical Scaling HanaDB
 menu:
   docs_{{ .version }}:
     identifier: hanadb-scaling-vertical-guide
-    name: Vertical Scaling
+    name: Scale Vertically
     parent: hanadb-scaling-vertical
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # Vertical Scaling HanaDB
 
@@ -19,7 +19,7 @@ This guide shows how to update CPU and memory resources for the HanaDB container
 ## Before You Begin
 
 - Prepare a Kubernetes cluster and configure `kubectl`.
-- Install KubeDB following the steps [here](/docs/setup/README.md).
+- Install KubeDB by following the [setup guide](/docs/setup/README.md).
 - Create a namespace:
 
 ```bash
@@ -70,7 +70,7 @@ kubectl wait -n demo hanadb/hanadb-cluster --for=jsonpath='{.status.phase}'=Read
 
 ```bash
 kubectl get hanadb -n demo hanadb-cluster -o jsonpath='{.spec.podTemplate.spec.containers[?(@.name=="hanadb")].resources}'
-kubectl get petset -n demo hanadb-cluster -o jsonpath='{.spec.template.spec.containers[?(@.name=="hanadb")].resources}'
+kubectl get petsets.apps.k8s.appscode.com -n demo hanadb-cluster -o jsonpath='{.spec.template.spec.containers[?(@.name=="hanadb")].resources}'
 ```
 
 ## Cleanup

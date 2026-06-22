@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # Monitoring HanaDB with Prometheus Operator
 
@@ -20,11 +20,11 @@ This tutorial shows how to monitor a HanaDB instance using [Prometheus Operator]
 
 - Prepare a Kubernetes cluster and configure `kubectl` to communicate with it. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+- Install KubeDB operator in your cluster by following the [setup guide](/docs/setup/README.md).
 
-- Install Prometheus Operator in your cluster following the steps from [here](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/coreos-operator). If you want to use an already deployed Prometheus instance, configure it to monitor all namespaces.
+- Install Prometheus Operator in your cluster by following the [Prometheus Operator setup guide](https://github.com/appscode/third-party-tools/tree/master/monitoring/prometheus/coreos-operator). If you want to use an already deployed Prometheus instance, configure it to monitor all namespaces.
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/hanadb/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, read the [HanaDB monitoring overview](/docs/guides/hanadb/monitoring/overview.md).
 
 - This tutorial deploys Prometheus resources in the `monitoring` namespace and the database in the `demo` namespace.
 

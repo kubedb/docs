@@ -14,5 +14,5 @@ spec:
     runAsUser: 12000
   updateConstraints:
     allowlist:
-    - 2.0.82
+    - "2.0.82"
   version: "2.0.82"

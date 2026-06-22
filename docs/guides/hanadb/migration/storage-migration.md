@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # HanaDB StorageClass Migration
 
@@ -19,7 +19,7 @@ This guide shows how to migrate HanaDB persistent volumes from one `StorageClass
 ## Before You Begin
 
 - Prepare a Kubernetes cluster and configure `kubectl`.
-- Install KubeDB following the steps [here](/docs/setup/README.md).
+- Install KubeDB by following the [setup guide](/docs/setup/README.md).
 - Create a namespace:
 
 ```bash
@@ -91,7 +91,7 @@ kubectl wait -n demo hanadb/hanadb-cluster --for=jsonpath='{.status.phase}'=Read
 
 ```bash
 kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-cluster
-kubectl get petset -n demo hanadb-cluster -o jsonpath='{.spec.volumeClaimTemplates[?(@.metadata.name=="data")].spec.storageClassName}'
+kubectl get petsets.apps.k8s.appscode.com -n demo hanadb-cluster -o jsonpath='{.spec.volumeClaimTemplates[?(@.metadata.name=="data")].spec.storageClassName}'
 ```
 
 ## Cleanup

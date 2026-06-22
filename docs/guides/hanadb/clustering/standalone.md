@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # HanaDB Standalone
 
@@ -19,7 +19,7 @@ This guide shows how to run a single SAP HANA instance using KubeDB.
 ## Before You Begin
 
 - Prepare a Kubernetes cluster and configure `kubectl`.
-- Install KubeDB following the steps [here](/docs/setup/README.md).
+- Install KubeDB by following the [setup guide](/docs/setup/README.md).
 - Create a namespace for this tutorial:
 
 ```bash

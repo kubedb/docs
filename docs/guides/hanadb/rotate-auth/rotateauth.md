@@ -3,14 +3,14 @@ title: Rotate Authentication HanaDB
 menu:
   docs_{{ .version }}:
     identifier: hanadb-rotate-auth-guide
-    name: Rotate Authentication
+    name: Guide
     parent: hanadb-rotate-auth
-    weight: 10
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Start with the [KubeDB documentation overview](/docs/README.md).
 
 # Rotate Authentication for HanaDB
 
@@ -19,7 +19,7 @@ This guide shows how to rotate HanaDB authentication credentials using a `HanaDB
 ## Before You Begin
 
 - Prepare a Kubernetes cluster and configure `kubectl`.
-- Install KubeDB following the steps [here](/docs/setup/README.md).
+- Install KubeDB by following the [setup guide](/docs/setup/README.md).
 - Create a namespace:
 
 ```bash
@@ -60,17 +60,17 @@ kubectl wait -n demo hanadbopsrequest/hdbops-rotate-auth-generated --for=jsonpat
 
 Use a `kubernetes.io/basic-auth` Secret. The username must remain `SYSTEM`.
 
+```bash
+export NEW_HANA_PASSWORD='<set-a-hana-password>'
+kubectl create secret generic hanadb-new-auth -n demo \
+  --type=kubernetes.io/basic-auth \
+  --from-literal=username=SYSTEM \
+  --from-literal=password="${NEW_HANA_PASSWORD}"
+```
+
+Now create a `HanaDBOpsRequest` with `RotateAuth` type.
+
 ```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: hanadb-new-auth
-  namespace: demo
-type: kubernetes.io/basic-auth
-stringData:
-  username: SYSTEM
-  password: Hana5678
----
 apiVersion: ops.kubedb.com/v1alpha1
 kind: HanaDBOpsRequest
 metadata:
