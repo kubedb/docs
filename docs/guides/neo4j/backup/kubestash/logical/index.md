@@ -118,7 +118,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME           TYPE               VERSION                AGE
-neo4j-backup   kubedb.com/Neo4j   2025.11.2-enterprise   9m30s
+neo4j-backup   kubedb.com/Neo4j   2025.11.2-enterprise   86s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -131,6 +131,11 @@ $ kubectl get appbindings -n demo neo4j-backup -o yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Neo4j","metadata":{"annotations":{},"name":"neo4j-backup","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}}},"storageType":"Durable","version":"2025.11.2"}}
+  creationTimestamp: "2026-06-22T05:50:48Z"
+  generation: 1
   labels:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: neo4j-backup
@@ -138,6 +143,15 @@ metadata:
     app.kubernetes.io/name: neo4js.kubedb.com
   name: neo4j-backup
   namespace: demo
+  ownerReferences:
+    - apiVersion: kubedb.com/v1alpha2
+      blockOwnerDeletion: true
+      controller: true
+      kind: Neo4j
+      name: neo4j-backup
+      uid: a2ab1ada-ebd5-4673-b04f-eba5ec189007
+  resourceVersion: "223034"
+  uid: f207d8bc-e4d1-427f-84cc-3199e684619e
 spec:
   appRef:
     apiGroup: kubedb.com
@@ -148,8 +162,10 @@ spec:
     service:
       name: neo4j-backup
       port: 7687
-      scheme: neo4j
+      scheme: noe4j
   secret:
+    apiGroup: ""
+    kind: Secret
     name: neo4j-backup-auth
   type: kubedb.com/Neo4j
   version: 2025.11.2-enterprise
@@ -170,9 +186,9 @@ Now, we are going to exec into one of the database pods and create some sample d
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=neo4j-backup"
 NAME             READY   STATUS    RESTARTS   AGE
-neo4j-backup-0   1/1     Running   0          16m
-neo4j-backup-1   1/1     Running   0          13m
-neo4j-backup-2   1/1     Running   0          13m
+neo4j-backup-0   1/1     Running   0          118s
+neo4j-backup-1   1/1     Running   0          112s
+neo4j-backup-2   1/1     Running   0          106s
 ```
 
 Retrieve the auth credentials so we can connect using `cypher-shell`,
@@ -182,13 +198,13 @@ $ kubectl get secret -n demo neo4j-backup-auth -o jsonpath='{.data.username}' | 
 neo4j
 
 $ kubectl get secret -n demo neo4j-backup-auth -o jsonpath='{.data.password}' | base64 -d
-Xk9mR2qLpTz3vYwB
+UEke.988YxVdJbGq
 ```
 
 Now, let's exec into the pod and create some nodes,
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-backup-auth -o jsonpath='{.data.password}' | base64 -d)
+$ export PASS=$(kubectl get secret -n demo neo4j-backup-auth -o jsonpath='{.data.password}' | base64 -d)
 
 # create a few Person nodes and a relationship in the default "neo4j" database
 $ kubectl exec -it -n demo neo4j-backup-0 -- cypher-shell -u neo4j -p "$PASS" \
@@ -397,8 +413,9 @@ Verify that the `CronJob` has been created using the following command,
 
 ```bash
 $ kubectl get cronjob -n demo
-NAME                                          SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
-trigger-neo4j-backup-config-frequent-backup   */5 * * * *   False     0        2m45s           3m25s
+NAME                                          SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
+trigger-neo4j-backup-config-frequent-backup   */5 * * * *   <none>     False     0        <none>          2m18s
+
 ```
 
 **Verify BackupSession:**
@@ -408,7 +425,7 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 ```bash
 $ kubectl get backupsession -n demo -w
 NAME                                             INVOKER-TYPE          INVOKER-NAME          PHASE       DURATION   AGE
-neo4j-backup-config-frequent-backup-1782094500   BackupConfiguration   neo4j-backup-config   Succeeded   43s        2m22s
+neo4j-backup-config-frequent-backup-1782108669   BackupConfiguration   neo4j-backup-config   Succeeded   44s        119s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -419,8 +436,8 @@ Once a backup is complete, KubeStash will update the respective `Repository` CR 
 
 ```bash
 $ kubectl get repository -n demo s3-neo4j-repo
-NAME            INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-s3-neo4j-repo   true        1                4.2 KiB  Ready   8m27s                    9m18s
+NAME            INTEGRITY   SNAPSHOT-COUNT   SIZE   PHASE   LAST-SUCCESSFUL-BACKUP   AGE
+s3-neo4j-repo               1                0 B    Ready   2m46s                    2m57s
 ```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
@@ -428,7 +445,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-neo4j-repo
 NAME                                                           REPOSITORY      SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-s3-neo4j-repo-neo4j-backup-config-frequent-backup-1782094500   s3-neo4j-repo   frequent-backup   2026-06-22T02:15:00Z   Delete            Succeeded   8m
+s3-neo4j-repo-neo4j-backup-config-frequent-backup-1782108669   s3-neo4j-repo   frequent-backup   2026-06-22T06:11:20Z   Delete            Succeeded   3m2s
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -452,48 +469,82 @@ kind: Snapshot
 metadata:
   annotations:
     kubedb.com/db-version: 2025.11.2-enterprise
+  creationTimestamp: "2026-06-22T06:11:20Z"
+  finalizers:
+    - kubestash.com/cleanup
+  generation: 1
   labels:
     kubestash.com/app-ref-kind: Neo4j
     kubestash.com/app-ref-name: neo4j-backup
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: s3-neo4j-repo
-  name: s3-neo4j-repo-neo4j-backup-config-frequent-backup-1782094500
+  name: s3-neo4j-repo-neo4j-backup-config-frequent-backup-1782108669
   namespace: demo
+  ownerReferences:
+    - apiVersion: storage.kubestash.com/v1alpha1
+      blockOwnerDeletion: true
+      controller: true
+      kind: Repository
+      name: s3-neo4j-repo
+      uid: 8d9ccc3f-189b-44ac-bc40-a3b15a8282a9
+  resourceVersion: "224107"
+  uid: 1ec4abef-305d-48f6-85aa-42b9f766a6ca
 spec:
   appRef:
     apiGroup: kubedb.com
     kind: Neo4j
     name: neo4j-backup
     namespace: demo
-  backupSession: neo4j-backup-config-frequent-backup-1782094500
+  backupSession: neo4j-backup-config-frequent-backup-1782108669
   deletionPolicy: Delete
   repository: s3-neo4j-repo
   session: frequent-backup
-  snapshotID: 01KVPHR4XRM1YF8W65M0GG7876
+  snapshotID: 01KVPZ8WNXRWKSPN23RMFP6MNC
   type: FullBackup
   version: v1
 status:
   components:
     dump:
       driver: Neo4jAdmin
-      duration: 13.975753338s
+      duration: 14.932375451s
       neo4jStats:
-      - compressed: true
-        database: system
-        databaseID: 00000000-0000-0000-0000-000000000001
-        file: s3://kubestash/demo/backup/repository/v1/frequent-backup/dump/system-2026-06-22T02-15-06.backup
-        full: true
-      - compressed: true
-        database: neo4j
-        databaseID: 2e4db0c9-45cc-4094-9a8a-13178c7d7074
-        file: s3://kubestash/demo/backup/repository/v1/frequent-backup/dump/neo4j-2026-06-22T02-15-08.backup
-        full: true
-      path: s3://kubestash/demo/backup/repository/v1/frequent-backup/dump/
+        - compressed: true
+          database: system
+          databaseID: 00000000-0000-0000-0000-000000000001
+          file: s3://kubestash/rabbi-neo4j-test/backup/repository/v1/frequent-backup/dump/system-2026-06-22T06-11-41.backup
+          full: true
+          highestTX: 145
+          lowestTX: 1
+          recovered: true
+          storeIDHash: "-297679445"
+          time: 2026-06-22T06:11:41
+        - compressed: true
+          database: neo4j
+          databaseID: 3efaaefe-1e16-4501-998f-a7f66f0d1ebe
+          file: s3://kubestash/rabbi-neo4j-test/backup/repository/v1/frequent-backup/dump/neo4j-2026-06-22T06-11-47.backup
+          full: true
+          highestTX: 247
+          lowestTX: 1
+          recovered: true
+          storeIDHash: "-506103840"
+          time: 2026-06-22T06:11:47
+      path: s3://kubestash/rabbi-neo4j-test/backup/repository/v1/frequent-backup/dump/
       phase: Succeeded
-  integrity: true
+  conditions:
+    - lastTransitionTime: "2026-06-22T06:11:20Z"
+      message: Recent snapshot list updated successfully
+      reason: SuccessfullyUpdatedRecentSnapshotList
+      status: "True"
+      type: RecentSnapshotListUpdated
+    - lastTransitionTime: "2026-06-22T06:12:01Z"
+      message: Metadata uploaded to backend successfully
+      reason: SuccessfullyUploadedSnapshotMetadata
+      status: "True"
+      type: SnapshotMetadataUploaded
   phase: Succeeded
-  snapshotTime: "2026-06-22T02:15:00Z"
+  snapshotTime: "2026-06-22T06:11:20Z"
   totalComponents: 1
+  verificationStatus: NotVerified
 ```
 
 > KubeStash uses the `neo4j-admin database backup` command to perform backups of the target `Neo4j` databases. It backs up every database of the instance (including the `system` database). Therefore, the component name for logical backups is set as `dump`, and the `neo4jStats` field lists each backed up database.
@@ -504,13 +555,11 @@ Now, if we navigate to the S3 bucket, we will see the backed up data stored in t
 
 ## Restore
 
-In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new database and initialize it from the backup.
+In this section, we are going to restore the database from the backup we have taken in the previous section. We are going to deploy a new database and once it becomes ready, we are going to restore it from the backup.
 
-Now, we have to deploy the restored database similarly as we have deployed the original `neo4j-backup` database. However, this time there will be the following differences:
+Now, we have to deploy the restored database similarly as we have deployed the original `neo4j-backup` database.
 
-- We are going to specify `.spec.init.waitForInitialRestore` field that tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
-
-Below is the YAML for `Neo4j` CR we are going to deploy to initialize from backup,
+Below is the YAML for `Neo4j` CR we are going to deploy,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -519,8 +568,6 @@ metadata:
   name: neo4j-restore
   namespace: demo
 spec:
-  init:
-    waitForInitialRestore: true
   version: 2025.11.2
   replicas: 3
   storageType: Durable
@@ -540,19 +587,21 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 neo4j.kubedb.com/neo4j-restore created
 ```
 
-If you check the database status, you will see it is stuck in **`Provisioning`** state.
+Let's wait for the database to be ready to use,
 
 ```bash
 $ kubectl get neo4j -n demo neo4j-restore
-NAME            VERSION     STATUS         AGE
-neo4j-restore   2025.11.2   Provisioning   61s
+NAME            VERSION     STATUS   AGE
+neo4j-restore   2025.11.2   Ready    5m1s
 ```
+
+The database is `Ready`. Now, we are going to restore the backed up data into this database.
 
 #### Create RestoreSession:
 
 Now, we need to create a `RestoreSession` CR pointing to the targeted `Neo4j` database.
 
-Below, is the contents of the YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the newly created `Neo4j` database named `neo4j-restore`.
+Below, is the contents of the YAML file of the `RestoreSession` object that we are going to create to restore backed up data into the `Neo4j` database named `neo4j-restore`.
 
 ```yaml
 apiVersion: core.kubestash.com/v1alpha1
@@ -644,7 +693,7 @@ neo4j-restore-2   1/1     Running   0          5m55s
 Now, let's exec into one of the `Pod` and verify the restored data.
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-restore-auth -o jsonpath='{.data.password}' | base64 -d)
+$ export PASS=$(kubectl get secret -n demo neo4j-restore-auth -o jsonpath='{.data.password}' | base64 -d)
 
 # verify that the Person nodes have been restored
 $ kubectl exec -it -n demo neo4j-restore-0 -- cypher-shell -u neo4j -p "$PASS" \
