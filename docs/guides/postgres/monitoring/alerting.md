@@ -1,6 +1,5 @@
 ---
 title: PostgreSQL Alerting with Prometheus
-description: Complete guide to setting up PostgreSQL alerts using postgres-alerts and kubedb-grafana-dashboards Helm charts
 menu:
   docs_{{ .version }}:
     identifier: pg-monitoring-alerting
@@ -15,240 +14,389 @@ section_menu_id: guides
 
 # PostgreSQL Alerting with Prometheus
 
-This guide walks through installing Prometheus-based alerts for a KubeDB-managed PostgreSQL instance and explains how each alert works end-to-end.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed PostgreSQL instance using the `postgres-alerts` Helm chart, and how to visualise live metrics using the `kubedb-grafana-dashboards` chart.
 
-## Architecture Overview
+## Before You Begin
 
+- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+- Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+
+- You need a running [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) with the Prometheus operator. This tutorial assumes the Prometheus instance is configured with both `serviceMonitorSelector` and `ruleSelector` matching the label `release: prometheus`.
+
+  To check your Prometheus selectors:
+
+  ```bash
+  $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.ruleSelector}'
+  {"matchLabels":{"release":"prometheus"}}
+
+  $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+  {"matchLabels":{"release":"prometheus"}}
+  ```
+
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/postgres/monitoring/overview.md).
+
+- We are going to deploy the database in the `demo` namespace.
+
+  ```bash
+  $ kubectl create ns demo
+  namespace/demo created
+  ```
+
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Overview
+
+The diagram below shows the full alerting architecture — from PostgreSQL metric export through to alert delivery and Grafana visualisation.
+
+<p align="center">
+  <img alt="PostgreSQL Alerting Architecture" src="/docs/images/postgres/monitoring/pg-alerting-overview.svg">
+</p>
+
+- **KubeDB** deploys PostgreSQL with a built-in `postgres_exporter` sidecar that exposes metrics on port `56790`.
+- **ServiceMonitor** (named `{postgres-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
+- **PrometheusRule** is created by the `postgres-alerts` chart and contains all PostgreSQL alert definitions. Prometheus loads it because it carries the `release: prometheus` label matching the `ruleSelector`.
+- **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
+- **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
+- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
+
+---
+
+## Deploy PostgreSQL with Monitoring Enabled
+
+At first, let's deploy a PostgreSQL database with monitoring enabled. Below is the PostgreSQL object we are going to create.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-grafana-demo
+  namespace: demo
+spec:
+  version: "13.13"
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 56790
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus
 ```
-PostgreSQL Pod (pg-grafana-demo)
-  └── postgres_exporter sidecar  ──scrape──► Prometheus (kube-prometheus-stack)
-                                                  │
-                                     PrometheusRule│(postgres-alerts chart)
-                                                  │
-                                              AlertManager ──► notifications
-                                                  │
-                                              Grafana
-                                           (kubedb-grafana-dashboards)
-```
 
-- **KubeDB** deploys PostgreSQL with a built-in `postgres_exporter` sidecar on port `56790`.
-- **ServiceMonitor** (`pg-grafana-demo-stats`) tells Prometheus to scrape the exporter every 10s.
-- **PrometheusRule** (created by `postgres-alerts` chart) defines the alert conditions.
-- **Prometheus Operator** evaluates rules and fires alerts to AlertManager.
-- **AlertManager** routes fired alerts to configured receivers (email, Slack, PagerDuty, etc.).
-- **Grafana** visualises the metrics using dashboards from `kubedb-grafana-dashboards`.
+Here,
 
-## Prerequisites
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
 
-| Component | Details |
-|-----------|---------|
-| Cluster | k3s single-node (`bonusree`), kubeconfig at `/home/banusree/all_db.yaml` |
-| KubeDB | `v2026.4.27` in `kubedb` namespace |
-| PostgreSQL instance | `pg-grafana-demo` (version 13.13) in `demo` namespace |
-| kube-prometheus-stack | `v86.2.3` in `monitoring` namespace |
-| Prometheus | `prometheus-kube-prometheus-prometheus`, ruleSelector label: `release: prometheus` |
-| AlertManager | `prometheus-kube-prometheus-alertmanager` |
-| Grafana | `prometheus-grafana` (Grafana 13.0.2) with sidecar dashboard loading |
-
-### Verify the PostgreSQL instance has monitoring enabled
+Let's create the PostgreSQL resource.
 
 ```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n demo get postgres pg-grafana-demo -o yaml | grep -A15 "monitor:"
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/monitoring/pg-grafana-demo.yaml
+postgres.kubedb.com/pg-grafana-demo created
 ```
 
-Expected output:
-```yaml
-monitor:
-  agent: prometheus.io/operator
-  prometheus:
-    exporter:
-      port: 56790
-    serviceMonitor:
-      interval: 10s
-      labels:
-        release: prometheus
+Now, wait for the database to go into `Ready` state.
+
+```bash
+$ kubectl get postgres -n demo pg-grafana-demo
+NAME              VERSION   STATUS   AGE
+pg-grafana-demo   13.13     Ready    2m
 ```
 
-The `release: prometheus` label on the ServiceMonitor makes Prometheus discover and scrape this target.
+KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
+
+```bash
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=pg-grafana-demo"
+NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+pg-grafana-demo         ClusterIP   10.43.6.170     <none>        5432/TCP    2m
+pg-grafana-demo-pods    ClusterIP   None            <none>        5432/TCP    2m
+pg-grafana-demo-stats   ClusterIP   10.43.181.56    <none>        56790/TCP   2m
+```
+
+KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
+
+```bash
+$ kubectl get servicemonitor -n demo
+NAME                    AGE
+pg-grafana-demo-stats   2m
+```
+
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
+$ kubectl get servicemonitor -n demo pg-grafana-demo-stats \
+    -o jsonpath='{.metadata.labels.release}'
+prometheus
+```
 
 ---
 
 ## Step 1 — Install postgres-alerts
 
-The `postgres-alerts` chart (from [opnpulse/alerts](https://github.com/opnpulse/alerts)) creates a `PrometheusRule` resource containing all PostgreSQL alert definitions.
+The `postgres-alerts` chart creates a `PrometheusRule` resource containing all PostgreSQL alert definitions grouped by concern: database health, provisioner, ops-manager, backup, and schema manager.
 
 ### Why the `release: prometheus` label matters
 
-The Prometheus instance is configured with:
+The Prometheus `ruleSelector` only loads `PrometheusRule` resources that carry `release: prometheus`. The chart default label is `release: kube-prometheus-stack`, so we must override it at install time.
 
-```yaml
-ruleSelector:
-  matchLabels:
-    release: prometheus
-```
-
-This means only `PrometheusRule` resources carrying the label `release: prometheus` are loaded. The chart default is `release: kube-prometheus-stack`, so we override it.
-
-### Install command
+### Install
 
 ```bash
-helm upgrade -i postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
-  -n demo \
-  --create-namespace \
-  --version=v2026.2.24 \
-  --set metadata.release.name=pg-grafana-demo \
-  --set metadata.release.namespace=demo \
-  --set form.alert.labels.release=prometheus
+$ helm upgrade -i postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
+    -n demo \
+    --create-namespace \
+    --version=v2026.2.24 \
+    --set metadata.release.name=pg-grafana-demo \
+    --set metadata.release.namespace=demo \
+    --set form.alert.labels.release=prometheus
 ```
 
-| Flag | Value | Reason |
-|------|-------|--------|
-| `-n demo` | `demo` | Same namespace as the PostgreSQL instance |
-| `metadata.release.name` | `pg-grafana-demo` | Scopes PromQL filters to this instance |
-| `metadata.release.namespace` | `demo` | Scopes PromQL filters to this namespace |
-| `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` |
+| Flag | Value | Purpose |
+|------|-------|---------|
+| `metadata.release.name` | `pg-grafana-demo` | Scopes every PromQL expression to this instance |
+| `metadata.release.namespace` | `demo` | Scopes every PromQL expression to this namespace |
+| `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
 
-### Verify
+### Verify the PrometheusRule is created
 
 ```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n demo get prometheusrule
-# NAME              AGE
-# postgres-alerts   <age>
-
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n demo get prometheusrule postgres-alerts \
-  -o jsonpath='{.metadata.labels}'
-# {"release":"prometheus", ...}
+$ kubectl get prometheusrule -n demo
+NAME              AGE
+postgres-alerts   30s
 ```
+
+Confirm the `release: prometheus` label is present.
+
+```bash
+$ kubectl get prometheusrule -n demo postgres-alerts \
+    -o jsonpath='{.metadata.labels.release}'
+prometheus
+```
+
+### Confirm Prometheus loaded the rules
+
+Port-forward the Prometheus UI and open the **Status → Rule health** page.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Open `http://localhost:9090/rules` and search for **postgres**.
+
+<p align="center">
+  <img alt="Prometheus Rule Health" src="/docs/images/postgres/monitoring/pg-alerting-prom-rules.png" style="padding:10px">
+</p>
+
+The `postgres.database.demo.postgres-alerts.rules` group is visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the PostgreSQL alert definitions every 30 seconds.
 
 ---
 
 ## Step 2 — Install kubedb-grafana-dashboards
 
-The `kubedb-grafana-dashboards` chart (from [kubedb/installer](https://github.com/kubedb/installer)) creates `GrafanaDashboard` CRDs containing pre-built PostgreSQL dashboards. These are reconciled by the openviz Grafana operator into Grafana.
+The `kubedb-grafana-dashboards` chart creates `GrafanaDashboard` CRDs containing pre-built PostgreSQL dashboard JSON. These are automatically provisioned into Grafana.
 
 ### Create a Grafana service account token
 
-The dashboard import job authenticates to Grafana with a Bearer token.
+The chart needs a Grafana API key to push dashboards.
 
 ```bash
-# Port-forward Grafana locally
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n monitoring \
-  port-forward svc/prometheus-grafana 3000:80 &
+# Port-forward Grafana
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 
 
-# Create a Grafana service account with Admin role
-curl -s -X POST -H "Content-Type: application/json" \
-  -u admin:<grafana-admin-password> \
-  http://localhost:3000/api/serviceaccounts \
-  -d '{"name":"kubedb-dashboards","role":"Admin"}'
+# Create a service account with Admin role
+$ curl -s -X POST -H "Content-Type: application/json" \
+    -u admin:<grafana-admin-password> \
+    http://localhost:3000/api/serviceaccounts \
+    -d '{"name":"kubedb-dashboards","role":"Admin"}'
 # Note the returned "id"
 
-# Create a token for the service account
-curl -s -X POST -H "Content-Type: application/json" \
-  -u admin:<grafana-admin-password> \
-  http://localhost:3000/api/serviceaccounts/<id>/tokens \
-  -d '{"name":"kubedb-token","secondsToLive":0}'
+# Create a token for the service account (replace <id>)
+$ curl -s -X POST -H "Content-Type: application/json" \
+    -u admin:<grafana-admin-password> \
+    http://localhost:3000/api/serviceaccounts/<id>/tokens \
+    -d '{"name":"kubedb-token","secondsToLive":0}'
 # Note the returned "key"
 
-kill %1  # stop port-forward
+$ kill %1
 ```
 
-### Install command
+> **Tip:** Retrieve the Grafana admin password from its secret:
+> ```bash
+> $ kubectl get secret -n monitoring prometheus-grafana \
+>     -o jsonpath='{.data.admin-password}' | base64 -d && echo
+> ```
 
-Only Postgres dashboards are enabled to stay within Helm's 1MB secret size limit.
+### Install
+
+Only `featureGates.Postgres=true` is enabled to stay within Helm's 1 MB secret size limit.
 
 ```bash
-helm repo add appscode https://charts.appscode.com/stable/
-helm repo update appscode
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update appscode
 
-helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
-  -n kubeops \
-  --create-namespace \
-  --version=v2026.6.18-rc.2 \
-  --set featureGates.Postgres=true \
-  --set featureGates.Cassandra=false \
-  --set featureGates.ClickHouse=false \
-  --set featureGates.DB2=false \
-  --set featureGates.Druid=false \
-  --set featureGates.Elasticsearch=false \
-  --set featureGates.HanaDB=false \
-  --set featureGates.Hazelcast=false \
-  --set featureGates.Ignite=false \
-  --set featureGates.Kafka=false \
-  --set featureGates.MariaDB=false \
-  --set featureGates.Memcached=false \
-  --set featureGates.Milvus=false \
-  --set featureGates.MongoDB=false \
-  --set featureGates.MSSQLServer=false \
-  --set featureGates.MySQL=false \
-  --set featureGates.Neo4j=false \
-  --set featureGates.Oracle=false \
-  --set featureGates.PerconaXtraDB=false \
-  --set featureGates.PgBouncer=false \
-  --set featureGates.Pgpool=false \
-  --set featureGates.ProxySQL=false \
-  --set featureGates.Qdrant=false \
-  --set featureGates.RabbitMQ=false \
-  --set featureGates.Redis=false \
-  --set featureGates.Singlestore=false \
-  --set featureGates.Solr=false \
-  --set featureGates.Weaviate=false \
-  --set featureGates.ZooKeeper=false \
-  --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-  --set grafana.apikey="<token-from-above>"
+$ helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+    -n kubeops \
+    --create-namespace \
+    --version=v2026.6.18-rc.2 \
+    --set featureGates.Postgres=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-key-from-above>"
 ```
 
-### Verify dashboards
+### Verify dashboards are created
 
 ```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n kubeops get grafanadashboards
-# NAME                       TITLE                          STATUS   AGE
-# kubedb-postgres-database   KubeDB / Postgres / Database            <age>
-# kubedb-postgres-pod        KubeDB / Postgres / Pod                 <age>
-# kubedb-postgres-summary    KubeDB / Postgres / Summary             <age>
+$ kubectl get grafanadashboards -n kubeops
+NAME                       TITLE                          STATUS   AGE
+kubedb-postgres-database   KubeDB / Postgres / Database            2m
+kubedb-postgres-pod        KubeDB / Postgres / Pod                 2m
+kubedb-postgres-summary    KubeDB / Postgres / Summary             2m
 ```
+
+---
+
+## Verify End-to-End
+
+### 1. Check the exporter is running
+
+The `exporter` sidecar inside each PostgreSQL pod serves metrics at `:56790/metrics`. A value of `pg_up 1` confirms the exporter can reach PostgreSQL.
+
+```bash
+$ kubectl exec -n demo pg-grafana-demo-0 -c exporter -- \
+    wget -qO- localhost:56790/metrics | grep pg_up
+pg_up 1
+```
+
+### 2. Check the Prometheus target is UP
+
+Port-forward Prometheus and open the **Status → Target health** page.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Open `http://localhost:9090/targets?search=pg-grafana-demo`.
+
+<p align="center">
+  <img alt="Prometheus Target UP" src="/docs/images/postgres/monitoring/pg-alerting-prom-target.png" style="padding:10px">
+</p>
+
+The target `serviceMonitor/demo/pg-grafana-demo-stats/0` shows **UP** with labels confirming metrics come from `pg-grafana-demo-0` in the `demo` namespace, scraped 8 seconds ago in 25ms.
+
+### 3. Confirm all PostgreSQL alerts are inactive
+
+Open `http://localhost:9090/alerts?search=postgres` to see the PostgreSQL alert groups.
+
+<p align="center">
+  <img alt="Prometheus Alerts — All Inactive" src="/docs/images/postgres/monitoring/pg-alerting-prom-alerts.png" style="padding:10px">
+</p>
+
+All 11 rules in the `postgres.database` group show **INACTIVE (11)**, meaning the database is healthy and no thresholds are breached.
+
+### 4. Check AlertManager
+
+Port-forward AlertManager to view any currently firing alerts.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-alertmanager 9093:9093
+```
+
+Open `http://localhost:9093`.
+
+<p align="center">
+  <img alt="AlertManager" src="/docs/images/postgres/monitoring/pg-alerting-alertmanager.png" style="padding:10px">
+</p>
+
+> **Note for k3s users:** You may see `KubeProxyDown`, `KubeControllerManagerDown`, and `KubeSchedulerDown` alerts. These are k3s-specific — the control plane components do not expose Prometheus scrape endpoints by default. They are **not** related to PostgreSQL. To silence them, add a silence rule in AlertManager or set `kubeProxy.enabled: false`, `kubeControllerManager.enabled: false`, and `kubeScheduler.enabled: false` in your kube-prometheus-stack Helm values.
+
+### 5. Explore Grafana dashboards
+
+Port-forward Grafana and log in.
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+Open `http://localhost:3000` (username: `admin`). Search for **postgres** in the Dashboards section.
+
+<p align="center">
+  <img alt="Grafana — PostgreSQL Dashboard List" src="/docs/images/postgres/monitoring/pg-alerting-grafana-dashboards.png" style="padding:10px">
+</p>
+
+Three pre-built dashboards are available. The `Namespace` and `postgres` drop-downs at the top of each dashboard let you switch between instances.
+
+**KubeDB / Postgres / Summary** — high-level health: version, uptime, replica count, database phase, connection count, and replication lag.
+
+<p align="center">
+  <img alt="Grafana — KubeDB Postgres Summary" src="/docs/images/postgres/monitoring/pg-alerting-grafana-summary.png" style="padding:10px">
+</p>
+
+**KubeDB / Postgres / Database** — query rates (QPS), transactions (commits vs rollbacks), active sessions, lock tables, and fetch/insert data throughput.
+
+<p align="center">
+  <img alt="Grafana — KubeDB Postgres Database" src="/docs/images/postgres/monitoring/pg-alerting-grafana-database.png" style="padding:10px">
+</p>
+
+**KubeDB / Postgres / Pod** — pod-level CPU usage, memory usage (resident vs virtual), open file descriptors, and PostgreSQL runtime settings (shared buffers, work_mem, max_connections).
+
+<p align="center">
+  <img alt="Grafana — KubeDB Postgres Pod" src="/docs/images/postgres/monitoring/pg-alerting-grafana-pod.png" style="padding:10px">
+</p>
 
 ---
 
 ## Alert Reference
 
-All alerts are scoped to the `pg-grafana-demo` instance in the `demo` namespace via PromQL filters:  
-`job="postgres-alerts-stats", namespace="demo"`.
+All alerts are scoped to the `pg-grafana-demo` instance in the `demo` namespace via the PromQL label filters `job="pg-grafana-demo-stats"` and `namespace="demo"`.
 
 ### Database Group
 
-These alerts fire based on metrics from `postgres_exporter`.
+Fired based on live metrics from `postgres_exporter`.
 
-| Alert | Severity | Expression Summary | For | What It Means |
-|-------|----------|--------------------|-----|---------------|
-| `PostgresqlDown` | critical | `pg_up == 0` | instant | The exporter cannot reach PostgreSQL — the instance is down or the exporter crashed. |
-| `PostgresqlSplitBrain` | critical | `count(pg_replication_is_replica == 0) > 1` | instant | More than one node is acting as primary — data divergence risk in a replica set. |
-| `PostgresqlTooManyLocksAcquired` | critical | `locks / (max_locks_per_tx * max_connections) > threshold` | 2m | Lock table is nearly full; transactions may start failing with "out of shared memory". |
-| `PostgresReplicationSlotLagHigh` | warning | `pg_replication_slots_pg_wal_lsn_diff > 800MB` | 1m | A replication slot consumer is falling behind; WAL files are accumulating on disk. |
-| `PostgresReplicationSlotLagCritical` | critical | `pg_replication_slots_pg_wal_lsn_diff > 1.2GB` | 1m | Slot lag is critical — disk exhaustion or slot invalidation is imminent. |
-| `PostgresqlRestarted` | critical | `time() - pg_postmaster_start_time_seconds < 60` | instant | PostgreSQL restarted within the last minute — unexpected restart detected. |
-| `PostgresqlExporterError` | warning | `pg_exporter_last_scrape_error == 1` | 5m | The exporter itself has errors — metrics may be missing or stale. |
-| `PostgresqlHighRollbackRate` | warning | `rate(xact_rollback) / rate(xact_commit) > threshold` | instant | High proportion of transactions are rolling back — indicates application errors or lock contention. |
-| `PostgresTooManyConnections` | warning | `sum(pg_stat_activity_count) / max_connections > 95%` | 2m | Connection pool is nearly exhausted; new connections may be refused. |
-| `DiskUsageHigh` | warning | `kubelet_volume_stats_used_bytes / capacity > 80%` | 1m | PVC used space exceeds 80% — time to plan for expansion. |
-| `DiskAlmostFull` | critical | `kubelet_volume_stats_used_bytes / capacity > 95%` | 1m | PVC almost full — PostgreSQL may become read-only or crash. |
+| Alert | Severity | For | What It Means |
+|-------|----------|-----|---------------|
+| `PostgresqlDown` | critical | instant | Exporter cannot reach PostgreSQL — instance is down or exporter crashed. |
+| `PostgresqlSplitBrain` | critical | instant | More than one node reports as primary — data divergence risk in a replica set. |
+| `PostgresqlTooManyLocksAcquired` | critical | 2m | Lock table nearly full; transactions may fail with "out of shared memory". |
+| `PostgresReplicationSlotLagHigh` | warning | 1m | Replication slot consumer is falling behind; WAL is accumulating (>800 MB). |
+| `PostgresReplicationSlotLagCritical` | critical | 1m | Slot lag is critical — disk exhaustion or slot invalidation imminent (>1.2 GB). |
+| `PostgresqlRestarted` | critical | instant | PostgreSQL restarted within the last minute. |
+| `PostgresqlExporterError` | warning | 5m | Exporter has errors — metrics may be missing or stale. |
+| `PostgresqlHighRollbackRate` | warning | instant | High proportion of transactions are rolling back — application errors or lock contention. |
+| `PostgresTooManyConnections` | warning | 2m | Connection pool nearly exhausted (>95% of `max_connections`). |
+| `DiskUsageHigh` | warning | 1m | PVC used space exceeds 80% — plan for expansion. |
+| `DiskAlmostFull` | critical | 1m | PVC almost full (>95%) — PostgreSQL may become read-only or crash. |
 
 ### Provisioner Group
 
-These alerts monitor the KubeDB operator's view of the PostgreSQL resource phase.
+Monitors the KubeDB operator's view of the Postgres resource phase.
 
-| Alert | Severity | Expression Summary | For | What It Means |
-|-------|----------|--------------------|-----|---------------|
-| `KubeDBPostgreSQLPhaseNotReady` | critical | `kubedb_com_postgres_status_phase == "NotReady"` | 1m | KubeDB has marked the Postgres resource `NotReady` — operator cannot reach the database. |
-| `KubeDBPostgreSQLPhaseCritical` | warning | `kubedb_com_postgres_status_phase == "Critical"` | 15m | One or more replicas are down; the cluster is degraded but the primary is still up. |
+| Alert | Severity | For | What It Means |
+|-------|----------|-----|---------------|
+| `KubeDBPostgreSQLPhaseNotReady` | critical | 1m | KubeDB marked the Postgres resource `NotReady` — operator cannot reach the database. |
+| `KubeDBPostgreSQLPhaseCritical` | warning | 15m | One or more replicas are down; cluster is degraded but primary is still up. |
 
 ### OpsManager Group
 
-These alerts track `PostgresOpsRequest` lifecycle — used during upgrades, scaling, reconfiguration, and certificate rotations.
+Tracks `PostgresOpsRequest` lifecycle during upgrades, scaling, reconfiguration, and certificate rotations.
 
-| Alert | Severity | Expression Summary | For | What It Means |
-|-------|----------|--------------------|-----|---------------|
-| `KubeDBPostgreSQLOpsRequestStatusProgressingToLong` | critical | `ops_request_status == "Progressing"` | 30m | An ops request has been running for 30+ minutes — stuck or failed mid-way. |
-| `KubeDBPostgreSQLOpsRequestFailed` | critical | `ops_request_status == "Failed"` | instant | An ops request failed — check the OpsRequest object for the error. |
+| Alert | Severity | For | What It Means |
+|-------|----------|-----|---------------|
+| `KubeDBPostgreSQLOpsRequestStatusProgressingToLong` | critical | 30m | An ops request has been running for 30+ minutes — likely stuck. |
+| `KubeDBPostgreSQLOpsRequestFailed` | critical | instant | An ops request failed — check the `OpsRequest` object for the error. |
 
 ### Backup & Restore Groups (Stash / KubeStash)
 
@@ -256,122 +404,31 @@ Two parallel sets of alerts cover both the legacy Stash and current KubeStash ba
 
 | Alert | Severity | What It Means |
 |-------|----------|---------------|
-| `PostgreSQL*BackupSessionFailed` | critical | A scheduled backup run failed — check BackupSession logs. |
+| `PostgreSQL*BackupSessionFailed` | critical | A scheduled backup run failed — check `BackupSession` logs. |
 | `PostgreSQL*RestoreSessionFailed` | critical | A restore operation failed. |
 | `PostgreSQL*NoBackupSessionForTooLong` | critical | No successful backup in the expected window — backup may be misconfigured or stuck. |
-| `PostgreSQL*RepositoryCorrupted` | critical | The backup repository integrity check failed — backups may be unrestorable. |
-| `PostgreSQL*RepositoryStorageRunningLow` | warning | Backup storage has less than 10GB free. |
-| `PostgreSQL*BackupSessionPeriodTooLong` | warning | A backup took longer than 30 minutes — may indicate slow storage or large database size. |
-| `PostgreSQL*RestoreSessionPeriodTooLong` | warning | A restore took longer than 30 minutes. |
+| `PostgreSQL*RepositoryCorrupted` | critical | Backup repository integrity check failed — backups may be unrestorable. |
+| `PostgreSQL*RepositoryStorageRunningLow` | warning | Backup storage has less than 10 GB free. |
+| `PostgreSQL*BackupSessionPeriodTooLong` | warning | Backup took longer than 30 minutes. |
+| `PostgreSQL*RestoreSessionPeriodTooLong` | warning | Restore took longer than 30 minutes. |
 
 ### SchemaManager Group
 
-These alerts monitor `PostgresDatabase` schema lifecycle objects managed by KubeDB Schema Manager.
+Monitors `PostgresDatabase` schema lifecycle objects managed by KubeDB Schema Manager.
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
-| `KubeDBPostgreSQLSchemaPendingForTooLong` | warning | 30m | A schema object has been in `Pending` state for 30+ minutes — may indicate waiting for a dependency. |
-| `KubeDBPostgreSQLSchemaInProgressForTooLong` | warning | 30m | Schema migration is running for 30+ minutes — may be stuck. |
-| `KubeDBPostgreSQLSchemaTerminatingForTooLong` | warning | 30m | Schema deletion is stuck — a finalizer may be blocking it. |
+| `KubeDBPostgreSQLSchemaPendingForTooLong` | warning | 30m | Schema object stuck in `Pending` — may be waiting on a dependency. |
+| `KubeDBPostgreSQLSchemaInProgressForTooLong` | warning | 30m | Schema migration running for 30+ minutes — may be stuck. |
+| `KubeDBPostgreSQLSchemaTerminatingForTooLong` | warning | 30m | Schema deletion stuck — a finalizer may be blocking it. |
 | `KubeDBPostgreSQLSchemaFailed` | warning | instant | Schema operation failed. |
 | `KubeDBPostgreSQLSchemaExpired` | warning | instant | A schema with a TTL has expired and been revoked. |
 
 ---
 
-## How Alerting Works End-to-End
-
-### 1. Metrics Collection
-
-KubeDB injects `postgres_exporter` as a sidecar into every PostgreSQL pod. It connects to the database and exposes metrics at `:56790/metrics`.
-
-```bash
-# Verify the exporter is running inside the pod
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n demo exec pg-grafana-demo-0 \
-  -c postgres-exporter -- wget -qO- localhost:56790/metrics | grep pg_up
-# pg_up{...} 1
-```
-
-### 2. ServiceMonitor Discovery
-
-The `pg-grafana-demo-stats` ServiceMonitor tells Prometheus to scrape the stats service every 10 seconds. The ServiceMonitor carries label `release: prometheus` matching the Prometheus `serviceMonitorSelector`, so Prometheus picks it up automatically.
-
-```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n demo get servicemonitor pg-grafana-demo-stats -o yaml
-```
-
-The scrape job is named `postgres-alerts-stats` — this is the `job` label used in all PromQL expressions.
-
-### 3. PrometheusRule Evaluation
-
-Prometheus loads the `postgres-alerts` PrometheusRule because it has `release: prometheus` matching the `ruleSelector`. Every 30 seconds (global scrape interval), Prometheus evaluates each rule expression:
-
-```
-pg_up{job="postgres-alerts-stats", namespace="demo"} == 0
-```
-
-If the expression evaluates to a non-empty result for longer than the `for` duration, the alert transitions from `pending` → `firing`.
-
-### 4. AlertManager Routing
-
-Firing alerts are sent to AlertManager at `prometheus-kube-prometheus-alertmanager:9093`. AlertManager groups, inhibits, and silences alerts according to its configuration, then routes them to receivers (default: no receiver — configure via `alertmanagerConfig` or Helm values of kube-prometheus-stack).
-
-To check currently firing alerts:
-```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n monitoring \
-  port-forward svc/prometheus-kube-prometheus-alertmanager 9093:9093 &
-# Open http://localhost:9093 in browser
-```
-
-To check Prometheus rule status:
-```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n monitoring \
-  port-forward svc/prometheus-kube-prometheus-prometheus 9090:9090 &
-# Open http://localhost:9090/alerts in browser
-```
-
-### 5. Grafana Visualisation
-
-The three `GrafanaDashboard` CRDs contain pre-built dashboard JSON for PostgreSQL:
-
-| Dashboard | What It Shows |
-|-----------|---------------|
-| `KubeDB / Postgres / Summary` | High-level health, connection count, uptime, phase |
-| `KubeDB / Postgres / Database` | Query rates, transaction rates, rollbacks, lock counts, replication lag |
-| `KubeDB / Postgres / Pod` | Pod-level CPU, memory, disk I/O, network |
-
-Access Grafana:
-```bash
-kubectl --kubeconfig=/home/banusree/all_db.yaml -n monitoring \
-  port-forward svc/prometheus-grafana 3000:80 &
-# Open http://localhost:3000 — admin / <password from prometheus-grafana secret>
-```
-
----
-
-## Installed Helm Releases
-
-```bash
-helm --kubeconfig=/home/banusree/all_db.yaml list --all-namespaces | grep -E "postgres-alerts|kubedb-grafana"
-```
-
-| Release | Namespace | Chart | Version |
-|---------|-----------|-------|---------|
-| `postgres-alerts` | `demo` | `postgres-alerts` | `v2026.2.24` |
-| `kubedb-grafana-dashboards` | `kubeops` | `kubedb-grafana-dashboards` | `v2026.6.18-rc.2` |
-
-## Uninstall
-
-```bash
-# Remove alerts
-helm --kubeconfig=/home/banusree/all_db.yaml uninstall postgres-alerts -n demo
-
-# Remove Grafana dashboards
-helm --kubeconfig=/home/banusree/all_db.yaml uninstall kubedb-grafana-dashboards -n kubeops
-```
-
 ## Customising Alerts
 
-To override thresholds or disable specific alert groups, create a `values.yaml` and upgrade:
+To override thresholds or disable specific alert groups, create a custom values file and upgrade the chart.
 
 ```yaml
 # custom-alerts.yaml
@@ -386,22 +443,46 @@ form:
           postgresqlTooManyConnections:
             enabled: true
             duration: "5m"
-            val: 90   # trigger at 90% instead of 95%
+            val: 90        # fire at 90% instead of the default 95%
             severity: warning
       stash:
-        enabled: "none"   # disable all stash alerts
+        enabled: "none"    # disable all stash backup alerts
 ```
 
 ```bash
-helm upgrade postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
-  -n demo \
-  --version=v2026.2.24 \
-  --set metadata.release.name=pg-grafana-demo \
-  --set metadata.release.namespace=demo \
-  -f custom-alerts.yaml
+$ helm upgrade postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
+    -n demo \
+    --version=v2026.2.24 \
+    --set metadata.release.name=pg-grafana-demo \
+    --set metadata.release.namespace=demo \
+    -f custom-alerts.yaml
 ```
 
-## Sources
+---
 
-- Alert chart: https://github.com/opnpulse/alerts/tree/master/charts/postgres-alerts
-- Grafana dashboards chart: https://github.com/kubedb/installer/tree/master/charts/kubedb-grafana-dashboards
+## Cleaning up
+
+To remove all resources created in this tutorial, run the following commands.
+
+```bash
+# Remove the Grafana dashboards
+$ helm uninstall kubedb-grafana-dashboards -n kubeops
+
+# Remove the postgres-alerts
+$ helm uninstall postgres-alerts -n demo
+
+# Remove the PostgreSQL instance
+$ kubectl delete postgres -n demo pg-grafana-demo
+
+# Delete namespaces
+$ kubectl delete ns demo
+$ kubectl delete ns kubeops
+```
+
+## Next Steps
+
+- Monitor your PostgreSQL database with KubeDB using [builtin Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
+- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL databases using Stash.
+- Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
