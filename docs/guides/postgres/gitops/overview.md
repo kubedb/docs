@@ -29,7 +29,7 @@ This guide will give you an overview of how KubeDB `gitops` operator works with 
 The following diagram shows how the `KubeDB` GitOps Operator used to sync with your database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="GitOps Flow" src="/docs/images/gitops/gitops.png">
+  <img alt="GitOps Flow" src="/docs/images/gitops/gitops.jpg">
 <figcaption align="center">Fig: GitOps process of Postgres</figcaption>
 </figure>
 

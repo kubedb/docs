@@ -47,7 +47,7 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
+longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   37s
 
 ```

@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Kafka` combined using a supported version by `KubeDB` operator. Then we are going to apply `KafkaAutoscaler` to set up autoscaling.
 
@@ -86,7 +86,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
+    storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -220,14 +220,14 @@ Let's exec into the cluster pod and fill the cluster volume using the following 
  $ kubectl exec -it -n demo kafka-dev-0 -- bash
 kafka@kafka-dev-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /var/log/kafka
+/dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /var/log/kafka
 kafka@kafka-dev-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 7.44144 s, 84.5 MB/s
 kafka@kafka-dev-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /var/log/kafka
+/dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /var/log/kafka
 ```
 
 So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 60%.

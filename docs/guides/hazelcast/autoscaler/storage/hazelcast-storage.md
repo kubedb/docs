@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Hazelcast`  using a supported version by `KubeDB` operator. Then we are going to apply `HazelcastAutoscaler` to set up autoscaling.
 
@@ -120,8 +120,8 @@ $ kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimT
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                           STORAGECLASS          REASON     AGE
-pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         standard              <unset>    40s
-pvc-f068d245-718b-4561-b452-f3130bb260f6   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         standard              <unset>    35s
+pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         longhorn              <unset>    40s
+pvc-f068d245-718b-4561-b452-f3130bb260f6   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         longhorn              <unset>    35s
 ```
 
 You can see the statefulset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
@@ -236,14 +236,14 @@ Let's exec into the cluster pod and fill the cluster volume using the following 
  $ kubectl exec -it -n demo hazelcast-dev-0 -- bash
 hazelcast@hazelcast-dev-0:~$ df -h /data/hazelcast
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /data/hazelcast
+/dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /data/hazelcast
 hazelcast@hazelcast-dev-0:~$ dd if=/dev/zero of=/data/hazelcast/file.img bs=600M count=1
 1+0 records in
 1+0 records out
 629145600 bytes (629 MB, 600 MiB) copied, 7.44144 s, 84.5 MB/s
 hazelcast@hazelcast-dev-0:~$ df -h /data/hazelcast
 Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/standard/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /data/hazelcast
+/dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /data/hazelcast
 ```
 
 So, from the above output we can see that the storage usage is 63%, which exceeded the `usageThreshold` 1%.

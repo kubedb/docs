@@ -254,7 +254,7 @@ spec:
               configMap:
                 name: nginx-config-map
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -274,7 +274,7 @@ spec:
                   memory: "2Gi"
                   cpu: "600m"
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -413,7 +413,7 @@ spec:
     kind: Secret
     name: license-secret
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -507,7 +507,7 @@ spec:
     kind: Secret
     name: license-secret
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -662,7 +662,7 @@ spec:
     kind: Secret
     name: license-secret
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

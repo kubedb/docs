@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Kafka` combined cluster with version `3.9.0`.
 
@@ -78,7 +78,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
     controller:
       replicas: 2
       storage:
@@ -87,7 +87,7 @@ spec:
         resources:
           requests:
             storage: 1Gi
-        storageClassName: standard
+        storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -122,10 +122,10 @@ $ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeCla
 
 $ kubectl get pv -n demo                                       
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    standard                106s
-pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        standard                78s
-pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    standard                75s
-pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        standard                106s
+pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    longhorn                106s
+pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        longhorn                78s
+pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    longhorn                75s
+pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        longhorn                106s
 ```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -329,10 +329,10 @@ $ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeCla
 
 $ kubectl get pv -n demo                                       
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
-pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    standard                5m25s
-pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        standard                4m51s
-pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    standard                5m1s
-pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        standard                5m30s
+pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    longhorn                5m25s
+pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        longhorn                4m51s
+pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    longhorn                5m1s
+pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        longhorn                5m30s
 ```
 
 The above output verifies that we have successfully expanded the volume of the Kafka.

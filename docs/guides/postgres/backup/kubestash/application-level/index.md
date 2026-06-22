@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/application-level/examples](/docs/guides/postgres/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup PostgreSQL
 
@@ -560,10 +560,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: dumpfile.sql
-        id: 4b820700710f9f7b6a8d5b052367b51875e68dcd9052c749a686506db6a66374
-        size: 3.345 KiB
-        uploaded: 3.634 KiB
+      - summary:
+          hostPath: dumpfile.sql
+          id: 4b820700710f9f7b6a8d5b052367b51875e68dcd9052c749a686506db6a66374
+          size: 3.345 KiB
+          uploaded: 3.634 KiB
       size: 1.135 KiB
     manifest:
       driver: Restic
@@ -572,10 +573,11 @@ status:
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-tmp/manifest
-        id: 9da4d1b7df6dd946e15a8a0d2a2a3c14776351e27926156770530ca03f6f8002
-        size: 3.064 KiB
-        uploaded: 1.443 KiB
+      - summary:
+          hostPath: /kubestash-tmp/manifest
+          id: 9da4d1b7df6dd946e15a8a0d2a2a3c14776351e27926156770530ca03f6f8002
+          size: 3.064 KiB
+          uploaded: 1.443 KiB
       size: 2.972 KiB
   conditions:
   - lastTransitionTime: "2024-09-05T09:08:03Z"

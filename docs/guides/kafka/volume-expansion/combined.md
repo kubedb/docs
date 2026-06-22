@@ -50,10 +50,10 @@ At first verify that your cluster has a storage class, that supports volume expa
 ```bash
 $ kubectl get storageclass
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
-standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
+longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
 ```
 
-We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
+We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
 Now, we are going to deploy a `Kafka` combined cluster with version `3.9.0`.
 
@@ -76,7 +76,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-    storageClassName: standard
+    storageClassName: longhorn
   storageType: Durable
   deletionPolicy: WipeOut
 ```
@@ -108,8 +108,8 @@ $ kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[
 
 $ kubectl get pv -n demo                                       
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                             STORAGECLASS   REASON   AGE
-pvc-23778f6015324895   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1   standard                33s
-pvc-30b34f642f994e13   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0   standard                58s
+pvc-23778f6015324895   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1   longhorn                33s
+pvc-30b34f642f994e13   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0   longhorn                58s
 ```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
@@ -286,8 +286,8 @@ $ kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[
 
 $ kubectl get pv -n demo                                       
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                             STORAGECLASS   REASON   AGE
-pvc-23778f6015324895   2Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1   standard                7m2s
-pvc-30b34f642f994e13   2Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0   standard                7m9s
+pvc-23778f6015324895   2Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1   longhorn                7m2s
+pvc-30b34f642f994e13   2Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0   longhorn                7m9s
 ```
 
 The above output verifies that we have successfully expanded the volume of the Kafka.

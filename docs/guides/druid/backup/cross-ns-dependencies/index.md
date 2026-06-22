@@ -681,10 +681,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 647a7123a66423a81fa21ac77128e46587ddae3e9c9426537a30ad1c9a8e1843
-          size: 3.807 MiB
-          uploaded: 3.807 MiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: 647a7123a66423a81fa21ac77128e46587ddae3e9c9426537a30ad1c9a8e1843
+            size: 3.807 MiB
+            uploaded: 3.807 MiB
       size: 652.853 KiB
     manifest:
       driver: Restic
@@ -693,10 +694,11 @@ status:
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-tmp/manifest
-          id: 069ad1c6dae59fd086aa9771289fc4dad6d076afbc11180e3b1cd8083cd01691
-          size: 13.599 KiB
-          uploaded: 4.268 KiB
+        - summary:
+            hostPath: /kubestash-tmp/manifest
+            id: 069ad1c6dae59fd086aa9771289fc4dad6d076afbc11180e3b1cd8083cd01691
+            size: 13.599 KiB
+            uploaded: 4.268 KiB
       size: 12.127 KiB
   conditions:
     - lastTransitionTime: "2024-09-20T11:09:00Z"

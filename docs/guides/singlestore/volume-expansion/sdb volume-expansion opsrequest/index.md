@@ -59,11 +59,11 @@ At first verify that your cluster has a storage class, that supports volume expa
 $ kubectl get storageClass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6d2h
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   3d21h
-longhorn-static        driver.longhorn.io      Delete          Immediate              true                   42m
+standard (default)     driver.standard.io      Delete          Immediate              true                   3d21h
+standard-static        driver.standard.io      Delete          Immediate              true                   42m
 ```
 
-Here, we will use `longhorn` storageClass for this tuitorial.
+Here, we will use `standard` storageClass for this tuitorial.
 
 Now, we are going to deploy a `SingleStore` database of 3 replicas with version `8.7.10`.
 
@@ -94,7 +94,7 @@ spec:
                 memory: "2Gi"
                 cpu: "600m"
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
         - ReadWriteOnce
         resources:
@@ -114,7 +114,7 @@ spec:
                   memory: "2Gi"
                   cpu: "600m"                      
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -154,9 +154,9 @@ $ kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemp
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-41cb892c-99fc-4211-a8c2-4e6f8a16c661   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         longhorn       <unset>                          90s
-pvc-6e241724-6577-408e-b8de-9569d7d785c4   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         longhorn       <unset>                          75s
-pvc-95ecc525-540b-4496-bf14-bfac901d73c4   1Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   longhorn       <unset>                          94s
+pvc-41cb892c-99fc-4211-a8c2-4e6f8a16c661   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         standard       <unset>                          90s
+pvc-6e241724-6577-408e-b8de-9569d7d785c4   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         standard       <unset>                          75s
+pvc-95ecc525-540b-4496-bf14-bfac901d73c4   1Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   standard       <unset>                          94s
 
 
 ```
@@ -196,7 +196,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `sample-sdb` database.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
 - `spec.volumeExpansion.aggregator` and `spec.volumeExpansion.leaf` specifies the desired volume size for `aggregator` and `leaf` nodes.
-- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `longhorn` supports `Offline` volume expansion.
+- `spec.volumeExpansion.mode` specifies the desired volume expansion mode (`Online` or `Offline`). Storageclass `standard` supports `Offline` volume expansion.
 
 > **Note:** If the Storageclass you are using doesn't support `Online` Volume Expansion, Try offline volume expansion by using `spec.volumeExpansion.mode:"Offline"`.
 
@@ -464,9 +464,9 @@ $ kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemp
 
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
-pvc-0a4b35e6-988e-4088-ae41-852ad82c5800   2Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   longhorn       <unset>                          22m
-pvc-f6df5743-2bb1-4705-a2f7-be6cf7cdd7f1   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         longhorn       <unset>                          22m
-pvc-f8fee59d-74dc-46ac-9973-ff1701a6837b   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         longhorn       <unset>                          19m
+pvc-0a4b35e6-988e-4088-ae41-852ad82c5800   2Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   standard       <unset>                          22m
+pvc-f6df5743-2bb1-4705-a2f7-be6cf7cdd7f1   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         standard       <unset>                          22m
+pvc-f8fee59d-74dc-46ac-9973-ff1701a6837b   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         standard       <unset>                          19m
 ```
 
 The above output verifies that we have successfully expanded the volume of the SingleStore database.

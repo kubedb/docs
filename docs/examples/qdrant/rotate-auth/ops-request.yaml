@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-rotate-auth
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: qdrant-sample
+  timeout: 5m
+  apply: IfReady

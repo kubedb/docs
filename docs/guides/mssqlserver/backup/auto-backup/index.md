@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mssqlserver/backup/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mssqlserver/backup/auto-backup/examples](/docs/guides/mssqlserver/backup/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 
 ### Prepare Backend

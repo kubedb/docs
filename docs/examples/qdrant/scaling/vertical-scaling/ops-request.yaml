@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdrant-vertical-scale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: qdrant-sample
+  verticalScaling:
+    node:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: 1Gi
+        limits:
+          cpu: "1"
+          memory: 2Gi

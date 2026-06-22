@@ -12,7 +12,7 @@ spec:
     mode: GroupReplication
   storageType: Durable
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

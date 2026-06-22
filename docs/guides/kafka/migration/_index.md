@@ -5,6 +5,6 @@ menu:
     identifier: kf-migration-kafka
     name: Migration
     parent: kf-kafka-guides
-    weight: 27
+    weight: 60
 menu_name: docs_{{ .version }}
 ---

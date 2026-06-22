@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/redis/backup/kubestash/application-level/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/redis/backup/kubestash/application-level/examples](/docs/guides/redis/backup/kubestash/application-level/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Backup Redis
 
@@ -490,10 +490,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.resp
-          id: 73cf596a525bcdb439e87812045e7a25c6bd82574513351ab434793c134fc817
-          size: 184 B
-          uploaded: 483 B
+        - summary:
+            hostPath: dumpfile.resp
+            id: 73cf596a525bcdb439e87812045e7a25c6bd82574513351ab434793c134fc817
+            size: 184 B
+            uploaded: 483 B
       size: 380 B
   conditions:
     - lastTransitionTime: "2024-09-18T13:04:35Z"
