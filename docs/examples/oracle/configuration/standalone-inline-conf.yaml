@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: standalone-inline-conf
+  namespace: demo
+spec:
+  configuration:
+    inline:
+      oracle.cnf: |
+        SGA_TARGET=1G
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  version: "21.3.0"
+  edition: enterprise
+  mode: Standalone
+  storageType: Durable
+  replicas: 1
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+  deletionPolicy: WipeOut

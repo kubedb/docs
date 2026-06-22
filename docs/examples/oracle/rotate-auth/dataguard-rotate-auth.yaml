@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: dataguard-rotate-auth
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: oracle-dg-sample
+  apply: IfReady
