@@ -12,11 +12,6 @@ spec:
     systemReplication:
       replicationMode: fullsync
       operationMode: logreplay_readaccess
-  healthChecker:
-    disableWriteCheck: true
-    periodSeconds: 20
-    timeoutSeconds: 20
-    failureThreshold: 1
   podTemplate:
     spec:
       containers:

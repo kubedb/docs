@@ -17,11 +17,6 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: hdb-ca-issuer
-  healthChecker:
-    disableWriteCheck: true
-    periodSeconds: 20
-    timeoutSeconds: 20
-    failureThreshold: 1
   podTemplate:
     spec:
       containers:

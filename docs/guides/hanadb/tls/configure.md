@@ -89,6 +89,17 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: hdb-ca-issuer
+  podTemplate:
+    spec:
+      containers:
+      - name: hanadb
+        resources:
+          requests:
+            cpu: "1500m"
+            memory: "8Gi"
+          limits:
+            cpu: "4"
+            memory: "14Gi"
   storage:
     accessModes:
     - ReadWriteOnce

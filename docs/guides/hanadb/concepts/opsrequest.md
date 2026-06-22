@@ -57,7 +57,7 @@ verticalScaling:
 
 ### spec.tls
 
-`spec.tls` configures TLS for `ReconfigureTLS` operations. You can add TLS using an issuer reference, rotate existing certificates, or remove TLS.
+`spec.tls` configures TLS for `ReconfigureTLS` operations. You can add TLS using an issuer reference or rotate existing certificates.
 
 ```yaml
 tls:

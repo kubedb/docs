@@ -64,7 +64,7 @@ Create a `HanaDBVersion` object that points to images in your private registry. 
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: HanaDBVersion
 metadata:
-  name: "2.0.82-private"
+  name: "2.0.82"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/hanadb-coordinator:v0.4.0
@@ -77,13 +77,13 @@ spec:
     runAsUser: 12000
   updateConstraints:
     allowlist:
-    - 2.0.82-private
+    - 2.0.82
   version: "2.0.82"
 ```
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/private-registry/pvt-hanadbversion.yaml
-hanadbversion.catalog.kubedb.com/2.0.82-private created
+hanadbversion.catalog.kubedb.com/2.0.82 configured
 ```
 
 ## Deploy HanaDB from Private Registry
@@ -95,7 +95,7 @@ metadata:
   name: hanadb-private-registry
   namespace: demo
 spec:
-  version: "2.0.82-private"
+  version: "2.0.82"
   replicas: 1
   storageType: Durable
   storage:

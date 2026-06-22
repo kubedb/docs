@@ -1,7 +1,7 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: HanaDBVersion
 metadata:
-  name: "2.0.82-private"
+  name: "2.0.82"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/hanadb-coordinator:v0.4.0
@@ -14,5 +14,5 @@ spec:
     runAsUser: 12000
   updateConstraints:
     allowlist:
-    - 2.0.82-private
+    - 2.0.82
   version: "2.0.82"
