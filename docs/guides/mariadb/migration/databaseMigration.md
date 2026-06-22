@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
   <details>
   <summary>How to configure this on your source instance?</summary>
 
-  **Self-hosted MariaDB**
+  **Self-hosted MariaDB** <br>
 
   Add the following to your `my.cnf` and restart MariaDB:
   ```ini
@@ -45,11 +45,11 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
   FLUSH PRIVILEGES;
   ```
 
-  **AWS RDS MariaDB**
+  **AWS RDS MariaDB** <br>
 
   Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
 
-  **Azure Database for MariaDB**
+  <br> **Azure Database for MariaDB** <br>
 
   Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mariadb/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
 

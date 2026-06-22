@@ -45,15 +45,15 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
   FLUSH PRIVILEGES;
   ```
 
-  **AWS RDS MySQL**
+  **AWS RDS MySQL** <br>
 
   Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
 
-  **Azure Database for MySQL**
+  <br> **Azure Database for MySQL** <br>
 
   Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
 
-  **Google Cloud SQL for MySQL**
+  <br> **Google Cloud SQL for MySQL** <br>
 
   Enable binary logging under **Backups** in the [Cloud Console](https://cloud.google.com/sql/docs/mysql/replication/create-replica), then set `binlog_format = ROW` and `binlog_row_image = FULL` under **Database flags**.
 
