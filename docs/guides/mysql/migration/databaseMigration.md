@@ -90,7 +90,7 @@ kubectl create secret generic ca-secret \
   --namespace=demo
 ```
 
-> **Note:** For mTLS, also include the client certificate and key by appending `--from-file=tls.crt=$CERT_PATH/tls.crt --from-file=tls.key=$CERT_PATH/tls.key` to the command above.
+> **Note:** For mTLS, also include the client certificate and key by appending <br> `--from-file=tls.crt=$CERT_PATH/tls.crt` <br> `--from-file=tls.key=$CERT_PATH/tls.key` <br> to the command above.
 
 Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MySQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
