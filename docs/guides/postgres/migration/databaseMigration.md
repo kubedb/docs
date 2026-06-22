@@ -35,9 +35,10 @@ A brief downtime occurs only during the final cutover when application endpoints
 - The source `PostgreSQL` instance must have `wal_level` set to `logical`. The database user provided for migration must have the `REPLICATION` privilege. There is no single procedure to configure this — it depends on your deployment environment.
 
   <details>
-  <summary>How to configure this on your source instance</summary>
+  <summary>How to configure this on your source instance?</summary>
 
   **Self-hosted PostgreSQL**
+
   ```sql
   -- Set WAL level to logical (requires a PostgreSQL restart to take effect)
   ALTER SYSTEM SET wal_level = 'logical';
@@ -47,15 +48,19 @@ A brief downtime occurs only during the final cutover when application endpoints
   ```
 
   **AWS RDS**
+
   Set `rds.logical_replication = 1` in your [RDS Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication) and reboot the instance. Then grant the replication privilege via SQL as shown above.
 
   **Azure Database for PostgreSQL**
+
   Set `azure.replication_support = logical` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) and restart the server. Then grant the replication privilege via SQL as shown above.
 
   **Google Cloud SQL**
+
   Enable the `cloudsql.logical_decoding` flag via the [Cloud Console database flags](https://cloud.google.com/sql/docs/postgres/replication/configure-logical-replication). Then grant the replication privilege via SQL as shown above.
 
   **CloudNativePG (CNPG)**
+
   Add `wal_level: logical` under `postgresql` parameters in the `Cluster` spec.
 
   </details>
