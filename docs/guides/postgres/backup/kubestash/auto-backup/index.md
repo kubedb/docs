@@ -42,7 +42,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/auto-backup/examples](/docs/guides/postgres/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 
 ### Prepare Backend
@@ -455,10 +455,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: a30f8ec138e24cbdbcce088a73e5b9d73a58750c38793ef05ff7d570148ddd2c
-          size: 3.345 KiB
-          uploaded: 3.637 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: a30f8ec138e24cbdbcce088a73e5b9d73a58750c38793ef05ff7d570148ddd2c
+            size: 3.345 KiB
+            uploaded: 3.637 KiB
       size: 1.132 KiB
   conditions:
     - lastTransitionTime: "2024-09-05T10:53:59Z"
@@ -813,10 +814,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 74d82943e0d676321e989edb503f5e2d6fe5cf4f4be72d386e492ec533358c26
-          size: 1.220 KiB
-          uploaded: 296 B
+        - summary:
+            hostPath: dumpfile.sql
+            id: 74d82943e0d676321e989edb503f5e2d6fe5cf4f4be72d386e492ec533358c26
+            size: 1.220 KiB
+            uploaded: 296 B
       size: 1.873 KiB
   conditions:
     - lastTransitionTime: "2024-09-06T04:30:00Z"

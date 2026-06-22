@@ -43,7 +43,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/backup/kubestash/logical/examples](/docs/guides/postgres/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 
 ## Backup PostgreSQL
@@ -559,10 +559,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: dumpfile.sql
-        id: 008eb87193e7db112e9ad8f42c9302c851a1fbacb7165a5cb3aa2d27dd210764
-        size: 3.345 KiB
-        uploaded: 299 B
+      - summary:
+          hostPath: dumpfile.sql
+          id: 008eb87193e7db112e9ad8f42c9302c851a1fbacb7165a5cb3aa2d27dd210764
+          size: 3.345 KiB
+          uploaded: 299 B
       size: 2.202 KiB
   conditions:
   - lastTransitionTime: "2024-09-04T11:30:00Z"

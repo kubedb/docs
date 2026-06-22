@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-rotate-auth-custom
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: qdrant-sample
+  authentication:
+    secretRef:
+      name: my-custom-auth-secret
+      kind: Secret

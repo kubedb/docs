@@ -20,7 +20,6 @@ Guides to show you how to perform tasks with KubeDB:
 - [ClickHouse](/docs/guides/clickhouse/README.md). Shows how to manage ClickHouse using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
-- [FerretDB](/docs/guides/ferretdb/README.md). Shows how to manage FerretDB using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.
 - [Ignite](/docs/guides/ignite/README.md). Shows how to manage Ignite using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
@@ -35,6 +34,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [Pgpool](/docs/guides/pgpool/README.md). Shows how to manage Pgpool using KubeDB.
 - [PostgreSQL](/docs/guides/postgres/README.md). Shows how to manage PostgreSQL using KubeDB.
 - [ProxySQL](/docs/guides/proxysql/README.md). Shows how to manage ProxySQL using KubeDB.
+- [Qdrant](/docs/guides/qdrant/README.md). Shows how to manage Qdrant using KubeDB.
 - [RabbitMQ](/docs/guides/rabbitmq/README.md). Shows how to manage RabbitMQ using KubeDB.
 - [Redis](/docs/guides/redis/README.md). Shows how to manage Redis using KubeDB.
 - [SingleStore](/docs/guides/singlestore/README.md). Shows how to manage SingleStore using KubeDB.

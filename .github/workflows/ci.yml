@@ -16,7 +16,7 @@ concurrency:
 jobs:
   build:
     name: Build
-    runs-on: firecracker
+    runs-on: ubuntu-24.04
     steps:
       - uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4.3.1
 
@@ -28,9 +28,11 @@ jobs:
 
       - name: Install link checker
         run: |
-          curl -fsSL -o liche https://github.com/appscodelabs/liche/releases/download/v0.1.0/liche-linux-amd64
-          chmod +x liche
-          sudo mv liche /usr/local/bin/liche
+          curl -fsSL -o lychee.tar.gz https://github.com/lycheeverse/lychee/releases/download/lychee-v0.24.2/lychee-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf lychee.tar.gz --strip-components=1
+          chmod +x lychee
+          sudo mv lychee /usr/local/bin/lychee
+          rm lychee.tar.gz
 
       - name: Install codespan schema checker
         run: |
@@ -65,8 +67,15 @@ jobs:
           kubectl create -f https://github.com/stashed/installer/raw/master/crds/stash-crds.yaml
           kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
+          kubectl create -f https://github.com/kubedb/installer/raw/master/bundle/manifests/installer.kubedb.com_kubedbs.yaml
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
           kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
+          # recommendation
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_approvalpolicies.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_clustermaintenancewindows.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_maintenancewindows.yaml
+          kubectl create -f https://github.com/kubeops/supervisor/raw/master/crds/supervisor.appscode.com_recommendations.yaml
+          # gateway
           kubectl create -f https://github.com/appscode-cloud/catalog/raw/master/crds/catalog.appscode.com_mongodbbindings.yaml
           kubectl create -f https://raw.githubusercontent.com/envoyproxy/gateway/refs/heads/main/charts/gateway-helm/charts/crds/crds/generated/gateway.envoyproxy.io_envoyproxies.yaml
           kubectl create -f https://github.com/voyagermesh/installer/raw/master/charts/gateway-api/crds/gateway.networking.k8s.io_gatewayclasses.yaml
@@ -86,6 +95,11 @@ jobs:
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/config.virtual-secrets.dev_secretstores.yaml
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secretmounts.yaml
           kubectl create -f https://raw.githubusercontent.com/virtual-secrets/apimachinery/refs/heads/master/crds/virtual-secrets.dev_secrets.yaml
+          # argocd crds
+          kubectl create -f https://github.com/argoproj/argo-cd/raw/v3.4.3/manifests/crds/application-crd.yaml
+          # fluxcd crds
+          # kubectl create -f https://github.com/fluxcd/helm-controller/raw/v1.3.0/config/crd/bases/helm.toolkit.fluxcd.io_helmreleases.yaml
+          # kubectl create -f https://github.com/fluxcd/source-controller/raw/v1.6.2/config/crd/bases/source.toolkit.fluxcd.io_helmrepositories.yaml
 
       - name: Check codespan schema
         run: |
@@ -100,11 +114,11 @@ jobs:
 
       - name: Check links
         run: |
-          liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'
+          lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'
           max_retries=5
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if liche -r docs -d $(pwd) -c 10 -p -h -l -x '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*)$'; then
+            if lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'; then
               echo "Link check passed"
               exit 0
             fi

@@ -69,7 +69,7 @@ spec:
                   memory: "2Gi"
                   cpu: "600m"
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:
@@ -89,7 +89,7 @@ spec:
                   memory: "2Gi"
                   cpu: "600m"            
       storage:
-        storageClassName: "longhorn"
+        storageClassName: "standard"
         accessModes:
           - ReadWriteOnce
         resources:

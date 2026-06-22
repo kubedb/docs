@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
+metadata:
+  name: qdrant-tls
+  namespace: demo
+spec:
+  version: "1.17.0"
+  mode: Distributed
+  replicas: 3
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: qdrant-ca-issuer
+      kind: Issuer
+    client: true
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

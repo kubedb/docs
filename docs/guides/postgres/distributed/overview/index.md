@@ -18,7 +18,7 @@ KubeDB enables distributed Postgres deployments across multiple Kubernetes clust
 
 This guide provides a step-by-step process to deploy a distributed Postgres cluster, including prerequisites, configuration, and verification steps. It assumes familiarity with Kubernetes and basic database concepts.
 
-> **New to KubeDB?** Start with the [KubeDB documentation](https://kubedb.com/docs/v2025.7.31/welcome/) for an introduction.
+> **New to KubeDB?** Start with the [KubeDB documentation](https://kubedb.com/docs/{{< param "info.version" >}}/welcome/) for an introduction.
 
 ## Understanding OCM Hub and Spoke Clusters
 
@@ -649,7 +649,7 @@ $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 > **Note:** The `--set petset.features.ocm.enabled=true` flag must be set to enable the Postgres Distributed feature.
 
-For additional details, refer to the [KubeDB Installation Guide](https://kubedb.com/docs/v2026.4.27/setup/).
+For additional details, refer to the [KubeDB Installation Guide](https://kubedb.com/docs/{{< param "info.version" >}}/setup/).
 
 Verify that the pods are running:
 

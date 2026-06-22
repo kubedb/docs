@@ -501,10 +501,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dump
-          id: 67a2f5bd65ef78cd5cece9906dadd0d62523decae71db05d9f895140aabe9ec0
-          size: 3.340 KiB
-          uploaded: 3.624 KiB
+        - summary:
+            hostPath: dump
+            id: 67a2f5bd65ef78cd5cece9906dadd0d62523decae71db05d9f895140aabe9ec0
+            size: 3.340 KiB
+            uploaded: 3.624 KiB
       size: 1.524 KiB
     manifest:
       driver: Restic
@@ -513,10 +514,11 @@ status:
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-tmp/manifest
-          id: b5660a5a38532f6817769ff693c0c317730148f02b24e7acfc6ac7d8464a9518
-          size: 3.866 KiB
-          uploaded: 5.299 KiB
+        - summary:
+            hostPath: /kubestash-tmp/manifest
+            id: b5660a5a38532f6817769ff693c0c317730148f02b24e7acfc6ac7d8464a9518
+            size: 3.866 KiB
+            uploaded: 5.299 KiB
       size: 2.345 KiB
   conditions:
     - lastTransitionTime: "2024-09-17T06:53:43Z"
