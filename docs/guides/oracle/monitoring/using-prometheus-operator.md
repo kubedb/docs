@@ -22,7 +22,7 @@ KubeDB collects Oracle metrics using the free, public **Oracle AI Database Metri
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/monitoring/overview.md).
+- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/oracle/monitoring/overview.md).
 
 - You have to have a Prometheus operator installed in your cluster. A quick way is the `prometheus-community/kube-prometheus-stack` Helm chart. The Prometheus instance must be configured to discover `ServiceMonitor`s in the database namespace (for example with `serviceMonitorSelectorNilUsesHelmValues=false`).
 
