@@ -49,20 +49,21 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mariadbversions
-10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                27h
-10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                27h
-10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                27h
-10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                27h
-10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                27h
-11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 27h
-11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 27h
-11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 27h
-11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 27h
-11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 27h
-11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 27h
-11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 23m
-
-```
+NAME      VERSION   DB_IMAGE                                        DEPRECATED   AGE
+10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                12d
+10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                12d
+10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                12d
+10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                12d
+10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                12d
+11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 12d
+11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 12d
+11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 12d
+11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 12d
+11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 12d
+11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 12d
+11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 12d
+11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble                 12d
+12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble                 12d```
 
 ## Create a MariaDB database
 
