@@ -3,7 +3,7 @@ title: Distributed MariaDBOpsRequest
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed-opsrequest
-    name: Distributed MariaDBOpsRequest
+    name: Distributed MariaDB Horizontal Scaling
     parent: guides-mariadb-distributed-horizontalscaling
     weight: 20
 menu_name: docs_{{ .version }}
@@ -48,6 +48,8 @@ Here, we are going to deploy a distributed `MariaDB` Galera cluster and then app
 ### Deploy PlacementPolicy
 
 For a distributed MariaDB cluster, the `PlacementPolicy` must be created before deploying the database. It defines which replica index is scheduled on which cluster and acts as the upper bound for scaling, the actual running replicas can be any number less than or equal to the total indices defined in the policy.
+
+>Note: Ensure you correctly specify the mapping of every DB pod index to its target cluster. A corresponding cluster must be defined for each DB pod index. Any missing index will result in provisioning errors.
 
 In this example, the `PlacementPolicy` is configured with **five** replica indices distributed across two clusters. The MariaDB cluster will start with **three** replicas (indices `0`, `1`, `2`), and can be scaled up to **five** (indices `0`–`4`) without modifying the policy.
 

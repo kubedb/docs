@@ -18,7 +18,7 @@ KubeDB enables distributed MariaDB deployments using Galera clustering technolog
 
 This guide provides a step-by-step process to deploy a distributed MariaDB Galera cluster, including prerequisites, configuration, and verification steps. It assumes familiarity with Kubernetes and basic database concepts.
 
-> **New to KubeDB?** Start with the [KubeDB documentation](https://kubedb.com/docs/v2025.7.31/welcome/) for an introduction.
+> **New to KubeDB?** Please start [here](/docs/README.md).
 
 ## Understanding OCM Hub and Spoke Clusters
 
@@ -538,6 +538,11 @@ After the SliceConfig is applied, a `vl3-slice-router` pod will appear in `kubes
 
 #### 6. Configure DNS for KubeSlice
 
+>Note: You must update the DNS server for each cluster you mentioned in the slice to enable proper cross-cluster service discovery. In this guide, we are using CoreDNS, so the required changes are applied to the CoreDNS configuration.
+If your cluster uses a different DNS solution, make sure to apply equivalent forwarding rules there.
+This configuration step must be completed on all clusters participating in the slice before proceeding further.
+
+
 Update CoreDNS to forward `*.slice.local` traffic to the KubeSlice DNS service. Run the following steps on **every cluster** in the slice.
 
 > **Important:** CoreDNS must be updated and restarted on all clusters before proceeding to Step 4 (KubeDB install). Galera nodes use `.slice.local` DNS names to discover each other across clusters. If DNS is not configured before MariaDB pods start, replication will not form.
@@ -649,7 +654,7 @@ $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 
 > **Note:** The `--set petset.features.ocm.enabled=true` flag must be set to enable the MariaDB Distributed feature.
 
-For additional details, refer to the [KubeDB Installation Guide](https://kubedb.com/docs/v2026.4.27/setup/).
+For additional details, refer to the [KubeDB Installation Guide](/docs/setup/).
 
 Verify that the pods are running:
 
@@ -834,4 +839,4 @@ SHOW STATUS LIKE 'wsrep%';
 - **Scaling**: Adjust the `PlacementPolicy` to add or remove replicas across clusters.
 - **Monitoring**: Integrate KubeDB with monitoring tools like Prometheus for cluster health insights.
 
-For further details, refer to the [KubeDB Documentation](https://kubedb.com/docs/v2025.7.31/).
+
