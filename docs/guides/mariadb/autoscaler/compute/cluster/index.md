@@ -3,7 +3,7 @@ title: MariaDB Cluster Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-autoscaling-compute-cluster
-    name: Cluster
+    name: Galera Cluster
     parent: guides-mariadb-autoscaling-compute
     weight: 20
 menu_name: docs_{{ .version }}
