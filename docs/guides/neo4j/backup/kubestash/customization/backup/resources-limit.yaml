@@ -1,0 +1,42 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-neo4j-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Neo4j
+    namespace: demo
+    name: sample-neo4j
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-neo4j-repo
+          backend: s3-backend
+          directory: /neo4j
+      addon:
+        name: neo4j-addon
+        jobTemplate:
+          spec:
+            resources:
+              requests:
+                cpu: "200m"
+                memory: "1Gi"
+              limits:
+                cpu: "200m"
+                memory: "1Gi"
+        tasks:
+          - name: logical-backup
