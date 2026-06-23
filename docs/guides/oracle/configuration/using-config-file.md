@@ -31,7 +31,7 @@ namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/configuration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> Oracle images are pulled from `container-registry.oracle.com`. Every Oracle CR must reference an image pull secret (named `orclcred` in this tutorial) through `spec.podTemplate.spec.imagePullSecrets`. Make sure the `orclcred` secret exists in the `demo` namespace before deploying.
+> Oracle images are pulled from `container-registry.oracle.com`. Every Oracle CR must reference an image pull secret (named `orclcred` in this tutorial) through `spec.podTemplate.spec.imagePullSecrets`. Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below: [here](/docs/guides/oracle/quickstart#create-oracle-image-pull-secret-important) Make sure the `orclcred` secret exists in the `demo` namespace before deploying.
 
 ## Overview
 
@@ -264,3 +264,16 @@ kubectl delete ns demo
 - Learn how to [reconfigure](/docs/guides/oracle/reconfigure/reconfigure.md) a running Oracle database with an `OracleOpsRequest`.
 - Initialize [Oracle with Script](/docs/guides/oracle/initialization/script_source.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+> ## ⚠️ Legal Notice
+>
+> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.
+> KubeDB is not affiliated with, endorsed by, or sponsored by Oracle Corporation.
+>
+> KubeDB provides only orchestration and management tooling for Kubernetes.
+> It does not distribute, bundle, ship, or include any Oracle Database software or binaries.
+>
+> Users must provide their own Oracle container images and hold valid Oracle licenses.
+> Users are solely responsible for compliance with Oracle’s licensing terms, including all rules regarding containers, Docker, and Kubernetes environments.
+>
+> KubeDB makes no representations or warranties regarding Oracle licensing compliance.

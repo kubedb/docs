@@ -171,3 +171,16 @@ For a `RotateAuth` operation, you can optionally set `spec.authentication.secret
 - Learn about the [Oracle CRD](/docs/guides/oracle/concepts/oracle.md).
 - Restart an Oracle database using an [OracleOpsRequest](/docs/guides/oracle/restart/restart.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+> ## ⚠️ Legal Notice
+>
+> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.
+> KubeDB is not affiliated with, endorsed by, or sponsored by Oracle Corporation.
+>
+> KubeDB provides only orchestration and management tooling for Kubernetes.
+> It does not distribute, bundle, ship, or include any Oracle Database software or binaries.
+>
+> Users must provide their own Oracle container images and hold valid Oracle licenses.
+> Users are solely responsible for compliance with Oracle’s licensing terms, including all rules regarding containers, Docker, and Kubernetes environments.
+>
+> KubeDB makes no representations or warranties regarding Oracle licensing compliance.

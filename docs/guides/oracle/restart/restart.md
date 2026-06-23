@@ -31,7 +31,7 @@ namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/restart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/restart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-> Oracle images are pulled from `container-registry.oracle.com`. Every Oracle CR must reference an image pull secret (named `orclcred` in this tutorial) through `spec.podTemplate.spec.imagePullSecrets`. Make sure the `orclcred` secret exists in the `demo` namespace before deploying.
+> Oracle images are pulled from `container-registry.oracle.com`. Every Oracle CR must reference an image pull secret (named `orclcred` in this tutorial) through `spec.podTemplate.spec.imagePullSecrets`. Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below: [here](/docs/guides/oracle/quickstart#create-oracle-image-pull-secret-important) Make sure the `orclcred` secret exists in the `demo` namespace before deploying.
 
 ## Deploy Oracle
 
@@ -77,16 +77,6 @@ $ kubectl get oracle -n demo
 NAME               VERSION   MODE         STATUS   AGE
 oracle-sa-sample   21.3.0    Standalone   Ready    8m49s
 ```
-
-> Note: Oracle takes longer than most databases to become ready (a standalone instance usually needs 10–20 minutes). A database is only truly ready once `status.phase` is `Ready` **and** the pod log prints the banner:
->
-> ```
-> #########################
-> DATABASE IS READY TO USE!!!
-> #########################
-> ```
->
-> You can confirm with `kubectl logs -n demo oracle-sa-sample-0 -c oracle | grep "DATABASE IS READY"`.
 
 ## Apply Restart opsRequest
 
@@ -297,3 +287,16 @@ kubectl delete ns demo
 - Monitor your Oracle database with KubeDB using [Prometheus operator](/docs/guides/oracle/monitoring/using-prometheus-operator.md).
 - Learn how to [reconfigure](/docs/guides/oracle/reconfigure/reconfigure.md) an Oracle database.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+> ## ⚠️ Legal Notice
+>
+> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.
+> KubeDB is not affiliated with, endorsed by, or sponsored by Oracle Corporation.
+>
+> KubeDB provides only orchestration and management tooling for Kubernetes.
+> It does not distribute, bundle, ship, or include any Oracle Database software or binaries.
+>
+> Users must provide their own Oracle container images and hold valid Oracle licenses.
+> Users are solely responsible for compliance with Oracle’s licensing terms, including all rules regarding containers, Docker, and Kubernetes environments.
+>
+> KubeDB makes no representations or warranties regarding Oracle licensing compliance.
