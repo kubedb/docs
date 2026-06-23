@@ -358,6 +358,91 @@ Three pre-built dashboards are available. The `Namespace` and `postgres` drop-do
 
 ---
 
+## Simulating a Firing Alert
+
+The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `PostgresqlDown` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+
+### 1. Stop the PostgreSQL pod
+
+Scale the PostgreSQL StatefulSet to zero replicas. The `postgres_exporter` sidecar will stop responding and `pg_up` will drop to `0` on the next scrape.
+
+```bash
+$ kubectl scale statefulset -n demo pg-grafana-demo --replicas=0
+statefulset.apps/pg-grafana-demo scaled
+```
+
+Wait 30–60 seconds for the next Prometheus scrape cycle (configured at 10 s) and rule-evaluation cycle (30 s) to register the failure.
+
+### 2. Watch the alert fire in Prometheus
+
+Port-forward Prometheus if it is not already running.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Open `http://localhost:9090/alerts?search=postgres`.
+
+<p align="center">
+  <img alt="Prometheus Alerts — PostgresqlDown Firing" src="/docs/images/postgres/monitoring/pg-alerting-prom-alerts-firing.png" style="padding:10px">
+</p>
+
+The `PostgresqlDown` alert transitions through three states:
+
+| State | Colour | Meaning |
+|-------|--------|---------|
+| **INACTIVE** | grey | Expression is false — database is up |
+| **PENDING** | yellow | Expression is true but the `for` window has not elapsed |
+| **FIRING** | red | Expression has been true for the full `for` duration — alert is sent to AlertManager |
+
+Because `PostgresqlDown` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle.
+
+### 3. Check the AlertManager dashboard
+
+Port-forward AlertManager if it is not already running.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-alertmanager 9093:9093
+```
+
+Open `http://localhost:9093`.
+
+<p align="center">
+  <img alt="AlertManager — PostgresqlDown Firing" src="/docs/images/postgres/monitoring/pg-alerting-alertmanager-firing.png" style="padding:10px">
+</p>
+
+AlertManager shows the `PostgresqlDown` alert grouped by `namespace` and `job`. The alert card displays:
+
+- **Severity**: `critical`
+- **Instance**: `pg-grafana-demo-0` in the `demo` namespace
+- **Source**: link back to the Prometheus expression that fired the alert
+- **Started**: timestamp when the alert first fired
+
+AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
+
+### 4. Restore the PostgreSQL pod
+
+Scale the StatefulSet back to `1` to resolve the alert.
+
+```bash
+$ kubectl scale statefulset -n demo pg-grafana-demo --replicas=1
+statefulset.apps/pg-grafana-demo scaled
+```
+
+Wait for the pod to become `Running` and for the next scrape cycle to register `pg_up 1`.
+
+```bash
+$ kubectl get pods -n demo -w
+NAME                READY   STATUS    RESTARTS   AGE
+pg-grafana-demo-0   2/2     Running   0          45s
+```
+
+Once `pg_up` returns to `1`, Prometheus marks the alert **INACTIVE** again and AlertManager sends a **resolved** notification to all receivers. The AlertManager dashboard will show no active alerts for the instance.
+
+---
+
 ## Alert Reference
 
 All alerts are scoped to the `pg-grafana-demo` instance in the `demo` namespace via the PromQL label filters `job="pg-grafana-demo-stats"` and `namespace="demo"`.
