@@ -42,7 +42,7 @@ metadata:
   name: mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   replicas: 3
   storageType: Durable
   storage:

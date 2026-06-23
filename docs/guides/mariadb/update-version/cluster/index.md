@@ -85,7 +85,7 @@ We are now ready to apply the `MariaDBOpsRequest` CR to update this database.
 
 ### update MariaDB Version
 
-Here, we are going to update `MariaDB` cluster from `10.4.32` to `10.5.23`.
+Here, we are going to update `MariaDB` cluster from `10.4.32` to `11.8.5`.
 
 #### Create MariaDBOpsRequest:
 
@@ -102,14 +102,14 @@ spec:
   databaseRef:
     name: sample-mariadb
   updateVersion:
-    targetVersion: "10.5.23"
+    targetVersion: "11.8.5"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-mariadb` MariaDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `10.5.23`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `11.8.5`.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -137,13 +137,13 @@ Now, we are going to verify whether the `MariaDB` and the related `PetSets` and 
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'
-10.5.23
+11.8.5
 
 $ kubectl get sts -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mariadb:10.5.23
+mariadb:11.8.5
 
 $ kubectl get pods -n demo sample-mariadb-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mariadb:10.5.23
+mariadb:11.8.5
 ```
 
 You can see from above, our `MariaDB` cluster database has been updated with the new version. So, the update process is successfully completed.

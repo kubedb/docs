@@ -77,7 +77,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -101,7 +101,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -120,7 +120,7 @@ mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
-- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.23` database is going to create.
+- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `11.8.5` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
@@ -163,7 +163,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    WipeOut
-  Version:               10.5.23
+  Version:               11.8.5
 Status:
   Conditions:
     Last Transition Time:  2022-06-06T04:42:27Z
@@ -232,7 +232,7 @@ kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"11.8.5"}}
   creationTimestamp: "2021-03-10T04:31:09Z"
   finalizers:
   - kubedb.com
@@ -257,7 +257,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Delete
-  version: 10.5.23
+  version: 11.8.5
 status:
   observedGeneration: 2
   phase: Ready
@@ -285,7 +285,7 @@ We will exec into the pod `sample-mariadb-0` and conncet to the database using `
 $ kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='w*yOU$b53dTbjsjJ'
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 335
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -405,7 +405,7 @@ Run the following command to get MariaDB resources,
 ```bash
 $ kubectl get mariadb,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb-quickstart   10.5.23    Halted   22m
+mariadb.kubedb.com/mariadb-quickstart   11.8.5    Halted   22m
 
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h
