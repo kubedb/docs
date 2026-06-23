@@ -538,6 +538,14 @@ After the SliceConfig is applied, a `vl3-slice-router` pod will appear in `kubes
 
 #### 6. Configure DNS for KubeSlice
 
+
+>Note: You must update the DNS server for each cluster you mentioned in the slice to enable proper cross-cluster service discovery. In this guide, we are using CoreDNS, so the required changes are applied to the CoreDNS configuration.
+If your cluster uses a different DNS solution, make sure to apply equivalent forwarding rules there.
+>
+> This configuration step must be completed on all clusters participating in the slice before proceeding further.
+
+
+
 Update CoreDNS to forward `*.slice.local` traffic to the KubeSlice DNS service. Run the following steps on **every cluster** in the slice.
 
 > **Important:** CoreDNS must be updated and restarted on all clusters before proceeding to Step 4 (KubeDB install). Postgres nodes use `.slice.local` DNS names to discover each other across clusters. If DNS is not configured before Postgres pods start, replication will not form.
