@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: dataguard-inline-conf
+  namespace: demo
+spec:
+  configuration:
+    secretName: oracle-custom-config
+    inline:
+      oracle.cnf: |
+        SGA_TARGET=5G
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  version: "21.3.0"
+  edition: enterprise
+  mode: DataGuard
+  storageType: Durable
+  replicas: 3
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+  deletionPolicy: WipeOut

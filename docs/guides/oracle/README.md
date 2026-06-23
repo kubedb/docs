@@ -38,4 +38,3 @@ aliases:
 
 - [Quickstart Oracle](/docs/guides/oracle/quickstart/guide.md) with KubeDB Operator.
 
-
