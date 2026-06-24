@@ -49,7 +49,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
 
   Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
 
-  <br> **Azure Database for MariaDB** <br>
+  <br> <br> **Azure Database for MariaDB** <br>
 
   Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mariadb/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
 
@@ -140,7 +140,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f target-mariadb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/target-mariadb.yaml
 mariadb.kubedb.com/target-mariadb created
 ```
 
@@ -205,7 +205,7 @@ Here,
 
 **`spec.source.schema` — schema migration phase:**
 - `enabled: true` — enables the schema migration phase.
-- `database` — list of databases to include; empty means all databases.
+- `database` — list of databases to include; empty means all databases except system database(mysql,information_schema,performance_schema,sys).
 - `excludeDatabase` — list of databases to exclude from migration.
 
 **`spec.source.snapshot` — bulk snapshot phase:**

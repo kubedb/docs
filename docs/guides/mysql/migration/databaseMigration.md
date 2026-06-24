@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
   <details>
   <summary>How to configure this on your source instance?</summary>
 
-  **Self-hosted MySQL**
+  <br> **Self-hosted MySQL** <br>
 
   Add the following to your `my.cnf` and restart MySQL:
   ```ini
@@ -49,11 +49,11 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
 
   Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
 
-  <br> **Azure Database for MySQL** <br>
+  <br> <br> **Azure Database for MySQL** <br>
 
   Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
 
-  <br> **Google Cloud SQL for MySQL** <br>
+  <br> <br> **Google Cloud SQL for MySQL** <br>
 
   Enable binary logging under **Backups** in the [Cloud Console](https://cloud.google.com/sql/docs/mysql/replication/create-replica), then set `binlog_format = ROW` and `binlog_row_image = FULL` under **Database flags**.
 
@@ -141,8 +141,8 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
-mysql.kubedb.com/mysql-quickstart created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/target-mysql.yaml
+mysql.kubedb.com/target-mysql created
 ```
 > Note: Adjust the `resources.requests.storage` based on source database.
 
@@ -205,7 +205,7 @@ Here,
 
 **`spec.source.schema` — schema migration phase:**
 - `enabled: true` — enables the schema migration phase.
-- `database` — list of databases to include; empty means all databases.
+- `database` — list of databases to include; empty means all databases except mysql system database(mysql,information_schema,performance_schema,sys).
 - `excludeDatabase` — list of databases to exclude from migration.
 
 **`spec.source.snapshot` — bulk snapshot phase:**

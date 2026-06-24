@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
   <details>
   <summary>How to configure this on your source instance</summary>
 
-  **Self-hosted MongoDB**
+  **Self-hosted MongoDB** <br>
 
   A standalone `mongod` must first be [converted to a single-node replica set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Once running as a replica set, the oplog is enabled automatically. Then create the migration user:
   ```js
@@ -44,7 +44,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
   })
   ```
 
-  **MongoDB Atlas**
+  **MongoDB Atlas** <br>
   Atlas clusters run as replica sets by default — no extra configuration needed. Create a database user with **Read Any Database** built-in role in **Database Access** settings.
 
   See the official [MongoDB Replica Set](https://www.mongodb.com/docs/manual/replication/) docs for more details.
@@ -146,7 +146,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f target-mongodb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mgo-destination.yaml
 mongodb.kubedb.com/mgo-destination created
 ```
 

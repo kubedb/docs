@@ -51,15 +51,15 @@ A brief downtime occurs only during the final cutover when application endpoints
 
   Set `rds.logical_replication = 1` in your [RDS Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication) and reboot the instance. Then grant the replication privilege via SQL as shown above.
 
-  <br> **Azure Database for PostgreSQL** <br>
+  <br> <br> **Azure Database for PostgreSQL** <br>
 
   Set `azure.replication_support = logical` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) and restart the server. Then grant the replication privilege via SQL as shown above.
 
-  <br> **Google Cloud SQL** <br>
+  <br> <br> **Google Cloud SQL** <br>
 
   Enable the `cloudsql.logical_decoding` flag via the [Cloud Console database flags](https://cloud.google.com/sql/docs/postgres/replication/configure-logical-replication). Then grant the replication privilege via SQL as shown above.
 
-  <br> **CloudNativePG (CNPG)** <br>
+  <br> <br> **CloudNativePG (CNPG)** <br>
 
   Add `wal_level: logical` under `postgresql` parameters in the `Cluster` spec.
 
@@ -145,7 +145,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f target-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/target-postgres.yaml
 postgres.kubedb.com/target-postgres created
 ```
 
