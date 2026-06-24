@@ -49,20 +49,21 @@ When you have installed KubeDB, it has created `MariaDBVersion` crd for all supp
 
 ```bash
 $ kubectl get mariadbversions
-10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                27h
-10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                27h
-10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                27h
-10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                27h
-10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                27h
-11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 27h
-11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 27h
-11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 27h
-11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 27h
-11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 27h
-11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 27h
-11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 23m
-
-```
+NAME      VERSION   DB_IMAGE                                        DEPRECATED   AGE
+10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                12d
+10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                12d
+10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                12d
+10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                12d
+10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                12d
+11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 12d
+11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 12d
+11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 12d
+11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 12d
+11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 12d
+11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 12d
+11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 12d
+11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble                 12d
+12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble                 12d```
 
 ## Create a MariaDB database
 
@@ -77,7 +78,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -101,7 +102,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -120,7 +121,7 @@ mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
-- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `10.5.23` database is going to create.
+- `spec.version` is the name of the MariaDBVersion CRD where the docker images are specified. In this tutorial, a MariaDB `11.8.5` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for MariaDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MariaDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MariaDB` crd or which resources KubeDB should keep or delete when you delete `MariaDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
@@ -163,7 +164,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    WipeOut
-  Version:               10.5.23
+  Version:               11.8.5
 Status:
   Conditions:
     Last Transition Time:  2022-06-06T04:42:27Z
@@ -232,7 +233,7 @@ kind: MariaDB
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"10.5.23"}}
+      {"apiVersion":"kubedb.com/v1","kind":"MariaDB","metadata":{"annotations":{},"name":"sample-mariadb","namespace":"demo"},"spec":{"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","deletionPolicy":"WipeOut","version":"11.8.5"}}
   creationTimestamp: "2021-03-10T04:31:09Z"
   finalizers:
   - kubedb.com
@@ -257,7 +258,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Delete
-  version: 10.5.23
+  version: 11.8.5
 status:
   observedGeneration: 2
   phase: Ready
@@ -285,7 +286,7 @@ We will exec into the pod `sample-mariadb-0` and conncet to the database using `
 $ kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='w*yOU$b53dTbjsjJ'
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 335
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -405,7 +406,7 @@ Run the following command to get MariaDB resources,
 ```bash
 $ kubectl get mariadb,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb-quickstart   10.5.23    Halted   22m
+mariadb.kubedb.com/mariadb-quickstart   11.8.5    Halted   22m
 
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      27h

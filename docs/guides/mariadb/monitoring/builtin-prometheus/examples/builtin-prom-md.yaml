@@ -4,7 +4,7 @@ metadata:
   name: builtin-prom-md
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

@@ -41,7 +41,7 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2024.11.18
     helm.sh/chart: kubedb-catalog-v2024.11.18
-  name: 10.5.23
+  name: 11.8.5
   resourceVersion: "1585"
   uid: d6b463f0-032a-4832-8b87-4648da0b38a6
 spec:
@@ -64,7 +64,7 @@ spec:
   coordinator:
     image: ghcr.io/kubedb/mariadb-coordinator:v0.29.0
   db:
-    image: ghcr.io/appscode-images/mariadb:10.5.23-focal
+    image: ghcr.io/appscode-images/mariadb:11.8.5-focal
   exporter:
     image: prom/mysqld-exporter:v0.13.0
   initContainer:

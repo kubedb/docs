@@ -41,7 +41,7 @@ Here, we are going to deploy a  `MariaDB` cluster using a supported version by `
 
 ### Prepare MariaDB Cluster Database
 
-Now, we are going to deploy a `MariaDB` cluster with version `10.5.23`.
+Now, we are going to deploy a `MariaDB` cluster with version `11.8.5`.
 
 ### Deploy MariaDB Cluster
 
@@ -54,7 +54,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "11.8.5"
   replicas: 3
   storageType: Durable
   storage:
@@ -79,7 +79,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.23    Ready    2m36s
+sample-mariadb   11.8.5    Ready    2m36s
 ```
 
 Let's check the number of replicas this database has from the MariaDB object, number of pods the petset have,

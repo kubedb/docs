@@ -3,7 +3,7 @@ title: MariaDB Cluster Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-autoscaling-compute-cluster
-    name: Cluster
+    name: Galera Cluster
     parent: guides-mariadb-autoscaling-compute
     weight: 20
 menu_name: docs_{{ .version }}
@@ -42,7 +42,7 @@ Here, we are going to deploy a `MariaDB` Cluster using a supported version by `K
 
 #### Deploy MariaDB Cluster
 
-In this section, we are going to deploy a MariaDB Cluster with version `10.6.16`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to deploy a MariaDB Cluster with version `11.8.5`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 > If you want to autoscale MariaDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -52,7 +52,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.6.16"
+  version: "11.8.5"
   replicas: 3
   storageType: Durable
   storage:
@@ -88,7 +88,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.23    Ready    14m
+sample-mariadb   11.8.5    Ready    14m
 ```
 
 Let's check the Pod containers resources,
