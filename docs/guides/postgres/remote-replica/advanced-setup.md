@@ -16,24 +16,24 @@ section_menu_id: guides
 
 This guide walks through a production-grade Disaster Recovery (DR) setup for KubeDB-managed PostgreSQL across two Kubernetes clusters in different regions. You will:
 
-- Deploy a 3-replica HA PostgreSQL cluster in a **primary region** (Singapore)
-- Replicate it live to a **DR region** (London) as a remote replica
+- Deploy a 3-replica HA PostgreSQL cluster in the **primary region** (Singapore)
+- Replicate it live to the **DR region** (London) as a remote replica
 - Perform a **failover**: promote London to primary when Singapore goes down
-- Bring Singapore back online as a remote replica of the new primary
-- Perform a **failback**: promote Singapore again and reconnect London as DR
+- Bring Singapore back online as a remote replica of the new primary (London)
+- Perform a **failback**: promote Singapore again and reconnect London as the DR
 
-> Note: The yaml files used in this tutorial are stored in [docs/guides/postgres/remote-replica/advanced-setup-yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/postgres/remote-replica/advanced-setup-yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Before You Begin
 
 You need:
 
-- **Two Kubernetes clusters** — one for each region. This guide uses `KUBECONFIG_PRIMARY` for Singapore (primary) and `KUBECONFIG_DR` for London (DR). Substitute your actual kubeconfig paths throughout.
-- **KubeDB operator** installed on both clusters. Follow the installation steps [here](/docs/setup/README.md).
-- **cert-manager** installed on both clusters. Follow the installation steps at [cert-manager.io/docs/installation](https://cert-manager.io/docs/installation/).
-- **kubectl** and **kubectl-dba** plugin configured on your workstation.
+- **Two Kubernetes clusters** — one for each region. This guide uses `KUBECONFIG_PRIMARY` (Singapore) and `KUBECONFIG_DR` (London).
+- **KubeDB operator** installed on both clusters — follow [setup instructions](/docs/setup/README.md).
+- **cert-manager** installed on both clusters — follow [cert-manager.io/docs/installation](https://cert-manager.io/docs/installation/).
+- **kubectl** and **kubectl-dba** plugin on your workstation.
 
-Export your kubeconfig paths for convenience:
+Export your kubeconfig paths:
 
 ```bash
 export KUBECONFIG_PRIMARY=/path/to/singapore-kubeconfig.yaml
@@ -53,23 +53,21 @@ namespace/demo created
 ## Architecture
 
 ```
- ┌─────────────────────────────────┐         ┌─────────────────────────────────┐
- │  Cluster: Singapore (Primary)   │         │  Cluster: London (DR)           │
- │                                 │         │                                 │
- │  pg-singapore-0 (primary)       │◄───────►│  pg-london-0 (remote replica)   │
- │  pg-singapore-1 (hot standby)   │ WAL     │  pg-london-1 (hot standby)      │
- │  pg-singapore-2 (hot standby)   │ stream  │  pg-london-2 (hot standby)      │
- │                                 │         │                                 │
- │  ingress-nginx → :5432          │         │  ingress-nginx → :5432          │
- │  ExternalIP: <PRIMARY_IP>       │         │  ExternalIP: <DR_IP>            │
- └─────────────────────────────────┘         └─────────────────────────────────┘
+ ┌──────────────────────────────────┐         ┌──────────────────────────────────┐
+ │  Cluster: Singapore (Primary)    │         │  Cluster: London (DR)            │
+ │                                  │         │                                  │
+ │  pg-singapore-0  (primary)       │◄───────►│  pg-london-0  (remote replica)   │
+ │  pg-singapore-1  (hot standby)   │  WAL    │  pg-london-1  (hot standby)      │
+ │  pg-singapore-2  (hot standby)   │ stream  │  pg-london-2  (hot standby)      │
+ │                                  │         │                                  │
+ │  ingress-nginx → :5432           │         │  ingress-nginx → :5432           │
+ │  ExternalIP: <PRIMARY_IP>        │         │  ExternalIP: <DR_IP>             │
+ └──────────────────────────────────┘         └──────────────────────────────────┘
 ```
 
-> **Key design principle:** Both clusters use **the same CA certificate** to issue TLS certificates. This allows mutual TLS verification across clusters without needing to exchange CA bundles separately.
+> **Key design principle:** Both clusters use the **same CA certificate** to issue TLS certificates. This allows mutual TLS verification across clusters — no separate CA bundle exchange needed.
 
 ## Step 1: Generate a Shared CA Certificate
-
-The CA must be **identical on both clusters** so that cross-cluster client certificates are trusted.
 
 Generate the CA once on your workstation:
 
@@ -79,7 +77,7 @@ $ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 \
     -subj "/CN=postgres/O=kubedb"
 ```
 
-Create the `postgres-ca` secret on **both** clusters:
+Create the `postgres-ca` secret on **both** clusters with the **same** CA files:
 
 ```bash
 $ kubectl create secret tls postgres-ca \
@@ -95,7 +93,7 @@ secret/postgres-ca created
 
 ## Step 2: Create Issuers
 
-Create a cert-manager `Issuer` backed by the shared CA on **both** clusters. The issuer name (`pg-issuer`) must match what is referenced in the Postgres CR.
+Create a cert-manager `Issuer` backed by the shared CA on **both** clusters:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -109,30 +107,32 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-issuer.yaml --kubeconfig $KUBECONFIG_PRIMARY
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-issuer.yaml \
+    --kubeconfig $KUBECONFIG_PRIMARY
 issuer.cert-manager.io/pg-issuer created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-issuer.yaml --kubeconfig $KUBECONFIG_DR
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-issuer.yaml \
+    --kubeconfig $KUBECONFIG_DR
 issuer.cert-manager.io/pg-issuer created
 ```
 
-Verify both Issuers are Ready:
+Verify both are Ready:
 
 ```bash
 $ kubectl get issuer pg-issuer -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME        READY   AGE
-pg-issuer   True    3s
+pg-issuer   True    0s
 
 $ kubectl get issuer pg-issuer -n demo --kubeconfig $KUBECONFIG_DR
 NAME        READY   AGE
-pg-issuer   True    3s
+pg-issuer   True    0s
 ```
 
 ## Step 3: Create Auth Secrets
 
-**Both clusters must use the same password** for the same user. This is essential: when the remote replica does a `pg_basebackup` from the primary, it inherits the primary's data directory (including password hashes). The local auth secret must match.
+> **Critical:** Both clusters must use **the same password**. When the remote replica performs `pg_basebackup` from the primary, it inherits the primary's password hashes. The local `authSecret` must match.
 
-Create identical auth secrets on **both** clusters:
+Create these secrets on **both** clusters:
 
 ```yaml
 apiVersion: v1
@@ -142,7 +142,7 @@ metadata:
   namespace: demo
 stringData:
   username: postgres
-  password: <your-password>
+  password: <your-strong-password>
 type: kubernetes.io/basic-auth
 ---
 apiVersion: v1
@@ -152,11 +152,9 @@ metadata:
   namespace: demo
 stringData:
   username: postgres
-  password: <your-password>
+  password: <your-strong-password>
 type: kubernetes.io/basic-auth
 ```
-
-> **Important:** Use `stringData` (not `data`) to avoid base64 encoding issues. Both secrets must have the **exact same password value**.
 
 ```bash
 $ kubectl apply \
@@ -176,9 +174,9 @@ secret/pg-london-auth created
 
 ## Step 4: Expose PostgreSQL via ingress-nginx
 
-The remote replica connects to the primary using the primary cluster's external IP. We use ingress-nginx with TCP passthrough to expose port 5432.
+The remote replica connects to the primary over the public/external IP. We use ingress-nginx TCP passthrough on port 5432.
 
-Install ingress-nginx on the **primary cluster** (Singapore), routing port 5432 to `pg-singapore`:
+Install on the **primary cluster** (routes `:5432` → `pg-singapore`):
 
 ```bash
 $ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
@@ -189,7 +187,7 @@ $ helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx \
     --kubeconfig $KUBECONFIG_PRIMARY
 ```
 
-Install ingress-nginx on the **DR cluster** (London), routing port 5432 to `pg-london`:
+Install on the **DR cluster** (routes `:5432` → `pg-london`):
 
 ```bash
 $ helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx \
@@ -198,23 +196,21 @@ $ helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx \
     --kubeconfig $KUBECONFIG_DR
 ```
 
-Wait for the LoadBalancer IPs to be assigned:
+Wait for LoadBalancer IPs:
 
 ```bash
 $ kubectl get svc ingress-nginx-controller -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME                       TYPE           CLUSTER-IP      EXTERNAL-IP    PORT(S)                                     AGE
-ingress-nginx-controller   LoadBalancer   10.43.238.105   <PRIMARY_IP>   80:32243/TCP,443:32688/TCP,5432:31152/TCP   21s
+ingress-nginx-controller   LoadBalancer   10.43.238.105   10.2.0.188     80:32243/TCP,443:32688/TCP,5432:31152/TCP   21s
 
 $ kubectl get svc ingress-nginx-controller -n demo --kubeconfig $KUBECONFIG_DR
 NAME                       TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                                     AGE
-ingress-nginx-controller   LoadBalancer   10.43.3.197   <DR_IP>       80:30572/TCP,443:31732/TCP,5432:32539/TCP   8s
+ingress-nginx-controller   LoadBalancer   10.43.3.197   10.2.0.30     80:30572/TCP,443:31732/TCP,5432:32539/TCP   8s
 ```
 
-Note the `EXTERNAL-IP` values — you will need them for the `kubectl-dba remote-config` command.
+Note the `EXTERNAL-IP` values — you will need them for `kubectl-dba remote-config`.
 
-## Step 5: Deploy the Primary PostgreSQL Cluster
-
-Deploy a 3-replica HA PostgreSQL cluster on the **primary cluster** (Singapore):
+## Step 5: Deploy the Primary PostgreSQL Cluster (Singapore)
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -255,11 +251,12 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-singapore.yaml --kubeconfig $KUBECONFIG_PRIMARY
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-singapore.yaml \
+    --kubeconfig $KUBECONFIG_PRIMARY
 postgres.kubedb.com/pg-singapore created
 ```
 
-Wait until the cluster is Ready:
+Wait until Ready:
 
 ```bash
 $ kubectl wait pg pg-singapore -n demo \
@@ -269,19 +266,19 @@ postgres.kubedb.com/pg-singapore condition met
 
 $ kubectl get pg pg-singapore -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME           VERSION   STATUS   AGE
-pg-singapore   17.4      Ready    3m6s
+pg-singapore   17.4      Ready    3m11s
 
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME                                       READY   STATUS    RESTARTS   AGE
-ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          5m24s
-pg-singapore-0                             2/2     Running   0          2m55s
-pg-singapore-1                             2/2     Running   0          2m13s
-pg-singapore-2                             2/2     Running   0          97s
+ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          54m
+pg-singapore-0                             2/2     Running   0          3m1s
+pg-singapore-1                             2/2     Running   0          2m22s
+pg-singapore-2                             2/2     Running   0          104s
 ```
 
-Each pod shows `2/2` — the `postgres` container and the `pg-coordinator` container (Raft-based HA manager).
+Each pod shows `2/2` — the `postgres` container and `pg-coordinator` (Raft HA manager).
 
-### Seed some data
+### Seed test data
 
 ```bash
 $ kubectl exec -i -n demo pg-singapore-0 -c postgres \
@@ -290,13 +287,15 @@ $ kubectl exec -i -n demo pg-singapore-0 -c postgres \
     "CREATE TABLE hello (id SERIAL PRIMARY KEY, msg TEXT);
      INSERT INTO hello (msg) SELECT 'hello from singapore ' || i FROM generate_series(1,1000) i;
      SELECT count(*) FROM hello;"
+CREATE TABLE
+INSERT 0 1000
  count
 -------
   1000
 (1 row)
 ```
 
-Verify replication to a standby within the same cluster:
+Verify replication within the Singapore cluster:
 
 ```bash
 $ kubectl exec -i -n demo pg-singapore-2 -c postgres \
@@ -310,26 +309,23 @@ $ kubectl exec -i -n demo pg-singapore-2 -c postgres \
 
 ## Step 6: Generate Remote Replica Configuration
 
-Use `kubectl-dba remote-config` to generate the AppBinding and TLS secrets that the DR cluster needs to connect to the primary. Run this against the **primary cluster**:
+Use `kubectl-dba remote-config` to generate the AppBinding and TLS secrets the DR cluster needs to connect to the primary. Run this against the **primary cluster** from any working directory — the config file is written to the current directory:
 
 ```bash
 $ kubectl-dba remote-config postgres -n demo pg-singapore \
     -upostgres -p'<your-password>' \
-    -d <PRIMARY_IP> \
+    -d <PRIMARY_EXTERNAL_IP> \
     --auth-secret pg-london-auth \
     -y pg-singapore-remote-config.yaml \
     --kubeconfig $KUBECONFIG_PRIMARY
 ```
 
-This command:
-- Connects to `pg-singapore` as `postgres`
-- Generates a client TLS certificate signed by the shared CA
-- Creates `pg-singapore-remote-config.yaml` containing:
-  - A `Secret` (`pg-london-auth`) with credentials the remote replica uses to authenticate
-  - A `Secret` (`pg-singapore-client-cert-postgres`) with the client TLS certificate
-  - An `AppBinding` (`pg-singapore`) pointing to `<PRIMARY_IP>:5432` with `sslmode=verify-ca`
+This generates `pg-singapore-remote-config.yaml` containing:
+- A `Secret` (`pg-london-auth`) — credentials the remote replica uses to authenticate
+- A `Secret` (`pg-singapore-client-cert-postgres`) — TLS client certificate signed by the shared CA
+- An `AppBinding` (`pg-singapore`) — points to `<PRIMARY_EXTERNAL_IP>:5432` with `sslmode=verify-ca`
 
-Copy this file to your workstation (it was generated in the current directory) and apply it on the **DR cluster**:
+Apply the generated file on the **DR cluster**:
 
 ```bash
 $ kubectl apply -f pg-singapore-remote-config.yaml --kubeconfig $KUBECONFIG_DR
@@ -338,9 +334,7 @@ secret/pg-singapore-client-cert-postgres created
 appbinding.appcatalog.appscode.com/pg-singapore created
 ```
 
-## Step 7: Deploy the Remote Replica (DR cluster)
-
-Deploy `pg-london` as a remote replica on the **DR cluster** (London):
+## Step 7: Deploy the Remote Replica (London)
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -385,9 +379,14 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-london-remote-replica.yaml --kubeconfig $KUBECONFIG_DR
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-london-remote-replica.yaml \
+    --kubeconfig $KUBECONFIG_DR
 postgres.kubedb.com/pg-london created
+```
 
+Wait until Ready:
+
+```bash
 $ kubectl wait pg pg-london -n demo \
     --for=jsonpath='{.status.phase}'=Ready \
     --timeout=300s --kubeconfig $KUBECONFIG_DR
@@ -395,21 +394,21 @@ postgres.kubedb.com/pg-london condition met
 
 $ kubectl get pg pg-london -n demo --kubeconfig $KUBECONFIG_DR
 NAME        VERSION   STATUS   AGE
-pg-london   17.4      Ready    2m9s
+pg-london   17.4      Ready    83s
 
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_DR
 NAME                                       READY   STATUS    RESTARTS   AGE
-ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          8m3s
-pg-london-0                                1/1     Running   0          2m1s
-pg-london-1                                1/1     Running   0          113s
-pg-london-2                                1/1     Running   0          106s
+ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          56m
+pg-london-0                                1/1     Running   0          74s
+pg-london-1                                1/1     Running   0          66s
+pg-london-2                                1/1     Running   0          59s
 ```
 
-Remote replica pods show `1/1` — no coordinator (remote replicas are standalone standby nodes managed by the init scripts directly).
+Remote replica pods show `1/1` — no coordinator (remote replicas are managed by init scripts directly, without Raft leader election).
 
 ## Step 8: Verify Cross-Cluster Replication
 
-Verify the seeded data is present on the DR cluster:
+Verify the seeded data arrived:
 
 ```bash
 $ kubectl exec -i -n demo pg-london-0 -c postgres \
@@ -421,13 +420,14 @@ $ kubectl exec -i -n demo pg-london-0 -c postgres \
 (1 row)
 ```
 
-Insert a new row on the primary and verify it streams to London within seconds:
+Insert a new row on the primary and confirm it streams to London within seconds:
 
 ```bash
 $ kubectl exec -i -n demo pg-singapore-0 -c postgres \
     --kubeconfig $KUBECONFIG_PRIMARY -- \
     psql -U postgres -d postgres -c \
     "INSERT INTO hello (msg) VALUES ('live replication test'); SELECT count(*) FROM hello;"
+INSERT 0 1
  count
 -------
   1001
@@ -442,7 +442,7 @@ $ kubectl exec -i -n demo pg-london-0 -c postgres \
   1001
 (1 row)
 
-        msg
+          msg
 -----------------------
  live replication test
 (1 row)
@@ -450,9 +450,9 @@ $ kubectl exec -i -n demo pg-london-0 -c postgres \
 
 Cross-cluster WAL streaming is confirmed.
 
-## Step 9: Failover — Promote the DR Cluster
+## Step 9: Failover — Promote the DR Cluster (London)
 
-This section simulates a primary region failure. Singapore goes down and London is promoted to primary.
+This section simulates a primary region failure. Singapore goes down; London is promoted to primary.
 
 ### 9.1 Delete the Primary
 
@@ -464,17 +464,13 @@ postgres.kubedb.com "pg-singapore" deleted
 
 ### 9.2 Promote London to Standalone Primary
 
-Apply the standalone (non-remote-replica) spec for `pg-london` to remove the `remoteReplica` section:
+Apply the standalone spec (removes `remoteReplica`) and restart the pods:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-london.yaml \
     --kubeconfig $KUBECONFIG_DR
 postgres.kubedb.com/pg-london configured
-```
 
-Delete the pods to force a restart in the new primary role:
-
-```bash
 $ kubectl delete pods -n demo \
     -l "app.kubernetes.io/instance=pg-london,app.kubernetes.io/component=database" \
     --kubeconfig $KUBECONFIG_DR
@@ -483,7 +479,7 @@ pod "pg-london-1" deleted
 pod "pg-london-2" deleted
 ```
 
-Wait for pg-london to become Ready as a standalone HA cluster:
+Wait for pg-london to come up as a standalone HA cluster:
 
 ```bash
 $ kubectl wait pg pg-london -n demo \
@@ -493,21 +489,21 @@ postgres.kubedb.com/pg-london condition met
 
 $ kubectl get pg pg-london -n demo --kubeconfig $KUBECONFIG_DR
 NAME        VERSION   STATUS   AGE
-pg-london   17.4      Ready    5m6s
+pg-london   17.4      Ready    3m1s
 
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_DR
 NAME                                       READY   STATUS    RESTARTS   AGE
-ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          11m
-pg-london-0                                2/2     Running   0          29s
-pg-london-1                                2/2     Running   0          25s
-pg-london-2                                2/2     Running   0          22s
+ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          58m
+pg-london-0                                2/2     Running   0          19s
+pg-london-1                                2/2     Running   0          16s
+pg-london-2                                2/2     Running   0          13s
 ```
 
-Pods now show `2/2` — the coordinator is running, pg-london is a full HA cluster.
+Pods show `2/2` — the coordinator is running again, pg-london is a full HA cluster.
 
 ### 9.3 Verify Data Integrity After Failover
 
-All data is intact and writes are accepted:
+All prior data is intact and writes are accepted:
 
 ```bash
 $ kubectl exec -i -n demo pg-london-0 -c postgres \
@@ -549,16 +545,12 @@ $ kubectl exec -i -n demo pg-london-2 -c postgres \
 
 ## Step 10: Bring Singapore Back as a Remote Replica
 
-Once the primary region recovers, bring it back as a remote replica of the current primary (London).
-
-### 10.1 Generate Remote Config from London
-
-Run `kubectl-dba remote-config` against the **DR cluster** (now the primary):
+### 10.1 Generate Remote Config from London (now primary)
 
 ```bash
 $ kubectl-dba remote-config postgres -n demo pg-london \
     -upostgres -p'<your-password>' \
-    -d <DR_IP> \
+    -d <DR_EXTERNAL_IP> \
     --auth-secret pg-singapore-auth \
     -y pg-london-remote-config.yaml \
     --kubeconfig $KUBECONFIG_DR
@@ -629,19 +621,19 @@ postgres.kubedb.com/pg-singapore condition met
 
 $ kubectl get pg pg-singapore -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME           VERSION   STATUS   AGE
-pg-singapore   17.4      Ready    2m42s
+pg-singapore   17.4      Ready    3m5s
 
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME                                       READY   STATUS    RESTARTS   AGE
-ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          14m
-pg-singapore-0                             1/1     Running   0          2m36s
-pg-singapore-1                             1/1     Running   0          119s
-pg-singapore-2                             1/1     Running   0          75s
+ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          61m
+pg-singapore-0                             1/1     Running   0          3m1s
+pg-singapore-1                             1/1     Running   0          2m26s
+pg-singapore-2                             1/1     Running   0          101s
 ```
 
 ### 10.3 Verify Recovery and Live Replication
 
-Verify Singapore has all the data including what was written during the London-primary period:
+All data is present including what was written while London was primary:
 
 ```bash
 $ kubectl exec -i -n demo pg-singapore-0 -c postgres \
@@ -667,6 +659,7 @@ $ kubectl exec -i -n demo pg-london-0 -c postgres \
     psql -U postgres -d postgres -c \
     "INSERT INTO hello (msg) VALUES ('streaming to singapore after role reversal');
      SELECT count(*) FROM hello;"
+INSERT 0 1
  count
 -------
   1003
@@ -682,14 +675,14 @@ $ kubectl exec -i -n demo pg-singapore-0 -c postgres \
 (1 row)
 
                     msg
--------------------------------------------
+--------------------------------------------
  streaming to singapore after role reversal
 (1 row)
 ```
 
-## Step 11: Failback — Restore Singapore as Primary (Optional)
+## Step 11: Failback — Restore Singapore as Primary
 
-To restore the original topology (Singapore primary, London DR), repeat the failover steps in reverse.
+To return to the original topology (Singapore primary, London DR), repeat the failover steps with the roles reversed.
 
 ### 11.1 Delete London, Promote Singapore
 
@@ -710,33 +703,68 @@ pod "pg-singapore-1" deleted
 pod "pg-singapore-2" deleted
 ```
 
-> **Note:** After pod restart, if `pg-singapore` stays in `NotReady` with the coordinator unable to elect a primary, restart `pg-singapore-0` once manually:
+> **Note:** In some cases after pod restart, `pg-singapore` may stay `NotReady` because the coordinator's gRPC promote call returns exit code 1 when postgres already auto-promoted itself. If this happens, restart `pg-singapore-0` once:
 > ```bash
 > kubectl delete pod pg-singapore-0 -n demo --kubeconfig $KUBECONFIG_PRIMARY
 > ```
-> This is a known edge case when transitioning a cluster from remote-replica mode to HA mode: the coordinator's gRPC promote call returns exit code 1 if postgres auto-promoted itself before the coordinator could act. A pod restart resolves it.
-
-Wait for Ready:
+> This is a known edge case when transitioning from remote-replica mode to HA mode.
 
 ```bash
 $ kubectl wait pg pg-singapore -n demo \
     --for=jsonpath='{.status.phase}'=Ready \
     --timeout=300s --kubeconfig $KUBECONFIG_PRIMARY
 postgres.kubedb.com/pg-singapore condition met
+
+$ kubectl get pg pg-singapore -n demo --kubeconfig $KUBECONFIG_PRIMARY
+NAME           VERSION   STATUS   AGE
+pg-singapore   17.4      Ready    5m43s
+
+$ kubectl get pods -n demo --kubeconfig $KUBECONFIG_PRIMARY
+NAME                                       READY   STATUS    RESTARTS   AGE
+ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          64m
+pg-singapore-0                             2/2     Running   0          91s
+pg-singapore-1                             2/2     Running   0          50s
+pg-singapore-2                             2/2     Running   0          27s
 ```
 
-### 11.2 Reconnect London as Remote Replica
+Verify data and write to confirm primary is writable:
+
+```bash
+$ kubectl exec -i -n demo pg-singapore-0 -c postgres \
+    --kubeconfig $KUBECONFIG_PRIMARY -- \
+    psql -U postgres -d postgres -c \
+    "SELECT count(*) FROM hello;
+     INSERT INTO hello (msg) VALUES ('inserted after singapore re-promoted to primary');
+     SELECT count(*) FROM hello;"
+ count
+-------
+  1003
+(1 row)
+
+INSERT 0 1
+
+ count
+-------
+  1004
+(1 row)
+```
+
+### 11.2 Reconnect London as Remote Replica of Singapore
 
 Generate fresh remote config from Singapore (now primary again):
 
 ```bash
 $ kubectl-dba remote-config postgres -n demo pg-singapore \
     -upostgres -p'<your-password>' \
-    -d <PRIMARY_IP> \
+    -d <PRIMARY_EXTERNAL_IP> \
     --auth-secret pg-london-auth \
     -y pg-singapore-remote-config.yaml \
     --kubeconfig $KUBECONFIG_PRIMARY
+```
 
+Apply on the DR cluster and deploy pg-london as remote replica:
+
+```bash
 $ kubectl apply -f pg-singapore-remote-config.yaml --kubeconfig $KUBECONFIG_DR
 secret/pg-london-auth configured
 secret/pg-singapore-client-cert-postgres configured
@@ -750,17 +778,77 @@ $ kubectl wait pg pg-london -n demo \
     --for=jsonpath='{.status.phase}'=Ready \
     --timeout=300s --kubeconfig $KUBECONFIG_DR
 postgres.kubedb.com/pg-london condition met
+
+$ kubectl get pg pg-london -n demo --kubeconfig $KUBECONFIG_DR
+NAME        VERSION   STATUS   AGE
+pg-london   17.4      Ready    117s
+
+$ kubectl get pods -n demo --kubeconfig $KUBECONFIG_DR
+NAME                                       READY   STATUS    RESTARTS   AGE
+ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          66m
+pg-london-0                                1/1     Running   0          114s
+pg-london-1                                1/1     Running   0          107s
+pg-london-2                                1/1     Running   0          100s
 ```
 
-Original topology is restored.
+### 11.3 Verify Final State
+
+All data (including writes during both London-as-primary periods) is present on London:
+
+```bash
+$ kubectl exec -i -n demo pg-london-0 -c postgres \
+    --kubeconfig $KUBECONFIG_DR -- \
+    psql -U postgres -d postgres -c \
+    "SELECT count(*) FROM hello; SELECT msg FROM hello ORDER BY id DESC LIMIT 1;"
+ count
+-------
+  1004
+(1 row)
+
+                       msg
+-------------------------------------------------
+ inserted after singapore re-promoted to primary
+(1 row)
+```
+
+Insert on Singapore and verify it streams to London:
+
+```bash
+$ kubectl exec -i -n demo pg-singapore-0 -c postgres \
+    --kubeconfig $KUBECONFIG_PRIMARY -- \
+    psql -U postgres -d postgres -c \
+    "INSERT INTO hello (msg) VALUES ('final verification - back to original topology');
+     SELECT count(*) FROM hello;"
+INSERT 0 1
+ count
+-------
+  1005
+(1 row)
+
+$ kubectl exec -i -n demo pg-london-0 -c postgres \
+    --kubeconfig $KUBECONFIG_DR -- \
+    psql -U postgres -d postgres -c \
+    "SELECT count(*) FROM hello; SELECT msg FROM hello ORDER BY id DESC LIMIT 1;"
+ count
+-------
+  1005
+(1 row)
+
+                      msg
+------------------------------------------------
+ final verification - back to original topology
+(1 row)
+```
+
+Original topology fully restored: Singapore is primary, London is DR, live streaming confirmed.
 
 ## Failover Runbook Summary
 
 | Scenario | Steps |
 |---|---|
-| **Primary down → promote DR** | 1. `kubectl delete -f <primary>.yaml --kubeconfig PRIMARY` <br>2. `kubectl apply -f <dr-standalone>.yaml --kubeconfig DR` <br>3. Delete DR pods <br>4. Wait for DR Ready |
-| **Bring old primary back as remote replica** | 1. `kubectl-dba remote-config` from new primary <br>2. Apply config on old primary cluster <br>3. `kubectl apply -f <old-primary-remote-replica>.yaml` |
-| **Failback to original primary** | Repeat failover steps with clusters reversed |
+| **Primary down → promote DR** | 1. `kubectl delete -f <primary-standalone>.yaml` on PRIMARY<br>2. `kubectl apply -f <dr-standalone>.yaml` on DR<br>3. Delete DR pods<br>4. Wait for DR `Ready` |
+| **Bring old primary back as remote replica** | 1. `kubectl-dba remote-config` from new primary<br>2. `kubectl apply -f <remote-config>.yaml` on old primary cluster<br>3. `kubectl apply -f <old-primary-remote-replica>.yaml` on old primary cluster<br>4. Wait for `Ready` |
+| **Failback (reverse the above)** | Repeat the two rows above with clusters swapped |
 
 ## Cleaning Up
 
@@ -773,7 +861,7 @@ $ kubectl delete ns demo --kubeconfig $KUBECONFIG_DR
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL database using Stash.
-- Learn how to [monitor your PostgreSQL database](/docs/guides/postgres/monitoring/using-prometheus-operator.md) with Prometheus.
-- Configure [Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md).
+- Learn about [backup and restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL with Stash.
+- Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
+- Configure a [Highly Available PostgreSQL Cluster](/docs/guides/postgres/clustering/ha_cluster.md).
 - Detail concepts of the [Postgres object](/docs/guides/postgres/concepts/postgres.md).
