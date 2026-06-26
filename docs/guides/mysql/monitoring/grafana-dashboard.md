@@ -301,9 +301,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MySQL Summary Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MySQL Summary Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-summary-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / MySQL / Pod** — drill into a specific pod:
 - **Thread Count** — running and connected threads per pod
@@ -314,9 +312,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MySQL Pod Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MySQL Pod Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / MySQL / Database** — InnoDB storage engine metrics:
@@ -329,9 +324,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MySQL Database Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MySQL Database Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-database-2.png" style="padding:10px">
-</p>
 
 **KubeDB / MySQL / Group Replication** — replication group health:
 - **Member Count** — number of group members
@@ -342,9 +334,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MySQL Group Replication Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-group-replication.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MySQL Group Replication Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-group-replication-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

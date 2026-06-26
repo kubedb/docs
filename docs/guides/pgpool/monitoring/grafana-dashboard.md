@@ -299,9 +299,7 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB Pgpool Summary Dashboard" src="/docs/images/pgpool/monitoring/pp-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Pgpool Summary Dashboard - continued" src="/docs/images/pgpool/monitoring/pp-grafana-summary-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / Pgpool / Pod** — drill into a specific pod:
 - **Client / Server Connections** — connections held on this pod
@@ -313,9 +311,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB Pgpool Pod Dashboard" src="/docs/images/pgpool/monitoring/pp-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Pgpool Pod Dashboard - continued" src="/docs/images/pgpool/monitoring/pp-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Pgpool / Database** — per-backend and per-database metrics:
 - **Backend Connection Status** — up/down/recovering status per backend Postgres node
@@ -326,9 +321,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 
 <p align="center">
   <img alt="KubeDB Pgpool Database Dashboard" src="/docs/images/pgpool/monitoring/pp-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Pgpool Database Dashboard - continued" src="/docs/images/pgpool/monitoring/pp-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

@@ -306,10 +306,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Redis Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Redis Summary Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-summary-2.png" style="padding:10px">
-</p>
-
 **KubeDB / Redis / Pod** — drill into a specific pod:
 - **Connected Clients** — clients on this pod
 - **Memory Usage** — used vs. max memory on this pod
@@ -319,9 +315,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Redis Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Redis Pod Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / Redis / Shard** — per-shard metrics for Cluster mode:
@@ -335,9 +328,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Redis Shard Dashboard" src="/docs/images/redis/monitoring/rd-grafana-shard.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Redis Shard Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-shard-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Redis Sentinel / Summary** — Sentinel deployment overview:
 - **Monitored Masters** — number of masters being watched
@@ -349,9 +339,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Redis Sentinel Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Redis Sentinel Summary Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-sentinel-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Redis Sentinel / Pod** — per-sentinel metrics:
 - **Memory** — RSS and used memory per sentinel pod
@@ -361,9 +348,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Redis Sentinel Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Redis Sentinel Pod Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-sentinel-pod-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

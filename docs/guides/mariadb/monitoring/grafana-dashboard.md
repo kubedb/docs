@@ -301,9 +301,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MariaDB Summary Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MariaDB Summary Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / MariaDB / Pod** — drill into a specific pod:
 - **Connections / Questions / Slow Queries** — per-pod query metrics
@@ -313,9 +310,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MariaDB Pod Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MariaDB Pod Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / MariaDB / Database** — storage engine and query cache metrics:
@@ -328,9 +322,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MariaDB Database Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MariaDB Database Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-database-2.png" style="padding:10px">
-</p>
 
 **KubeDB / MariaDB / Galera Cluster** — Galera-specific metrics:
 - **Cluster Size** — number of nodes in the cluster
@@ -342,9 +333,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MariaDB Galera Cluster Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-galera.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MariaDB Galera Cluster Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-galera-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

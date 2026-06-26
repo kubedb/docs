@@ -31,8 +31,8 @@ KubeDB exposes Singlestore metrics through a sidecar exporter. Once Prometheus s
 - Singlestore requires a valid license secret. Create the license secret before deploying:
 
   ```bash
-  $ kubectl create secret generic sdb-license -n demo \
-    --from-literal=username=<your-singlestore-email> \
+  $ kubectl create secret generic license-secret -n demo \
+    --from-literal=username=license \
     --from-literal=password=<your-license-key>
   ```
 
@@ -123,7 +123,7 @@ metadata:
 spec:
   version: "8.7.10"
   licenseSecret:
-    name: sdb-license
+    name: license-secret
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -227,13 +227,13 @@ $ kubectl get secret -n monitoring prometheus-grafana \
 | Password | output of the command above |
 
 <p align="center">
-  <img alt="Grafana Login" src="/docs/images/singlestore/monitoring/sdb-grafana-login.png" style="padding:10px">
+  <img alt="Grafana Login" src="/docs/images/kafka/monitoring/kf-grafana-login.png" style="padding:10px">
 </p>
 
 After a successful login you will see the Grafana home page:
 
 <p align="center">
-  <img alt="Grafana Home" src="/docs/images/singlestore/monitoring/sdb-grafana-home.png" style="padding:10px">
+  <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
 </p>
 
 ## Step 6: Configure Prometheus as a Data Source
@@ -252,7 +252,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 7: Import KubeDB Singlestore Dashboard
+## Step 7: Import KubeDB Singlestore Dashboards
 
 The KubeDB Singlestore dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
@@ -266,42 +266,51 @@ Three dashboards are available. Download all three JSON files from the [appscode
 
 **Import steps (repeat for each of the three files):**
 
-1. In Grafana, click the `+` icon in the left sidebar.
-2. Select `Import` from the menu.
-3. Click `Upload JSON file` and select one of the downloaded `.json` files.
-4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
-5. Click `Import`.
+1. In Grafana, click **Dashboards** in the left sidebar.
+2. Select **Import** from the menu.
+3. Click **Upload dashboard JSON file** and select one of the downloaded `.json` files.
+4. In the **Prometheus** dropdown that appears, select your Prometheus data source.
+5. Click **Import**.
 
-The import page looks like this — click **Upload dashboard JSON file** to select the file:
+The import page looks like this:
 
 <p align="center">
   <img alt="Grafana Import Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-import.png" style="padding:10px">
 </p>
 
-After importing all three files, they will appear under `Dashboards` in the left sidebar.
+After importing all three files, they will appear under **Dashboards** in the left sidebar.
 
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / Singlestore / Summary | Cluster status, connections, queries/sec, memory usage, CPU/storage |
-| KubeDB / Singlestore / Pod | Per-pod connections, query rate, CPU/memory usage |
-| KubeDB / Singlestore / Database | Database-level DML rates, row count, table size, index usage |
-
-## Step 8: Explore the Dashboard
+## Step 8: Explore the Dashboards
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
 | Variable      | Applies to              | What to select                                                |
 |---------------|-------------------------|---------------------------------------------------------------|
 | **namespace** | All dashboards          | Namespace where your Singlestore is deployed (e.g., `demo`)  |
-| **app**       | All dashboards          | Name of your instance (e.g., `sdb-grafana-demo`)             |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view             |
+| **singlestore** | All dashboards        | Name of your instance (e.g., `sdb-grafana-demo`)             |
+| **pod**       | Pod dashboard           | A specific pod, or `All` for an aggregated view              |
 
-**KubeDB / Singlestore / Summary** — start here for an instance overview:
-- **Node Count** — number of aggregator and leaf nodes
-- **Connections** — active client connections
-- **Queries per Second** — total query throughput
-- **Memory Usage** — used vs. total memory across nodes
-- **CPU / Network** — resource consumption vs. requests and limits
+### KubeDB / Singlestore / Summary
+
+Start here for a cluster-level overview. The dashboard has three sections:
+
+**General Info** — status cards at the top:
+- **Database Status** — current health (e.g., `Ready`)
+- **Version** — Singlestore version running (e.g., `8.7.10`)
+- **Require Secure TLS** — whether TLS is enforced
+- **Deletion Policy** — configured deletion policy (e.g., `WipeOut`)
+- **Total Nodes**, **CPU Request/Limit**, **Memory Request/Limit**, **Storage Request** — resource configuration at a glance
+
+**CPU Info**:
+- **CPU Usage** — CPU consumption over time per pod
+- **CPU Quota** — table showing CPU usage vs. requests and the usage percentage
+
+**Memory Info / Storage Info**:
+- **Memory Quota** — memory usage vs. requests and limits (RSS and cache breakdown)
+- **Disk Usage** — disk consumed over time
+- **Disk R/W Info** — read vs. write bytes per second
+- **IOPS** — combined reads and writes per second
+- **ThroughPut** — read and write throughput
 
 <p align="center">
   <img alt="KubeDB Singlestore Summary Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-summary.png" style="padding:10px">
@@ -310,31 +319,43 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
   <img alt="KubeDB Singlestore Summary Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-summary-2.png" style="padding:10px">
 </p>
 
-**KubeDB / Singlestore / Pod** — drill into a specific node:
-- **Connections** — connections on this specific pod
-- **Query Throughput** — queries executed on this pod per second
-- **Rows Read / Written** — per-pod row-level throughput
-- **CPU / Memory** — per-pod resource usage
+### KubeDB / Singlestore / Pod
+
+Drill into a specific pod. The dashboard has three sections:
+
+**Singlestore Pod Summary** — stat cards at the top:
+- **Singlestore Uptime** — how long the pod has been running
+- **Version** — Singlestore engine version on this pod
+- **Current QPS** — queries per second on this pod
+- **Transaction Buffer** — current transaction buffer size
+
+**Pod CPU, Memory and File Descriptor Stats**:
+- **CPU Usage** — per-pod CPU consumption over time
+- **Memory Usage** — per-pod memory consumption over time
+- **Open File Descriptors** — number of open file handles
+
+**Connections**:
+- **Singlestore Connections** — active client connections on this pod
+- **Singlestore Aborted Connections** — connection attempts that failed
+- **Client Threads** — threads handling client requests
 
 <p align="center">
   <img alt="KubeDB Singlestore Pod Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Singlestore Pod Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-pod-2.png" style="padding:10px">
-</p>
 
-**KubeDB / Singlestore / Database** — database-level storage metrics:
-- **Table Count** — number of tables per database
-- **Row Count** — estimated rows per table
-- **Index Size** — disk space used by indexes
-- **Data Size** — disk space used by table data
-- **Replication Lag** — replica lag relative to the aggregator (for distributed configurations)
+### KubeDB / Singlestore / Database
+
+Database-level operational metrics:
+
+- **Service Status** — table listing pod endpoints and their service names
+- **Service Uptime** — how long each service has been available
+- **Current QPS** — query throughput across the database
+- **Singlestore Connections** — active connections to the database
+- **Disk Reads vs Writes** — per-pod read and write activity over time
+- **Network Received vs Sent** — inbound and outbound network traffic per pod
 
 <p align="center">
   <img alt="KubeDB Singlestore Database Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Singlestore Database Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up
@@ -344,7 +365,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 kubectl delete singlestore -n demo sdb-grafana-demo
 
 # Remove the license secret
-kubectl delete secret sdb-license -n demo
+kubectl delete secret license-secret -n demo
 
 # Remove namespaces
 kubectl delete ns demo

@@ -302,9 +302,7 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB Postgres Summary Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Postgres Summary Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-summary-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / Postgres / Pod** — drill into a specific pod
 - **Server Up / Role** — whether the pod is alive and whether it is the primary or a replica
@@ -314,9 +312,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 
 <p align="center">
   <img alt="KubeDB Postgres Pod Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Postgres Pod Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / Postgres / Database** — drill into a specific database
@@ -331,9 +326,7 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB Postgres Database Dashboard" src="/docs/images/postgres/monitoring/pg-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Postgres Database Dashboard - continued" src="/docs/images/postgres/monitoring/pg-grafana-database-2.png" style="padding:10px">
-</p>
+
 
 ## Cleaning up
 

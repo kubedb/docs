@@ -298,9 +298,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MongoDB Summary Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MongoDB Summary Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / MongoDB / Pod** — drill into a specific pod:
 - **Op Counters** — per-pod insert/query/update/delete rate
@@ -312,9 +309,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MongoDB Pod Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MongoDB Pod Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / MongoDB / Database (ReplicaSet)** — replication health:
 - **Replication Lag** — per-member lag behind primary
@@ -325,9 +319,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MongoDB Database Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MongoDB Database Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

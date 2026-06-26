@@ -306,9 +306,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB PgBouncer Summary Dashboard" src="/docs/images/pgbouncer/monitoring/pb-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB PgBouncer Summary Dashboard - continued" src="/docs/images/pgbouncer/monitoring/pb-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / PgBouncer / Pod** — drill into a specific pod:
 - **Client / Server Connections** — connections held on this pod
@@ -320,9 +317,7 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB PgBouncer Pod Dashboard" src="/docs/images/pgbouncer/monitoring/pb-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB PgBouncer Pod Dashboard - continued" src="/docs/images/pgbouncer/monitoring/pb-grafana-pod-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / PgBouncer / Database** — per-database pool metrics:
 - **Pool State** — cl_active, cl_waiting, sv_active, sv_idle per database
@@ -333,9 +328,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 
 <p align="center">
   <img alt="KubeDB PgBouncer Database Dashboard" src="/docs/images/pgbouncer/monitoring/pb-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB PgBouncer Database Dashboard - continued" src="/docs/images/pgbouncer/monitoring/pb-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

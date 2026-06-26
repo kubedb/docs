@@ -301,9 +301,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Summary Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB PerconaXtraDB Summary Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-summary-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / PerconaXtraDB / Pod** — drill into a specific node:
 - **wsrep_local_state** — per-pod Galera state (Synced, Joiner, Donor)
@@ -314,9 +312,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Pod Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB PerconaXtraDB Pod Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-pod-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / PerconaXtraDB / Database** — InnoDB storage engine metrics:
 - **InnoDB Buffer Pool** — usage breakdown (data, dirty, free pages)
@@ -328,9 +324,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Database Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB PerconaXtraDB Database Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-database-2.png" style="padding:10px">
-</p>
+
 
 **KubeDB / PerconaXtraDB / Galera Cluster** — Galera-specific metrics:
 - **Cluster Size** — nodes in the cluster (drops when a node leaves)
@@ -342,9 +336,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Galera Cluster Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-galera.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB PerconaXtraDB Galera Cluster Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-galera-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

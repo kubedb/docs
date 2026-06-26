@@ -308,9 +308,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Kafka Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Kafka Summary Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Kafka / Pod** — drill into a specific broker:
 - **JVM Heap Used** — heap usage on this broker
@@ -322,9 +319,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Kafka Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Kafka Pod Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Kafka / Database** — topic-level metrics:
 - **Produce / Fetch Rate** — per-topic throughput
@@ -334,9 +328,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Kafka Database Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Kafka Database Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-database-2.png" style="padding:10px">
 </p>
 
 **KubeDB / Kafka / ConnectCluster Summary** — connector fleet health:
@@ -348,9 +339,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Kafka ConnectCluster Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Summary Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Kafka / ConnectCluster Pod** — per-worker metrics:
 - **CPU / Memory** — resource usage per worker pod
@@ -358,9 +346,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Kafka ConnectCluster Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Pod Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / Kafka / ConnectCluster Connect** — per-connector metrics:
@@ -370,9 +355,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Kafka ConnectCluster Connect Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-connect.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Connect Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-connect-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

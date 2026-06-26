@@ -293,9 +293,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB ProxySQL Summary Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB ProxySQL Summary Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / ProxySQL / Pod** — drill into a specific proxy pod:
 - **Frontend Connections** — client connections on this specific pod
@@ -307,9 +304,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB ProxySQL Pod Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB ProxySQL Pod Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / ProxySQL / Database** — per-hostgroup metrics:
 - **Connection Pool** — active, free, OK, and error connections per hostgroup
@@ -319,9 +313,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB ProxySQL Database Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB ProxySQL Database Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

@@ -299,9 +299,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB ClickHouse Summary Dashboard" src="/docs/images/clickhouse/monitoring/ch-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB ClickHouse Summary Dashboard - continued" src="/docs/images/clickhouse/monitoring/ch-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / ClickHouse / Pod** — drill into a specific pod:
 - **Queries** — queries executed on this specific pod
@@ -313,9 +310,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 <p align="center">
   <img alt="KubeDB ClickHouse Pod Dashboard" src="/docs/images/clickhouse/monitoring/ch-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB ClickHouse Pod Dashboard - continued" src="/docs/images/clickhouse/monitoring/ch-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / ClickHouse / Database** — per-table and per-database metrics:
 - **Insert Rate** — rows inserted per second per table
@@ -326,9 +320,6 @@ Once you set these, all panels update automatically. Below is what each dashboar
 
 <p align="center">
   <img alt="KubeDB ClickHouse Database Dashboard" src="/docs/images/clickhouse/monitoring/ch-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB ClickHouse Database Dashboard - continued" src="/docs/images/clickhouse/monitoring/ch-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

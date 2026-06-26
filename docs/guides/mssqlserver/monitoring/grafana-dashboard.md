@@ -331,11 +331,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MSSQLServer Summary Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-summary.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MSSQLServer Summary Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-summary-2.png" style="padding:10px">
-</p>
-
+<p>
 **KubeDB / MSSQLServer / Pod** — drill into a specific pod:
 - **Connections** — active connections on this pod
 - **Batch Requests** — T-SQL batch throughput on this pod
@@ -345,9 +341,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB MSSQLServer Pod Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB MSSQLServer Pod Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / MSSQLServer / Database** — per-database metrics:
@@ -360,9 +353,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB MSSQLServer Database Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB MSSQLServer Database Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-database-2.png" style="padding:10px">
-</p>
+
 
 ## Cleaning up
 

@@ -299,9 +299,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB RabbitMQ Summary Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB RabbitMQ Summary Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / RabbitMQ / Pod** — drill into a specific node:
 - **Erlang Process Count** — number of Erlang processes (high counts indicate load)
@@ -313,9 +310,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB RabbitMQ Pod Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB RabbitMQ Pod Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / RabbitMQ / Database** — per-queue and per-vhost metrics:
 - **Queue Depth** — messages ready + unacknowledged per queue
@@ -325,9 +319,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB RabbitMQ Database Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB RabbitMQ Database Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

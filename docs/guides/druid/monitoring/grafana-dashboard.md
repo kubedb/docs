@@ -307,9 +307,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Druid Summary Dashboard" src="/docs/images/druid/monitoring/druid-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Druid Summary Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Druid / Pod** — drill into a specific Druid node:
 - **JVM Heap Used** — heap usage on this pod
@@ -321,9 +318,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Druid Pod Dashboard" src="/docs/images/druid/monitoring/druid-grafana-pod.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Druid Pod Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-pod-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Druid / Database** — segment and ingestion metrics:
 - **Segment Count** — total segments across all data sources
@@ -334,9 +328,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Druid Database Dashboard" src="/docs/images/druid/monitoring/druid-grafana-database.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Druid Database Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

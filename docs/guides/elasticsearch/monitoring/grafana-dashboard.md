@@ -300,9 +300,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Elasticsearch Summary Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Elasticsearch Summary Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-summary-2.png" style="padding:10px">
-</p>
 
 **KubeDB / Elasticsearch / Pod** — drill into a specific node:
 - **JVM Heap** — used vs. max heap per node
@@ -312,9 +309,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Elasticsearch Pod Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-pod.png" style="padding:10px">
-</p>
-<p align="center">
-  <img alt="KubeDB Elasticsearch Pod Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-pod-2.png" style="padding:10px">
 </p>
 
 **KubeDB / Elasticsearch / Database** — index-level metrics:
@@ -327,10 +321,6 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 <p align="center">
   <img alt="KubeDB Elasticsearch Database Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-database.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Elasticsearch Database Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-database-2.png" style="padding:10px">
-</p>
-
 ## Cleaning up
 
 ```bash
