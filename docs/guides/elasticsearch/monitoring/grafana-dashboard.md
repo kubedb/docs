@@ -113,7 +113,7 @@ metadata:
   name: es-grafana-demo
   namespace: demo
 spec:
-  version: "xpack-8.11.1"
+  version: "xpack-9.1.9"
   enableSSL: true
   replicas: 1
   storageType: Durable
@@ -152,7 +152,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get elasticsearch -n demo es-grafana-demo
 NAME              VERSION        STATUS   AGE
-es-grafana-demo   xpack-8.11.1   Ready    3m
+es-grafana-demo   xpack-9.1.9   Ready    3m
 ```
 
 KubeDB creates a stats service named `{elasticsearch-name}-stats` for the exporter:

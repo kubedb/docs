@@ -113,7 +113,7 @@ metadata:
   name: mg-grafana-demo
   namespace: demo
 spec:
-  version: "8.0.8"
+  version: "8.0.17"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -149,7 +149,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get mongodb -n demo mg-grafana-demo
 NAME              VERSION   STATUS   AGE
-mg-grafana-demo   8.0.8     Ready    2m
+mg-grafana-demo   8.0.17     Ready    2m
 ```
 
 KubeDB creates a stats service named `{mongodb-name}-stats` for the exporter:

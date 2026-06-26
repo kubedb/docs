@@ -113,7 +113,7 @@ metadata:
   name: mysql-grafana-demo
   namespace: demo
 spec:
-  version: "9.2.0"
+  version: "9.6.0"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -149,7 +149,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get mysql -n demo mysql-grafana-demo
 NAME                 VERSION   STATUS   AGE
-mysql-grafana-demo   9.2.0     Ready    2m
+mysql-grafana-demo   9.6.0     Ready    2m
 ```
 
 KubeDB creates a stats service named `{mysql-name}-stats` for the exporter:

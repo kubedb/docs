@@ -113,7 +113,7 @@ metadata:
   name: redis-grafana-demo
   namespace: demo
 spec:
-  version: "7.4.1"
+  version: "8.2.2"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -149,7 +149,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get redis -n demo redis-grafana-demo
 NAME                 VERSION   STATUS   AGE
-redis-grafana-demo   7.4.1     Ready    2m
+redis-grafana-demo   8.2.2     Ready    2m
 ```
 
 KubeDB creates a stats service named `{redis-name}-stats` for the exporter:
