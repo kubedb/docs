@@ -191,6 +191,10 @@ Open [http://localhost:9090/targets](http://localhost:9090/targets) in your brow
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/mariadb/monitoring/mariadb-prom-targets.png" style="padding:10px">
+</p>
+
 ## Step 5: Access Grafana
 
 Port-forward the Grafana service:
@@ -206,6 +210,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/mariadb/monitoring/mariadb-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/mariadb/monitoring/mariadb-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -246,6 +265,21 @@ Four dashboards are available. Download all JSON files from the [appscode/grafan
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name                    | Description                                                                                      |
+|-----------------------------------|--------------------------------------------------------------------------------------------------|
+| KubeDB / MariaDB / Summary        | Instance overview: connections, QPS, slow queries, aborted connections, CPU/memory/storage       |
+| KubeDB / MariaDB / Pod            | Per-pod connections, threads, CPU/memory usage, table lock contention                            |
+| KubeDB / MariaDB / Database       | InnoDB buffer pool, row operations, query cache, temporary tables, handler statistics            |
+| KubeDB / MariaDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, commit/cert failure rate |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -264,11 +298,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Aborted Clients / Connections** — network or authentication failures
 - **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
 
+<p align="center">
+  <img alt="KubeDB MariaDB Summary Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MariaDB Summary Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MariaDB / Pod** — drill into a specific pod:
 - **Connections / Questions / Slow Queries** — per-pod query metrics
 - **Thread Count** — running and connected threads
 - **CPU / Memory** — per-pod resource usage
 - **Table Locks Waited / Immediate** — lock contention indicator
+
+<p align="center">
+  <img alt="KubeDB MariaDB Pod Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MariaDB Pod Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / MariaDB / Database** — storage engine and query cache metrics:
 - **InnoDB Buffer Pool** — reads and writes through the buffer pool
@@ -277,6 +325,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Temporary Tables** — tables created on disk vs. in memory
 - **Handler Statistics** — low-level read operations per index
 
+<p align="center">
+  <img alt="KubeDB MariaDB Database Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MariaDB Database Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-database-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MariaDB / Galera Cluster** — Galera-specific metrics:
 - **Cluster Size** — number of nodes in the cluster
 - **Local State** — wsrep state per node (Synced, Donor, Joiner, etc.)
@@ -284,6 +339,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Flow Control Paused** — percentage of time replication was paused due to flow control
 - **Replication Bytes** — bytes sent and received via Galera replication per node
 - **Local Commits / Cert Failures** — commit throughput and certification conflict rate
+
+<p align="center">
+  <img alt="KubeDB MariaDB Galera Cluster Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-galera.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MariaDB Galera Cluster Dashboard - continued" src="/docs/images/mariadb/monitoring/mariadb-grafana-galera-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

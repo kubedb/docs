@@ -185,6 +185,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `proxysql-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/proxysql/monitoring/proxysql-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -202,6 +206,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/proxysql/monitoring/proxysql-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/proxysql/monitoring/proxysql-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -239,6 +258,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / ProxySQL / Summary | Frontend connections, backend connections, queries routed, query rules hit rate, CPU/memory |
+| KubeDB / ProxySQL / Pod | Per-pod active connections, queries/sec, connection pool status, CPU/memory |
+| KubeDB / ProxySQL / Database | Backend hostgroup status, connection errors, latency, query digest stats |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -257,6 +290,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Slow Queries** — queries exceeding the configured threshold
 - **CPU / Memory / Network** — resource consumption per ProxySQL pod
 
+<p align="center">
+  <img alt="KubeDB ProxySQL Summary Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB ProxySQL Summary Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / ProxySQL / Pod** — drill into a specific proxy pod:
 - **Frontend Connections** — client connections on this specific pod
 - **Backend Connections** — backend connections from this pod
@@ -264,11 +304,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Connection Errors** — failed connection attempts to backends
 - **CPU / Memory** — per-pod resource usage
 
+<p align="center">
+  <img alt="KubeDB ProxySQL Pod Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB ProxySQL Pod Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / ProxySQL / Database** — per-hostgroup metrics:
 - **Connection Pool** — active, free, OK, and error connections per hostgroup
 - **Query Rules Matched** — how often each routing rule is applied
 - **Traffic Distribution** — percentage of queries routed to each hostgroup
 - **Latency Percentiles** — p50/p95/p99 query execution time per hostgroup
+
+<p align="center">
+  <img alt="KubeDB ProxySQL Database Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB ProxySQL Database Dashboard - continued" src="/docs/images/proxysql/monitoring/proxysql-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

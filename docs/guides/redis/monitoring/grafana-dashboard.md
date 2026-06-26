@@ -189,6 +189,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `redis-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/redis/monitoring/rd-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -206,6 +210,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/redis/monitoring/rd-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/redis/monitoring/rd-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -247,6 +266,22 @@ Five dashboards are available. Download the JSON files from the [appscode/grafan
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/redis/monitoring/rd-grafana-import.png" style="padding:10px">
+</p>
+
+After importing the files you need, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Redis / Summary | Connected clients, commands/sec, keyspace hits/misses, memory usage, CPU/storage |
+| KubeDB / Redis / Pod | Per-pod commands, memory, CPU, connected clients, replication offset |
+| KubeDB / Redis / Shard | Shard distribution, slot coverage, keys per shard, replication lag per shard |
+| KubeDB / RedisSentinel / Summary | Sentinel quorum, monitored masters, last failover time, connected sentinels |
+| KubeDB / RedisSentinel / Pod | Per-sentinel status, last ping/pong time, subjectively/objectively down flags |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -268,12 +303,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Replication** — master/replica role, replication offset per replica
 - **CPU / Network** — resource usage over time
 
+<p align="center">
+  <img alt="KubeDB Redis Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Redis Summary Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Redis / Pod** — drill into a specific pod:
 - **Connected Clients** — clients on this pod
 - **Memory Usage** — used vs. max memory on this pod
 - **Commands per Second** — per-pod throughput
 - **Keyspace Hit Rate** — per-pod cache efficiency
 - **CPU / Memory** — per-pod resource usage
+
+<p align="center">
+  <img alt="KubeDB Redis Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Redis Pod Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Redis / Shard** — per-shard metrics for Cluster mode:
 - **Slot Range** — hash slots owned by this shard
@@ -283,6 +332,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Replication Offset** — how far behind replicas are
 - **Cluster Link State** — connectivity between shard nodes
 
+<p align="center">
+  <img alt="KubeDB Redis Shard Dashboard" src="/docs/images/redis/monitoring/rd-grafana-shard.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Redis Shard Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-shard-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Redis Sentinel / Summary** — Sentinel deployment overview:
 - **Monitored Masters** — number of masters being watched
 - **Sentinels Count** — active sentinel processes
@@ -290,11 +346,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Failover Count** — number of automatic failovers performed
 - **Last Failover Duration** — time the last failover took
 
+<p align="center">
+  <img alt="KubeDB Redis Sentinel Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Redis Sentinel Summary Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-sentinel-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Redis Sentinel / Pod** — per-sentinel metrics:
 - **Memory** — RSS and used memory per sentinel pod
 - **CPU** — per-pod CPU usage
 - **Tilt Mode** — whether the sentinel is in tilt mode (clock skew detection)
 - **Monitored Instances** — masters and slaves visible from this sentinel
+
+<p align="center">
+  <img alt="KubeDB Redis Sentinel Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Redis Sentinel Pod Dashboard - continued" src="/docs/images/redis/monitoring/rd-grafana-sentinel-pod-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

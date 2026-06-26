@@ -194,6 +194,10 @@ Open [http://localhost:9090/targets](http://localhost:9090/targets) in your brow
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/elasticsearch/monitoring/es-prom-targets.png" style="padding:10px">
+</p>
+
 ## Step 5: Access Grafana
 
 Port-forward the Grafana service:
@@ -209,6 +213,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/elasticsearch/monitoring/es-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/elasticsearch/monitoring/es-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -246,6 +265,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name                        | Description                                                                              |
+|---------------------------------------|------------------------------------------------------------------------------------------|
+| KubeDB / Elasticsearch / Summary      | Cluster health, shard status, JVM heap usage, CPU/memory/storage, network                |
+| KubeDB / Elasticsearch / Pod          | Per-node JVM heap, GC time, thread pool queues and rejections, CPU/memory usage          |
+| KubeDB / Elasticsearch / Database     | Index-level indexing rate, search rate, search latency, field data cache, segment count  |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -264,11 +297,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **CPU / Memory / Storage** — resource consumption vs. requests and limits
 - **Network** — receive and transmit bandwidth
 
+<p align="center">
+  <img alt="KubeDB Elasticsearch Summary Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Elasticsearch Summary Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Elasticsearch / Pod** — drill into a specific node:
 - **JVM Heap** — used vs. max heap per node
 - **GC Collection Time** — time spent in young/old generation GC
 - **Thread Pool** — queue size and rejected count per thread pool (search, index, bulk)
 - **CPU / Memory** — per-pod resource usage over time
+
+<p align="center">
+  <img alt="KubeDB Elasticsearch Pod Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Elasticsearch Pod Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Elasticsearch / Database** — index-level metrics:
 - **Indexing Rate** — documents indexed per second
@@ -276,6 +323,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Search Latency** — p50/p95/p99 query latency
 - **Field Data Cache Evictions** — high eviction rates indicate memory pressure
 - **Segment Count** — number of Lucene segments per index
+
+<p align="center">
+  <img alt="KubeDB Elasticsearch Database Dashboard" src="/docs/images/elasticsearch/monitoring/es-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Elasticsearch Database Dashboard - continued" src="/docs/images/elasticsearch/monitoring/es-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

@@ -199,6 +199,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `sdb-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/singlestore/monitoring/sdb-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -216,6 +220,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/singlestore/monitoring/sdb-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/singlestore/monitoring/sdb-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -253,6 +272,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Singlestore / Summary | Cluster status, connections, queries/sec, memory usage, CPU/storage |
+| KubeDB / Singlestore / Pod | Per-pod connections, query rate, CPU/memory usage |
+| KubeDB / Singlestore / Database | Database-level DML rates, row count, table size, index usage |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -270,11 +303,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Memory Usage** — used vs. total memory across nodes
 - **CPU / Network** — resource consumption vs. requests and limits
 
+<p align="center">
+  <img alt="KubeDB Singlestore Summary Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Singlestore Summary Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Singlestore / Pod** — drill into a specific node:
 - **Connections** — connections on this specific pod
 - **Query Throughput** — queries executed on this pod per second
 - **Rows Read / Written** — per-pod row-level throughput
 - **CPU / Memory** — per-pod resource usage
+
+<p align="center">
+  <img alt="KubeDB Singlestore Pod Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Singlestore Pod Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Singlestore / Database** — database-level storage metrics:
 - **Table Count** — number of tables per database
@@ -282,6 +329,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Index Size** — disk space used by indexes
 - **Data Size** — disk space used by table data
 - **Replication Lag** — replica lag relative to the aggregator (for distributed configurations)
+
+<p align="center">
+  <img alt="KubeDB Singlestore Database Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Singlestore Database Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

@@ -190,6 +190,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `kafka-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/kafka/monitoring/kf-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -207,6 +211,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/kafka/monitoring/kf-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -249,6 +268,23 @@ Six dashboards are available. Download the JSON files from the [appscode/grafana
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-import.png" style="padding:10px">
+</p>
+
+After importing the files you need, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Kafka / Summary | Broker count, topic/partition count, bytes in/out, consumer group lag, CPU/memory/storage |
+| KubeDB / Kafka / Pod | Per-broker bytes in/out, request rate, log flush rate, CPU/memory usage |
+| KubeDB / Kafka / Database | Topic-level bytes in/out, message rate, log size, under-replicated partitions |
+| KubeDB / Kafka / ConnectCluster / Summary | Worker count, connector/task status, bytes in/out, CPU/memory |
+| KubeDB / Kafka / ConnectCluster / Pod | Per-worker connector count, task count, CPU/memory |
+| KubeDB / Kafka / ConnectCluster / Connect | Per-connector status, offset lag, error rate, records in/out |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -269,6 +305,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Bytes Rate** — bytes in/out per second across all topics
 - **CPU / Memory / JVM Heap** — resource consumption per broker
 
+<p align="center">
+  <img alt="KubeDB Kafka Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka Summary Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Kafka / Pod** — drill into a specific broker:
 - **JVM Heap Used** — heap usage on this broker
 - **GC Time** — time spent in garbage collection
@@ -276,11 +319,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Log Flush Rate** — frequency of log segment flushes to disk
 - **CPU / Memory** — per-pod resource usage over time
 
+<p align="center">
+  <img alt="KubeDB Kafka Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka Pod Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Kafka / Database** — topic-level metrics:
 - **Produce / Fetch Rate** — per-topic throughput
 - **Partition Count** — partitions per topic
 - **Leader Election Rate** — frequency of leader elections (spikes indicate instability)
 - **Consumer Group Lag** — messages pending consumption per group
+
+<p align="center">
+  <img alt="KubeDB Kafka Database Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka Database Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-database-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Kafka / ConnectCluster Summary** — connector fleet health:
 - **Task Count** — total running tasks across all connectors
@@ -288,14 +345,35 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Connector Count** — number of deployed connectors
 - **Worker Rebalancing** — whether a worker rebalance is in progress
 
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Summary Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Kafka / ConnectCluster Pod** — per-worker metrics:
 - **CPU / Memory** — resource usage per worker pod
 - **Task Throughput** — records processed per second
+
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Pod Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / Kafka / ConnectCluster Connect** — per-connector metrics:
 - **Offset Lag** — how far behind the connector is from the source
 - **Record Throughput** — records processed per second
 - **Error Rate** — records skipped due to errors
+
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Connect Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-connect.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Kafka ConnectCluster Connect Dashboard - continued" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-connect-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

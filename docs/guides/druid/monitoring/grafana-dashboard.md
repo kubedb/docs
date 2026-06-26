@@ -199,6 +199,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `druid-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/druid/monitoring/druid-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -207,7 +211,8 @@ Port-forward the Grafana service:
 
 ```bash
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-Forwarding from 127.0.0.1:3000 -> 80
+Forwarding from 127.0.0.1:3000 -> 3000
+Forwarding from [::1]:3000 -> 3000
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Retrieve the auto-generated password from the secret:
@@ -216,6 +221,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/druid/monitoring/druid-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/druid/monitoring/druid-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -253,6 +273,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/druid/monitoring/druid-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Druid / Summary | Segment availability, query rate, JVM heap, CPU/memory/storage |
+| KubeDB / Druid / Pod | Per-component (broker/coordinator/historical/router) JVM heap, CPU/memory |
+| KubeDB / Druid / Database | Datasource-level query rate, scan rate, segment count, indexing tasks |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -270,6 +304,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Query Latency** — broker-side p50/p95/p99 query execution time
 - **CPU / Memory / JVM Heap** — resource consumption across the cluster
 
+<p align="center">
+  <img alt="KubeDB Druid Summary Dashboard" src="/docs/images/druid/monitoring/druid-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Druid Summary Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Druid / Pod** — drill into a specific Druid node:
 - **JVM Heap Used** — heap usage on this pod
 - **GC Time** — time spent in garbage collection
@@ -277,12 +318,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Query Rate** — queries received on this pod (relevant for Brokers)
 - **Task Count** — pending and running tasks (relevant for MiddleManagers)
 
+<p align="center">
+  <img alt="KubeDB Druid Pod Dashboard" src="/docs/images/druid/monitoring/druid-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Druid Pod Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / Druid / Database** — segment and ingestion metrics:
 - **Segment Count** — total segments across all data sources
 - **Segment Size** — total deep storage usage
 - **Ingestion Rate** — rows ingested per second per data source
 - **Failed Tasks** — number of failed ingestion tasks
 - **Query Segment Ratio** — ratio of segments used in query results
+
+<p align="center">
+  <img alt="KubeDB Druid Database Dashboard" src="/docs/images/druid/monitoring/druid-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB Druid Database Dashboard - continued" src="/docs/images/druid/monitoring/druid-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

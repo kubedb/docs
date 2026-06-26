@@ -189,6 +189,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `mg-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/mongodb/monitoring/mg-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -206,6 +210,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/mongodb/monitoring/mg-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/mongodb/monitoring/mg-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -243,6 +262,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / MongoDB / Summary | Replica set health, uptime, connections, opcounters, replication lag, CPU/memory/storage |
+| KubeDB / MongoDB / Pod | Per-pod op counters, connections, CPU/memory, lock percentage, page faults |
+| KubeDB / MongoDB / Database (ReplicaSet) | Replication lag, oplog window, election count, rollback count, network bytes per member |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -262,6 +295,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **CPU / Memory / Storage** — resource consumption vs. requests and limits
 - **Network** — bytes in/out per second
 
+<p align="center">
+  <img alt="KubeDB MongoDB Summary Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MongoDB Summary Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MongoDB / Pod** — drill into a specific pod:
 - **Op Counters** — per-pod insert/query/update/delete rate
 - **Connections** — connections on this specific pod
@@ -269,12 +309,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Lock Percentage** — global lock held ratio
 - **Page Faults** — memory pressure indicator
 
+<p align="center">
+  <img alt="KubeDB MongoDB Pod Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MongoDB Pod Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MongoDB / Database (ReplicaSet)** — replication health:
 - **Replication Lag** — per-member lag behind primary
 - **Oplog Window** — available oplog retention window
 - **Election Count** — number of elections (spikes indicate instability)
 - **Rollback Count** — number of rollbacks (should be zero in healthy clusters)
 - **Network Bytes In/Out** — replication traffic per member
+
+<p align="center">
+  <img alt="KubeDB MongoDB Database Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MongoDB Database Dashboard - continued" src="/docs/images/mongodb/monitoring/mg-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

@@ -224,6 +224,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `mssql-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/mssqlserver/monitoring/ms-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -241,6 +245,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/mssqlserver/monitoring/ms-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/mssqlserver/monitoring/ms-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -278,6 +297,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / MSSQLServer / Summary | Instance status, connections, batch requests/sec, page reads/writes, CPU/memory/storage |
+| KubeDB / MSSQLServer / Pod | Per-pod batch requests, connections, CPU/memory, lock waits |
+| KubeDB / MSSQLServer / Database | Database-level transactions/sec, log flushes, data file size, active connections per DB |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -296,6 +329,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Buffer Cache Hit Ratio** — data pages found in memory vs. read from disk; aim for > 99%
 - **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
 
+<p align="center">
+  <img alt="KubeDB MSSQLServer Summary Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MSSQLServer Summary Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MSSQLServer / Pod** — drill into a specific pod:
 - **Connections** — active connections on this pod
 - **Batch Requests** — T-SQL batch throughput on this pod
@@ -303,12 +343,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **SQL Compilations** — query compilations per second (high values may indicate missing indexes or excessive ad-hoc queries)
 - **CPU / Memory** — per-pod resource usage
 
+<p align="center">
+  <img alt="KubeDB MSSQLServer Pod Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MSSQLServer Pod Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MSSQLServer / Database** — per-database metrics:
 - **Database State** — ONLINE, OFFLINE, RECOVERING, etc. per database
 - **Log Space Used %** — transaction log utilization per database
 - **Data File Size** — total data file size per database
 - **Transactions per Second** — commit throughput per database
 - **Deadlocks per Second** — deadlock frequency per database
+
+<p align="center">
+  <img alt="KubeDB MSSQLServer Database Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MSSQLServer Database Dashboard - continued" src="/docs/images/mssqlserver/monitoring/ms-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

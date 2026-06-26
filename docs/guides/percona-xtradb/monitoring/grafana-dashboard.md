@@ -190,6 +190,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `pxc-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/percona-xtradb/monitoring/pxc-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -207,6 +211,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -245,6 +264,21 @@ Four dashboards are available. Download all JSON files from the [appscode/grafan
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all four files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / PerconaXtraDB / Summary | Connections, QPS, slow queries, InnoDB buffer pool hit rate, CPU/memory/storage |
+| KubeDB / PerconaXtraDB / Pod | Per-pod threads, questions, table locks, InnoDB row throughput, CPU/memory |
+| KubeDB / PerconaXtraDB / Database | InnoDB buffer pool, log writes, temporary tables, handler read operations |
+| KubeDB / PerconaXtraDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, cert failures |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -264,11 +298,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **InnoDB Buffer Pool Hit Rate** — aim for > 99%
 - **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
 
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Summary Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Summary Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / PerconaXtraDB / Pod** — drill into a specific node:
 - **wsrep_local_state** — per-pod Galera state (Synced, Joiner, Donor)
 - **Connections** — connections on this specific pod
 - **InnoDB Rows Read / Written** — per-pod row-level throughput
 - **CPU / Memory** — per-pod resource usage
+
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Pod Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Pod Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / PerconaXtraDB / Database** — InnoDB storage engine metrics:
 - **InnoDB Buffer Pool** — usage breakdown (data, dirty, free pages)
@@ -277,6 +325,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Handler Statistics** — index scan patterns
 - **Temporary Tables** — disk vs. in-memory temporary table creation rate
 
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Database Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Database Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-database-2.png" style="padding:10px">
+</p>
+
 **KubeDB / PerconaXtraDB / Galera Cluster** — Galera-specific metrics:
 - **Cluster Size** — nodes in the cluster (drops when a node leaves)
 - **wsrep_ready / wsrep_connected** — readiness per node
@@ -284,6 +339,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Replication Bytes In/Out** — Galera write-set traffic per node
 - **Local Commits** — transactions committed locally per second
 - **Local Cert Failures** — certification conflicts (should be near zero)
+
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Galera Cluster Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-galera.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB PerconaXtraDB Galera Cluster Dashboard - continued" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-galera-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

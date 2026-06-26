@@ -190,6 +190,10 @@ Forwarding from [::1]:9090 -> 9090
 
 Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `rmq-grafana-demo-stats`. Its state should be **UP**.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/rabbitmq/monitoring/rmq-prom-targets.png" style="padding:10px">
+</p>
+
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
@@ -207,6 +211,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/rabbitmq/monitoring/rmq-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/rabbitmq/monitoring/rmq-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -244,6 +263,20 @@ Three dashboards are available. Download all three JSON files from the [appscode
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all three files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / RabbitMQ / Summary | Node/queue/connection overview, message rates, memory/disk alarms, CPU/memory/storage |
+| KubeDB / RabbitMQ / Pod | Per-pod message rates, file descriptors, memory usage, CPU/memory |
+| KubeDB / RabbitMQ / Database | Queue depth, consumer utilisation, message age, publish/deliver/ack rates per queue |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -263,6 +296,13 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Connection / Channel Count** — active connections and open channels
 - **CPU / Memory / Disk Free** — resource consumption per node
 
+<p align="center">
+  <img alt="KubeDB RabbitMQ Summary Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB RabbitMQ Summary Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / RabbitMQ / Pod** — drill into a specific node:
 - **Erlang Process Count** — number of Erlang processes (high counts indicate load)
 - **Memory Breakdown** — code, heap, binaries, ETS table memory
@@ -270,11 +310,25 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **GC** — garbage collection runs and bytes reclaimed per second
 - **CPU / Memory** — per-pod resource usage over time
 
+<p align="center">
+  <img alt="KubeDB RabbitMQ Pod Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB RabbitMQ Pod Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-pod-2.png" style="padding:10px">
+</p>
+
 **KubeDB / RabbitMQ / Database** — per-queue and per-vhost metrics:
 - **Queue Depth** — messages ready + unacknowledged per queue
 - **Publish / Deliver Rate** — throughput per queue
 - **Consumer Count** — active consumers per queue
 - **Oldest Unacknowledged Message** — age of the oldest pending message (latency indicator)
+
+<p align="center">
+  <img alt="KubeDB RabbitMQ Database Dashboard" src="/docs/images/rabbitmq/monitoring/rmq-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB RabbitMQ Database Dashboard - continued" src="/docs/images/rabbitmq/monitoring/rmq-grafana-database-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 

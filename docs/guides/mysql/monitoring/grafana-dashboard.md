@@ -191,6 +191,10 @@ Open [http://localhost:9090/targets](http://localhost:9090/targets) in your brow
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/mysql/monitoring/mysql-prom-targets.png" style="padding:10px">
+</p>
+
 ## Step 5: Access Grafana
 
 Port-forward the Grafana service:
@@ -206,6 +210,21 @@ Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Re
 $ kubectl get secret -n monitoring prometheus-grafana \
   -o jsonpath='{.data.admin-password}' | base64 -d
 ```
+
+| Field    | Value                       |
+|----------|-----------------------------|
+| Username | `admin`                     |
+| Password | output of the command above |
+
+<p align="center">
+  <img alt="Grafana Login" src="/docs/images/mysql/monitoring/mysql-grafana-login.png" style="padding:10px">
+</p>
+
+After a successful login you will see the Grafana home page:
+
+<p align="center">
+  <img alt="Grafana Home" src="/docs/images/mysql/monitoring/mysql-grafana-home.png" style="padding:10px">
+</p>
 
 ## Step 6: Configure Prometheus as a Data Source
 
@@ -246,6 +265,21 @@ Four dashboards are available. Download all JSON files from the [appscode/grafan
 4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
 5. Click `Import`.
 
+The import page looks like this — click **Upload dashboard JSON file** to select the file:
+
+<p align="center">
+  <img alt="Grafana Import Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-import.png" style="padding:10px">
+</p>
+
+After importing all files, they will appear under `Dashboards` in the left sidebar.
+
+| Dashboard Name                        | Description                                                                                        |
+|---------------------------------------|----------------------------------------------------------------------------------------------------|
+| KubeDB / MySQL / Summary              | Instance overview: connections, QPS, slow queries, InnoDB buffer pool hit rate, CPU/memory/storage |
+| KubeDB / MySQL / Pod                  | Per-pod threads, questions, table locks, InnoDB row throughput, CPU/memory usage                   |
+| KubeDB / MySQL / Database             | InnoDB buffer pool, log writes, temporary tables, handler read operations, query cache             |
+| KubeDB / MySQL / Group Replication    | Group member count/state, transaction lag, flow control, certified transaction throughput          |
+
 ## Step 8: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
@@ -264,12 +298,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **InnoDB Buffer Pool Hit Rate** — aim for > 99%; low values indicate insufficient buffer pool size
 - **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
 
+<p align="center">
+  <img alt="KubeDB MySQL Summary Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-summary.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MySQL Summary Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-summary-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MySQL / Pod** — drill into a specific pod:
 - **Thread Count** — running and connected threads per pod
 - **Questions / Slow Queries** — per-pod query metrics
 - **Table Locks** — lock waits vs. immediate lock acquisitions
 - **InnoDB Rows Read / Written** — row-level throughput per pod
 - **CPU / Memory** — per-pod resource usage
+
+<p align="center">
+  <img alt="KubeDB MySQL Pod Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-pod.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MySQL Pod Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-pod-2.png" style="padding:10px">
+</p>
 
 **KubeDB / MySQL / Database** — InnoDB storage engine metrics:
 - **InnoDB Buffer Pool** — data read/written, dirty pages, free pages
@@ -278,12 +326,26 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Handler Read Operations** — index scan efficiency
 - **Query Cache** — cache hit ratio (if query cache is enabled)
 
+<p align="center">
+  <img alt="KubeDB MySQL Database Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-database.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MySQL Database Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-database-2.png" style="padding:10px">
+</p>
+
 **KubeDB / MySQL / Group Replication** — replication group health:
 - **Member Count** — number of group members
 - **Member State** — ONLINE, RECOVERING, or ERROR per member
 - **Transaction Lag** — certified transactions waiting to be applied
 - **Flow Control Count** — times flow control was triggered (high counts indicate a lagging member)
 - **Certified Transactions** — per-member certification throughput
+
+<p align="center">
+  <img alt="KubeDB MySQL Group Replication Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-group-replication.png" style="padding:10px">
+</p>
+<p align="center">
+  <img alt="KubeDB MySQL Group Replication Dashboard - continued" src="/docs/images/mysql/monitoring/mysql-grafana-group-replication-2.png" style="padding:10px">
+</p>
 
 ## Cleaning up
 
