@@ -120,10 +120,10 @@ spec:
   solrModules:
     - prometheus-exporter
   zookeeperRef:
-    name: zoo
+    name: zk-grafana-demo
     namespace: demo
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

@@ -149,25 +149,25 @@ Wait for it to be `Ready`:
 
 ```bash
 $ kubectl get neo4j -n demo neo4j-grafana-demo
-NAME                 VERSION      STATUS   AGE
-neo4j-grafana-demo   2025.11.2    Ready    3m
+NAME                 VERSION     STATUS   AGE
+neo4j-grafana-demo   2025.11.2   Ready    3m
 ```
 
 KubeDB creates a stats service named `{neo4j-name}-stats` for the exporter:
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=neo4j-grafana-demo"
-NAME                      TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
-neo4j-grafana-demo        ClusterIP   10.96.10.1    <none>        7474/TCP   3m
-neo4j-grafana-demo-stats  ClusterIP   10.96.10.2    <none>        2004/TCP   3m
+NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)            AGE
+neo4j-grafana-demo         ClusterIP   10.96.10.1      <none>        7687/TCP,7474/TCP  3m
+neo4j-grafana-demo-stats   ClusterIP   10.96.10.2      <none>        2004/TCP           3m
 ```
 
 KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
 
 ```bash
 $ kubectl get servicemonitor -n demo
-NAME                      AGE
-neo4j-grafana-demo-stats  3m
+NAME                       AGE
+neo4j-grafana-demo-stats   3m
 ```
 
 Verify it carries the correct label:
@@ -217,16 +217,6 @@ $ kubectl get secret -n monitoring prometheus-grafana \
 | Username | `admin`                     |
 | Password | output of the command above |
 
-<p align="center">
-  <img alt="Grafana Login" src="/docs/images/kafka/monitoring/kf-grafana-login.png" style="padding:10px">
-</p>
-
-After a successful login you will see the Grafana home page:
-
-<p align="center">
-  <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
-</p>
-
 ## Step 6: Configure Prometheus as a Data Source
 
 If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 7.
@@ -251,9 +241,9 @@ Three dashboards are available. Download all three JSON files from the [appscode
 
 | File | Dashboard |
 |------|-----------|
-| `neo4j_summary_dashboard.json` | KubeDB / Neo4j / Summary |
-| `neo4j_pods_dashboard.json` | KubeDB / Neo4j / Pod |
-| `neo4j_databases_dashboard.json` | KubeDB / Neo4j / Database |
+| `neo4j-summary.json` | KubeDB / Neo4j / Summary |
+| `neo4j-pod.json` | KubeDB / Neo4j / Pod |
+| `neo4j-database.json` | KubeDB / Neo4j / Database |
 
 **Import steps (repeat for each of the three files):**
 
@@ -262,12 +252,6 @@ Three dashboards are available. Download all three JSON files from the [appscode
 3. Click **Upload dashboard JSON file** and select one of the downloaded `.json` files.
 4. In the **Prometheus** dropdown that appears, select your Prometheus data source.
 5. Click **Import**.
-
-The import page looks like this:
-
-<p align="center">
-  <img alt="Grafana Import Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-import.png" style="padding:10px">
-</p>
 
 After importing all three files, they will appear under **Dashboards** in the left sidebar.
 
@@ -280,37 +264,43 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 | **namespace** | All dashboards | Namespace where your Neo4j is deployed (e.g., `demo`)    |
 | **app**       | All dashboards | Name of your instance (e.g., `neo4j-grafana-demo`)       |
 | **pod**       | Pod dashboard  | A specific pod, or `All` for an aggregated view          |
+| **database**  | Pod, Database  | Target database name                                      |
 
 **KubeDB / Neo4j / Summary** — instance-level overview:
+
 - **Database Status** — current health of the Neo4j instance
 - **Version** — Neo4j version running
-- **Bolt Connections** — number of active Bolt protocol connections
-- **Transaction Rate** — committed and rolled-back transactions per second
-- **Page Cache Hit Rate** — percentage of page reads served from cache
-- **Store File Sizes** — disk space used by nodes, relationships, and properties
-- **CPU / Memory** — resource usage over time
+- **Total Nodes** — number of node pods in the instance
+- **Deletion Policy** — configured deletion policy
+- **CPU Usage** — CPU consumption over time per pod
+- **CPU Quota** — CPU usage vs. requests per pod
 
 <p align="center">
   <img alt="KubeDB Neo4j Summary Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-summary.png" style="padding:10px">
 </p>
 
-**KubeDB / Neo4j / Pod** — per-instance drill-down:
+**KubeDB / Neo4j / Pod** — per-pod drill-down:
+
+- **Status** — current health status of the selected pod
 - **Uptime** — how long this pod has been running
-- **Heap Usage** — JVM heap used vs. max
-- **GC Time** — time spent in garbage collection
-- **Open Transactions** — currently open transactions on this instance
-- **CPU / Memory** — per-pod resource usage
+- **Connections** — number of active Bolt connections on this pod
+- **Total Memory Used** — JVM and native memory consumed
+- **Average CPU Usage** — CPU utilization over time
+- **Transactions** — committed write transactions and transaction rates
 
 <p align="center">
   <img alt="KubeDB Neo4j Pod Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-pod.png" style="padding:10px">
 </p>
 
 **KubeDB / Neo4j / Database** — graph database metrics:
-- **Node Count** — total nodes per database
-- **Relationship Count** — total relationships per database
-- **Property Count** — total properties stored
-- **Index Hit Rate** — effectiveness of indexes per query
-- **Active Locks** — current lock holders
+
+- **Uptime** — how long the database has been available
+- **Nodes** — total nodes stored in the database
+- **Relationships** — total relationships stored
+- **Total Memory Used** — memory consumed by the database
+- **Average CPU Usage** — CPU usage over time
+- **Committed Transaction Rate** — rate of committed write transactions
+- **Committed Write Transaction Rate** — write throughput over time
 
 <p align="center">
   <img alt="KubeDB Neo4j Database Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-database.png" style="padding:10px">

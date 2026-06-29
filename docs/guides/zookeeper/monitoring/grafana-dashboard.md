@@ -117,7 +117,7 @@ spec:
   replicas: 3
   deletionPolicy: WipeOut
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -188,13 +188,13 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `zk-grafana-demo-stats`. Its state should be **UP**.
+Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `zk-grafana-demo-stats`. Its state should be **UP**. For a 3-replica ensemble, all three pods will appear as separate targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/zookeeper/monitoring/zk-prom-targets.png" style="padding:10px">
 </p>
 
-If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
+If the targets are missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
 ## Step 5: Access Grafana
 
@@ -217,16 +217,6 @@ $ kubectl get secret -n monitoring prometheus-grafana \
 | Username | `admin`                     |
 | Password | output of the command above |
 
-<p align="center">
-  <img alt="Grafana Login" src="/docs/images/kafka/monitoring/kf-grafana-login.png" style="padding:10px">
-</p>
-
-After a successful login you will see the Grafana home page:
-
-<p align="center">
-  <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
-</p>
-
 ## Step 6: Configure Prometheus as a Data Source
 
 If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 7.
@@ -247,13 +237,15 @@ For a standalone Grafana installation:
 
 The KubeDB ZooKeeper dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-One dashboard is available. Download the JSON file from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/zookeeper) repository (`zookeeper/` folder):
+Three dashboards are available. Download all three JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/zookeeper) repository (`zookeeper/` folder):
 
 | File | Dashboard |
 |------|-----------|
 | `zookeeper_summary_dashboard.json` | KubeDB / ZooKeeper / Summary |
+| `zookeeper_pod_dashboard.json` | KubeDB / ZooKeeper / Pod |
+| `zookeeper_ensemble_dashboard.json` | KubeDB / ZooKeeper / Ensemble |
 
-**Import steps:**
+**Import steps (repeat for each of the three files):**
 
 1. In Grafana, click **Dashboards** in the left sidebar.
 2. Select **Import** from the menu.
@@ -261,13 +253,7 @@ One dashboard is available. Download the JSON file from the [appscode/grafana-da
 4. In the **Prometheus** dropdown that appears, select your Prometheus data source.
 5. Click **Import**.
 
-The import page looks like this:
-
-<p align="center">
-  <img alt="Grafana Import Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-import.png" style="padding:10px">
-</p>
-
-After importing the files, they will appear under **Dashboards** in the left sidebar.
+After importing all three files, they will appear under **Dashboards** in the left sidebar.
 
 ## Step 8: Explore the Dashboards
 
@@ -277,18 +263,50 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 |---------------|----------------|--------------------------------------------------------------|
 | **namespace** | All dashboards | Namespace where your ZooKeeper is deployed (e.g., `demo`)   |
 | **app**       | All dashboards | Name of your instance (e.g., `zk-grafana-demo`)             |
+| **pod**       | Pod dashboard  | A specific pod, or `All` for an aggregated view             |
 
-**KubeDB / ZooKeeper / Summary** — ensemble-level overview:
+**KubeDB / ZooKeeper / Summary** — instance-level overview:
+
 - **Database Status** — current health of the ZooKeeper ensemble
 - **Version** — ZooKeeper version running
-- **Alive Connections** — number of active client sessions
-- **Outstanding Requests** — requests queued but not yet processed (high values indicate overload)
-- **Request Latency** — average, min, and max request processing time
-- **Watches** — total number of active watches set by clients
-- **CPU / Memory** — resource usage over time
+- **Quorum Size** — number of replicas in the ensemble
+- **Leader** — current leader node endpoint
+- **Deletion Policy** — configured deletion policy
+- **CPU Request / Memory Request** — configured resource requests
+- **CPU Usage** — CPU consumption over time per pod
+- **CPU Quota** — CPU usage vs. requests per pod
 
 <p align="center">
   <img alt="KubeDB ZooKeeper Summary Dashboard" src="/docs/images/zookeeper/monitoring/zk-grafana-summary.png" style="padding:10px">
+</p>
+
+**KubeDB / ZooKeeper / Pod** — per-pod drill-down:
+
+- **Status** — current health status of the selected pod
+- **Role** — whether this pod is leader or follower
+- **Uptime** — how long this pod has been running
+- **Snap Count** — number of snapshots taken
+- **Commit Count** — number of committed transactions
+- **Looking Count** — number of times this node entered leader election
+- **znode_count** — number of znodes on this pod over time
+- **znode_count_rate** — rate of znode creation/deletion
+- **global_sessions / local_sessions** — active client sessions on this pod
+
+<p align="center">
+  <img alt="KubeDB ZooKeeper Pod Dashboard" src="/docs/images/zookeeper/monitoring/zk-grafana-pod.png" style="padding:10px">
+</p>
+
+**KubeDB / ZooKeeper / Ensemble** — cross-node aggregate view:
+
+- **znode_count** — total znodes across all ensemble members over time
+- **znode_count_rate** — aggregate rate of znode operations
+- **global_sessions** — active global sessions per node endpoint
+- **local_sessions** — active local sessions per node endpoint
+- **write_per_namespace** — write throughput broken down by namespace
+- **read_per_namespace** — read throughput broken down by namespace
+
+<p align="center">
+  <img alt="KubeDB ZooKeeper Ensemble Dashboard" src="/docs/images/zookeeper/monitoring/zk-grafana-ensemble.png" style="padding:10px">
 </p>
 
 ## Cleaning up
