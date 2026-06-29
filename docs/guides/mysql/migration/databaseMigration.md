@@ -62,6 +62,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mysql/concepts/appbinding/)
     - [MySQL](/docs/guides/mysql/concepts/mysqldatabase)
+    - [Migrator](/docs/guides/mysql/concepts/migrator/)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

@@ -68,6 +68,7 @@ A brief downtime occurs only during the final cutover when application endpoints
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/postgres/concepts/appbinding/)
     - [PostgreSQL](/docs/guides/postgres/concepts/postgres)
+    - [Migrator](/docs/guides/postgres/concepts/migrator)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

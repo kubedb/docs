@@ -54,6 +54,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mongodb/concepts/appbinding/)
     - [MongoDB](/docs/guides/mongodb/concepts/mongodb)
+    - [Migrator](/docs/guides/mongodb/concepts/migrator)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.

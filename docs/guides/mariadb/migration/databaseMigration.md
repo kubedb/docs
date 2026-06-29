@@ -60,6 +60,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mariadb/concepts/appbinding/)
     - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
+    - [Migrator](/docs/guides/mariadb/concepts/migrator/)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
