@@ -70,14 +70,103 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
+## Prepare Source Database
+
+We will use an **AWS RDS MariaDB** instance as the source. Connect to it as the admin user to verify the prerequisites and set up the migration user and test data.
+
+### Verify prerequisites
+
+```bash
+$ mysql -h <rds-endpoint>.rds.amazonaws.com -u admin -p
+```
+
+```sql
+-- Verify binary logging is enabled
+SHOW VARIABLES LIKE 'log_bin';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| log_bin       | ON    |
++---------------+-------+
+
+-- Verify binlog format and row image
+SHOW VARIABLES LIKE 'binlog_format';
++---------------+-------+
+| Variable_name | Value |
++---------------+-------+
+| binlog_format | ROW   |
++---------------+-------+
+
+SHOW VARIABLES LIKE 'binlog_row_image';
++------------------+-------+
+| Variable_name    | Value |
++------------------+-------+
+| binlog_row_image | FULL  |
++------------------+-------+
+```
+
+> **Note:** On AWS RDS for MariaDB, enable Automated Backups and set `binlog_format=ROW` and `binlog_row_image=FULL` in a custom RDS Parameter Group. See the prerequisites section above for details.
+
+### Create a dedicated migration user
+
+Create a dedicated user with the minimum required privileges:
+
+```sql
+CREATE USER 'migrator'@'%' IDENTIFIED BY '<password>';
+
+-- For CDC (binlog streaming)
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO 'migrator'@'%';
+
+-- For schema migration (mariadb-dump) and snapshot
+GRANT SELECT, SHOW DATABASES, SHOW VIEW, TRIGGER, EVENT, LOCK TABLES, PROCESS ON *.* TO 'migrator'@'%';
+
+FLUSH PRIVILEGES;
+
+-- Verify
+SHOW GRANTS FOR 'migrator'@'%';
+```
+
+The `migrator` user is referenced in the Kubernetes secret and AppBinding for the rest of this guide.
+
+### Create table and seed data
+
+```sql
+CREATE DATABASE shop;
+USE shop;
+
+CREATE TABLE orders (
+  id            INT AUTO_INCREMENT PRIMARY KEY,
+  customer_name VARCHAR(100) NOT NULL,
+  product       VARCHAR(100) NOT NULL,
+  quantity      INT          NOT NULL DEFAULT 1,
+  status        VARCHAR(20)  NOT NULL DEFAULT 'pending',
+  created_at    TIMESTAMP    NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+INSERT INTO orders (customer_name, product, quantity, status) VALUES
+  ('Alice', 'Laptop',     1, 'shipped'),
+  ('Bob',   'Headphones', 2, 'pending'),
+  ('Carol', 'Keyboard',   3, 'delivered');
+
+SELECT * FROM orders;
++----+---------------+------------+----------+-----------+---------------------+
+| id | customer_name | product    | quantity | status    | created_at          |
++----+---------------+------------+----------+-----------+---------------------+
+|  1 | Alice         | Laptop     |        1 | shipped   | 2026-06-29 08:00:00 |
+|  2 | Bob           | Headphones |        2 | pending   | 2026-06-29 08:00:01 |
+|  3 | Carol         | Keyboard   |        3 | delivered | 2026-06-29 08:00:02 |
++----+---------------+------------+----------+-----------+---------------------+
+3 rows in set (0.00 sec)
+```
+
 ## Prepare Source Connection Information
 
-First, create an authentication secret to communicate with the source MariaDB database:
+First, create an authentication secret using the `migrator` user credentials:
 
 ```bash
 $ kubectl create secret generic source-mariadb-auth -n demo \
                 --type=kubernetes.io/basic-auth \
-                --from-literal=username=<username> \
+                --from-literal=username=migrator \
                 --from-literal=password=<password>
 ```
 
@@ -89,7 +178,9 @@ kubectl create secret generic ca-secret \
   --namespace=demo
 ```
 
-> **Note:** For mTLS, also include the client certificate and key by appending <br> `--from-file=tls.crt=$CERT_PATH/tls.crt` <br> `--from-file=tls.key=$CERT_PATH/tls.key` <br> to the command above.
+> **Note:** For mTLS, also include the client certificate and key by appending <br> `--from-file=tls.crt=$CERT_PATH/tls.crt` <br> 
+`--from-file=tls.key=$CERT_PATH/tls.key` <br> 
+to the command above.
 
 Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MariaDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
@@ -103,7 +194,7 @@ spec:
   type: mariadb
   version: "10.5.23"
   clientConfig:
-    url: "mariadb://host:port"
+    url: "mariadb://<rds-endpoint>.rds.amazonaws.com:3306"
   secret:
     name: source-mariadb-auth
   tlsSecret: # omit if TLS is disabled
@@ -174,8 +265,9 @@ spec:
         maxConnections: 100
       schema:
         enabled: true
-        database: [] # database to include
-        excludeDatabase: [] # database to exclude
+        database:
+          - shop
+        excludeDatabase: []
       snapshot:
         enabled: true
         pipeline:
@@ -197,28 +289,7 @@ spec:
         maxConnections: 100
 ```
 
-Here,
-
-**`spec.source` / `spec.target` — connectionInfo:**
-- `appBinding.name` / `appBinding.namespace` — references the `AppBinding` for the source or target MariaDB instance.
-- `dbName` — the internal database used as the initial connection entry point.
-- `maxConnections` — limits the number of concurrent connections the migrator opens to this MariaDB instance.
-
-**`spec.source.schema` — schema migration phase:**
-- `enabled: true` — enables the schema migration phase.
-- `database` — list of databases to include; empty means all databases except system database(mysql,information_schema,performance_schema,sys).
-- `excludeDatabase` — list of databases to exclude from migration.
-
-**`spec.source.snapshot` — bulk snapshot phase:**
-- `enabled: true` — enables the initial bulk snapshot phase.
-- `pipeline.workers` — number of parallel workers, each processing a separate table concurrently.
-- `pipeline.sinkers` — number of parallel write workers pushing data to the target for each worker.
-- `pipeline.buffer` — size of the in-memory queue (in records) between readers and writers.
-- `pipeline.read_batch_size` — number of rows fetched per read batch from the source.
-- `pipeline.write_batch_size` — number of rows written per batch to the target.
-
-**`spec.source.streaming` — CDC streaming phase:**
-- `enabled: true` — enables change-data capture streaming after the snapshot completes, keeping the target continuously in sync with ongoing changes on the source.
+Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migrator CRD reference](/docs/guides/mariadb/concepts/migrator/).
 
 ## Watch Migration Progress
 
@@ -230,6 +301,64 @@ Every 2.0s: kubectl get migrator -n demo
 NAME              PHASE     DBTYPE    STAGE       LAG   PROGRESS   AGE
 mariadb-migrate   Running   mariadb   Streaming   0B               4h36m
 ```
+
+### Verify initial snapshot on target
+
+Once the migrator reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
+
+```bash
+$ kubectl exec -it -n demo target-mariadb-0 -- mysql -u root -p<root-password>
+```
+
+```sql
+USE shop;
+SELECT * FROM orders;
++----+---------------+------------+----------+-----------+---------------------+
+| id | customer_name | product    | quantity | status    | created_at          |
++----+---------------+------------+----------+-----------+---------------------+
+|  1 | Alice         | Laptop     |        1 | shipped   | 2026-06-29 08:00:00 |
+|  2 | Bob           | Headphones |        2 | pending   | 2026-06-29 08:00:01 |
+|  3 | Carol         | Keyboard   |        3 | delivered | 2026-06-29 08:00:02 |
++----+---------------+------------+----------+-----------+---------------------+
+3 rows in set (0.00 sec)
+```
+
+### Test live CDC streaming
+
+With the migrator still running, connect to the **source RDS** instance and run some DML:
+
+```bash
+$ mysql -h <rds-endpoint>.rds.amazonaws.com -u migrator -p
+```
+
+```sql
+-- Insert a new order
+INSERT INTO shop.orders (customer_name, product, quantity, status)
+VALUES ('Dave', 'Mouse', 1, 'pending');
+
+-- Mark Bob's headphones as delivered
+UPDATE shop.orders SET status = 'delivered' WHERE id = 2;
+
+-- Remove the already-shipped laptop order
+DELETE FROM shop.orders WHERE id = 1;
+```
+
+Wait a few seconds for the binlog events to propagate, then re-query the **target**:
+
+```sql
+USE shop;
+SELECT * FROM orders;
++----+---------------+------------+----------+-----------+---------------------+
+| id | customer_name | product    | quantity | status    | created_at          |
++----+---------------+------------+----------+-----------+---------------------+
+|  2 | Bob           | Headphones |        2 | delivered | 2026-06-29 08:00:01 |
+|  3 | Carol         | Keyboard   |        3 | delivered | 2026-06-29 08:00:02 |
+|  4 | Dave          | Mouse      |        1 | pending   | 2026-06-29 08:10:00 |
++----+---------------+------------+----------+-----------+---------------------+
+3 rows in set (0.00 sec)
+```
+
+The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming is working correctly.
 
 ## Cutover
 
