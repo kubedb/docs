@@ -107,7 +107,7 @@ panopticon-xxxx               1/1     Running   0          1m
 Below is the RabbitMQ object with monitoring configured to use Prometheus Operator.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: RabbitMQ
 metadata:
   name: rmq-grafana-demo

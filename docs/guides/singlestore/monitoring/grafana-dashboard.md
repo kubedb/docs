@@ -123,6 +123,7 @@ metadata:
 spec:
   version: "8.7.10"
   licenseSecret:
+    kind: Secret
     name: license-secret
   deletionPolicy: WipeOut
   storage:
@@ -378,5 +379,5 @@ kubectl delete ns monitoring kubeops
 
 ## Next Steps
 
-- Monitor your Singlestore instance with KubeDB using [Prometheus Operator](/docs/guides/singlestore/monitoring/using-prometheus-operator.md).
+- Monitor your Singlestore instance with KubeDB using [Prometheus Operator](/docs/guides/singlestore/monitoring/prometheus-operator/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
