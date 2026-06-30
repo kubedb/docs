@@ -77,10 +77,10 @@ let's check database is ready to accept connections,
 
 ```bash
 $ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\username}' | base64 -d
-root⏎                                                                                         banusree@bonusree-datta-PC ~> kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
-kP!VVJ2e~DUtcD*D⏎                                                                             banusree@bonusree-datta-PC ~> kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
-Error from server (NotFound): pods "sample-pxc-0" not found
-banusree@bonusree-datta-PC ~ [1]> kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+root
+$ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+kP!VVJ2e~DUtcD*D
+$ kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.

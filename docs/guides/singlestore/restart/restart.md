@@ -114,7 +114,7 @@ Now, wait for `SingleStore` going on `Ready` state
 ```bash
 kubectl get singlestore -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-sdb-sample   kubedb.com/v1alpha2   8.7.10    Ready    2m
+sdb-sample   kubedb.com/v1alpha2   8.9.3    Ready    2m
 
 ```
 

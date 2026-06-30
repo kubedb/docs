@@ -186,7 +186,7 @@ Now, wait for `SingleStore` going on `Running` state and also wait for `PetSet` 
 ```bash
 $ kubectl get sdb,petset -n demo
 NAME                             TYPE                  VERSION   STATUS   AGE
-singlestore.kubedb.com/sdb-tls   kubedb.com/v1alpha2   8.7.10    Ready    3m57s
+singlestore.kubedb.com/sdb-tls   kubedb.com/v1alpha2   8.9.3    Ready    3m57s
 
 NAME                                              AGE
 petset.apps.k8s.appscode.com/sdb-tls-aggregator   3m53s

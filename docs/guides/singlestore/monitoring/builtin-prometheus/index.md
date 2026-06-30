@@ -117,7 +117,7 @@ Now, wait for the database to go into `Running` state.
 $ watch -n 3 kubectl get singlestore -n demo builtin-prom-sdb
 
 NAME               TYPE                  VERSION   STATUS   AGE
-builtin-prom-sdb   kubedb.com/v1alpha2   8.7.10    Ready    9m5s
+builtin-prom-sdb   kubedb.com/v1alpha2   8.9.3    Ready    9m5s
 
 ```
 

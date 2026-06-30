@@ -180,7 +180,7 @@ singlestore> SHOW VARIABLES LIKE 'char%';
 | character_set_results    | utf8mb4                                              |
 | character_set_server     | utf8mb4                                              |
 | character_set_system     | utf8                                                 |
-| character_sets_dir       | /opt/memsql-server-8.7.10-95e2357384/share/charsets/ |
+| character_sets_dir       | /opt/memsql-server-8.9.3-95e2357384/share/charsets/ |
 +--------------------------+------------------------------------------------------+
 8 rows in set (0.00 sec)
 
@@ -554,7 +554,7 @@ Controlled By:  PetSet/sdb-without-tolerations
 Init Containers:
   singlestore-init:
     Container ID:    containerd://382a8cca4103e609c0a763f65db11e89ca38fe4b982dd6f03c18eb33c083998c
-    Image:           ghcr.io/kubedb/singlestore-init:8.7.10-v1@sha256:7f8a60b45c9a402c5a3de56a266e06a70db1feeff1c28a506e485e60afc7f5fa
+    Image:           ghcr.io/kubedb/singlestore-init:8.9.3-v1@sha256:7f8a60b45c9a402c5a3de56a266e06a70db1feeff1c28a506e485e60afc7f5fa
     Image ID:        ghcr.io/kubedb/singlestore-init@sha256:7f8a60b45c9a402c5a3de56a266e06a70db1feeff1c28a506e485e60afc7f5fa
     Port:            <none>
     Host Port:       <none>
@@ -579,7 +579,7 @@ Init Containers:
 Containers:
   singlestore:
     Container ID:    containerd://b52ae6c34300ea23b60ce91fbbc6a01a1fd71bb7a3de6fea97d9a726ca280e55
-    Image:           singlestore/cluster-in-a-box:alma-8.7.10-95e2357384-4.1.0-1.17.14@sha256:6b1b66b57e11814815a43114ab28db407428662af4c7d1c666c14a3f53c5289f
+    Image:           singlestore/cluster-in-a-box:alma-8.9.3-95e2357384-4.1.0-1.17.14@sha256:6b1b66b57e11814815a43114ab28db407428662af4c7d1c666c14a3f53c5289f
     Image ID:        docker.io/singlestore/cluster-in-a-box@sha256:6b1b66b57e11814815a43114ab28db407428662af4c7d1c666c14a3f53c5289f
     Ports:           3306/TCP, 8081/TCP
     Host Ports:      0/TCP, 0/TCP

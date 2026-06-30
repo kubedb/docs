@@ -122,7 +122,7 @@ Now, wait until `sample-sdb` has status `Ready`. i.e,
 ```bash
 $ kubectl get singlestore -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-sample-sdb   kubedb.com/v1alpha2   8.7.10    Ready    86s
+sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    86s
 ```
 
 Let's check the number of `aggreagtor replicas` and `leaf replicas` this database has from the SingleStore object, number of pods the `aggregator-petset` and `leaf-petset` have,

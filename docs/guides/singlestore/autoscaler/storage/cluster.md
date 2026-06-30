@@ -135,7 +135,7 @@ Now, wait until `sdb-sample` has status `Ready`. i.e,
 
 ```bash
 NAME                                TYPE                  VERSION   STATUS   AGE
-singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.7.10    Ready    4m35s
+singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.9.3    Ready    4m35s
 ```
 
 > **Note:** You can manage storage autoscale for aggregator and leaf nodes separately. Here, we will focus on leaf nodes.

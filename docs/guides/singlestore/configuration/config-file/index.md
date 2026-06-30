@@ -180,7 +180,7 @@ custom-sdb-leaf-1         2/2     Running   0          86s
 
 $ kubectl get sdb -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-custom-sdb   kubedb.com/v1alpha2   8.7.10    Ready    4m29s
+custom-sdb   kubedb.com/v1alpha2   8.9.3    Ready    4m29s
 
 ```
 

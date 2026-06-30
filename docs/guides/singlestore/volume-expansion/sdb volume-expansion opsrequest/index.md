@@ -139,7 +139,7 @@ Now, wait until `sample-sdb` has status `Ready`. i.e,
 ```bash
 $ kubectl get sdb -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-sample-sdb   kubedb.com/v1alpha2   8.7.10    Ready    4m25s
+sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    4m25s
 
 ```
 

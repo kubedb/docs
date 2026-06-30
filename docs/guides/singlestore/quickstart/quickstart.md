@@ -140,7 +140,7 @@ singlestore.kubedb.com/sdb-quickstart created
 ```
 Here,
 
-- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.5.37` database is going to be created.
+- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.9.3` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
 - `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for SingleStore database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create SingleStore database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -183,7 +183,7 @@ kind: Singlestore
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-quickstart","namespace":"demo"},"spec":{"licenseSecret":{"name":"license-secret"},"serviceTemplates":[{"alias":"primary","spec":{"ports":[{"name":"http","port":9999}],"type":"LoadBalancer"}}],"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.5.7"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-quickstart","namespace":"demo"},"spec":{"licenseSecret":{"name":"license-secret"},"serviceTemplates":[{"alias":"primary","spec":{"ports":[{"name":"http","port":9999}],"type":"LoadBalancer"}}],"storageType":"Durable","deletionPolicy":"WipeOut","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.5","memory":"2Gi"},"requests":{"cpu":"0.5","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.9.3"}}
   creationTimestamp: "2024-05-06T06:52:58Z"
   finalizers:
   - kubedb.com
@@ -357,7 +357,7 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: standard
-  version: 8.5.7
+  version: 8.9.3
 status:
   conditions:
   - lastTransitionTime: "2024-05-06T06:53:06Z"

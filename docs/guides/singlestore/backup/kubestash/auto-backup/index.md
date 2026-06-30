@@ -410,7 +410,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
@@ -743,7 +743,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
