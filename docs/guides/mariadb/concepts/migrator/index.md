@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-migrator
     name: Migrator
     parent: guides-mariadb-concepts
-    weight: 27
+    weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
