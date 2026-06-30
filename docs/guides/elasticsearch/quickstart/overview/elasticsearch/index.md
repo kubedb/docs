@@ -131,7 +131,7 @@ xpack-8.5.2                 8.5.2     ElasticStack   elasticsearch:8.5.2        
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `xpack-8.2.3` ElasticsearchVersion CR to create an Elasticsearch cluster.
+In this tutorial, we will use `xpack-9.2.3` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-8.19.9` over `7.9.1-xpack`.
 
@@ -150,7 +150,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 3
   storageType: Durable

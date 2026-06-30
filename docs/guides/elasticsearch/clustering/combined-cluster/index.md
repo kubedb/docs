@@ -37,7 +37,7 @@ demo                 Active   9s
 
 ## Create Standalone Elasticsearch Cluster
 
-Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.19.2`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-3.4.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -46,7 +46,7 @@ metadata:
   name: es-standalone
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 1
   storageType: Durable
@@ -155,7 +155,7 @@ $ curl -XGET -k -u 'admin:V,YY1.qXxoAch9)B' "https://localhost:9200/_cluster/hea
 
 ## Create Multi-Node Combined Elasticsearch Cluster
 
-Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.19.2`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-3.4.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -164,7 +164,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 3
   storageType: Durable

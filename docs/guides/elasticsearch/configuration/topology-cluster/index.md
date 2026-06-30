@@ -140,7 +140,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   configuration:
     secretName: es-custom-config # mentioned here!
   storageType: Durable

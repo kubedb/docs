@@ -126,7 +126,7 @@ xpack-7.9.1-v2         7.9.1     ElasticStack   elasticsearch:7.9.1             
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `opensearch-2.19.2` ElasticsearchVersion CR to create an OpenSearch cluster.
+In this tutorial, we will use `opensearch-3.4.0` ElasticsearchVersion CR to create an OpenSearch cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `opensearch-2.19.2` over `opensearch-1.1.0`.
 
@@ -145,7 +145,7 @@ metadata:
   name: sample-opensearch
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -166,7 +166,7 @@ elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-2.19.2` version.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-3.4.0` version.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of OpenSearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.

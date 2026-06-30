@@ -49,7 +49,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:

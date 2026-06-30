@@ -67,7 +67,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -605,7 +605,7 @@ metadata:
   name: es-cluster
   namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable

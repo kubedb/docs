@@ -81,7 +81,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-8.18.8
   enableSSL: false
   replicas: 2
   storageType: Durable
@@ -161,7 +161,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-8.18.8
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -223,7 +223,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3 
+  version: xpack-8.18.8 
   enableSSL: false
   replicas: 3
   storageType: Durable
@@ -290,7 +290,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3 
+  version: xpack-8.18.8 
   enableSSL: false
   replicas: 3
   storageType: Durable
@@ -374,7 +374,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-8.18.8
   enableSSL: true
   replicas: 3
   configuration:
@@ -457,7 +457,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-8.18.8
   enableSSL: true
   replicas: 3
   authSecret:
@@ -507,7 +507,7 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     Volu
 
 List Elasticsearch versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/elasticsearch/update-version/elasticsearch.md).
 
-Let's choose `xpack-8.5.3` in this example.
+Let's choose `xpack-9.2.3` in this example.
 
 Update the `Elasticsearch.yaml` with the following,
 ```yaml
@@ -517,7 +517,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.5.3
+  version: xpack-9.2.3
   enableSSL: false
   replicas: 3
   storageType: Durable
@@ -547,7 +547,7 @@ spec:
               memory: 2Gi
 ```
 
-Update the `version` field to `xpack-8.5.3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
+Update the `version` field to `xpack-9.2.3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `Elasticsearch` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -594,7 +594,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.5.3
+  version: xpack-9.2.3
   enableSSL: false
   replicas: 3
   storageType: Durable
@@ -718,7 +718,7 @@ metadata:
   name: es-gitops
   namespace: demo
 spec:
-  version: xpack-8.5.3
+  version: xpack-9.2.3
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"

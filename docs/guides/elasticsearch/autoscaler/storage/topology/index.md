@@ -58,7 +58,7 @@ Now, we are going to deploy a `Elasticsearch` topology cluster using a supported
 
 #### Deploy Elasticsearch Topology
 
-In this section, we are going to deploy a Elasticsearch topology cluster with version `xpack-8.19.9`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy a Elasticsearch topology cluster with version `xpack-9.2.3`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -68,7 +68,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:

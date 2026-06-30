@@ -306,7 +306,7 @@ metadata:
   name: custom-certificate-es-ssl
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   enableSSL: true
   storage:
     storageClassName: "standard"

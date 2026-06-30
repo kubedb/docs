@@ -92,7 +92,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storage:
     storageClassName: "standard"
     accessModes:
@@ -143,7 +143,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: xpack-8.19.9
+  version: xpack-9.2.3
 status:
   observedGeneration: 1$4210395375389091791
   phase: Running

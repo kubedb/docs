@@ -91,7 +91,7 @@ metadata:
   name: es-xpack-disabled
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   disableSecurity: true
   storage:
     storageClassName: "standard"

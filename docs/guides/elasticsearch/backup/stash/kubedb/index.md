@@ -54,7 +54,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -834,7 +834,7 @@ metadata:
   name: init-sample
   namespace: restored
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   init:
     waitForInitialRestore: true

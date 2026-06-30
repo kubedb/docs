@@ -85,7 +85,7 @@ spec:
   configuration:
     secretName: es-custom-config
   enableSSL: false 
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   deletionPolicy: WipeOut
   topology:

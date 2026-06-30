@@ -45,7 +45,7 @@ Here, we are going to deploy an `Elasticsearch` topology cluster using a support
 
 #### Deploy Elasticsearch Topology Cluster
 
-In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-2.19.2`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-3.4.0`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   topology:
     master:

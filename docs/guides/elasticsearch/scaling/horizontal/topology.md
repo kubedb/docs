@@ -43,7 +43,7 @@ Here, we are going to deploy a  `Elasticsearch` Topology cluster using a support
 
 ### Prepare Elasticsearch Topology cluster
 
-Now, we are going to deploy a `Elasticsearch` Topology cluster with version `xpack-8.19.9`.
+Now, we are going to deploy a `Elasticsearch` Topology cluster with version `xpack-9.2.3`.
 
 ### Deploy Elasticsearch Topology cluster
 
@@ -57,7 +57,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:

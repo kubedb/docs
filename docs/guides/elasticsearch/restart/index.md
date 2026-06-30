@@ -47,7 +47,7 @@ metadata:
   name: es
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 3
   storageType: Durable

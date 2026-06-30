@@ -59,7 +59,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: xpack-8.19.9
+  version: xpack-9.2.3
 
 
 ```
