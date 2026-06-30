@@ -64,7 +64,7 @@ metadata:
   name: rm-quickstart
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -99,7 +99,7 @@ rabbitmq.kubedb.com/rm-quickstart created
 Here,
 
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
-- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.13.2` database is going to be created.
+- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `4.2.4` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for RabbitMQ database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create RabbitMQ database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
   - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/rabbitmq/concepts/rabbitmq.md#specdeletionpolicy)
 - `.spec.podTemplate` is used to provide specific pod specifications or container specification. You can override default resources, securityContext etc.  set for rabbitmq container. Find details [here](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec)

@@ -29,7 +29,7 @@ metadata:
   name: rabbitmq
   namespace: rabbit
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   authSecret:
     kind: Secret
     name: rabbit-auth

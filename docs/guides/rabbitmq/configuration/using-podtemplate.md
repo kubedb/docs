@@ -72,7 +72,7 @@ metadata:
   name: rm-misc-config
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -168,7 +168,7 @@ metadata:
   name: rabbitmq-custom-sidecar
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -275,7 +275,7 @@ metadata:
   name: rabbitmq-node-selector
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -372,7 +372,7 @@ metadata:
   name: rabbitmq-without-tolerations
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   storage:
     accessModes:
@@ -467,7 +467,7 @@ metadata:
   name: rabbitmq-with-tolerations
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   storage:
     accessModes:

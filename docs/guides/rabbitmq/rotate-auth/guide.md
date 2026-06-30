@@ -82,7 +82,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: 3.12.12
+  version: 4.2.4
 ```
 
 ```bash

@@ -138,7 +138,7 @@ metadata:
   name: prom-rm
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -174,7 +174,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get rm -n demo prom-rm
 NAME              VERSION    STATUS    AGE
-prom-rm           3.13.2     Ready     34s
+prom-rm           4.2.4     Ready     34s
 ```
 
 KubeDB will create a separate stats service with name `{RabbitMQ crd name}-stats` for monitoring purpose.

@@ -97,7 +97,7 @@ metadata:
   name: rabbitmq-tls
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -125,7 +125,7 @@ Now, wait until `rabbitmq-tls created` has status `Ready`. i.e,
 $ watch kubectl get rm -n demo
 Every 2.0s: kubectl get rm -n demo
 NAME            VERSION     STATUS     AGE
-rabbitmq-tls    3.13.2      Ready      14s
+rabbitmq-tls    4.2.4      Ready      14s
 ```
 
 ## Cleaning up
