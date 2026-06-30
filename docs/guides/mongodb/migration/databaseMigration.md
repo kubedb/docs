@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MongoDB Database Migration
 
-This guide will show you how to use `KubeDB` Migrator to migrate an existing `MongoDB` database — such as one running on MongoDB Atlas or any external instance — entirely into a KubeDB-managed `MongoDB` with minimal downtime.
+This guide will show you how to use `KubeDB` Migrator to migrate an existing `MongoDB` database — such as one running on DigitalOcean Managed MongoDB or any external instance — entirely into a KubeDB-managed `MongoDB` with minimal downtime.
 
 ## Before You Begin
 
@@ -24,32 +24,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
 
 - The source `MongoDB` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MongoDB` instance must be part of a replica set with the oplog enabled. The database user provided for migration must have appropriate read privileges on all databases. There is no single procedure to configure this — it depends on your deployment environment.
-
-  <details>
-  <summary>How to configure this on your source instance</summary>
-
-  **Self-hosted MongoDB** <br>
-
-  A standalone `mongod` must first be [converted to a single-node replica set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Once running as a replica set, the oplog is enabled automatically. Then create the migration user:
-  ```js
-  use admin
-  db.createUser({
-    user: "<migration-user>",
-    pwd: "<password>",
-    roles: [
-      { role: "readAnyDatabase", db: "admin" },
-      { role: "clusterMonitor", db: "admin" }
-    ]
-  })
-  ```
-
-  **MongoDB Atlas** <br>
-  Atlas clusters run as replica sets by default — no extra configuration needed. Create a database user with **Read Any Database** built-in role in **Database Access** settings.
-
-  See the official [MongoDB Replica Set](https://www.mongodb.com/docs/manual/replication/) docs for more details.
-
-  </details>
+- The source `MongoDB` instance must be part of a replica set with the oplog enabled. The database user provided for migration must have appropriate read privileges on all databases.
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mongodb/concepts/appbinding/)
@@ -64,14 +39,140 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
+## Prepare Source Database
+
+We will use a **DigitalOcean Managed MongoDB** cluster as the source. Connect to it to verify the prerequisites, set up the migration user, and insert test data.
+
+<details>
+<summary><b>Configuring your source instance.</b></summary>
+
+<br> **Self-hosted MongoDB** <br>
+
+A standalone `mongod` must first be [converted to a single-node replica set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Once running as a replica set, the oplog is enabled automatically. Then create the migration user:
+```js
+use admin
+db.createUser({
+  user: "migrator",
+  pwd: "yourStrongPassword",
+  roles: [
+    { role: "readAnyDatabase", db: "admin" },
+    { role: "clusterMonitor", db: "admin" }
+  ]
+})
+```
+
+**MongoDB Atlas** <br>
+Atlas clusters run as replica sets by default — no extra configuration needed. Create a database user with **Read Any Database** and **Cluster Monitor** built-in roles in **Database Access** settings.
+
+<br> <br> **DigitalOcean Managed MongoDB** <br>
+DigitalOcean managed MongoDB clusters run as replica sets by default. Create a database user with `readAnyDatabase` and `clusterMonitor` roles under the **Users & Databases** section of your cluster dashboard.
+
+See the official [MongoDB Replica Set](https://www.mongodb.com/docs/manual/replication/) docs for more details.
+
+</details>
+
+### Verify prerequisites
+
+Connect to the source instance and verify that the oplog is available:
+
+```bash
+$ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u admin -p
+```
+
+```js
+use local
+show collections
+// clustermanager
+// oplog.rs
+// replset.election
+// replset.initialSyncId
+// replset.minvalid
+// replset.oplogTruncateAfterPoint
+// startup_log
+// system.replset
+// system.rollback.id
+// system.tenantMigration.oplogView  [view]
+// system.views
+
+db.oplog.rs.findOne()
+{
+  op: 'n',
+  ns: '',
+  o: { msg: 'initiating set' },
+  ts: Timestamp({ t: 1782795685, i: 1 }),
+  v: Long('2'),
+  wall: ISODate('2026-06-30T05:01:25.530Z')
+}
+```
+
+The `oplog.rs` collection must exist and contain entries — this confirms the source is running as a replica set with the oplog enabled.
+
+### Create a dedicated migration user
+
+Create a dedicated user with the minimum required privileges:
+
+```js
+use admin
+db.createUser({
+  user: "migrator",
+  pwd: "<password>",
+  roles: [
+    { role: "readAnyDatabase", db: "admin" },
+    { role: "clusterMonitor", db: "admin" }
+  ]
+})
+```
+
+The `migrator` user is referenced in the Kubernetes secret and AppBinding for the rest of this guide.
+
+### Create collection and seed data
+
+```js
+use shop
+
+db.orders.insertMany([
+  { customer_name: 'Alice', product: 'Laptop',     quantity: 1, status: 'shipped',   created_at: new Date('2026-06-29T08:00:00Z') },
+  { customer_name: 'Bob',   product: 'Headphones', quantity: 2, status: 'pending',   created_at: new Date('2026-06-29T08:00:01Z') },
+  { customer_name: 'Carol', product: 'Keyboard',   quantity: 3, status: 'delivered', created_at: new Date('2026-06-29T08:00:02Z') }
+])
+
+db.orders.find().pretty()
+[
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Alice',
+    product: 'Laptop',
+    quantity: 1,
+    status: 'shipped',
+    created_at: ISODate('2026-06-29T08:00:00.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Bob',
+    product: 'Headphones',
+    quantity: 2,
+    status: 'pending',
+    created_at: ISODate('2026-06-29T08:00:01.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Carol',
+    product: 'Keyboard',
+    quantity: 3,
+    status: 'delivered',
+    created_at: ISODate('2026-06-29T08:00:02.000Z')
+  }
+]
+```
+
 ## Prepare Source Connection Information
 
-First, create an authentication secret to communicate with the source MongoDB database:
+First, create an authentication secret using the `migrator` user credentials:
 
 ```bash
 $ kubectl create secret generic source-mongodb-auth -n demo \
                 --type=kubernetes.io/basic-auth \
-                --from-literal=username=<username> \
+                --from-literal=username=migrator \
                 --from-literal=password=<password>
 ```
 
@@ -95,9 +196,9 @@ metadata:
   namespace: demo
 spec:
   type: mongodb
-  version: "5.0.3"
+  version: "4.4.26"
   clientConfig:
-    url: "mongodb://host:port"
+    url: "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com"
   secret:
     name: source-mongodb-auth
   tlsSecret: # omit if TLS is disabled
@@ -166,6 +267,10 @@ metadata:
   name: mongodb-migrate
   namespace: demo
 spec:
+  jobTemplate:
+    spec:
+      securityContext:
+        fsGroup: 65534
   source:
     mongodb:
       connectionInfo:
@@ -194,6 +299,8 @@ Here,
 - `extraConfiguration` — additional `mongoshake` configuration parameters. For example:
   - `full_sync.executor.insert_on_dup_update: "true"` — uses upsert instead of insert during full sync to handle duplicate key errors gracefully.
 
+For a full description of every field, see the [Migrator CRD reference](/docs/guides/mongodb/concepts/migrator).
+
 ## Watch Migration Progress
 
 Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migrator` CR:
@@ -204,6 +311,106 @@ Every 2.0s: kubectl get migrator -n demo
 NAME              PHASE     DBTYPE    STAGE   LAG   PROGRESS   AGE
 mongodb-migrate   Running   mongodb   incr    0                17h
 ```
+
+### Verify initial snapshot on target
+
+Once the migrator reaches the `incr` stage (continuous oplog tailing), exec into the KubeDB target pod and confirm all seed documents were copied over:
+
+```bash
+$ kubectl exec -it -n demo mgo-destination-0 -- mongosh -u root -p<root-password>
+```
+
+```js
+use shop
+db.orders.find().pretty()
+[
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Alice',
+    product: 'Laptop',
+    quantity: 1,
+    status: 'shipped',
+    created_at: ISODate('2026-06-29T08:00:00.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Bob',
+    product: 'Headphones',
+    quantity: 2,
+    status: 'pending',
+    created_at: ISODate('2026-06-29T08:00:01.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Carol',
+    product: 'Keyboard',
+    quantity: 3,
+    status: 'delivered',
+    created_at: ISODate('2026-06-29T08:00:02.000Z')
+  }
+]
+```
+
+### Test live CDC streaming
+
+With the migrator still running, connect to the **source DigitalOcean** instance and run some DML:
+
+```bash
+$ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u migrator -p
+```
+
+```js
+use shop
+
+// Insert a new order
+db.orders.insertOne({
+  customer_name: 'Dave', product: 'Mouse', quantity: 1, status: 'pending', created_at: new Date()
+})
+
+// Mark Bob's headphones as delivered
+db.orders.updateOne(
+  { customer_name: 'Bob' },
+  { $set: { status: 'delivered' } }
+)
+
+// Remove the already-shipped laptop order
+db.orders.deleteOne({ customer_name: 'Alice' })
+```
+
+Wait a few seconds for the oplog events to propagate, then re-query the **target**:
+
+```js
+use shop
+db.orders.find().pretty()
+[
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Bob',
+    product: 'Headphones',
+    quantity: 2,
+    status: 'delivered',
+    created_at: ISODate('2026-06-29T08:00:01.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Carol',
+    product: 'Keyboard',
+    quantity: 3,
+    status: 'delivered',
+    created_at: ISODate('2026-06-29T08:00:02.000Z')
+  },
+  {
+    _id: ObjectId("..."),
+    customer_name: 'Dave',
+    product: 'Mouse',
+    quantity: 1,
+    status: 'pending',
+    created_at: ISODate('2026-06-29T08:10:00.000Z')
+  }
+]
+```
+
+The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming is working correctly.
 
 ## Cutover
 
