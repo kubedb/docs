@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: sdb
   updateVersion:
-    targetVersion: 8.7.10
+    targetVersion: 8.9.3
   timeout: 5m
   apply: IfReady
 ```

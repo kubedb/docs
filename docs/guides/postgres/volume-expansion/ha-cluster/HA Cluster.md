@@ -93,7 +93,7 @@ Now, wait until `pg-ha-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get pg -n demo
 NAME            VERSION   STATUS   AGE
-pg-ha-cluster   13.13     Ready    3m6s
+pg-ha-cluster   18.3     Ready    3m6s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

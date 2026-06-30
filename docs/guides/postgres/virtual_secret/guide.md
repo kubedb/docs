@@ -377,7 +377,7 @@ We can see that the Postgres user password is stored in the vault server. Now le
 kubectl exec -it -n demo pg-0 -- bash 
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 pg-0:/$ PGPASSWORD='EGJl!tHEGzZoYwMi' psql -U postgres -d postgres -p 5432 -h pg.demo.svc
-psql (17.5)
+psql (18.3)
 Type "help" for help.
 
 postgres=# CREATE DATABASE my_database;

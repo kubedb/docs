@@ -129,7 +129,7 @@ metadata:
   name: prom-operator-sdb
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -206,7 +206,7 @@ Now, wait for the database to go into `Running` state.
 $ watch -n 3 kubectl get singlestore -n demo prom-operator-sdb
 
 NAME                TYPE                  VERSION   STATUS   AGE
-prom-operator-sdb   kubedb.com/v1alpha2   8.7.10    Ready    10m
+prom-operator-sdb   kubedb.com/v1alpha2   8.9.3    Ready    10m
 
 ```
 

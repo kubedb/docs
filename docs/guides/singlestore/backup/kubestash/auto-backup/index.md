@@ -223,7 +223,7 @@ metadata:
     blueprint.kubestash.com/name: singlestore-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -410,7 +410,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
@@ -559,7 +559,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/targetName: sample-singlestore-2
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -743,7 +743,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo

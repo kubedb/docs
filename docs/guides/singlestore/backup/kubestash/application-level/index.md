@@ -76,7 +76,7 @@ metadata:
   name: sample-singlestore
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -126,7 +126,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.7.10` database is going to be created.
+- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.9.3` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
 - `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for SingleStore database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create SingleStore database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -149,7 +149,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get singlestores.kubedb.com -n demo
 NAME                   VERSION   STATUS    AGE
-sample-singlestore      8.7.10   Ready     4m22s
+sample-singlestore      8.9.3   Ready     4m22s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -190,7 +190,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sample-singlestore","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}}}}},"version":"8.7.10"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sample-singlestore","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}}}}},"version":"8.9.3"}}
   creationTimestamp: "2024-09-11T07:03:44Z"
   generation: 1
   labels:
@@ -235,7 +235,7 @@ spec:
   secret:
     name: sample-singlestore-root-cred
   type: kubedb.com/singlestore
-  version: 8.7.10
+  version: 8.9.3
 
 ```
 
@@ -581,7 +581,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-singlestore-repo
   annotations:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
   name: gcs-singlestore-repo-sample-singlestore-backup-frequent-backup-1725359100
   namespace: demo
   ownerReferences:
@@ -733,7 +733,7 @@ In this section, we will verify whether the desired `SingleStore` database manif
 ```bash
 $ kubectl get singlestores.kubedb.com -n dev
 NAME                  VERSION    STATUS   AGE
-sample-singlestore    8.7.10     Ready    39m
+sample-singlestore    8.9.3     Ready    39m
 ```
 
 The output confirms that the `SingleStore` database has been successfully created with the same configuration as it had at the time of backup.
@@ -747,7 +747,7 @@ At first, check if the database has gone into `Ready` state by the following com
 ```bash
 $ kubectl get sdb -n dev sample-singlestore
 NAME                   VERSION   STATUS  AGE
-sample-singlestore     8.7.10     Ready   4m
+sample-singlestore     8.9.3     Ready   4m
 ```
 
 Now, find out the database `Pod` by the following command,

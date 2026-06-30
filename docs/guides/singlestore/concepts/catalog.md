@@ -30,23 +30,26 @@ As with all other Kubernetes objects, a SingleStoreVersion needs `apiVersion`, `
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: SinglestoreVersion
 metadata:
-  name: 8.7.10
+  name: 8.9.3
 spec:
   coordinator:
-    image: ghcr.io/kubedb/singlestore-coordinator:v0.3.0
+    image: ghcr.io/kubedb/singlestore-coordinator:v0.20.0
   db:
-    image: ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384
+    image: ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
+  gitSyncer:
+    image: registry.k8s.io/git-sync/git-sync:v4.4.2
   initContainer:
     image: ghcr.io/kubedb/singlestore-init:8.7.10-v1
   securityContext:
     runAsGroup: 998
     runAsUser: 999
   standalone:
-    image: singlestore/cluster-in-a-box:alma-8.7.10-95e2357384-4.1.0-1.17.14
+    image: docker.io/singlestore/cluster-in-a-box:alma-8.7.10-95e2357384-4.1.0-1.17.14
   updateConstraints:
     allowlist:
-      - '> 8.7.10, <= 8.7.10'
-  version: 8.7.10
+    - 8.9.3
+  version: 8.9.3
+
 ```
 
 ### metadata.name

@@ -269,7 +269,7 @@ We will exec into the pod `sample-pxc-0` and connet to the database using `usern
 ```bash
 $ kubectl exec -it -n demo sample-pxc-0 -- perconaxtradb -u root --password='w*yOU$b53dTbjsjJ'
 
-Server version: 8.0.40-16.1 Percona XtraDB Cluster (GPL), Release rel16, Revision b141904, WSREP version 26.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2021 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2021, Oracle and/or its affiliates.

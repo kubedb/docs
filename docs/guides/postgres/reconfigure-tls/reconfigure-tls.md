@@ -73,7 +73,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get pg -n demo
 NAME          VERSION   STATUS   AGE
-ha-postgres   13.13     Ready    87s
+ha-postgres   18.3     Ready    87s
 
 $ kubectl dba describe postgres ha-postgres -n demo
 Name:               ha-postgres
@@ -161,7 +161,7 @@ Topology:
 AppBinding:
   Metadata:
     Annotations:
-      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"ha-postgres","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"13.13"}}
+      kubectl.kubernetes.io/last-applied-configuration:  {"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"ha-postgres","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"18.3"}}
 
     Creation Timestamp:  2024-08-19T07:38:31Z
     Labels:
@@ -196,7 +196,7 @@ AppBinding:
     Secret:
       Name:   ha-postgres-auth
     Type:     kubedb.com/postgres
-    Version:  13.13
+    Version:  18.3
 
 Events:
   Type    Reason      Age   From             Message
@@ -222,7 +222,7 @@ $ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres
 Password for user postgres: 
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 
 postgres=# 
@@ -371,7 +371,7 @@ All the certs are added. Now lets connect with the postgres using client certs
 $ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres -d "sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt sslcert=/tls/certs/client/client.crt sslkey=/tls/certs/client/client.key"
-psql (13.13)
+psql (18.3)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 
@@ -398,7 +398,7 @@ postgres-# WHERE name IN ('ssl', 'ssl_cert_file', 'ssl_key_file');
 > $ kubectl exec -it -n demo ha-postgres-0 -- bash
 > Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 > ha-postgres-0:/$ psql
-> psql (13.13)
+> psql (18.3)
 > Type "help" for help.
 > postgres=#
 
@@ -672,7 +672,7 @@ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres
 Password for user postgres: 
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 
 postgres=# SELECT name, setting 

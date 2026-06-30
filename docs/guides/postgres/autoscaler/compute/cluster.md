@@ -87,7 +87,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get postgres -n demo
 NAME             VERSION   STATUS   AGE
-ha-postgres        16.1    Ready    14m
+ha-postgres        18.3    Ready    14m
 ```
 
 Let's check the Pod containers resources,
