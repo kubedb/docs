@@ -39,7 +39,7 @@ Now, we are going to deploy a  `PerconaXtraDB` Cluster using a supported version
 
 ### Prepare PerconaXtraDB Cluster
 
-Now, we are going to deploy a `PerconaXtraDB` Cluster database with version `8.0.40`.
+Now, we are going to deploy a `PerconaXtraDB` Cluster database with version `8.4.3`.
 
 ### Deploy PerconaXtraDB
 
@@ -70,7 +70,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   configuration:
     secretName: px-configuration
@@ -97,7 +97,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo 
 NAME             VERSION   STATUS   AGE
-sample-pxc       8.0.40    Ready    71s
+sample-pxc       8.4.3    Ready    71s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.

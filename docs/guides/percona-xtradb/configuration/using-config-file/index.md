@@ -102,7 +102,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   configuration:
     secretName: px-configuration
   storageType: Durable
@@ -131,7 +131,7 @@ sample-pxc-2   2/2     Running   0          95m
 $ kubectl get perconaxtradb -n demo 
 NAME             VERSION   STATUS   AGE
 NAME         VERSION   STATUS   AGE
-sample-pxc   8.0.40    Ready    96m
+sample-pxc   8.4.3    Ready    96m
 ```
 
 We can see the database is in ready phase so it can accept connection.

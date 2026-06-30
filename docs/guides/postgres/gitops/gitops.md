@@ -76,7 +76,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -157,7 +157,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -219,7 +219,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 5
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -281,7 +281,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 5
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -370,7 +370,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -478,7 +478,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   podTemplate:
     spec:
@@ -595,7 +595,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "17.9"
   storageType: Durable
   sslMode: verify-full
   tls:
@@ -668,7 +668,7 @@ Type "help" for help.
 
 List postgres versions using `kubectl get postgresversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/postgres/update-version/versionupgrading/index.md).
 
-Let's choose `17.4` in this example.
+Let's choose `18.3` in this example.
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -684,7 +684,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "17.4"
+  version: "18.3"
   storageType: Durable
   sslMode: verify-full
   tls:
@@ -721,7 +721,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Postgres` CR is updated in your cluster.
+Update the `version` field to `18.3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Postgres` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` PostgresOpsRequest to update the `Postgres` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -774,7 +774,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "17.4"
+  version: "18.3"
   storageType: Durable
   sslMode: verify-full
   tls:
