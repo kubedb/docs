@@ -42,7 +42,7 @@ Here, we are going to deploy a `Hazelcast` database using a supported version by
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.6`.
 
 ### Deploy Hazelcast
 

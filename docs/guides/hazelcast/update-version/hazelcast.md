@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.2.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
 
 ### Deploy Hazelcast:
 
@@ -91,7 +91,7 @@ We are now ready to apply the `HazelcastOpsRequest` CR to update this database.
 
 ### Update Hazelcast Version
 
-Here, we are going to update `Hazelcast` from `5.2.2` to `5.5.6`.
+Here, we are going to update `Hazelcast` from `5.5.2` to `5.5.6`.
 
 #### Create HazelcastOpsRequest:
 
