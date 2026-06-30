@@ -39,7 +39,7 @@ Now, we are going to deploy a  `Postgres` Cluster using a supported version by `
 
 ### Prepare Postgres Cluster
 
-Now, we are going to deploy a `Postgres` Cluster database with version `16.1`.
+Now, we are going to deploy a `Postgres` Cluster database with version `18.3`.
 
 ### Deploy Postgres
 
@@ -67,7 +67,7 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   configuration:
     secretName: pg-configuration
