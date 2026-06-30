@@ -31,7 +31,7 @@ metadata:
   name: pgbouncer-server
   namespace: demo
 spec:
-  version: "1.18.0"
+  version: "1.24.0"
   replicas: 1
   database:
     syncUsers: true
@@ -55,7 +55,7 @@ spec:
 
 `spec.version` is a required field that specifies the name of the [PgBouncerVersion](/docs/guides/pgbouncer/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PgBouncerVersion` resources,
 
-- `1.18.0`
+- `1.24.0`
 
 ### spec.replicas
 
