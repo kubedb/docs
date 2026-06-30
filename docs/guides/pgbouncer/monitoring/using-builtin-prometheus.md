@@ -53,7 +53,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.18.0"
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"
