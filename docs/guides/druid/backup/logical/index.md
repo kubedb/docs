@@ -693,7 +693,7 @@ At first, check if the database has gone into `Ready` state by the following com
 ```bash
 $ kubectl get druid -n demo restored-druid
 NAME             VERSION   STATUS  AGE
-restored-druid   8.2.0     Ready   34m
+restored-druid   36.0.0     Ready   34m
 ```
 
 Now, let's verify if our datasource `wikipedia` exists or not. For that, first find out the database `Sevices` by the following command,

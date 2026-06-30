@@ -125,7 +125,7 @@ druid.kubedb.com/druid-cluster created
 Now, wait until `druid-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+$ kubectl get dr -n demo -w
 NAME             TYPE                  VERSION    STATUS         AGE
 druid-cluster    kubedb.com/v1alpha2   36.0.0     Provisioning   0s
 druid-cluster    kubedb.com/v1alpha2   36.0.0     Provisioning   24s
