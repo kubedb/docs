@@ -153,7 +153,7 @@ metadata:
   name: druid-with-config
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   configuration:
     secretName: config-secret
   deepStorage:
@@ -178,11 +178,11 @@ Now, wait for the Druid to become ready:
 ```bash
 $ kubectl get dr -n demo -w
 NAME                TYPE                  VERSION   STATUS         AGE
-druid-with-config   kubedb.com/v1alpha2   28.0.1     Provisioning   5s
-druid-with-config   kubedb.com/v1alpha2   28.0.1    Provisioning   7s
+druid-with-config   kubedb.com/v1alpha2   36.0.0     Provisioning   5s
+druid-with-config   kubedb.com/v1alpha2   36.0.0    Provisioning   7s
 .
 .
-druid-with-config   kubedb.com/v1alpha2   28.0.1     Ready          2m
+druid-with-config   kubedb.com/v1alpha2   36.0.0     Ready          2m
 ```
 
 ## Verify Configuration

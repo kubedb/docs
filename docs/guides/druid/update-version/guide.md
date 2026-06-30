@@ -37,7 +37,7 @@ namespace/demo created
 
 ## Prepare Druid
 
-Now, we are going to deploy a `Druid` cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` cluster with version `35.0.1`.
 
 ### Create External Dependency (Deep Storage)
 
@@ -99,7 +99,7 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 35.0.1
   deepStorage:
     type: s3
     configSecret:
@@ -122,11 +122,11 @@ Now, wait until `druid-cluster` created has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w                                                                                                                                           
 NAME            TYPE                  VERSION    STATUS         AGE
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Provisioning   0s
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Provisioning   55s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Provisioning   0s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Provisioning   55s
 .
 .
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Ready          119s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Ready          119s
 ```
 
 We are now ready to apply the `DruidOpsRequest` CR to update.
@@ -168,11 +168,11 @@ After providing the credentials correctly, you should be able to access the web 
 </p>
 
 
-Here, we can see that the version of the druid cluster is `28.0.1`.
+Here, we can see that the version of the druid cluster is `35.0.1`.
 
 ### Update Druid Version
 
-Here, we are going to update `Druid` from `28.0.1` to `30.0.1`.
+Here, we are going to update `Druid` from `35.0.1` to `36.0.0`.
 
 #### Create DruidOpsRequest:
 
@@ -189,7 +189,7 @@ spec:
   databaseRef:
     name: druid-cluster
   updateVersion:
-    targetVersion: 30.0.1
+    targetVersion: 36.0.0
   timeout: 5m
   apply: IfReady
 ```
@@ -198,7 +198,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `druid-cluster` Druid.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `30.0.1`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `36.0.0`.
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 
@@ -422,7 +422,7 @@ You can see from above, our `Druid` has been updated with the new version. So, t
 
 You can also see the version of druid cluster from the druid ui by following the steps described previously in this tutorial. [Check Druid Version from UI](/docs/guides/druid/update-version/guide.md/#Check-Druid-Version-from-UI)
 
-If you follow the steps properly, you should be able to see that the version is upgraded to `30.0.1` from the druid console as shown below.
+If you follow the steps properly, you should be able to see that the version is upgraded to `36.0.0` from the druid console as shown below.
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/guides/druid/update-version/images/druid-ui-30.png">

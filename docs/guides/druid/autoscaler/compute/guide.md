@@ -91,11 +91,11 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 secret/deep-storage-config created
 ```
 
-Now, we are going to deploy a `Druid` combined cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` combined cluster with version `36.0.0`.
 
 ### Deploy Druid Cluster
 
-In this section, we are going to deploy a Druid Topology cluster with version `28.0.1`.  Then, in the next section we will set up autoscaling for this database using `DruidAutoscaler` CRD. Below is the YAML of the `Druid` CR that we are going to create,
+In this section, we are going to deploy a Druid Topology cluster with version `36.0.0`.  Then, in the next section we will set up autoscaling for this database using `DruidAutoscaler` CRD. Below is the YAML of the `Druid` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -104,7 +104,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -127,11 +127,11 @@ Now, wait until `druid-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get kf -n demo -w
 NAME             TYPE                  VERSION    STATUS         AGE
-druid-cluster    kubedb.com/v1alpha2   28.0.1     Provisioning   0s
-druid-cluster    kubedb.com/v1alpha2   28.0.1     Provisioning   24s
+druid-cluster    kubedb.com/v1alpha2   36.0.0     Provisioning   0s
+druid-cluster    kubedb.com/v1alpha2   36.0.0     Provisioning   24s
 .
 .
-druid-cluster    kubedb.com/v1alpha2   28.0.1     Ready          118s
+druid-cluster    kubedb.com/v1alpha2   36.0.0     Ready          118s
 ```
 
 ## Druid Topology Autoscaler

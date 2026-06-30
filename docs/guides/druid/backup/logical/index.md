@@ -115,7 +115,7 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -140,7 +140,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get druids.kubedb.com -n demo
 NAME               TYPE                  VERSION   STATUS         AGE
-sample-druid       kubedb.com/v1alpha2   30.0.1    Ready          113s
+sample-druid       kubedb.com/v1alpha2   36.0.0    Ready          113s
 ```
 
 The database is `Ready`. Verify that KubeDB has created the necessary `Secrets` and `Services` to access the database along with `MySQL` and `ZooKeeper` instance for this database using the following commands,
@@ -167,7 +167,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
-sample-druid                  kubedb.com/druid       30.0.1    2m26s
+sample-druid                  kubedb.com/druid       36.0.0    2m26s
 sample-druid-mysql-metadata   kubedb.com/mysql       9.1.0    5m40s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     5m43s
 ```
@@ -218,7 +218,7 @@ spec:
   secret:
     name: sample-druid-admin-cred
   type: kubedb.com/druid
-  version: 30.0.1
+  version: 36.0.0
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -600,7 +600,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -623,7 +623,7 @@ If you check the database status, you will see it is stuck in `Provisioning` sta
 ```bash
 $ kubectl get druid -n demo restored-druid
 NAME             TYPE                  VERSION   STATUS         AGE
-restored-druid   kubedb.com/v1alpha2   30.0.1    Provisioning   22s
+restored-druid   kubedb.com/v1alpha2   36.0.0    Provisioning   22s
 ```
 
 #### Create RestoreSession:

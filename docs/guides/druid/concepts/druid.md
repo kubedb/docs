@@ -164,7 +164,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 30.0.1
+  version: 36.0.0
 ```
 
 ### spec.version

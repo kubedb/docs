@@ -84,7 +84,7 @@ NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
 
-In this tutorial, we will use `28.0.1` DruidVersion CR to create a Druid cluster.
+In this tutorial, we will use `36.0.0` DruidVersion CR to create a Druid cluster.
 
 ## Get External Dependencies Ready
 
@@ -151,7 +151,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 31.0.0
+  version: 36.0.0
   deletionPolicy: Delete
   deepStorage:
     type: s3
@@ -188,7 +188,7 @@ The Druid's `STATUS` will go from `Provisioning` to `Ready` state within few min
 ```bash
 $ kubectl get druid -n demo -w
 NAME            TYPE                  VERSION   STATUS   AGE
-druid-cluster   kubedb.com/v1alpha2   31.0.0    Ready    4m12s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    4m12s
 
 ```
 ## Inspect Druid Pod Roles and Health
@@ -203,7 +203,7 @@ See the database is ready.
 ```shell
 $ kubectl get druid,petset,pods -n demo
 NAME                             TYPE                  VERSION   STATUS   AGE
-druid.kubedb.com/druid-cluster   kubedb.com/v1alpha2   31.0.0    Ready    15m
+druid.kubedb.com/druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    15m
 
 NAME                                                        AGE
 petset.apps.k8s.appscode.com/druid-cluster-brokers          14m

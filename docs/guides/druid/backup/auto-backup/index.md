@@ -266,7 +266,7 @@ metadata:
     blueprint.kubestash.com/name: druid-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -587,7 +587,7 @@ metadata:
     variables.kubestash.com/targetName: sample-druid-2
     variables.kubestash.com/targetedDatabases: druid
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:

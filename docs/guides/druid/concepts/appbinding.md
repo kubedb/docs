@@ -71,7 +71,7 @@ spec:
   tlsSecret:
     name: druid-client-cert
   type: kubedb.com/druid
-  version: 28.0.1
+  version: 36.0.0
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 

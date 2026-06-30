@@ -97,7 +97,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -119,7 +119,7 @@ Now, wait until `druid-quickstart` has status Ready. i.e,
 ```shell
 $ kubectl get druid -n demo
 NAME               TYPE                  VERSION   STATUS   AGE
-druid-quickstart   kubedb.com/v1alpha2   28.0.1    Ready    5m3s
+druid-quickstart   kubedb.com/v1alpha2   36.0.0    Ready    5m3s
 ```
 
 ## Verify authentication
