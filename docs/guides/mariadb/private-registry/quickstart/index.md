@@ -73,7 +73,7 @@ Docker hub repositories:
           runAsUser: 995
       podSecurityPolicies:
         databasePolicyName: maria-db
-      version: 11.8.5
+      version: 12.1.2
     ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -118,7 +118,7 @@ metadata:
   name: md-pvt-reg
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     storageClassName: "standard"
     accessModes:
