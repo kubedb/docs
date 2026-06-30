@@ -42,7 +42,7 @@ Here, we are going to deploy a `ZooKeeper` using a supported version by `KubeDB`
 
 ### Deploy ZooKeeper
 
-In this section, we are going to deploy a ZooKeeper. We are going to deploy a `ZooKeeper` with version `3.8.3`. Then, in the next section we will scale the zookeeper using `ZooKeeperOpsRequest` CRD. Below is the YAML of the `ZooKeeper` CR that we are going to create,
+In this section, we are going to deploy a ZooKeeper. We are going to deploy a `ZooKeeper` with version `3.9.1`. Then, in the next section we will scale the zookeeper using `ZooKeeperOpsRequest` CRD. Below is the YAML of the `ZooKeeper` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -51,7 +51,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:

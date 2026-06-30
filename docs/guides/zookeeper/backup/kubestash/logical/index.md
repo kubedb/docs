@@ -68,7 +68,7 @@ metadata:
   name: sample-zookeeper
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -169,7 +169,7 @@ spec:
   secret:
     name: sample-zookeeper-auth
   type: kubedb.com/zookeeper
-  version: 3.8.3
+  version: 3.9.1
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -458,7 +458,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: s3-zookeeper-repo
   annotations:
-    kubedb.com/db-version: "3.8.3"
+    kubedb.com/db-version: "3.9.1"
   name: s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962
   namespace: demo
   ownerReferences:
@@ -539,7 +539,7 @@ metadata:
   name: restored-zookeeper
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
