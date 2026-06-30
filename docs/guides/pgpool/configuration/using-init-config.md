@@ -55,7 +55,7 @@ metadata:
   name: pp-init-config
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres

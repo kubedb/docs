@@ -43,7 +43,7 @@ Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/cl
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `4.4.5`.
+Now, we are going to deploy a `Pgpool` with version `4.6.0`.
 
 ## From Public Git Repository
 
@@ -58,7 +58,7 @@ metadata:
   name: pgpool
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: postgres
@@ -159,7 +159,7 @@ metadata:
   name: pgpool
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: postgres
@@ -250,7 +250,7 @@ metadata:
   name: pgpool
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: postgres

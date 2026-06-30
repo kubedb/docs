@@ -44,7 +44,7 @@ Now, we are going to deploy a  `Pgpool` using a supported version by `KubeDB` op
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `4.5.0`.
+Now, we are going to deploy a `Pgpool` with version `4.6.0`.
 
 ### Deploy Pgpool 
 
@@ -72,7 +72,7 @@ metadata:
   name: pp-custom
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   configuration:
     secretName: pp-custom-config
