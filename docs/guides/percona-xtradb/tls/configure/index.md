@@ -92,7 +92,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -134,7 +134,7 @@ Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `PetSet
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc
 NAME         VERSION   STATUS   AGE
-sample-pxc   8.0.40    Ready    3m23s
+sample-pxc   8.4.3    Ready    3m23s
 
 
 $ kubectl get pod -n demo | grep sample-pxc

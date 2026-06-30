@@ -37,7 +37,7 @@ namespace/demo created
 
 ## Prepare PerconaXtraDB Cluster
 
-Now, we are going to deploy a `PerconaXtraDB` cluster database with version `10.4.32`.
+Now, we are going to deploy a `PerconaXtraDB` cluster database with version `8.0.40`.
 
 ### Deploy PerconaXtraDB cluster
 
@@ -85,7 +85,7 @@ We are now ready to apply the `PerconaXtraDBOpsRequest` CR to update this databa
 
 ### Update PerconaXtraDB Version
 
-Here, we are going to update `PerconaXtraDB` cluster from `8.0.40` to `8.0.28`.
+Here, we are going to update `PerconaXtraDB` cluster from `8.0.40` to `8.4.3`.
 
 #### Create PerconaXtraDBOpsRequest:
 
@@ -102,14 +102,14 @@ spec:
   databaseRef:
     name: sample-pxc
   updateVersion:
-    targetVersion: "8.0.28"
+    targetVersion: "8.4.3"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-pxc` PerconaXtraDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.0.28`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.4.3`.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -137,13 +137,13 @@ Now, we are going to verify whether the `PerconaXtraDB` and the related `PetSets
 
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'
-8.0.28
+8.4.3
 
 $ kubectl get sts -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-percona/percona-xtradb-cluster:8.0.28
+percona/percona-xtradb-cluster:8.4.3
 
 $ kubectl get pods -n demo sample-pxc-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-percona/percona-xtradb-cluster:8.0.28
+percona/percona-xtradb-cluster:8.4.3
 ```
 
 You can see from above, our `PerconaXtraDB` cluster database has been updated with the new version. So, the update process is successfully completed.
