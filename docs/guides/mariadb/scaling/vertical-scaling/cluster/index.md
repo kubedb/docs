@@ -41,7 +41,7 @@ Here, we are going to deploy a  `MariaDB` cluster using a supported version by `
 
 ### Prepare MariaDB Cluster
 
-Now, we are going to deploy a `MariaDB` cluster database with version `11.8.5`.
+Now, we are going to deploy a `MariaDB` cluster database with version `12.1.2`.
 > Vertical Scaling for `MariaDB Standalone` can be performed in the same way as `MariaDB Cluster`. Only remove the `spec.replicas` field from the below yaml to deploy a MariaDB Standalone.
 
 ### Deploy MariaDB Cluster 
@@ -55,7 +55,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

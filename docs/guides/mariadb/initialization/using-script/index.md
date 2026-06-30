@@ -59,7 +59,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -113,7 +113,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 11.8.5
+  version: 12.1.2
 status:
   ...
   phase: Ready

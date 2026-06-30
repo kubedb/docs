@@ -126,7 +126,7 @@ placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
-In this section, we are going to deploy a distributed MariaDB replicaset database with version `11.5.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
+In this section, we are going to deploy a distributed MariaDB replicaset database with version `12.1.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
 
 Below is the YAML of the `MariaDB` CR that we are going to create. Note that `spec.distributed` is set to `true` and the `PlacementPolicy` is referenced via `spec.podTemplate.spec.podPlacementPolicy`:
 
@@ -137,7 +137,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.5.2"
+  version: "12.1.2"
   distributed: true
   replicas: 3
   storageType: Durable
