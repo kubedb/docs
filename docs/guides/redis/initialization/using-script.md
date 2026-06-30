@@ -57,7 +57,7 @@ metadata:
   name: rd-init-script
   namespace: demo
 spec:
-  version: 7.2.3
+  version: 8.2.2
   disableAuth: false
   storageType: Durable
   init:
@@ -269,7 +269,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  version: 7.2.3
+  version: 8.2.2
 status:
   conditions:
   - lastTransitionTime: "2024-08-06T05:59:40Z"

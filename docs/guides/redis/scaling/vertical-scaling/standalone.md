@@ -42,7 +42,7 @@ Here, we are going to deploy a  `Redis` standalone using a supported version by 
 
 ### Prepare Redis Standalone Database
 
-Now, we are going to deploy a `Redis` standalone database with version `6.2.14`.
+Now, we are going to deploy a `Redis` standalone database with version `8.2.2`.
 
 ### Deploy Redis standalone 
 
@@ -55,7 +55,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"

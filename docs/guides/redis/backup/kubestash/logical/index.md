@@ -68,7 +68,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3
@@ -183,7 +183,7 @@ spec:
   secret:
     name: redis-cluster-auth
   type: kubedb.com/redis
-  version: 7.4.0
+  version: 8.2.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -572,7 +572,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3
