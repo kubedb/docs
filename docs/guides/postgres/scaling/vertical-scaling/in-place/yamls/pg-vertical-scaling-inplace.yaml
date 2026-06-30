@@ -5,10 +5,10 @@ metadata:
   namespace: demo
 spec:
   type: VerticalScaling
-  mode: InPlace
   databaseRef:
     name: pg
   verticalScaling:
+    mode: InPlace
     postgres:
       resources:
         requests:

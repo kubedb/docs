@@ -5,11 +5,11 @@ metadata:
   namespace: demo
 spec:
   type: VerticalScaling
-  mode: InPlace
-  memoryPolicy: ResizeOnly
   databaseRef:
     name: pg
   verticalScaling:
+    mode: InPlace
+    memoryPolicy: ResizeOnly
     postgres:
       resources:
         requests:

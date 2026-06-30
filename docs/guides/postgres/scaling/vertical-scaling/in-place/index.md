@@ -65,14 +65,17 @@ container's cgroup limits through the `pods/resize` subresource, so:
   memory-derived GUCs (`effective_cache_size`, `work_mem`, `maintenance_work_mem`)
   are re-applied live so the database can take advantage of the extra memory.
 
-You opt in per request with `spec.mode: InPlace`. `spec.mode` defaults to
-`Restart`, so existing OpsRequests behave exactly as before.
+You opt in per request with `spec.verticalScaling.mode: InPlace`. The mode
+defaults to `Restart`, so existing OpsRequests behave exactly as before.
 
 ## Deploy Postgres
 
 Below is the YAML of a 3-replica `Postgres` cluster we are going to create. Using a
 cluster (replicas > 1) lets us confirm that in-place scaling keeps the same primary
-(no failover).
+(no failover). We also enable [auto-tuning](/docs/guides/postgres/configuration/pgtune.md)
+(`spec.configuration.tuning`) so that the memory-derived parameters are managed by
+KubeDB — this is what lets the in-place memory increase re-apply the reloadable GUCs
+live (see [In-Place memory increase](#in-place-memory-increase)).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -84,6 +87,9 @@ spec:
   version: "13.13"
   replicas: 3
   standbyMode: Hot
+  configuration:
+    tuning:
+      profile: oltp
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -156,8 +162,8 @@ $ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resizePolicy'
 ## In-Place CPU scaling (no restart, no failover)
 
 In order to update the resources in place, create a `PostgresOpsRequest` with
-`spec.mode: InPlace`. Below is the YAML we are going to apply; it raises the CPU
-request and limit to `1` and keeps memory at `1Gi`.
+`spec.verticalScaling.mode: InPlace`. Below is the YAML we are going to apply; it
+raises the CPU request and limit to `1` and keeps memory at `1Gi`.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -167,10 +173,10 @@ metadata:
   namespace: demo
 spec:
   type: VerticalScaling
-  mode: InPlace
   databaseRef:
     name: pg
   verticalScaling:
+    mode: InPlace
     postgres:
       resources:
         requests:
@@ -185,8 +191,8 @@ Here,
 
 - `spec.databaseRef.name` specifies the `pg` `Postgres` database.
 - `spec.type` specifies that we are performing `VerticalScaling`.
-- `spec.mode: InPlace` requests the in-place path. (Omitting `mode`, or setting it
-  to `Restart`, uses the default restart-based path.)
+- `spec.verticalScaling.mode: InPlace` requests the in-place path. (Omitting `mode`,
+  or setting it to `Restart`, uses the default restart-based path.)
 - `spec.verticalScaling.postgres` is the desired postgres container resources.
 
 Let's create it,
@@ -269,7 +275,8 @@ primary: the CPU was scaled with no restart and no failover.
 ## In-Place memory increase
 
 A memory **increase** is also done in place. Create a `PostgresOpsRequest` with
-`spec.mode: InPlace` and the default `spec.memoryPolicy: ResizeOnly`:
+`spec.verticalScaling.mode: InPlace` and the default
+`spec.verticalScaling.memoryPolicy: ResizeOnly`:
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -279,11 +286,11 @@ metadata:
   namespace: demo
 spec:
   type: VerticalScaling
-  mode: InPlace
-  memoryPolicy: ResizeOnly
   databaseRef:
     name: pg
   verticalScaling:
+    mode: InPlace
+    memoryPolicy: ResizeOnly
     postgres:
       resources:
         requests:
@@ -305,18 +312,30 @@ With `memoryPolicy: ResizeOnly` (the default for `InPlace`):
 - `shared_buffers` is **left unchanged** — it is a restart-only PostgreSQL
   parameter, and KubeDB intentionally does not change it here so a later restart
   will not surprise-jump it;
-- the reloadable, memory-derived GUCs are re-applied live with `ALTER SYSTEM SET
-  ...; SELECT pg_reload_conf();`. You can verify, for example:
+- the reloadable, memory-derived GUCs (`effective_cache_size`, `work_mem`,
+  `maintenance_work_mem`) are re-applied live with `ALTER SYSTEM SET ...; SELECT
+  pg_reload_conf();`, computed from the new memory. This applies only when KubeDB
+  manages the tuning, i.e. `spec.configuration.tuning` is set on the `Postgres`
+  (we enabled it above).
+
+You can see the difference — `shared_buffers` keeps the value it started with at
+`1Gi`, while `effective_cache_size` now tracks the `2Gi`:
 
 ```bash
-$ kubectl exec -it -n demo pg-0 -c postgres -- bash -c \
-  "PGPASSWORD=\$POSTGRES_PASSWORD psql -U postgres -At -c 'SHOW effective_cache_size;'"
-1536MB
+$ kubectl exec -it -n demo pg-0 -c postgres -- psql -U postgres -c \
+  "SHOW shared_buffers; SHOW effective_cache_size;"
+ shared_buffers
+----------------
+ 256MB             # unchanged — restart-only
+
+ effective_cache_size
+----------------------
+ 1536MB            # re-applied live (75% of the new 2Gi)
 ```
 
 If you want `shared_buffers` itself to track the new memory, use
-`spec.memoryPolicy: Retune` instead — that requires a restart and KubeDB runs it on
-the restart path (see below).
+`spec.verticalScaling.memoryPolicy: Retune` instead — that requires a restart and
+KubeDB runs it on the restart path (see below).
 
 ## Eligibility and fallback
 
@@ -332,7 +351,7 @@ The request falls back to the restart path when any of the following is true:
 
 | Situation | Why |
 | --- | --- |
-| `spec.memoryPolicy: Retune` | `shared_buffers` is restart-only, so retuning it needs a restart. |
+| `spec.verticalScaling.memoryPolicy: Retune` | `shared_buffers` is restart-only, so retuning it needs a restart. |
 | A **memory decrease** | A live shrink can be rejected by the kubelet or risk an OOM kill, so KubeDB does it via restart. |
 | The cluster does not support in-place resize, or the kubelet reports the resize `Infeasible` (e.g. the node cannot fit the larger request) | KubeDB recreates the Pod so the scheduler can place it on a node with room. |
 

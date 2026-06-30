@@ -7,6 +7,9 @@ spec:
   version: "13.13"
   replicas: 3
   standbyMode: Hot
+  configuration:
+    tuning:
+      profile: oltp
   storageType: Durable
   storage:
     storageClassName: "standard"
