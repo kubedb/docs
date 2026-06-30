@@ -1,0 +1,8 @@
+apiVersion: v1
+data:
+  AUTHENTICATION_APIKEY_ALLOWED_KEYS: VTFVenZyVHZuejVNdzljNA==
+kind: Secret
+metadata:
+  name: weaviate-rotate-auth
+  namespace: demo
+type: Opaque
