@@ -65,7 +65,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication  
@@ -170,7 +170,7 @@ spec:
   secret:
     name: sample-mysql-auth
   type: kubedb.com/mysql
-  version: 8.2.0
+  version: 9.6.0
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -574,7 +574,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication

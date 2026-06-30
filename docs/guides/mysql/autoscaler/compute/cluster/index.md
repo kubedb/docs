@@ -42,7 +42,7 @@ Here, we are going to deploy a `MySQL` Cluster using a supported version by `Kub
 
 #### Deploy MySQL Cluster
 
-In this section, we are going to deploy a MySQL Cluster with version `8.4.8`. Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
+In this section, we are going to deploy a MySQL Cluster with version `9.6.0`. Then, in the next section we will set up autoscaling for this database using `MySQLAutoscaler` CRD. Below is the YAML of the `MySQL` CR that we are going to create,
 > If you want to autoscale MySQL `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -52,7 +52,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication

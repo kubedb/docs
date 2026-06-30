@@ -48,7 +48,7 @@ metadata:
   name: semi-sync-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: SemiSync
@@ -309,7 +309,7 @@ spec:
       sourceTimeout: 23h0m0s
       sourceWaitForReplicaCount: 1
   useAddressType: DNS
-  version: 8.4.8
+  version: 9.6.0
 status:
   conditions:
     ...
