@@ -61,7 +61,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1

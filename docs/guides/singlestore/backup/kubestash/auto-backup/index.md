@@ -223,7 +223,7 @@ metadata:
     blueprint.kubestash.com/name: singlestore-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -559,7 +559,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/targetName: sample-singlestore-2
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2

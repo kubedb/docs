@@ -65,7 +65,7 @@ standard-static        driver.standard.io      Delete          Immediate        
 
 Here, we will use `standard` storageClass for this tuitorial.
 
-Now, we are going to deploy a `SingleStore` database of 3 replicas with version `8.7.10`.
+Now, we are going to deploy a `SingleStore` database of 3 replicas with version `8.9.3`.
 
 ### Deploy SingleStore
 
@@ -78,7 +78,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1

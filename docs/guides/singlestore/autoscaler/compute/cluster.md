@@ -54,7 +54,7 @@ secret/license-secret created
 
 #### Deploy SingleStore Cluster
 
-In this section, we are going to deploy a SingleStore with version `8.7.10`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
+In this section, we are going to deploy a SingleStore with version `8.9.3`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -63,7 +63,7 @@ metadata:
   name: sdb-sample
   namespace: demo
 spec:
-  version: 8.7.10
+  version: 8.9.3
   topology:
     aggregator:
       replicas: 2

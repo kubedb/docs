@@ -48,7 +48,7 @@ $ kubectl create secret generic -n demo license-secret \
 secret/license-secret created
 ```
 
-Now, we are going to deploy a `SingleStore` cluster database with version `8.5.30`.
+Now, we are going to deploy a `SingleStore` cluster database with version `8.7.21`.
 
 ### Deploy SingleStore cluster
 
@@ -61,7 +61,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.5.30"
+  version: "8.7.21"
   topology:
     aggregator:
       replicas: 1
@@ -130,7 +130,7 @@ We are now ready to apply the `SingleStoreOpsRequest` CR to update this database
 
 ### update SingleStore Version
 
-Here, we are going to update `SingleStore` cluster from `8.5.30` to `8.7.10`.
+Here, we are going to update `SingleStore` cluster from `8.7.21` to `8.9.3`.
 
 #### Create SingleStoreOpsRequest:
 
@@ -147,14 +147,14 @@ spec:
   databaseRef:
     name: sample-sdb
   updateVersion:
-    targetVersion: "8.7.10"
+    targetVersion: "8.9.3"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-sdb` SingleStore database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.7.10`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.9.3`.
 
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 

@@ -80,7 +80,7 @@ metadata:
   name: sdb-misc-config
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1
@@ -227,7 +227,7 @@ metadata:
   name: sdb-custom-sidecar
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1
@@ -403,7 +403,7 @@ metadata:
   name: sdb-node-selector
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   podTemplate:
     spec:
       nodeSelector:
@@ -514,7 +514,7 @@ spec:
       requests:
         storage: 10Gi
   storageType: Durable
-  version: 8.7.10
+  version: 8.9.3
 ```
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/configuration/podtemplating/yamls/sdb-without-tolerations.yaml
@@ -669,7 +669,7 @@ spec:
       requests:
         storage: 10Gi
   storageType: Durable
-  version: 8.7.10
+  version: 8.9.3
 ```
 
 ```bash

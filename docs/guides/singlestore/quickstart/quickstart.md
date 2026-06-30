@@ -78,7 +78,7 @@ metadata:
   name: sdb-quickstart
   namespace: demo
 spec:
-  version: "8.5.7"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1
