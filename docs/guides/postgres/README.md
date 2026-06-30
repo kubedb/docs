@@ -97,5 +97,5 @@ Do you need to update your PostgreSQL `shared_buffers`, `max_connections`, or ot
 
 ### Cross-DC Disaster Recovery (DC-DR)
 
-Do you want to run your PostgreSQL database across multiple data centers and recover from a full data center failure with a single, automatically failing-over endpoint? Follow [here](/docs/guides/postgres/distributed/dc-dr/overview/index.md).
+Do you want to run your PostgreSQL database across multiple data centers and recover from a full data center failure with a single, automatically failing-over endpoint? Follow [here](/docs/guides/postgres/dr/overview/index.md).
 

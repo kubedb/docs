@@ -2,9 +2,9 @@
 title: DC-DR User Guide
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-distributed-dcdr-guide
+    identifier: guides-postgres-dr-guide
     name: User Guide
-    parent: guides-postgres-distributed-dcdr
+    parent: guides-postgres-dr
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -17,9 +17,9 @@ center disaster recovery (DC-DR) mode: the components, the naming contract,
 deployment, connecting, monitoring, replication and lag, timing and tuning, quorum
 and roles, switchover and failback, scaling, day-2 operations, backup, and deletion.
 
-Read the [DC-DR Overview](/docs/guides/postgres/distributed/dc-dr/overview/index.md)
+Read the [DC-DR Overview](/docs/guides/postgres/dr/overview/index.md)
 first for the architecture, and the
-[DC-DR Runbook](/docs/guides/postgres/distributed/dc-dr/runbook/index.md) for
+[DC-DR Runbook](/docs/guides/postgres/dr/runbook/index.md) for
 scenario-by-scenario procedures.
 
 > **New to KubeDB?** Please start [here](/docs/README.md).

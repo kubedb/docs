@@ -2,9 +2,9 @@
 title: DC-DR Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-distributed-dcdr-overview
+    identifier: guides-postgres-dr-overview
     name: Overview
-    parent: guides-postgres-distributed-dcdr
+    parent: guides-postgres-dr
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -24,9 +24,9 @@ KubeSlice, and a `PlacementPolicy`) and adds the cross-DC failover machinery on 
 
 This page is the conceptual overview and a quick start. See also:
 
-- [DC-DR User Guide](/docs/guides/postgres/distributed/dc-dr/guide/index.md) — every
+- [DC-DR User Guide](/docs/guides/postgres/dr/guide/index.md) — every
   aspect of running in DC-DR mode (components, monitoring, timing, scaling, day-2 ops).
-- [DC-DR Runbook](/docs/guides/postgres/distributed/dc-dr/runbook/index.md) — what to
+- [DC-DR Runbook](/docs/guides/postgres/dr/runbook/index.md) — what to
   do in each operational scenario.
 
 > **New to KubeDB?** Please start [here](/docs/README.md).

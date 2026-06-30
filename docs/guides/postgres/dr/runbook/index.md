@@ -2,9 +2,9 @@
 title: DC-DR Runbook
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-distributed-dcdr-runbook
+    identifier: guides-postgres-dr-runbook
     name: Runbook
-    parent: guides-postgres-distributed-dcdr
+    parent: guides-postgres-dr
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -16,7 +16,7 @@ Scenario-by-scenario procedures for operating a Postgres cluster in cross data c
 disaster recovery (DC-DR) mode. Each scenario lists the **symptoms**, what KubeDB does
 **automatically**, how to **verify**, and the **action** to take.
 
-Read the [User Guide](/docs/guides/postgres/distributed/dc-dr/guide/index.md) for the
+Read the [User Guide](/docs/guides/postgres/dr/guide/index.md) for the
 concepts and commands referenced here. Throughout, `<coord>` is the coordination
 control plane kubeconfig, `pg-dcdr`/`demo` are the example database and namespace.
 
