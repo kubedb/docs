@@ -89,7 +89,7 @@ metadata:
   name: ch-standalone
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   configuration:
     secretName: clickhouse-configuration
   replicas: 1

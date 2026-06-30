@@ -46,7 +46,7 @@ metadata:
   name: clickhouse
   namespace: demo
 spec:
-  version: 25.7.1
+  version: 26.2.6
   replicas: 1
   storage:
     accessModes:

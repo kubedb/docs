@@ -42,7 +42,7 @@ Here, we are going to deploy a `ClickHouse` cluster using a supported version by
 
 ### Prepare ClickHouse cluster
 
-Now, we are going to deploy a `ClickHouse` cluster with version `24.4.1`.
+Now, we are going to deploy a `ClickHouse` cluster with version `26.2.6`.
 
 ### Deploy ClickHouse Cluster
 
@@ -55,7 +55,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
