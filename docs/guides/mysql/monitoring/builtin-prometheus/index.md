@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
