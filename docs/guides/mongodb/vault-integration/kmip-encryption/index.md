@@ -172,7 +172,7 @@ spec:
         storage: 1Gi
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "percona-5.0.29"
+  version: "percona-8.0.17"
   configuration:
     secretName: mg-configuration
 ```

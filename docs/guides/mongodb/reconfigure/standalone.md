@@ -40,7 +40,7 @@ Now, we are going to deploy a  `MongoDB` standalone using a supported version by
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` standalone database with version `8.0.17`.
 
 ### Deploy MongoDB standalone 
 
@@ -69,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"

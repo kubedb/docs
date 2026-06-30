@@ -85,7 +85,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs1"
   replicas: 3
@@ -112,7 +112,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs1"
   replicas: 3
@@ -134,7 +134,7 @@ mongodb.kubedb.com/mgo-quickstart created
 
 Here,
 
-- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 4.4.26 database is created.
+- `spec.version` is name of the MongoDBVersion crd where the docker images are specified. In this tutorial, a MongoDB 8.0.17 database is created.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MongoDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies PVC spec that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MongoDB` crd or which resources KubeDB should keep or delete when you delete `MongoDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specterminationpolicy)
@@ -332,7 +332,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: Delete
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2022-06-13T12:01:55Z"

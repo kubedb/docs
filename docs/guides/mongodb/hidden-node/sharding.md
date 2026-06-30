@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-hid
   namespace: demo
 spec:
-  version: "percona-7.0.18"
+  version: "percona-8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -252,7 +252,7 @@ spec:
   storageEngine: inMemory
   storageType: Ephemeral
   deletionPolicy: WipeOut
-  version: percona-7.0.18
+  version: "percona-8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2022-10-31T05:59:43Z"

@@ -55,7 +55,7 @@ longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` standalone database with version `8.0.17`.
 
 ### Deploy MongoDB
 
@@ -68,7 +68,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 2

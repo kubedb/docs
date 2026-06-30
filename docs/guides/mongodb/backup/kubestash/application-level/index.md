@@ -65,7 +65,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "replicaset"
   replicas: 3
@@ -177,7 +177,7 @@ spec:
   secret:
     name: sample-mongodb-auth
   type: kubedb.com/mongodb
-  version: 4.4.26
+  version: "8.0.17"
 
 ```
 

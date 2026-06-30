@@ -48,7 +48,7 @@ metadata:
   name: mongo-arb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs0"
   replicas: 2
@@ -295,7 +295,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
   - lastTransitionTime: "2022-04-21T08:39:32Z"

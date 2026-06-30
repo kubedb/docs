@@ -57,7 +57,7 @@ metadata:
   name: sample-mg-rs
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicas: 3
   replicaSet:
     name: rs0
@@ -414,7 +414,7 @@ metadata:
   name: sample-mg-rs-restore
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicas: 3
   replicaSet:
     name: rs0

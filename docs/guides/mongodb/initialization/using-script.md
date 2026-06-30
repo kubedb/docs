@@ -60,7 +60,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -311,7 +311,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: Delete
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2021-02-10T04:38:53Z"

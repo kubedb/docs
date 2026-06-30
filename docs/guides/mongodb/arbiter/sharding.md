@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-arb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -270,7 +270,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
   - lastTransitionTime: "2022-04-21T09:29:07Z"

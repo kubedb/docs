@@ -57,7 +57,7 @@ metadata:
   name: sample-mgo-rs
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicas: 3
   replicaSet:
     name: rs0
@@ -170,7 +170,7 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: 4.4.26
+  version: "8.0.17"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -616,7 +616,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"

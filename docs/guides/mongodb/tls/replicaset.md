@@ -102,7 +102,7 @@ metadata:
   name: mgo-rs-tls
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   sslMode: requireSSL
   tls:
     issuerRef:

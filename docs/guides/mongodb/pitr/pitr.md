@@ -244,7 +244,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs"
   replicas: 3
@@ -381,7 +381,7 @@ metadata:
   name: mg-rs-restored
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs"
   replicas: 3
