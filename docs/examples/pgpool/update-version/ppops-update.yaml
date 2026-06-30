@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: pp-update
   updateVersion:
-    targetVersion: 4.5.0
+    targetVersion: 4.6.0
