@@ -51,7 +51,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -73,7 +73,7 @@ Now, wait until sample-pxc has status Ready. i.e,
 ```shell
 $  kubectl get perconaxtradb -n demo
 NAME         VERSION   STATUS   AGE
-sample-pxc   8.0.40    Ready    43m
+sample-pxc   8.4.3    Ready    43m
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.

@@ -67,7 +67,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -91,7 +91,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -110,7 +110,7 @@ perconaxtradb.kubedb.com/sample-pxc created
 
 Here,
 
-- `spec.version` is the name of the PerconaXtraDBVersion CRD where the docker images are specified. In this tutorial, a PerconaXtraDB `8.0.40` database is going to create.
+- `spec.version` is the name of the PerconaXtraDBVersion CRD where the docker images are specified. In this tutorial, a PerconaXtraDB `8.4.3` database is going to create.
 - `spec.storageType` specifies the type of storage that will be used for PerconaXtraDB database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create PerconaXtraDB database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `PerconaXtraDB` crd or which resources KubeDB should keep or delete when you delete `PerconaXtraDB` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`.
@@ -176,7 +176,7 @@ Spec:
     Replication User Secret:
       Name:            sample-pxc-replication
   Termination Policy:  Delete
-  Version:             8.0.40
+  Version:             8.4.3
 Status:
   Conditions:
     Last Transition Time:  2022-12-19T09:54:09Z
@@ -245,7 +245,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME         VERSION   STATUS   AGE
-sample-pxc   8.0.40    Ready    9m32s
+sample-pxc   8.4.3    Ready    9m32s
 ```
 
 ## Connect with PerconaXtraDB database
@@ -411,7 +411,7 @@ Run the following command to get PerconaXtraDB resources,
 ```bash
 $ kubectl get perconaxtradb,sts,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
-perconaxtradb.kubedb.com/sample-pxc   8.0.40    Halted   22m
+perconaxtradb.kubedb.com/sample-pxc   8.4.3    Halted   22m
 
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/sample-pxc        ClusterIP   10.96.128.19   <none>        3306/TCP   4m5s
