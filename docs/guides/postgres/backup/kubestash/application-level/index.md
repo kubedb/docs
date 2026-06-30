@@ -173,9 +173,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: postgres-backup-18.3
+          name: postgres-backup-18.2
         restoreTask:
-          name: postgres-restore-18.3
+          name: postgres-restore-18.2
   secret:
     name: sample-postgres-auth
   type: kubedb.com/postgres
