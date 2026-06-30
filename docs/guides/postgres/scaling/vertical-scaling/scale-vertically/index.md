@@ -123,7 +123,7 @@ $ watch -n 3 kubectl get postgres -n demo pg
 Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu Dec  2 10:53:54 2021
 
 NAME   VERSION   STATUS   AGE
-pg     13.2      Ready    3m16s
+pg     18.3      Ready    3m16s
 
 $ watch -n 3 kubectl get sts -n demo pg
 Every 3.0s: kubectl get sts -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021

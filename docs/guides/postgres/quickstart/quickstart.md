@@ -106,8 +106,8 @@ NAME                       VERSION   DISTRIBUTION   DB_IMAGE                    
 12.9                       12.9      Official       postgres:12.9-alpine                                3d
 12.9-bullseye              12.9      Official       postgres:12.9-bullseye                              3d
 12.9-bullseye-postgis      12.9      PostGIS        postgis/postgis:12-3.1                              3d
-13.2                       13.2      Official       postgres:13.2-alpine                                3d
-13.2-debian                13.2      Official       postgres:13.2                                       3d
+18.3                       18.3      Official       postgres:18.3-alpine                                3d
+18.3-debian                18.3      Official       postgres:18.3                                       3d
 13.5                       13.5      Official       postgres:13.5-alpine                                3d
 13.5-bullseye              13.5      Official       postgres:13.5-bullseye                              3d
 13.5-bullseye-postgis      13.5      PostGIS        postgis/postgis:13-3.1                              3d
@@ -124,14 +124,14 @@ NAME                       VERSION   DISTRIBUTION   DB_IMAGE                    
 9.6.24-bullseye            9.6.24    Official       postgres:9.6.24-bullseye                            3d
 timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-pg11-oss                3d
 timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                3d
-timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                3d
+timescaledb-2.1.0-pg13     18.3      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                3d
 timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                3d
 
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
-In this tutorial, we will use `18.3` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `13.2` and `13.2-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
+In this tutorial, we will use `18.3` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `18.3` and `18.3-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
 
 ## Create a PostgreSQL database
 
@@ -207,7 +207,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $  kubectl get pg -n demo quick-postgres -o wide
 NAME             VERSION   STATUS     AGE
-quick-postgres   13.2      Creating   13s
+quick-postgres   18.3      Creating   13s
 ```
 
 Let's describe Postgres object `quick-postgres`
@@ -327,7 +327,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    DoNotTerminate
-  Version:               13.2
+  Version:               18.3
 Status:
   Conditions:
     Last Transition Time:  2022-05-30T09:15:36Z

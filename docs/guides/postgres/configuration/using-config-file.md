@@ -156,7 +156,7 @@ Now, we will check if the database has started with the custom configuration we 
  / #
  ## login as user "postgres". no authentication required from inside the pod because it is using trust authentication local connection.
 / # psql -U postgres
-psql (9.6.7)
+psql (18.3)
 Type "help" for help.
 
 ## query for "max_connections"

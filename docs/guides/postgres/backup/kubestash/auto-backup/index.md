@@ -421,7 +421,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
   annotations:
-    kubedb.com/db-version: "16.1"
+    kubedb.com/db-version: "18.3"
   name: default-blueprint-appbinding-samgres-frequent-backup-1725533628
   namespace: demo
   ownerReferences:
@@ -776,7 +776,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
+    kubedb.com/db-version: "18.3"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres-2
     kubestash.com/app-ref-namespace: demo
