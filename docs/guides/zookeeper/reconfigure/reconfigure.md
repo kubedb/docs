@@ -40,7 +40,7 @@ Now, we are going to deploy a  `ZooKeeper` cluster using a supported version by 
 
 ### Prepare ZooKeeper Ensemble
 
-Now, we are going to deploy a `ZooKeeper` cluster with version `3.8.3`.
+Now, we are going to deploy a `ZooKeeper` cluster with version `3.9.1`.
 
 ### Deploy ZooKeeper Ensemble
 
@@ -73,7 +73,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   configuration:

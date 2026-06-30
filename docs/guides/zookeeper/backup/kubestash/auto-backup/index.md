@@ -219,7 +219,7 @@ metadata:
     blueprint.kubestash.com/name: zookeeper-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -412,7 +412,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 3.8.3
+    kubedb.com/db-version: 3.9.1
     kubestash.com/app-ref-kind: ZooKeeper
     kubestash.com/app-ref-name: sample-zookeeper
     kubestash.com/app-ref-namespace: demo
@@ -572,7 +572,7 @@ metadata:
     variables.kubestash.com/targetName: sample-zookeeper-2
     variables.kubestash.com/targetedDatabase: zookeeper
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -762,7 +762,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 3.8.3
+    kubedb.com/db-version: 3.9.1
     kubestash.com/app-ref-kind: ZooKeeper
     kubestash.com/app-ref-name: sample-zookeeper-2
     kubestash.com/app-ref-namespace: demo

@@ -97,7 +97,7 @@ metadata:
   name: zk-tls
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   enableSSL: true
   tls:
     issuerRef:
