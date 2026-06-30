@@ -5,7 +5,7 @@ menu:
     identifier: guides-mongodb-migration-database
     name: MongoDB Database Migration
     parent: guides-mongodb-migration
-    weight: 11
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -49,7 +49,7 @@ We will use a **DigitalOcean Managed MongoDB** cluster as the source. Connect to
 <br> **Self-hosted MongoDB** <br>
 
 A standalone `mongod` must first be [converted to a single-node replica set](https://www.mongodb.com/docs/manual/tutorial/convert-standalone-to-replica-set/). Once running as a replica set, the oplog is enabled automatically. Then create the migration user:
-```js
+```bash
 use admin
 db.createUser({
   user: "migrator",
@@ -79,7 +79,7 @@ Connect to the source instance and verify that the oplog is available:
 $ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u admin -p
 ```
 
-```js
+```bash
 use local
 switched to db local
 
@@ -113,7 +113,7 @@ The `oplog.rs` collection must exist and contain entries — this confirms the s
 
 Create a dedicated user with the minimum required privileges:
 
-```js
+```bash
 use admin
 db.createUser({
   user: "migrator",
@@ -129,7 +129,7 @@ The `migrator` user is referenced in the Kubernetes secret and AppBinding for th
 
 ### Create collection and seed data
 
-```js
+```bash
 use shop
 
 db.orders.insertMany([
@@ -310,13 +310,44 @@ For a full description of every field, see the [Migrator CRD reference](/docs/gu
 
 ## Watch Migration Progress
 
-Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migrator` CR:
+Let's wait for the Migration to finish the full sync and enter the incremental sync. Run the following command to watch `Migrator` CR:
 
 ```bash
 Every 2.0s: kubectl get migrator -n demo
+```
 
+During the **full** stage, you'll see progress advancing to 100%:
+
+```bash
+NAME              PHASE     DBTYPE    STAGE   LAG   PROGRESS   AGE
+mongodb-migrate   Running   mongodb   full          100.00%    22s
+```
+
+When the `LAG` drops to near zero, both databases are fully in sync:
+
+```bash
 NAME              PHASE     DBTYPE    STAGE   LAG   PROGRESS   AGE
 mongodb-migrate   Running   mongodb   incr    0                17h
+```
+
+### View detailed progress via pod logs
+
+You can also see collection-wise progress, detailed checkpoints, and sync metrics by checking the migrator pod logs:
+
+```bash
+$ kubectl logs -n demo migrator-<migrator-pod-name>
+```
+
+Example output during the full sync stage — showing per-collection progress, total/finished/processing/waiting collections:
+
+```log
+2026-06-30T12:14:30.632Z	INFO	mongodb	server/utils.go:51	Transferring initial data (Full Sync)	{"Stage": "full", "Progress": "100.00%", "TotalCollections": 1, "FinishedCollections": 1, "ProcessingCollections": 0, "WaitingCollections": 0, "CollectionMetric": {"shop.orders":"100.00% (3/3)"}}
+```
+
+Example output during incremental sync — showing LAG, checkpoint timestamps, and LSN details:
+
+```log
+2026-06-30T12:58:30.631Z	INFO	mongodb	server/utils.go:51	Incremental replication running	{"Stage": "incr", "Lag": 187, "LSNTime": "2026-06-30 12:58:25", "LSNAckTime": "2026-06-30 12:58:25", "LSNCheckpoint": "2026-06-30 12:55:18"}
 ```
 
 ### Verify initial snapshot on target
@@ -327,7 +358,7 @@ Once the migrator reaches the `incr` stage (continuous oplog tailing), exec into
 $ kubectl exec -it -n demo mgo-destination-0 -- mongosh -u root -p<root-password>
 ```
 
-```js
+```bash
 use shop
 db.orders.find().pretty()
 [
@@ -366,7 +397,7 @@ With the migrator still running, connect to the **source DigitalOcean** instance
 $ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u migrator -p
 ```
 
-```js
+```bash
 use shop
 
 // Insert a new order
@@ -386,7 +417,7 @@ db.orders.deleteOne({ customer_name: 'Alice' })
 
 Wait a few seconds for the oplog events to propagate, then re-query the **target**:
 
-```js
+```bash
 use shop
 db.orders.find().pretty()
 [
