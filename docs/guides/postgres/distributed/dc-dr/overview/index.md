@@ -1,11 +1,11 @@
 ---
-title: Cross Data Center Disaster Recovery (DC-DR)
+title: DC-DR Overview
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-distributed-dcdr
-    name: Cross-DC Disaster Recovery
-    parent: guides-postgres-distributed
-    weight: 20
+    identifier: guides-postgres-distributed-dcdr-overview
+    name: Overview
+    parent: guides-postgres-distributed-dcdr
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -21,6 +21,13 @@ connection endpoint follows the new writable DC.
 This guide builds on [Distributed Postgres](/docs/guides/postgres/distributed/overview/index.md).
 Read that first: DC-DR reuses the same substrate (one CR, Open Cluster Management,
 KubeSlice, and a `PlacementPolicy`) and adds the cross-DC failover machinery on top.
+
+This page is the conceptual overview and a quick start. See also:
+
+- [DC-DR User Guide](/docs/guides/postgres/distributed/dc-dr/guide/index.md) — every
+  aspect of running in DC-DR mode (components, monitoring, timing, scaling, day-2 ops).
+- [DC-DR Runbook](/docs/guides/postgres/distributed/dc-dr/runbook/index.md) — what to
+  do in each operational scenario.
 
 > **New to KubeDB?** Please start [here](/docs/README.md).
 
