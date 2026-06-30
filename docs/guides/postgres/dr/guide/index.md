@@ -179,7 +179,7 @@ $ kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery}' | jq
 | `activeDC` | The DC that holds the Lease and runs the writable primary. |
 | `phase` | `Steady`, `FailingOver`, `FailingBack`, or `Degraded`. |
 | `lastTransitionTime` | When `activeDC` last changed. |
-| `dataCenters[].name` | The data center name. |
+| `dataCenters[].clusterName` | The data center, by its OCM managed cluster name. |
 | `dataCenters[].role` | `primary` for the active DC's leader, else `standby`. |
 | `dataCenters[].leader` | That DC's local raft leader pod. |
 | `dataCenters[].writable` | True only for the active DC. |
@@ -307,7 +307,7 @@ spec:
     name: pg-dcdr
   horizontalScaling:
     dataCenters:
-    - name: dc-west
+    - clusterName: dc-west
       replicas: 5
 ```
 

@@ -80,7 +80,7 @@ the Lease and stays (or becomes) writable. There is no split-brain.
 **Verify there is exactly one writable DC:**
 
 ```bash
-kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.name}={.writable} {end}'
+kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName}={.writable} {end}'
 ```
 
 **Action:** heal the network. The fenced side rejoins, rewinds any divergent tail, and
@@ -157,7 +157,7 @@ be writable. The database is read-only globally rather than risk split-brain.
 
 ```bash
 kubectl --kubeconfig <coord> -n dc-failover get lease primary-dc        # error / stale renewTime
-kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.name}={.writable} {end}'  # all false
+kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName}={.writable} {end}'  # all false
 ```
 
 **Action:** restore the `dr-controlplane` etcd quorum. Once the Lease is renewable, the
@@ -201,7 +201,7 @@ Lease does not hand off.
 
 ```bash
 # Target lag and health:
-kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.name} lag={.lagBytes} healthy={.healthy}{"\n"}{end}'
+kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} lag={.lagBytes} healthy={.healthy}{"\n"}{end}'
 ```
 
 **Causes & action:**
@@ -275,7 +275,7 @@ appears in status.
 **Verify:**
 
 ```bash
-kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.name} healthy={.healthy} lag={.lagBytes}{"\n"}{end}'
+kubectl get pg -n demo pg-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} healthy={.healthy} lag={.lagBytes}{"\n"}{end}'
 ```
 
 **Action:** to make it active again, perform a planned failback (scenario 4) once its
@@ -296,7 +296,7 @@ spec:
   databaseRef: { name: pg-dcdr }
   horizontalScaling:
     dataCenters:
-    - { name: dc-west, replicas: 5 }
+    - { clusterName: dc-west, replicas: 5 }
 YAML
 ```
 

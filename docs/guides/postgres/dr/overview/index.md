@@ -275,8 +275,8 @@ $ kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery}' | jq
   "phase": "Steady",
   "lastTransitionTime": "2026-06-30T10:00:00Z",
   "dataCenters": [
-    { "name": "dc-east", "role": "primary", "leader": "pg-dcdr-dc-east-0", "writable": true,  "healthy": true },
-    { "name": "dc-west", "role": "standby", "leader": "pg-dcdr-dc-west-0", "writable": false, "healthy": true, "lagBytes": 4096 }
+    { "clusterName": "dc-east", "role": "primary", "leader": "pg-dcdr-dc-east-0", "writable": true,  "healthy": true },
+    { "clusterName": "dc-west", "role": "standby", "leader": "pg-dcdr-dc-west-0", "writable": false, "healthy": true, "lagBytes": 4096 }
   ]
 }
 ```
@@ -338,7 +338,7 @@ spec:
     name: pg-dcdr
   horizontalScaling:
     dataCenters:
-    - name: dc-west
+    - clusterName: dc-west
       replicas: 5
 ```
 
