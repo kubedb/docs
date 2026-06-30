@@ -51,4 +51,10 @@ The vertical scaling process consists of the following steps:
 
 9. After successful updating of the `Postgres` resources, the `KubeDB` Ops Manager resumes the `Postgres` object so that the `KubeDB` Provisioner operator resumes its usual operations.
 
+In step 7 above, the Ops Manager recreates the Pods (replicas first, then the primary, with a failover) so they start with the new resources.
+
+## In-Place Vertical Scaling
+
+By default the resize recreates the Pods. On clusters that support Kubernetes in-place pod resize, you can instead set `spec.mode: InPlace` on the `PostgresOpsRequest` to change CPU/memory of the **running** Pods through the `pods/resize` subresource — without recreating the Pods and without a primary failover. CPU changes (either direction) and memory increases take effect live; `shared_buffers` (a restart-only parameter) is left unchanged while the reloadable, memory-derived GUCs are re-applied live. A memory decrease, `memoryPolicy: Retune`, or a cluster that does not support in-place resize automatically falls back to the recreate path, so the request still completes. `spec.mode` defaults to `Restart`, so existing requests are unchanged. See [In-Place Vertical Scaling](/docs/guides/postgres/scaling/vertical-scaling/in-place/index.md).
+
 In the next doc, we are going to show a step by step guide on updating resources of Postgres database using vertical scaling operation.
