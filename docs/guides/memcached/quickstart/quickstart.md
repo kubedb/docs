@@ -47,7 +47,7 @@ When you have installed KubeDB, it has created `MemcachedVersion` crd for all su
 $ kubectl get memcachedversions
 NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
 1.5.22      1.5.22     ghcr.io/appscode-images/memcached:1.5.22-alpine                  2h
-1.6.22      1.6.22     ghcr.io/appscode-images/memcached:1.6.22-alpine                  2h
+1.6.40      1.6.40     ghcr.io/appscode-images/memcached:1.6.40-alpine                  2h
 1.6.29      1.6.29     ghcr.io/appscode-images/memcached:1.6.29-alpine                  2h
 ```
 
@@ -65,7 +65,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -93,7 +93,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       resources:
@@ -122,7 +122,7 @@ KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Me
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
-memcd-quickstart   1.6.22     Running   2m
+memcd-quickstart   1.6.40     Running   2m
 
 $ kubectl describe mc -n demo memcd-quickstart
 Name:         memcd-quickstart
@@ -173,7 +173,7 @@ Spec:
         Fs Group:            999
       Service Account Name:  memcd-quickstart
   Replicas:                  1
-  Version:                   1.6.22
+  Version:                   1.6.40
 Status:
   Conditions:
     Last Transition Time:  2024-08-22T13:54:45Z
@@ -242,7 +242,7 @@ kind: Memcached
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcd-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}}}]}},"replicas":3,"version":"1.6.22"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcd-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}}}]}},"replicas":3,"version":"1.6.40"}}
   creationTimestamp: "2024-08-22T13:54:45Z"
   finalizers:
   - kubedb.com
@@ -286,7 +286,7 @@ spec:
         fsGroup: 999
       serviceAccountName: memcd-quickstart
   replicas: 1
-  version: 1.6.22
+  version: 1.6.40
 status:
   conditions:
   - lastTransitionTime: "2024-08-22T13:54:45Z"

@@ -40,7 +40,7 @@ Now, we are going to deploy a  `Memcached` database using a supported version by
 
 ### Prepare Memcached Database
 
-Now, we are going to deploy a `Memcached` database with version `1.6.22`.
+Now, we are going to deploy a `Memcached` database with version `1.6.40`.
 
 ### Deploy Memcached 
 
@@ -75,7 +75,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   configuration:
     secretName: mc-configuration
   deletionPolicy: WipeOut
@@ -93,7 +93,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION     STATUS    AGE
-memcd-quickstart   1.6.22      Ready     23s
+memcd-quickstart   1.6.40      Ready     23s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -276,7 +276,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION     STATUS    AGE
-memcd-quickstart   1.6.22      Ready     20s
+memcd-quickstart   1.6.40      Ready     20s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.

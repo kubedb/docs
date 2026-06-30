@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: memcd-quickstart
   updateVersion:
-    targetVersion: 1.6.22
+    targetVersion: 1.6.40
 ```
 
 Sample `MemcachedOpsRequest` for horizontal scaling:

@@ -50,7 +50,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   deletionPolicy: WipeOut
 ```
 
@@ -67,7 +67,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 $ watch kubectl get mc -n demo
 Every 2.0s: kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    26s
+memcd-quickstart   1.6.40    Ready    26s
 ```
 
 Now, we can connect to this database through `telnet` to verify that the `TLS` is disabled.
