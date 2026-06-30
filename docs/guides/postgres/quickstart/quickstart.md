@@ -131,7 +131,7 @@ timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
-In this tutorial, we will use `13.2` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `13.2` and `13.2-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
+In this tutorial, we will use `18.3` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `13.2` and `13.2-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
 
 ## Create a PostgreSQL database
 
@@ -148,7 +148,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -172,7 +172,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -191,7 +191,7 @@ postgres.kubedb.com/quick-postgres created
 
 Here,
 
-- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 13.2 database is created.
+- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 18.3 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Postgres database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` or `spec.deletionPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.

@@ -171,7 +171,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "11.22"
+  version: "17.9"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -239,7 +239,7 @@ We are ready to apply updating on this `Postgres` Instance.
 
 #### UpdateVersion
 
-Here, we are going to update `Postgres` Instance from `11.11` to `13.2`.
+Here, we are going to update `Postgres` Instance from `17.9` to `18.3`.
 
 **Create PostgresOpsRequest:**
 
@@ -254,7 +254,7 @@ metadata:
 spec:
   type: UpdateVersion
   updateVersion:
-    targetVersion: "13.13"
+    targetVersion: "18.3"
   databaseRef:
     name: pg
 ```
@@ -263,7 +263,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `pg-group` Postgres database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `13.2` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `18.3` after updating.
 
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
