@@ -24,40 +24,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `My
 
 - The source `MySQL` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MySQL` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges. There is no single procedure to configure this — it depends on your deployment environment.
-
-  <details>
-  <summary>How to configure this on your source instance?</summary>
-
-  <br> **Self-hosted MySQL** <br>
-
-  Add the following to your `my.cnf` and restart MySQL:
-  ```ini
-  [mysqld]
-  log_bin          = mysql-bin
-  binlog_format    = ROW
-  binlog_row_image = FULL
-  ```
-
-  Then grant the required privileges to the migration user:
-  ```sql
-  GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '<migration-user>'@'%';
-  FLUSH PRIVILEGES;
-  ```
-
-  **AWS RDS MySQL** <br>
-
-  Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
-
-  <br> <br> **Azure Database for MySQL** <br>
-
-  Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
-
-  <br> <br> **Google Cloud SQL for MySQL** <br>
-
-  Enable binary logging under **Backups** in the [Cloud Console](https://cloud.google.com/sql/docs/mysql/replication/create-replica), then set `binlog_format = ROW` and `binlog_row_image = FULL` under **Database flags**.
-
-  </details>
+- The source `MySQL` instance must have binary logging enabled with `binlog_format=ROW` and `binlog_row_image=FULL`. The database user provided for migration must have replication privileges.
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mysql/concepts/appbinding/)
@@ -75,6 +42,39 @@ namespace/demo created
 ## Prepare Source Database
 
 We will use an **AWS RDS MySQL** instance as the source. Connect to it as the admin user to verify the prerequisites and set up the migration user and test data.
+
+<details>
+<summary><b>Configuring your source instance.</b></summary>
+
+<br> **Self-hosted MySQL** <br>
+
+Add the following to your `my.cnf` and restart MySQL:
+```ini
+[mysqld]
+log_bin          = mysql-bin
+binlog_format    = ROW
+binlog_row_image = FULL
+```
+
+Then grant the required privileges to the migration user:
+```sql
+GRANT REPLICATION SLAVE, REPLICATION CLIENT ON *.* TO '<migration-user>'@'%';
+FLUSH PRIVILEGES;
+```
+
+**AWS RDS MySQL** <br>
+
+Enable [Automated Backups](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/USER_LogAccess.MySQL.BinaryFormat.html) on the instance (this activates binary logging). Set `binlog_format = ROW` and `binlog_row_image = FULL` in an RDS Parameter Group. Then grant replication privileges via SQL as shown above.
+
+<br> <br> **Azure Database for MySQL** <br>
+
+Binary logging is enabled automatically when backups are on. Set `binlog_format` and `binlog_row_image` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/mysql/flexible-server/concepts-read-replicas). Then grant replication privileges via SQL as shown above.
+
+<br> <br> **Google Cloud SQL for MySQL** <br>
+
+Enable binary logging under **Backups** in the [Cloud Console](https://cloud.google.com/sql/docs/mysql/replication/create-replica), then set `binlog_format = ROW` and `binlog_row_image = FULL` under **Database flags**.
+
+</details>
 
 ### Verify prerequisites
 
@@ -106,8 +106,6 @@ SHOW VARIABLES LIKE 'binlog_row_image';
 | binlog_row_image | FULL  |
 +------------------+-------+
 ```
-
-> **Note:** On AWS RDS, enable Automated Backups and set `binlog_format=ROW` and `binlog_row_image=FULL` in a custom RDS Parameter Group. See the prerequisites section above for details.
 
 ### Create a dedicated migration user
 

@@ -32,38 +32,7 @@ A brief downtime occurs only during the final cutover when application endpoints
 
 - The source `PostgreSQL` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `PostgreSQL` instance must have `wal_level` set to `logical`. The database user provided for migration must have the `REPLICATION` privilege. There is no single procedure to configure this — it depends on your deployment environment.
-
-  <details>
-  <summary>How to configure this on your source instance?</summary>
-
-  **Self-hosted PostgreSQL**
-
-  ```sql
-  -- Set WAL level to logical (requires a PostgreSQL restart to take effect)
-  ALTER SYSTEM SET wal_level = 'logical';
-
-  -- Grant the replication privilege to the migration user
-  ALTER USER <migration-user> WITH REPLICATION;
-  ```
-
-  **AWS RDS** <br>
-
-  Set `rds.logical_replication = 1` in your [RDS Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication) and reboot the instance. Then grant the replication privilege via SQL as shown above.
-
-  <br> <br> **Azure Database for PostgreSQL** <br>
-
-  Set `azure.replication_support = logical` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) and restart the server. Then grant the replication privilege via SQL as shown above.
-
-  <br> <br> **Google Cloud SQL** <br>
-
-  Enable the `cloudsql.logical_decoding` flag via the [Cloud Console database flags](https://cloud.google.com/sql/docs/postgres/replication/configure-logical-replication). Then grant the replication privilege via SQL as shown above.
-
-  <br> <br> **CloudNativePG (CNPG)** <br>
-
-  Add `wal_level: logical` under `postgresql` parameters in the `Cluster` spec.
-
-  </details>
+- The source `PostgreSQL` instance must have `wal_level` set to `logical`. The database user provided for migration must have the `REPLICATION` privilege.
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/postgres/concepts/appbinding/)
@@ -82,6 +51,37 @@ namespace/demo created
 
 We will use an **AWS RDS PostgreSQL** instance as the source. Connect to it as the admin user to verify the prerequisites and set up the migration user and test data.
 
+<details>
+<summary><b>Configuring your source instance.</b></summary>
+
+**Self-hosted PostgreSQL**
+
+```sql
+-- Set WAL level to logical (requires a PostgreSQL restart to take effect)
+ALTER SYSTEM SET wal_level = 'logical';
+
+-- Grant the replication privilege to the migration user
+ALTER USER <migration-user> WITH REPLICATION;
+```
+
+**AWS RDS** <br>
+
+Set `rds.logical_replication = 1` in your [RDS Parameter Group](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_PostgreSQL.html#PostgreSQL.Concepts.General.FeatureSupport.LogicalReplication) and reboot the instance. Then grant the replication privilege via SQL as shown above.
+
+<br> <br> **Azure Database for PostgreSQL** <br>
+
+Set `azure.replication_support = logical` under **Server Parameters** in the [Azure Portal](https://learn.microsoft.com/en-us/azure/postgresql/flexible-server/concepts-logical) and restart the server. Then grant the replication privilege via SQL as shown above.
+
+<br> <br> **Google Cloud SQL** <br>
+
+Enable the `cloudsql.logical_decoding` flag via the [Cloud Console database flags](https://cloud.google.com/sql/docs/postgres/replication/configure-logical-replication). Then grant the replication privilege via SQL as shown above.
+
+<br> <br> **CloudNativePG (CNPG)** <br>
+
+Add `wal_level: logical` under `postgresql` parameters in the `Cluster` spec.
+
+</details>
+
 ### Verify prerequisites
 
 ```bash
@@ -95,8 +95,6 @@ SHOW wal_level;
  logical
 (1 row)
 ```
-
-> **Note:** On AWS RDS, set `rds.logical_replication = 1` in a custom RDS Parameter Group and reboot the instance. See the prerequisites section above for details.
 
 ### Create a dedicated migration user
 
