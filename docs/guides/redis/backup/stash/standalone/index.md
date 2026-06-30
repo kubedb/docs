@@ -58,7 +58,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: 6.0.20
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -219,7 +219,7 @@ clientConfig:
   secret:
     name: sample-redis-auth
   type: kubedb.com/redis
-  version: 6.0.20
+  version: 8.2.2
 ```
 Stash requires the following fields to set in AppBinding's `Spec` section.
 

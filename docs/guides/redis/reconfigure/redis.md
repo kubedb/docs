@@ -40,7 +40,7 @@ Now, we are going to deploy a  `Redis` database using a supported version by `Ku
 
 ### Prepare Redis Database
 
-Now, we are going to deploy a `Redis` database with version `6.2.14`.
+Now, we are going to deploy a `Redis` database with version `8.2.2`.
 
 ### Deploy Redis 
 
@@ -68,7 +68,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: "6.2.14"
+  version: "8.2.2"
   storageType: Durable
   storage:
     storageClassName: "standard"
