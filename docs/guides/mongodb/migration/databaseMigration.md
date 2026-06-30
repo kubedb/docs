@@ -269,10 +269,6 @@ metadata:
   name: mongodb-migrate
   namespace: demo
 spec:
-  jobTemplate:
-    spec:
-      securityContext:
-        fsGroup: 65534
   source:
     mongodb:
       connectionInfo:
