@@ -101,12 +101,13 @@ spec:
       role: Member
       replicaIndices: [3, 4, 5]
     - clusterName: dc-arbiter
-      role: Witness
+      role: Arbiter
 ```
 
-- **Member** and data-bearing **Witness** rules carry `replicaIndices`; an
-  **Arbiter** or a Postgres **Witness** (which holds no Postgres data) carries none.
-- `mode: TwoDC` expects exactly two Member DCs plus at least one Arbiter/Witness;
+- A data-bearing **Member** rule carries `replicaIndices`; the **Arbiter** witness DC
+  (vote only, no Postgres) carries none. (The petset `Witness` role, a data-bearing
+  witness, is for engines like MongoDB and is not used by Postgres.)
+- `mode: TwoDC` expects exactly two Member DCs plus the Arbiter witness DC;
   `ThreeDC` expects at least three Member DCs.
 
 ### Postgres
@@ -147,7 +148,7 @@ Per data-bearing DC `<dc>`:
 - a cluster-scoped per-DC `PlacementPolicy` `<base>-<dc>` pinning that group to the DC;
 - a per-DC arbiter `PetSet` `<db>-<dc>-arbiter` when that DC's local node count is even.
 
-The Witness DC runs no Postgres pods. All per-DC pods carry the offshoot selectors
+The witness DC (`role: Arbiter`) runs no Postgres pods. All per-DC pods carry the offshoot selectors
 plus the `open-cluster-management.io/cluster-name` label, so the global primary/standby
 Services and the single `AppBinding` keep working.
 
@@ -250,13 +251,13 @@ normal operation.
 - Each DC's raft needs its own quorum. A DC with an **even** local node count gets its
   own in-DC arbiter (`<db>-<dc>-arbiter`) so intra-DC failover keeps quorum; an odd
   count needs none.
-- The **Witness** DC holds only the `dr-controlplane` vote, never Postgres data.
+- The witness DC (`role: Arbiter`) holds only the `dr-controlplane` vote, never Postgres data.
 - Scaling a DC re-evaluates its parity automatically: the arbiter is created or removed
   (and de-registered from the DC raft) as the local count crosses even/odd.
 
 Separately from a DC's *intra-DC* quorum, the **cross-DC** failover quorum needs a
 majority of three voting sites. For how to lay this out across two or three data
-centers (and why a third Witness site is preferred), see
+centers (and why a third witness site is preferred), see
 [Deployment topologies](/docs/guides/postgres/dr/overview/index.md#deployment-topologies-2-dcs-vs-3-dcs).
 
 ## Planned switchover (zero-RPO)

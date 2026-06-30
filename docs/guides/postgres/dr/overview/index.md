@@ -64,16 +64,22 @@ DC-DR is built on one rule: **the Postgres raft never stretches across data cent
 
 ### Data center roles
 
-Each DC plays one role, set on the `PlacementPolicy` `distributionRule`:
+Each DC plays one role, set on the `PlacementPolicy` `distributionRule.role`:
 
 | Role | Holds Postgres data | Primary eligible | Purpose |
 | --- | --- | --- | --- |
 | **Member** | yes | yes | A full Postgres group; a candidate for the active DC. |
-| **Arbiter** | no | no | Votes only, to break ties; runs no Postgres. |
-| **Witness** | no (for Postgres) | no | Holds only the `dr-controlplane` etcd member / control-plane vote. |
+| **Arbiter** | no | no | Vote only — the `dr-controlplane` etcd tie-breaker; runs no Postgres. **This is the role a Postgres witness DC uses.** |
+| **Witness** | yes | no | Data-bearing but never primary — for engines whose witness must carry data (e.g. MongoDB). **Not used by Postgres.** |
 
-A typical layout is two Member DCs plus one Witness DC (the three-site etcd quorum
-lives across all three, but Postgres data lives only in the two Member DCs).
+> For Postgres the third "witness" data center is **vote-only** (it holds only the
+> `dr-controlplane` etcd member, no Postgres), so it is declared with `role: Arbiter`
+> and empty `replicaIndices`. The petset `Witness` role is reserved for engines whose
+> witness must carry data; Postgres does not use it.
+
+A typical layout is two Member DCs plus one vote-only witness DC (`role: Arbiter`):
+the three-site etcd quorum lives across all three, but Postgres data lives only in
+the two Member DCs.
 
 ## Deployment topologies (2 DCs vs 3 DCs)
 
@@ -84,16 +90,17 @@ The DR feature needs two things, in different quantities:
 - **The failover decision** is made by the `dr-controlplane` etcd **quorum**. A quorum
   makes progress only while a **majority of its three voting sites** is reachable. For
   single-fault tolerance *and* split-brain safety, those three votes should sit in
-  **three independent failure domains**. The third domain can be a tiny **Witness**
-  that holds no Postgres data.
+  **three independent failure domains**. The third domain can be a tiny vote-only
+  **witness** (`role: Arbiter`) that holds no Postgres data.
 
 So "how many data centers" has two answers: how many hold **data** (two or three), and
 how many hold a **quorum vote** (always three for automatic, split-brain-free
 failover). The `failoverPolicy.mode` selects the data layout:
 
-### A. Two Member DCs + a Witness — `mode: TwoDC` (recommended)
+### A. Two Member DCs + a witness — `mode: TwoDC` (recommended)
 
-Three sites; two hold Postgres data, the third is a vote-only Witness:
+Three sites; two hold Postgres data, the third is a vote-only witness DC
+(`role: Arbiter`, no Postgres):
 
 ```yaml
 failoverPolicy:
@@ -101,18 +108,18 @@ failoverPolicy:
 distributionRules:
 - { clusterName: dc-east, role: Member, replicaIndices: [0, 1, 2] }
 - { clusterName: dc-west, role: Member, replicaIndices: [3, 4, 5] }
-- { clusterName: dc-witness, role: Witness }   # etcd vote only, no Postgres
+- { clusterName: dc-witness, role: Arbiter }    # etcd vote only, no Postgres
 ```
 
 Any single site can be lost:
 
-- **Lose a Member DC** → the surviving Member plus the Witness form a 2/3 majority, so
+- **Lose a Member DC** → the surviving Member plus the witness form a 2/3 majority, so
   the survivor acquires the Lease and is promoted automatically; the lost DC, if alive
   but partitioned, self-fences read-only.
-- **Lose the Witness** → the two Members are still a 2/3 majority, so writes continue
+- **Lose the witness** → the two Members are still a 2/3 majority, so writes continue
   uninterrupted.
 
-Because the Witness runs no Postgres, it is small and cheap. **Run it in a third
+Because the witness runs no Postgres, it is small and cheap. **Run it in a third
 public cloud or region** — this is the lowest-cost way to get correct, automatic
 failover, and it is the recommended topology whenever a third location is available.
 
@@ -137,7 +144,7 @@ it when you want a data copy and primary capability in all three locations.
 
 If you genuinely have only two locations, you still need a third quorum vote, so you
 **place it inside one of the two DCs** (run the third `dr-controlplane` etcd member
-there). There is no separate Witness site, so that DC now holds **two of the three
+there). There is no separate witness site, so that DC now holds **two of the three
 votes**:
 
 - **Lose the other DC** (the one with one vote) → the two-vote DC keeps the majority →
@@ -148,13 +155,13 @@ votes**:
   certain the failed DC is truly down to avoid split-brain.
 
 This protects against losing one specific DC, not both symmetrically. Prefer adding a
-cheap third Witness site (topology A) whenever possible.
+cheap third witness site (topology A) whenever possible.
 
 ### At a glance
 
 | Topology | Sites | Data DCs | Tolerates | Automatic failover |
 | --- | --- | --- | --- | --- |
-| Two Member + Witness (`TwoDC`) | 3 | 2 | any 1 site | yes |
+| Two Member + Arbiter witness (`TwoDC`) | 3 | 2 | any 1 site | yes |
 | Three Member (`ThreeDC`) | 3 | 3 | any 1 site | yes |
 | Two sites, co-located quorum | 2 | 2 | only the one-vote DC | only when the one-vote DC is lost |
 
@@ -213,11 +220,11 @@ spec:
       role: Member
       replicaIndices: [3, 4, 5]
     - clusterName: dc-arbiter
-      role: Witness
+      role: Arbiter
 ```
 
-- A **Member** or **Witness** rule that bears data carries `replicaIndices`; an
-  **Arbiter** / Postgres **Witness** rule carries none.
+- A data-bearing **Member** rule carries `replicaIndices`; the **Arbiter** witness DC
+  (vote only, no Postgres) carries none.
 - `failoverPolicy.trigger.scope: Global` makes this one cluster-wide failover scope.
   Use `Group` with a group name to put a database in its own scope.
 
@@ -258,7 +265,7 @@ The operator then creates, per data-bearing DC:
 - a per-DC arbiter `PetSet` `<db>-<dc>-arbiter` when that DC's local node count is
   even.
 
-The Witness DC runs no Postgres pods.
+The witness DC (`role: Arbiter`) runs no Postgres pods.
 
 ## Observe the DC-DR state
 
