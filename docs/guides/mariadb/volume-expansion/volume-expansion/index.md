@@ -54,7 +54,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `MariaDB` database of 3 replicas with version `11.8.5`.
+Now, we are going to deploy a `MariaDB` database of 3 replicas with version `12.1.2`.
 
 ### Deploy MariaDB
 
@@ -67,7 +67,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

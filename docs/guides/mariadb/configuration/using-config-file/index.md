@@ -103,7 +103,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.1.2"
   configuration:
     secretName: md-configuration
   storageType: Durable

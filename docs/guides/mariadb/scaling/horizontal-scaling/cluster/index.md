@@ -41,7 +41,7 @@ Here, we are going to deploy a  `MariaDB` cluster using a supported version by `
 
 ### Prepare MariaDB Cluster Database
 
-Now, we are going to deploy a `MariaDB` cluster with version `11.8.5`.
+Now, we are going to deploy a `MariaDB` cluster with version `12.1.2`.
 
 ### Deploy MariaDB Cluster
 
@@ -54,7 +54,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

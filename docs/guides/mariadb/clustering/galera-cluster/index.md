@@ -46,7 +46,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   topology:
     mode: GaleraCluster
@@ -104,7 +104,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 11.8.5
+  version: 12.1.2
 status:
   conditions:
   - lastTransitionTime: "2021-03-16T09:39:01Z"
