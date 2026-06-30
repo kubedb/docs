@@ -71,7 +71,7 @@ spec:
     resources:
       requests:
         storage: 7Gi
-  version: "17.2"
+  version: "18.3"
 ```
 
 Now, create the namespace and apply the manifest:

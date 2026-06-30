@@ -751,7 +751,7 @@ spec:
       requests:
         storage: 2Gi
   storageType: Durable
-  version: "17.2"
+  version: "18.3"
   podTemplate:
     spec:
       podPlacementPolicy:

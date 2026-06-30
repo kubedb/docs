@@ -79,7 +79,7 @@ timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-
 timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a postgres using non-deprecated `Postgres` version `13.2`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a postgres using non-deprecated `Postgres` version `18.3`.
 
 **Deploy Postgres:**
 
@@ -92,7 +92,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
