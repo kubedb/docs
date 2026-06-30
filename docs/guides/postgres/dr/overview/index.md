@@ -75,6 +75,89 @@ Each DC plays one role, set on the `PlacementPolicy` `distributionRule`:
 A typical layout is two Member DCs plus one Witness DC (the three-site etcd quorum
 lives across all three, but Postgres data lives only in the two Member DCs).
 
+## Deployment topologies (2 DCs vs 3 DCs)
+
+The DR feature needs two things, in different quantities:
+
+- **Postgres data** lives in the **Member** data centers. You need at least **two**
+  Member DCs for cross-DC redundancy (one active, one warm standby).
+- **The failover decision** is made by the `dr-controlplane` etcd **quorum**. A quorum
+  makes progress only while a **majority of its three voting sites** is reachable. For
+  single-fault tolerance *and* split-brain safety, those three votes should sit in
+  **three independent failure domains**. The third domain can be a tiny **Witness**
+  that holds no Postgres data.
+
+So "how many data centers" has two answers: how many hold **data** (two or three), and
+how many hold a **quorum vote** (always three for automatic, split-brain-free
+failover). The `failoverPolicy.mode` selects the data layout:
+
+### A. Two Member DCs + a Witness — `mode: TwoDC` (recommended)
+
+Three sites; two hold Postgres data, the third is a vote-only Witness:
+
+```yaml
+failoverPolicy:
+  mode: TwoDC
+distributionRules:
+- { clusterName: dc-east, role: Member, replicaIndices: [0, 1, 2] }
+- { clusterName: dc-west, role: Member, replicaIndices: [3, 4, 5] }
+- { clusterName: dc-witness, role: Witness }   # etcd vote only, no Postgres
+```
+
+Any single site can be lost:
+
+- **Lose a Member DC** → the surviving Member plus the Witness form a 2/3 majority, so
+  the survivor acquires the Lease and is promoted automatically; the lost DC, if alive
+  but partitioned, self-fences read-only.
+- **Lose the Witness** → the two Members are still a 2/3 majority, so writes continue
+  uninterrupted.
+
+Because the Witness runs no Postgres, it is small and cheap. **Run it in a third
+public cloud or region** — this is the lowest-cost way to get correct, automatic
+failover, and it is the recommended topology whenever a third location is available.
+
+### B. Three Member DCs — `mode: ThreeDC`
+
+Three sites, all data-bearing and primary-eligible:
+
+```yaml
+failoverPolicy:
+  mode: ThreeDC
+distributionRules:
+- { clusterName: dc-east,  role: Member, replicaIndices: [0, 1, 2] }
+- { clusterName: dc-west,  role: Member, replicaIndices: [3, 4, 5] }
+- { clusterName: dc-south, role: Member, replicaIndices: [6, 7, 8] }
+```
+
+More data copies and read capacity, and any DC can become primary. Tolerates the loss
+of any single Member DC. The cost is three full Postgres groups instead of two — use
+it when you want a data copy and primary capability in all three locations.
+
+### C. Two sites only — reduced resiliency
+
+If you genuinely have only two locations, you still need a third quorum vote, so you
+**place it inside one of the two DCs** (run the third `dr-controlplane` etcd member
+there). There is no separate Witness site, so that DC now holds **two of the three
+votes**:
+
+- **Lose the other DC** (the one with one vote) → the two-vote DC keeps the majority →
+  failover/continuity works automatically.
+- **Lose the two-vote DC** → the survivor holds only one of three votes, cannot form a
+  quorum, and therefore cannot safely become writable on its own. **Automatic failover
+  does not happen**; recovery is a manual, operator-confirmed step, and you must be
+  certain the failed DC is truly down to avoid split-brain.
+
+This protects against losing one specific DC, not both symmetrically. Prefer adding a
+cheap third Witness site (topology A) whenever possible.
+
+### At a glance
+
+| Topology | Sites | Data DCs | Tolerates | Automatic failover |
+| --- | --- | --- | --- | --- |
+| Two Member + Witness (`TwoDC`) | 3 | 2 | any 1 site | yes |
+| Three Member (`ThreeDC`) | 3 | 3 | any 1 site | yes |
+| Two sites, co-located quorum | 2 | 2 | only the one-vote DC | only when the one-vote DC is lost |
+
 ## Prerequisites
 
 - A working [Distributed Postgres](/docs/guides/postgres/distributed/overview/index.md)

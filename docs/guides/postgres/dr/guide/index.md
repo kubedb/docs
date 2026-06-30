@@ -254,6 +254,11 @@ normal operation.
 - Scaling a DC re-evaluates its parity automatically: the arbiter is created or removed
   (and de-registered from the DC raft) as the local count crosses even/odd.
 
+Separately from a DC's *intra-DC* quorum, the **cross-DC** failover quorum needs a
+majority of three voting sites. For how to lay this out across two or three data
+centers (and why a third Witness site is preferred), see
+[Deployment topologies](/docs/guides/postgres/dr/overview/index.md#deployment-topologies-2-dcs-vs-3-dcs).
+
 ## Planned switchover (zero-RPO)
 
 Move the active DC on purpose by annotating the Postgres:
