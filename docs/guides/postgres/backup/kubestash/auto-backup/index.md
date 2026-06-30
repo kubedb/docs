@@ -221,7 +221,7 @@ metadata:
     blueprint.kubestash.com/name: postgres-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous
@@ -580,7 +580,7 @@ metadata:
     variables.kubestash.com/targetName: sample-postgres-2
     variables.kubestash.com/targetedDatabase: postgres
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous

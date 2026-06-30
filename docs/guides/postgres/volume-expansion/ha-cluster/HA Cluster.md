@@ -54,7 +54,7 @@ linode-block-storage  linodebs.csi.linode.com   Delete          Immediate       
 
 We can see the output from the `linode-block-storage` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Postgres` HA cluster database with version `13.13`.
+Now, we are going to deploy a `Postgres` HA cluster database with version `18.3`.
 
 #### Deploy Postgres HA Cluster
 
@@ -67,7 +67,7 @@ metadata:
   name: pg-ha-cluster
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   storageType: Durable

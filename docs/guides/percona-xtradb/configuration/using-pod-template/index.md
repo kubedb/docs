@@ -68,7 +68,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -116,7 +116,7 @@ Check the perconaxtradb CRD status if the database is ready
 ```bash
 $ kubectl get perconaxtradb --all-namespaces
 NAMESPACE   NAME         VERSION   STATUS   AGE
-demo        sample-pxc   8.0.40    Ready    4m8s
+demo        sample-pxc   8.4.3    Ready    4m8s
 ```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
