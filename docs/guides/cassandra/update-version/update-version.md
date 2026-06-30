@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Cassandra
 
-Now, we are going to deploy a `Cassandra` replicaset database with version `4.1.8`.
+Now, we are going to deploy a `Cassandra` replicaset database with version `4.1.11`.
 
 ### Deploy Cassandra
 
@@ -51,7 +51,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 4.1.8
+  version: 4.1.11
   topology:
     rack:
       - name: r0
@@ -101,7 +101,7 @@ We are now ready to apply the `CassandraOpsRequest` CR to update.
 
 ### update Cassandra Version
 
-Here, we are going to update `Cassandra` from `4.1.8` to `5.0.3`.
+Here, we are going to update `Cassandra` from `4.1.11` to `5.0.7`.
 
 #### Create CassandraOpsRequest:
 
@@ -118,7 +118,7 @@ spec:
   databaseRef:
     name: cass
   updateVersion:
-    targetVersion: 5.0.3
+    targetVersion: 5.0.7
   timeout: 5m
   apply: IfReady
 ```
@@ -127,7 +127,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `cassandra-prod` Cassandra.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `5.0.3`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `5.0.7`.
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
