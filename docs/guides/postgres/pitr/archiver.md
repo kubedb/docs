@@ -34,7 +34,7 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 $ kubectl create ns demo
 namespace/demo created
 ```
-> Note: The yaml files used in this tutorial are stored in [docs/guides/postgres/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/postgres/pitr/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## continuous archiving
 Continuous archiving involves making regular copies (or "archives") of the PostgreSQL transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`PostgresArchiver` for the KubeDB Managed PostgreSQL Databases.

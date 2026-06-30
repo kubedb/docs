@@ -95,9 +95,7 @@ For volume expansion, follow [this](/docs/guides/postgres/volume-expansion/Overv
 
 Do you need to update your PostgreSQL `shared_buffers`, `max_connections`, or other parameters? You can use our Reconfigure `PostgresOpsRequest`. Follow [here](/docs/guides/postgres/reconfigure/overview.md)
 
-### Remote Replica Support
+### Cross-DC Disaster Recovery (DC-DR)
 
-Do you want to have a backup data center where you want to run your postgresql database to recover from a data center failure as soon as possible?
-
-Follow [here](/docs/guides/postgres/remote-replica/remotereplica.md).
+Do you want to run your PostgreSQL database across multiple data centers and recover from a full data center failure with a single, automatically failing-over endpoint? Follow [here](/docs/guides/postgres/distributed/dc-dr/overview/index.md).
 
