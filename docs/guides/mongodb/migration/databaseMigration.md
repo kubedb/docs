@@ -81,18 +81,20 @@ $ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u admin 
 
 ```js
 use local
+switched to db local
+
 show collections
-// clustermanager
-// oplog.rs
-// replset.election
-// replset.initialSyncId
-// replset.minvalid
-// replset.oplogTruncateAfterPoint
-// startup_log
-// system.replset
-// system.rollback.id
-// system.tenantMigration.oplogView  [view]
-// system.views
+clustermanager
+oplog.rs
+replset.election
+replset.initialSyncId
+replset.minvalid
+replset.oplogTruncateAfterPoint
+startup_log
+system.replset
+system.rollback.id
+system.tenantMigration.oplogView
+system.views
 
 db.oplog.rs.findOne()
 {
