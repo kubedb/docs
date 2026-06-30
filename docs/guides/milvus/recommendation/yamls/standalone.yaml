@@ -1,0 +1,33 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-standalone
+  namespace: demo
+spec:
+  version: "2.6.9"
+  topology:
+    mode: Standalone
+  objectStorage:
+    configSecret:
+      name: "my-release-minio"
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: local-path
+    resources:
+      requests:
+        storage: 1Gi
+  authSecret:
+    name: milvus-standalone-auth
+    rotateAfter: 15m
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: milvus-issuer
+    certificates:
+      - alias: server
+        duration: 61m
+      - alias: client
+        duration: 61m
