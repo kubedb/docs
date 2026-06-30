@@ -42,7 +42,7 @@ Now, we are going to deploy a  `MSSQLServer` standalone using a supported versio
 
 ### Prepare MSSQLServer Standalone Database
 
-Now, we are going to deploy a `MSSQLServer` standalone database with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` standalone database with version `2025-cu0`.
 
 ### Deploy MSSQLServer standalone 
 
@@ -106,7 +106,7 @@ metadata:
   name: ms-standalone
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   configuration:
     secretName: ms-custom-config
   replicas: 1

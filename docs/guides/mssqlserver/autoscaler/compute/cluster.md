@@ -79,7 +79,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/mssqlserver-ca-issuer created
 ```
 
-In this section, we are going to deploy a MSSQLServer Availability Group Cluster with version `2022-cu12`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+In this section, we are going to deploy a MSSQLServer Availability Group Cluster with version `2025-cu0`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -88,7 +88,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup
