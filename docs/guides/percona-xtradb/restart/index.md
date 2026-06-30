@@ -85,7 +85,7 @@ Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-in
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 651
-Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel31, Revision 4b32153, WSREP version 26.1.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
@@ -263,7 +263,7 @@ Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-in
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 112
-Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel31, Revision 4b32153, WSREP version 26.1.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
