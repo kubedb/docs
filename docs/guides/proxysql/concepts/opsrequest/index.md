@@ -37,7 +37,7 @@ spec:
   proxyRef:
     name: proxy-server
   updateVersion:
-    targetVersion: "2.4.4-debian"
+    targetVersion: "3.0.1-debian"
 ```
 
 **Sample ProxySQLOpsRequest Objects for Horizontal Scaling of proxysql cluster:**

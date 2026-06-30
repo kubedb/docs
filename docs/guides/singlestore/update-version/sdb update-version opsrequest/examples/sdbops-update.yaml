@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: sample-sdb
   updateVersion:
-    targetVersion: "8.7.10"
+    targetVersion: "8.9.3"

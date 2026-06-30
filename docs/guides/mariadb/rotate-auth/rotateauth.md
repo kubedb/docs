@@ -46,7 +46,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.1.2"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -68,7 +68,7 @@ Now, wait until sample-mariadb has status Ready. i.e,
 ```shell
 $ kubectl get mariadb -n demo -w
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.23   Ready    30m
+sample-mariadb   11.8.5   Ready    30m
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
@@ -87,7 +87,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='s)cJQ
 Defaulted container "mariadb" out of: mariadb, mariadb-init (init)
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 207
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~ubu2004 mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004 mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

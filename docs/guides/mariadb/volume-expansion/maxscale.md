@@ -69,7 +69,7 @@ metadata:
   name: mariadb-replication
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.1.2"
   replicas: 3
   topology:
     mode: MariaDBReplication
@@ -107,7 +107,7 @@ Now, wait until `mariadb-replication` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-md-replication   10.5.23   Ready    2m30s
+md-replication   11.8.5   Ready    2m30s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

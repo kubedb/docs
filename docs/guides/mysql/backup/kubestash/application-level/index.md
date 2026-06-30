@@ -65,7 +65,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication  
@@ -170,7 +170,7 @@ spec:
   secret:
     name: sample-mysql-auth
   type: kubedb.com/mysql
-  version: 8.2.0
+  version: 9.6.0
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -541,10 +541,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: dumpfile.sql
-        id: f2ffd1bdb98563e15c46d8927d7239873ce7094132d959e12134688e06984736
-        size: 3.657 MiB
-        uploaded: 706.081 KiB
+      - summary:
+          hostPath: dumpfile.sql
+          id: f2ffd1bdb98563e15c46d8927d7239873ce7094132d959e12134688e06984736
+          size: 3.657 MiB
+          uploaded: 706.081 KiB
       size: 893.009 KiB
     manifest:
       driver: Restic
@@ -553,10 +554,11 @@ status:
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-tmp/manifest
-        id: ff99eb7ea769a365f7cdc83a252df610c262fc934ec0a3475499bbbb35ca6931
-        size: 2.883 KiB
-        uploaded: 1.440 KiB
+      - summary:
+          hostPath: /kubestash-tmp/manifest
+          id: ff99eb7ea769a365f7cdc83a252df610c262fc934ec0a3475499bbbb35ca6931
+          size: 2.883 KiB
+          uploaded: 1.440 KiB
       size: 3.788 KiB
   conditions:
   - lastTransitionTime: "2024-09-03T10:25:00Z"

@@ -86,7 +86,7 @@ metadata:
   name: pg-ha-tuning
   namespace: demo
 spec:
-  version: "17.4"
+  version: "18.3"
   replicas: 3
   configuration:
     tuning:
@@ -125,7 +125,7 @@ Now wait for the database to become `Ready`:
 ```bash
 $ kubectl get pg -n demo pg-ha-tuning
 NAME           VERSION   STATUS   AGE
-pg-ha-tuning   17.4      Ready    69s
+pg-ha-tuning   18.3      Ready    69s
 
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=pg-ha-tuning
 NAME             READY   STATUS    RESTARTS   AGE

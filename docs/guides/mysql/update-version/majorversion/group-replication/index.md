@@ -145,7 +145,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.
+The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `9.6.0`.
 
 **Deploy MySQL Group Replication:**
 
@@ -244,7 +244,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVesion
 
-Here, we are going to update the `MySQL` group replication from `8.4.8` to `8.4.8`.
+Here, we are going to update the `MySQL` group replication from `8.4.8` to `9.6.0`.
 
 **Create MySQLOpsRequest:**
 
@@ -261,14 +261,14 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.0.36"
+    targetVersion: "9.6.0"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.4.8` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.6.0` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 

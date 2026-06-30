@@ -223,7 +223,7 @@ metadata:
     blueprint.kubestash.com/name: singlestore-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -410,7 +410,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
@@ -448,10 +448,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
-          size: 3.657 MiB
-          uploaded: 121.343 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
+            size: 3.657 MiB
+            uploaded: 121.343 KiB
       size: 772.958 KiB
   integrity: true
   phase: Succeeded
@@ -558,7 +559,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/targetName: sample-singlestore-2
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -742,7 +743,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.7.10
+    kubedb.com/db-version: 8.9.3
     kubestash.com/app-ref-kind: Singlestore
     kubestash.com/app-ref-name: sample-singlestore
     kubestash.com/app-ref-namespace: demo
@@ -780,10 +781,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
-          size: 3.657 MiB
-          uploaded: 121.343 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
+            size: 3.657 MiB
+            uploaded: 121.343 KiB
       size: 772.958 KiB
   integrity: true
   phase: Succeeded

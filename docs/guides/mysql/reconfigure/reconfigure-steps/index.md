@@ -38,7 +38,7 @@ Now, we are going to deploy a  `MySQL` Cluster using a supported version by `Kub
 
 ### Prepare MySQL Cluster
 
-Now, we are going to deploy a `MySQL` Cluster database with version `8.4.8`.
+Now, we are going to deploy a `MySQL` Cluster database with version `9.6.0`.
 
 ### Deploy MySQL
 
@@ -91,7 +91,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: GroupReplication
   replicas: 3
@@ -164,7 +164,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: SemiSync
     semiSync:
@@ -204,7 +204,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   configuration:
     secretName: my-configuration
   storageType: Durable

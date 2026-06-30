@@ -355,7 +355,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "11.1.3"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:
@@ -512,7 +512,7 @@ spec:
         name: mariadb-full
         namespace: demo
       recoveryTimestamp: "2024-09-17T05:28:26Z"
-  version: "11.1.3"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

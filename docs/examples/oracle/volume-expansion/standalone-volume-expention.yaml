@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: standalone-volume-expention
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: oracle-sa-sample
+  volumeExpansion:
+    mode: "Offline"
+    node: 12Gi

@@ -1,0 +1,41 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: standalone-monitoring
+  namespace: demo
+spec:
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  version: "21.3.0"
+  edition: enterprise
+  mode: Standalone
+  storageType: Durable
+  replicas: 1
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut
+
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      exporter:
+        port: 9161
+
+        resources:
+          limits:
+            memory: 512Mi
+          requests:
+            cpu: 200m
+            memory: 256Mi
+
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus

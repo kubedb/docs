@@ -51,7 +51,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -73,7 +73,7 @@ Now, wait until sample-pxc has status Ready. i.e,
 ```shell
 $  kubectl get perconaxtradb -n demo
 NAME         VERSION   STATUS   AGE
-sample-pxc   8.0.40    Ready    43m
+sample-pxc   8.4.3    Ready    43m
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
@@ -104,7 +104,7 @@ Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-in
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 970
-Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel31, Revision 4b32153, WSREP version 26.1.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.

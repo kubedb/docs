@@ -85,53 +85,100 @@ When you have installed KubeDB, it has created `PostgresVersion` crd for all sup
 
 ```bash
 $ kubectl get postgresversion
-NAME                       VERSION   DISTRIBUTION   DB_IMAGE                               DEPRECATED   AGE
-10.16                      10.16     Official       postgres:10.16-alpine                               3d
-10.16-debian               10.16     Official       postgres:10.16                                      3d
-10.19                      10.19     Official       postgres:10.19-bullseye                             3d
-10.19-bullseye             10.19     Official       postgres:10.19-bullseye                             3d
-10.20                      10.20     Official       postgres:10.20-bullseye                             3d
-10.20-bullseye             10.20     Official       postgres:10.20-bullseye                             3d
-11.11                      11.11     Official       postgres:11.11-alpine                               3d
-11.11-debian               11.11     Official       postgres:11.11                                      3d
-11.14                      11.14     Official       postgres:11.14-alpine                               3d
-11.14-bullseye             11.14     Official       postgres:11.14-bullseye                             3d
-11.14-bullseye-postgis     11.14     PostGIS        postgis/postgis:11-3.1                              3d
-11.15                      11.15     Official       postgres:11.15-alpine                               3d
-11.15-bullseye             11.15     Official       postgres:11.15-bullseye                             3d
-12.10                      12.10     Official       postgres:12.10-alpine                               3d
-12.10-bullseye             12.10     Official       postgres:12.10-bullseye                             3d
-12.6                       12.6      Official       postgres:12.6-alpine                                3d
-12.6-debian                12.6      Official       postgres:12.6                                       3d
-12.9                       12.9      Official       postgres:12.9-alpine                                3d
-12.9-bullseye              12.9      Official       postgres:12.9-bullseye                              3d
-12.9-bullseye-postgis      12.9      PostGIS        postgis/postgis:12-3.1                              3d
-13.2                       13.2      Official       postgres:13.2-alpine                                3d
-13.2-debian                13.2      Official       postgres:13.2                                       3d
-13.5                       13.5      Official       postgres:13.5-alpine                                3d
-13.5-bullseye              13.5      Official       postgres:13.5-bullseye                              3d
-13.5-bullseye-postgis      13.5      PostGIS        postgis/postgis:13-3.1                              3d
-13.6                       13.6      Official       postgres:13.6-alpine                                3d
-13.6-bullseye              13.6      Official       postgres:13.6-bullseye                              3d
-14.1                       14.1      Official       postgres:14.1-alpine                                3d
-14.1-bullseye              14.1      Official       postgres:14.1-bullseye                              3d
-14.1-bullseye-postgis      14.1      PostGIS        postgis/postgis:14-3.1                              3d
-14.2                       14.2      Official       postgres:14.2-alpine                                3d
-14.2-bullseye              14.2      Official       postgres:14.2-bullseye                              3d
-9.6.21                     9.6.21    Official       postgres:9.6.21-alpine                              3d
-9.6.21-debian              9.6.21    Official       postgres:9.6.21                                     3d
-9.6.24                     9.6.24    Official       postgres:9.6.24-alpine                              3d
-9.6.24-bullseye            9.6.24    Official       postgres:9.6.24-bullseye                            3d
-timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-pg11-oss                3d
-timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                3d
-timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                3d
-timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                3d
+NAME                      VERSION   DISTRIBUTION   DB_IMAGE                                                                DEPRECATED   AGE
+10.23                     10.23     Official       ghcr.io/appscode-images/postgres:10.23-alpine                                        8d
+10.23-bullseye            10.23     Official       ghcr.io/appscode-images/postgres:10.23-bullseye                                      8d
+11-bullseye-postgis       11.22     PostGIS        docker.io/postgis/postgis:11-3.3                                                     8d
+11.22                     11.22     Official       ghcr.io/appscode-images/postgres:11.22-alpine                                        8d
+11.22-bookworm            11.22     Official       ghcr.io/appscode-images/postgres:11.22-bookworm                                      8d
+12-bullseye-postgis       12.18     PostGIS        docker.io/postgis/postgis:12-3.4                                                     8d
+12.17                     12.17     Official       ghcr.io/appscode-images/postgres:12.17-alpine                                        8d
+12.17-bookworm            12.17     Official       ghcr.io/appscode-images/postgres:12.17-bookworm                                      8d
+12.22                     12.22     Official       ghcr.io/appscode-images/postgres:12.22-alpine                                        8d
+12.22-bookworm            12.22     Official       ghcr.io/appscode-images/postgres:12.22-bookworm                                      8d
+13-bullseye-postgis       13.14     PostGIS        docker.io/postgis/postgis:13-3.4                                                     8d
+13.13                     13.13     Official       ghcr.io/appscode-images/postgres:13.13-alpine                                        8d
+13.13-bookworm            13.13     Official       ghcr.io/appscode-images/postgres:13.13-bookworm                                      8d
+13.18                     13.18     Official       ghcr.io/appscode-images/postgres:13.18-alpine                                        8d
+13.18-bookworm            13.18     Official       ghcr.io/appscode-images/postgres:13.18-bookworm                                      8d
+13.20                     13.20     Official       ghcr.io/appscode-images/postgres:13.20-alpine                                        8d
+13.20-bookworm            13.20     Official       ghcr.io/appscode-images/postgres:13.20-bookworm                                      8d
+13.21                     13.21     Official       ghcr.io/appscode-images/postgres:13.21-alpine                                        8d
+13.21-bookworm            13.21     Official       ghcr.io/appscode-images/postgres:13.21-bookworm                                      8d
+14-bullseye-postgis       14.11     PostGIS        docker.io/postgis/postgis:14-3.4                                                     8d
+14.10                     14.10     Official       ghcr.io/appscode-images/postgres:14.10-alpine                                        8d
+14.10-bookworm            14.10     Official       ghcr.io/appscode-images/postgres:14.10-bookworm                                      8d
+14.13                     14.13     Official       ghcr.io/appscode-images/postgres:14.13-alpine                                        8d
+14.13-bookworm            14.13     Official       ghcr.io/appscode-images/postgres:14.13-bookworm                                      8d
+14.15                     14.15     Official       ghcr.io/appscode-images/postgres:14.15-alpine                                        8d
+14.15-bookworm            14.15     Official       ghcr.io/appscode-images/postgres:14.15-bookworm                                      8d
+14.17                     14.17     Official       ghcr.io/appscode-images/postgres:14.17-alpine                                        8d
+14.17-bookworm            14.17     Official       ghcr.io/appscode-images/postgres:14.17-bookworm                                      8d
+14.18                     14.18     Official       ghcr.io/appscode-images/postgres:14.18-alpine                                        8d
+14.18-bookworm            14.18     Official       ghcr.io/appscode-images/postgres:14.18-bookworm                                      8d
+14.21                     14.21     Official       ghcr.io/appscode-images/postgres:14.21-alpine                                        8d
+14.21-bookworm            14.21     Official       ghcr.io/appscode-images/postgres:14.21-bookworm                                      8d
+14.22                     14.22     Official       ghcr.io/appscode-images/postgres:14.22-alpine                                        8d
+14.22-bookworm            14.22     Official       ghcr.io/appscode-images/postgres:14.22-bookworm                                      8d
+15-bullseye-postgis       15.6      PostGIS        docker.io/postgis/postgis:15-3.4                                                     8d
+15.10                     15.10     Official       ghcr.io/appscode-images/postgres:15.10-alpine                                        8d
+15.10-bookworm            15.10     Official       ghcr.io/appscode-images/postgres:15.10-bookworm                                      8d
+15.12                     15.12     Official       ghcr.io/appscode-images/postgres:15.12-alpine                                        8d
+15.12-bookworm            15.12     Official       ghcr.io/appscode-images/postgres:15.12-bookworm                                      8d
+15.12-documentdb          15.12     DocumentDB     ghcr.io/appscode-images/postgres-documentdb:15-0.102.0-ferretdb-2.0.0                8d
+15.13                     15.13     Official       ghcr.io/appscode-images/postgres:15.13-alpine                                        8d
+15.13-bookworm            15.13     Official       ghcr.io/appscode-images/postgres:15.13-bookworm                                      8d
+15.16                     15.16     Official       ghcr.io/appscode-images/postgres:15.16-alpine                                        8d
+15.16-bookworm            15.16     Official       ghcr.io/appscode-images/postgres:15.16-bookworm                                      8d
+15.17                     15.17     Official       ghcr.io/appscode-images/postgres:15.17-alpine                                        8d
+15.17-bookworm            15.17     Official       ghcr.io/appscode-images/postgres:15.17-bookworm                                      8d
+15.5                      15.5      Official       ghcr.io/appscode-images/postgres:15.5-alpine                                         8d
+15.5-bookworm             15.5      Official       ghcr.io/appscode-images/postgres:15.5-bookworm                                       8d
+15.8                      15.8      Official       ghcr.io/appscode-images/postgres:15.8-alpine                                         8d
+15.8-bookworm             15.8      Official       ghcr.io/appscode-images/postgres:15.8-bookworm                                       8d
+16.1                      16.1      Official       ghcr.io/appscode-images/postgres:16.1-alpine                                         8d
+16.1-bookworm             16.1      Official       ghcr.io/appscode-images/postgres:16.1-bookworm                                       8d
+16.10                     16.10     Official       ghcr.io/appscode-images/postgres:16.10-alpine                                        8d
+16.10-bookworm            16.10     Official       ghcr.io/appscode-images/postgres:16.10-bookworm                                      8d
+16.12                     16.12     Official       ghcr.io/appscode-images/postgres:16.12-alpine                                        8d
+16.12-bookworm            16.12     Official       ghcr.io/appscode-images/postgres:16.12-bookworm                                      8d
+16.13                     16.13     Official       ghcr.io/appscode-images/postgres:16.13-alpine                                        8d
+16.13-bookworm            16.13     Official       ghcr.io/appscode-images/postgres:16.13-bookworm                                      8d
+16.2-bullseye-postgis     16.2      PostGIS        docker.io/postgis/postgis:16-3.4                                                     8d
+16.4                      16.4      Official       ghcr.io/appscode-images/postgres:16.4-alpine                                         8d
+16.4-bookworm             16.4      Official       ghcr.io/appscode-images/postgres:16.4-bookworm                                       8d
+16.6                      16.6      Official       ghcr.io/appscode-images/postgres:16.6-alpine                                         8d
+16.6-bookworm             16.6      Official       ghcr.io/appscode-images/postgres:16.6-bookworm                                       8d
+16.8                      16.8      Official       ghcr.io/appscode-images/postgres:16.8-alpine                                         8d
+16.8-bookworm             16.8      Official       ghcr.io/appscode-images/postgres:16.8-bookworm                                       8d
+16.8-documentdb           16.8      DocumentDB     ghcr.io/appscode-images/postgres-documentdb:16-0.102.0-ferretdb-2.0.0                8d
+16.9                      16.9      Official       ghcr.io/appscode-images/postgres:16.9-alpine                                         8d
+16.9-bookworm             16.9      Official       ghcr.io/appscode-images/postgres:16.9-bookworm                                       8d
+17.2                      17.2      Official       ghcr.io/appscode-images/postgres:17.2-alpine                                         8d
+17.2-bookworm             17.2      Official       ghcr.io/appscode-images/postgres:17.2-bookworm                                       8d
+17.4                      17.4      Official       ghcr.io/appscode-images/postgres:17.4-alpine                                         8d
+17.4-bookworm             17.4      Official       ghcr.io/appscode-images/postgres:17.4-bookworm                                       8d
+17.4-documentdb           17.4      DocumentDB     ghcr.io/appscode-images/postgres-documentdb:17-0.102.0-ferretdb-2.0.0                8d
+17.5                      17.5      Official       ghcr.io/appscode-images/postgres:17.5-alpine                                         8d
+17.5-bookworm             17.5      Official       ghcr.io/appscode-images/postgres:17.5-bookworm                                       8d
+17.8                      17.8      Official       ghcr.io/appscode-images/postgres:17.8-alpine                                         8d
+17.8-bookworm             17.8      Official       ghcr.io/appscode-images/postgres:17.8-bookworm                                       8d
+17.9                      17.9      Official       ghcr.io/appscode-images/postgres:17.9-alpine                                         8d
+17.9-bookworm             17.9      Official       ghcr.io/appscode-images/postgres:17.9-bookworm                                       8d
+18.2                      18.2      Official       ghcr.io/appscode-images/postgres:18.2-alpine                                         8d
+18.2-bookworm             18.2      Official       ghcr.io/appscode-images/postgres:18.2-bookworm                                       8d
+18.3                      18.3      Official       ghcr.io/appscode-images/postgres:18.3-alpine                                         8d
+18.3-bookworm             18.3      Official       ghcr.io/appscode-images/postgres:18.3-bookworm                                       8d
+timescaledb-2.14.2-pg13   13.14     TimescaleDB    docker.io/timescale/timescaledb:2.14.2-pg13-oss                                      8d
+timescaledb-2.14.2-pg14   14.11     TimescaleDB    docker.io/timescale/timescaledb:2.14.2-pg14-oss                                      8d
+timescaledb-2.14.2-pg15   15.6      Official       docker.io/timescale/timescaledb:2.14.2-pg15-oss                                      8d
+timescaledb-2.14.2-pg16   16.2      Official       docker.io/timescale/timescaledb:2.14.2-pg16-oss                                      8d
 
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
-In this tutorial, we will use `13.2` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `13.2` and `13.2-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
+In this tutorial, we will use `18.3` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `18.3` and `18.3-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
 
 ## Create a PostgreSQL database
 
@@ -148,7 +195,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -172,7 +219,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -191,7 +238,7 @@ postgres.kubedb.com/quick-postgres created
 
 Here,
 
-- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 13.2 database is created.
+- `spec.version` is name of the PostgresVersion crd where the docker images are specified. In this tutorial, a PostgreSQL 18.3 database is created.
 - `spec.storageType` specifies the type of storage that will be used for Postgres database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Postgres database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the size and StorageClass of PVC that will be dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
 - `spec.terminationPolicy` or `spec.deletionPolicy` specifies what KubeDB should do when user try to delete Postgres crd. Termination policy `DoNotTerminate` prevents a user from deleting this object if admission webhook is enabled.
@@ -207,7 +254,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $  kubectl get pg -n demo quick-postgres -o wide
 NAME             VERSION   STATUS     AGE
-quick-postgres   13.2      Creating   13s
+quick-postgres   18.3      Creating   13s
 ```
 
 Let's describe Postgres object `quick-postgres`
@@ -327,7 +374,7 @@ Spec:
     Storage Class Name:  standard
   Storage Type:          Durable
   Termination Policy:    DoNotTerminate
-  Version:               13.2
+  Version:               18.3
 Status:
   Conditions:
     Last Transition Time:  2022-05-30T09:15:36Z

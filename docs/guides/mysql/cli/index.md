@@ -112,7 +112,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Delete
-  version: 8.4.8
+  version: 9.6.0
 ```
 
 To get JSON of an object, use `--output=json` flag.

@@ -68,7 +68,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.1.2"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -113,13 +113,13 @@ Check the pod's log to see if the database is ready
 
 ```bash
 $ kubectl logs -f -n demo sample-mariadb-0
-2021-03-18 06:06:17+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
+2021-03-18 06:06:17+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
 2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
-2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:10.5.23+maria~focal started.
+2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
 2021-03-18 06:06:19+00:00 [Note] [Entrypoint]: Initializing database files
 ...
 2021-03-18  6:06:33 0 [Note] mysqld: ready for connections.
-Version: '10.5.23-MariaDB-1:10.5.23+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
+Version: '11.8.5-MariaDB-1:11.8.5+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
 ```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
@@ -131,7 +131,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 22
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

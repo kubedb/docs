@@ -144,7 +144,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "15.5"
+  version: "18.3"
 ```
 
 ```bash
@@ -156,7 +156,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get pg -n demo
 NAME              VERSION   STATUS   AGE
-pg-singapore      15.3      Ready    22h
+pg-singapore      18.3      Ready    22h
 ```
 
 # Exposing to outside world
@@ -268,7 +268,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "15.5"
+  version: "18.3"
 ```
 
 ```bash
@@ -282,7 +282,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get pg -n demo 
 NAME           VERSION   STATUS   AGE
-pg-london      15.3      Ready    7m17s
+pg-london      18.3      Ready    7m17s
 ```
 
 ##  Validate Remote Replica

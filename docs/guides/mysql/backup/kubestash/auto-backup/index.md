@@ -212,7 +212,7 @@ metadata:
     blueprint.kubestash.com/name: mysql-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:
@@ -403,10 +403,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
-          size: 3.657 MiB
-          uploaded: 121.343 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
+            size: 3.657 MiB
+            uploaded: 121.343 KiB
       size: 772.958 KiB
   integrity: true
   phase: Succeeded
@@ -514,7 +515,7 @@ metadata:
     variables.kubestash.com/targetName: sample-mysql-2
     variables.kubestash.com/targetedDatabases: mysql
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:
@@ -704,10 +705,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
-          size: 3.657 MiB
-          uploaded: 121.343 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: b83d7a5577940d1c8f5bcda0630592c7d5a04168c272c0e7560bf7dacfe35ea8
+            size: 3.657 MiB
+            uploaded: 121.343 KiB
       size: 772.958 KiB
   integrity: true
   phase: Succeeded

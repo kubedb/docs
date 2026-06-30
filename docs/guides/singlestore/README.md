@@ -28,7 +28,7 @@ SingleStore, a distributed SQL database for real-time analytics, transactional w
 | Backup/Recovery: Instant, Scheduled ( [KubeStash](https://kubestash.com/)) |   &#10003;   |
 | Custom Configuration                                                       |   &#10003;   |
 | Initializing from Snapshot ( [KubeStash](https://kubestash.com/))          |   &#10003;   |
-| TLS: Add ( [Cert Manager]((https://cert-manager.io/docs/)))                |   &#10003;   |
+| TLS: Add ( [Cert Manager](https://cert-manager.io/docs/) )                |   &#10003;   |
 | Monitoring with Prometheus & Grafana                                       |   &#10003;   |
 | Builtin Prometheus Discovery                                               |   &#10003;   |
 | Using Prometheus operator                                                  |   &#10003;   |

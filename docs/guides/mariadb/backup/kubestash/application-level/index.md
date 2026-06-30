@@ -65,7 +65,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 11.1.3
+  version: 12.1.2
   replicas: 3
   storageType: Durable
   storage:
@@ -184,7 +184,7 @@ items:
         
         
       type: kubedb.com/mariadb
-      version: 11.1.3
+      version: 12.1.2
 kind: List
 metadata:
   resourceVersion: ""
@@ -527,10 +527,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 6a9b3e0ccd380f93ff414157156f4ac9d144fa15c5c3adeea2faa09cf44fb175
-          size: 3.139 KiB
-          uploaded: 3.431 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: 6a9b3e0ccd380f93ff414157156f4ac9d144fa15c5c3adeea2faa09cf44fb175
+            size: 3.139 KiB
+            uploaded: 3.431 KiB
       size: 1.277 KiB
     manifest:
       driver: Restic
@@ -539,10 +540,11 @@ status:
       path: repository/v1/frequent-backup/manifest
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-tmp/manifest
-          id: 47d89d4149cd59bfc8e701b8171a864d0259486820c477a9c2b3a8c0d80de237
-          size: 2.507 KiB
-          uploaded: 3.939 KiB
+        - summary:
+            hostPath: /kubestash-tmp/manifest
+            id: 47d89d4149cd59bfc8e701b8171a864d0259486820c477a9c2b3a8c0d80de237
+            size: 2.507 KiB
+            uploaded: 3.939 KiB
       size: 1.913 KiB
   conditions:
     - lastTransitionTime: "2024-09-18T09:16:53Z"

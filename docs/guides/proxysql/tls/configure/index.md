@@ -129,7 +129,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"  
+  version: "3.0.1-debian"  
   replicas: 3
   backend:
     name: mysql-server
@@ -174,7 +174,7 @@ Now, wait for `ProxySQL` going on `Ready` state and also wait for `PetSet` and i
 ```bash
 $ kubectl get proxysql -n demo proxy-server
 NAME             VERSION       STATUS   AGE
-proxy-server   2.3.2-debian    Ready    5m48s
+proxy-server   3.0.1-debian    Ready    5m48s
 
 $ kubectl get sts -n demo proxy-server
 NAME             READY   AGE
@@ -216,7 +216,7 @@ ca.crt  tls.crt  tls.key
 root@proxy-server-0:/ mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt 'ProxySQLAdmin>'
 Welcome to the ProxySQL monitor.  Commands end with ; or \g.
 Your ProxySQL connection id is 64
-Server version: 2.3.2-debian-ProxySQL-1:2.3.2-debian+maria~focal proxysql.org binary distribution
+Server version: 3.0.1-debian-ProxySQL-1:3.0.1-debian+maria~focal proxysql.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, ProxySQL Corporation Ab and others.
 
