@@ -29,7 +29,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -68,7 +68,7 @@ spec:
 
 `spec.version` is a required field specifying the name of the [PerconaXtraDBVersion](/docs/guides/percona-xtradb/concepts/perconaxtradb-version) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PerconaXtraDBVersion` resources,
 
-- `9.1.0`, `8.0.40`, `8.4.3`
+- `9.1.0`, `8.4.3`, `8.4.3`
 
 ### Handling `mbind: Operation not permitted`
 On certain platforms (e.g., when using specific security profiles), for some versions of `perconaxtradb`, you may see log messages like:   
