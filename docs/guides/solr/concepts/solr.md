@@ -88,7 +88,7 @@ spec:
             storage: 1Gi
         storageClassName: standard
       suffix: overseer
-  version: 9.4.1
+  version: 9.8.0
   zookeeperDigestReadonlySecret:
     name: solr-cluster-zk-digest-readonly
   zookeeperDigestSecret:

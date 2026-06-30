@@ -8,4 +8,4 @@ spec:
     name: solr-cluster
   type: UpdateVersion
   updateVersion:
-    targetVersion: 9.6.1
+    targetVersion: 9.8.0

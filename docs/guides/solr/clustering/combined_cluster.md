@@ -89,7 +89,7 @@ $ kubectl get ZooKeeper -n demo -w
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
 ```
-Here, we are going to create a standalone (ie. `replicas: 1`) Solr cluster. We will use the Solr image provided by the Solr (`9.6.1`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
+Here, we are going to create a standalone (ie. `replicas: 1`) Solr cluster. We will use the Solr image provided by the Solr (`9.8.0`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -98,7 +98,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   deletionPolicy: DoNotTerminate
   replicas: 2
   enableSSL: true
@@ -252,7 +252,7 @@ $ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/co
 
 ## Create Multi-Node Combined Solr Cluster
 
-Here, we are going to create a multi-node (say `replicas: 2`) Solr cluster. We will use the Solr image provided by the Solr (`9.6.1`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
+Here, we are going to create a multi-node (say `replicas: 2`) Solr cluster. We will use the Solr image provided by the Solr (`9.8.0`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -261,7 +261,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   deletionPolicy: DoNotTerminate
   replicas: 2
   enableSSL: true
