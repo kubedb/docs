@@ -291,6 +291,11 @@ spec:
           namespace: demo
 ```
 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mongodb-migrate.yaml
+migrator.migrator.kubedb.com/mongodb-migrate created
+```
+
 Here,
 
 **`spec.source.mongodb` / `spec.target.mongodb` — connectionInfo:**

@@ -271,6 +271,11 @@ spec:
         maxConnections: 100
 ```
 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/postgres-migrate.yaml
+migrator.migrator.kubedb.com/postgres-migrate created
+```
+
 Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migrator CRD reference](/docs/guides/postgres/concepts/migrator).
 
 ## Watch Migration Progress
@@ -281,7 +286,7 @@ Let's wait for the `LAG` to reach near zero. Run the following command to watch 
 Every 2.0s: kubectl get migrator -n demo
 
 NAME               PHASE     DBTYPE     STAGE       LAG   PROGRESS   AGE
-postgres-migrate   Running   postgres   Streaming   0B               4h36m
+postgres-migrate   Running   postgres   Streaming   0B    100%       4h36m
 ```
 
 ### Verify initial snapshot on target

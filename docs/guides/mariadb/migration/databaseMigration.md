@@ -287,6 +287,11 @@ spec:
         maxConnections: 100
 ```
 
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/mariadb-migrate.yaml
+migrator.migrator.kubedb.com/mariadb-migrate created
+```
+
 Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migrator CRD reference](/docs/guides/mariadb/concepts/migrator/).
 
 ## Watch Migration Progress
@@ -297,7 +302,7 @@ Let's wait for the `LAG` to reach near zero. Run the following command to watch 
 Every 2.0s: kubectl get migrator -n demo
 
 NAME              PHASE     DBTYPE    STAGE       LAG   PROGRESS   AGE
-mariadb-migrate   Running   mariadb   Streaming   0B               4h36m
+mariadb-migrate   Running   mariadb   Streaming   0B    100%       4h36m
 ```
 
 ### Verify initial snapshot on target

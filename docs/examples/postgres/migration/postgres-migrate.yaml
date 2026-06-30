@@ -1,0 +1,35 @@
+apiVersion: migrator.kubedb.com/v1alpha1
+kind: Migrator
+metadata:
+  name: postgres-migrate
+  namespace: demo
+spec:
+  jobTemplate:
+    spec:
+      securityContext:
+        fsGroup: 65534
+  source:
+    postgres:
+      connectionInfo:
+        appbinding:
+          name: source-postgres
+          namespace: demo
+        dbName: shop
+        maxConnections: 100
+      pgDump:
+        schemaOnly: true
+      logicalReplication:
+        copyData: true
+        publication:
+          name: "pub"
+          mode: default
+        subscription:
+          name: "sub"
+  target:
+    postgres:
+      connectionInfo:
+        appBinding:
+          name: target-postgres
+          namespace: demo
+        dbName: shop
+        maxConnections: 100
