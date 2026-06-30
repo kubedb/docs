@@ -111,7 +111,7 @@ metadata:
   name: mssql-standalone-tls
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   storageType: Durable
   tls:

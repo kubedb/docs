@@ -54,7 +54,7 @@ NAME        VERSION   DB_IMAGE                                                DE
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                3d21h
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a mssqlserver using non-deprecated `MSSQLServer` version `2022-cu12`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a mssqlserver using non-deprecated `MSSQLServer` version `2025-cu0`.
 
 
 At first, we need to create an Issuer/ClusterIssuer which will be used to generate the certificate used for TLS configurations.
@@ -98,7 +98,7 @@ metadata:
   name: mssql-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

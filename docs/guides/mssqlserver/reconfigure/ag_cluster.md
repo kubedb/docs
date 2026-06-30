@@ -43,7 +43,7 @@ Now, we are going to deploy a  `MSSQLServer` Availability Group using a supporte
 
 ### Prepare MSSQLServer Availability Group
 
-Now, we are going to deploy a `MSSQLServer` Availability Group with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` Availability Group with version `2025-cu0`.
 
 ### Deploy MSSQLServer Availability Group Cluster
 
@@ -106,7 +106,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   configuration:
     secretName: ms-custom-config
   replicas: 3

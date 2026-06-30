@@ -4,7 +4,7 @@ metadata:
   name: ms-init
   namespace: demo
 spec:
-  version: "2022-cu19"
+  version: "2025-cu0"
   storageType: Durable
   tls:
     issuerRef:
