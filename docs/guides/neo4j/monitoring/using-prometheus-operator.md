@@ -91,7 +91,7 @@ metadata:
 spec:
   replicas: 3
   deletionPolicy: WipeOut
-  version: "2025.11.2"
+  version: "2025.12.1"
   storage:
     storageClassName: local-path
     accessModes:

@@ -65,7 +65,7 @@ metadata:
   name: sample-neo4j
   namespace: demo
 spec:
-  version: 2025.11.2
+  version: 2025.12.1
   replicas: 3
   storageType: Durable
   storage:
@@ -548,7 +548,7 @@ metadata:
   name: restored-neo4j
   namespace: demo
 spec:
-  version: 2025.11.2
+  version: 2025.12.1
   replicas: 3
   storageType: Durable
   storage:

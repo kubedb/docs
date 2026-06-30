@@ -62,16 +62,16 @@ Create a Neo4jVersion CRD specifying images from your private registry. Replace 
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: Neo4jVersion
 metadata:
-  name: "2025.11.2"
+  name: "2025.12.1"
 spec:
   db:
-    image: PRIVATE_REGISTRY/neo4j:2025.11.2
-  version: "2025.11.2"
+    image: PRIVATE_REGISTRY/neo4j:2025.12.1
+  version: "2025.12.1"
 ```
 
 ```bash
 $ kubectl apply -f pvt-neo4jversion.yaml
-neo4jversion.catalog.kubedb.com/2025.11.2 created
+neo4jversion.catalog.kubedb.com/2025.12.1 created
 ```
 
 ## Deploy Neo4j from Private Registry
@@ -83,7 +83,7 @@ metadata:
   name: pvt-reg-neo4j
   namespace: demo
 spec:
-  version: "2025.11.2"
+  version: "2025.12.1"
   replicas: 3
   storageType: Durable
   storage:

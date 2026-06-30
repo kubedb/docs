@@ -37,7 +37,7 @@ metadata:
   name: neo4j-test
   namespace: demo
 spec:
-  version: "2025.10.1"
+  version: "2025.12.1"
   replicas: 3
   storage:
     resources:
