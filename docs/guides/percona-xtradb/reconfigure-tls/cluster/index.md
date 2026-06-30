@@ -47,7 +47,7 @@ metadata:
   name: sample-pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -72,7 +72,7 @@ Now, wait until `sample-pxc` has status `Ready`. i.e,
 ```bash
 $ kubectl get perconaxtradb -n demo
 NAME             VERSION   STATUS   AGE
-sample-pxc       8.0.40    Ready    9m17s
+sample-pxc       8.4.3    Ready    9m17s
 ```
 
 ```bash

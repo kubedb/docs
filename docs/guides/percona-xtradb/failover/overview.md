@@ -64,7 +64,7 @@ metadata:
   name: pxc-ha
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -94,7 +94,7 @@ Sample ready output:
 
 ```text
 NAME                              VERSION   STATUS   AGE
-perconaxtradb.kubedb.com/pxc-ha   8.0.40    Ready    16h
+perconaxtradb.kubedb.com/pxc-ha   8.4.3    Ready    16h
 
 NAME                                  AGE
 petset.apps.k8s.appscode.com/pxc-ha   16h

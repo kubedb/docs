@@ -62,7 +62,7 @@ metadata:
   name: script-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storage:
     storageClassName: "standard"
     accessModes:

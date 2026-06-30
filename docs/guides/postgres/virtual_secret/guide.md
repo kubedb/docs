@@ -288,7 +288,7 @@ spec:
         storage: 1Gi
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "17.5"
+  version: "18.3"
 ```
 Here,
 
