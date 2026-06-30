@@ -217,7 +217,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "17.8"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -366,7 +366,7 @@ spec:
         name: demo-pg-manifest
         namespace: demo
       recoveryTimestamp: "2023-12-12T13:43:41.300216Z"
-  version: "17.8"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   storageType: Durable

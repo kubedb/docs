@@ -68,7 +68,7 @@ metadata:
   name: sample-postgres
   namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous
@@ -182,7 +182,7 @@ spec:
   secret:
     name: sample-postgres-auth
   type: kubedb.com/postgres
-  version: "16.1"
+  version: "18.3"
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -609,7 +609,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous
