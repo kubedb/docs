@@ -48,7 +48,11 @@ KubeDB exposes Singlestore metrics through a sidecar exporter. Once Prometheus s
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/singlestore/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/singlestore/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Step 1: Deploy kube-prometheus-stack
+## Configuration
+
+> These two steps — deploying `kube-prometheus-stack` and installing Panopticon — are shared prerequisites for all KubeDB database monitoring guides. If you have already completed them in another guide, skip to [Step 1](#step-1-deploy-singlestore-with-monitoring-enabled).
+
+### Step 1: Deploy kube-prometheus-stack
 
 `kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
 
@@ -84,7 +88,7 @@ $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonit
 
 The label is `release: prometheus`.
 
-## Step 2: Install Panopticon
+### Step 2: Install Panopticon
 
 Panopticon is the Appscode operator that reads `MetricsConfiguration` objects created by `kubedb-metrics` and exposes them to Prometheus. It must be installed before enabling `kubedb-metrics`.
 
@@ -110,7 +114,9 @@ NAME                          READY   STATUS    RESTARTS   AGE
 panopticon-xxxx               1/1     Running   0          1m
 ```
 
-## Step 3: Deploy Singlestore with Monitoring Enabled
+## Setup
+
+## Step 1: Deploy Singlestore with Monitoring Enabled
 
 Below is the Singlestore object with monitoring configured to use Prometheus Operator.
 
@@ -187,7 +193,7 @@ $ kubectl get servicemonitor -n demo sdb-grafana-demo-stats -o jsonpath='{.metad
 {"release":"prometheus", ...}
 ```
 
-## Step 4: Verify Prometheus is Scraping
+## Step 2: Verify Prometheus is Scraping
 
 Port-forward the Prometheus pod:
 
@@ -206,7 +212,7 @@ Open [http://localhost:9090/targets](http://localhost:9090/targets) in your brow
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
-## Step 5: Access Grafana
+## Step 3: Access Grafana
 
 Port-forward the Grafana service:
 
@@ -237,9 +243,9 @@ After a successful login you will see the Grafana home page:
   <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
 </p>
 
-## Step 6: Configure Prometheus as a Data Source
+## Step 4: Configure Prometheus as a Data Source
 
-If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 7.
+If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 5.
 
 For a standalone Grafana installation:
 
@@ -253,7 +259,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 7: Import KubeDB Singlestore Dashboards
+## Step 5: Import KubeDB Singlestore Dashboards
 
 The KubeDB Singlestore dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
@@ -281,7 +287,7 @@ The import page looks like this:
 
 After importing all three files, they will appear under **Dashboards** in the left sidebar.
 
-## Step 8: Explore the Dashboards
+## Step 6: Explore the Dashboards
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
