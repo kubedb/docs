@@ -199,14 +199,14 @@ Now let's connect to our Postgres `script-postgres`  using pgAdmin we have insta
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
+  $ kubectl get secret -n demo script-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
+  $ kubectl get secret -n demo script-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   NC1fEq0q5XqHazB8
   ```
 
