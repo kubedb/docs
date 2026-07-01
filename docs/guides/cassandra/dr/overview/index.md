@@ -241,6 +241,8 @@ metadata:
 spec:
   version: "5.0.3"
   distributed: true
+  podPlacementPolicy:
+    name: cas-dcdr
   topology:
     rack:
     - name: rack-a
@@ -251,10 +253,6 @@ spec:
           requests:
             storage: 1Gi
   storageType: Durable
-  podTemplate:
-    spec:
-      podPlacementPolicy:
-        name: cas-dcdr
   deletionPolicy: WipeOut
 ```
 
