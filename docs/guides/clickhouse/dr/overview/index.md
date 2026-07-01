@@ -61,7 +61,7 @@ asynchronously through a shared ClickHouse Keeper ensemble. So for ClickHouse:
 
 ## How it works
 
-DC-DR for ClickHouse rests on four rules.
+DC-DR for ClickHouse rests on five rules.
 
 - **ClickHouse Keeper is spread 3-site and is the failover authority.** With two data
   DCs the layout is a Keeper voter in `dc-a`, a Keeper voter in `dc-b`, and one
@@ -88,6 +88,16 @@ DC-DR for ClickHouse rests on four rules.
 - **Reads can stay local.** Any replica serves consistent-enough reads, so read traffic
   can stay in-DC for low latency while writes route to the active DC through the single
   endpoint.
+- **One cross-DC part copy per shard, then fetch intra-DC.** `ReplicatedMergeTree`
+  fetches are not DC-aware: a replica pulls a new part from whichever replica advertises
+  it in Keeper, which can be the cross-DC one. With a single replica of a shard per DC
+  (the minimal DR shape) that is already one part copy per DC. But when a DC runs two or
+  more replicas of the same shard for intra-DC HA, each can independently pull the same
+  part across the WAN. ClickHouse has no native same-DC fetch affinity, so the operator
+  designates one in-DC replica per shard as the cross-DC fetch source and points the
+  others at it, so they fetch that part intra-DC. This holds cross-DC part traffic to one
+  copy per shard per DC, the `ReplicatedMergeTree` analog of the Postgres standby-DC
+  intra-DC cascade.
 
 > **Why not confine Keeper to the active DC?** You can (see the topologies below), and
 > it gives the lowest write latency. But then losing the active DC also loses its Keeper
