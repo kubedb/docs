@@ -59,6 +59,7 @@ NAME      VERSION   DB_IMAGE                                                    
 3.12.12   3.12.12   ghcr.io/appscode-images/rabbitmq:3.12.12-management-alpine                3h13m
 3.13.2    3.13.2    ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine                 3h13m
 4.0.4     4.0.4     ghcr.io/appscode-images/rabbitmq:4.0.4-management-alpine                  3h13m
+4.2.4     4.2.4     ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine                  3h13m
 ```
 
 ## Create a RabbitMQ server
@@ -82,7 +83,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: 3.12.12
+  version: 4.2.4
 ```
 
 ```bash

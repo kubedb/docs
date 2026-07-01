@@ -27,7 +27,7 @@ Using a separate crd for specifying respective docker images, and pod security p
 As with all other Kubernetes objects, a RabbitMQVersion needs `apiVersion`, `kind`, and `metadata` fields. It also needs a `.spec` section. Get `RabbitMQVersion` CR with a simple kubectl command.
 
 ```bash
-$ kubectl get rmversion 3.13.2 -oyaml
+$ kubectl get rmversion 4.2.4 -oyaml
 ```
 
 ```yaml
@@ -45,17 +45,17 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2024.8.21
     helm.sh/chart: kubedb-catalog-v2024.8.21
-  name: 3.13.2
+  name: 4.2.4
   resourceVersion: "46385"
   uid: d853aaf9-e9b8-40b8-9663-a201a5a645c1
 spec:
   db:
-    image: ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine
+    image: ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
   initContainer:
-    image: ghcr.io/kubedb/rabbitmq-init:3.13.2
+    image: ghcr.io/kubedb/rabbitmq-init:v2026.1.19
   securityContext:
     runAsUser: 999
-  version: 3.13.2
+  version: 4.2.4
 ```
 
 ### metadata.name

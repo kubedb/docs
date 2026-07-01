@@ -48,7 +48,7 @@ metadata:
   name: rm
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -71,7 +71,7 @@ Now, wait until `rm` has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo
 NAME    VERSION    STATUS    AGE
-rm      3.13.2     Ready     10m
+rm      4.2.4     Ready     10m
 
 
 ```bash
