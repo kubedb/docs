@@ -38,7 +38,7 @@ spec:
   databaseRef:
     name: cassandra-prod
   updateVersion:
-    targetVersion: 5.0.3
+    targetVersion: 5.0.7
 status:
   conditions:
     - lastTransitionTime: "2025-07-25T18:22:38Z"
