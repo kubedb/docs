@@ -278,16 +278,16 @@ $ kubectl get cassandra -n demo cas-dcdr -o jsonpath='{.status.disasterRecovery}
   "lastTransitionTime": "2026-06-30T10:00:00Z",
   "dataCenters": [
     {
-      "clusterName": "dc-a", "role": "Member", "writable": true, "healthy": true,
-      "upNormalNodes": 3, "totalNodes": 3, "pendingHints": 0, "repairBacklog": 0
+      "clusterName": "dc-a", "role": "Member", "replicationFactor": 3, "writable": true, "healthy": true,
+      "upNodes": 3, "totalNodes": 3, "hintBacklogBytes": 0, "pendingRanges": 0
     },
     {
-      "clusterName": "dc-b", "role": "Member", "writable": false, "healthy": true,
-      "upNormalNodes": 3, "totalNodes": 3, "pendingHints": 12, "repairBacklog": 0
+      "clusterName": "dc-b", "role": "Member", "replicationFactor": 3, "writable": false, "healthy": true,
+      "upNodes": 3, "totalNodes": 3, "hintBacklogBytes": 12, "pendingRanges": 0
     },
     {
-      "clusterName": "dc-c", "role": "Member", "writable": false, "healthy": true,
-      "upNormalNodes": 3, "totalNodes": 3, "pendingHints": 8, "repairBacklog": 0
+      "clusterName": "dc-c", "role": "Member", "replicationFactor": 3, "writable": false, "healthy": true,
+      "upNodes": 3, "totalNodes": 3, "hintBacklogBytes": 8, "pendingRanges": 0
     }
   ]
 }

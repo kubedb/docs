@@ -221,13 +221,14 @@ $ kubectl get cassandra -n demo cas-dcdr -o jsonpath='{.status.disasterRecovery}
 | `phase` | `Steady`, `FailingOver`, `FailingBack`, or `Degraded`. |
 | `lastTransitionTime` | When `activeDC` last changed. |
 | `dataCenters[].clusterName` | The data center, by its OCM managed cluster name (also the Cassandra `dc=`). |
-| `dataCenters[].role` | `Member` or `Arbiter`. |
+| `dataCenters[].role` | `Member` (a full Cassandra datacenter) or `Arbiter` (engine-free, etcd vote only). |
+| `dataCenters[].replicationFactor` | The DC's `NetworkTopologyStrategy` replication factor for the managed keyspaces. |
 | `dataCenters[].writable` | True only for the active (write-routed) DC (a routing marker, not an engine fence). |
-| `dataCenters[].upNormalNodes` | The DC's UN (up/normal) node count from `nodetool status`. |
+| `dataCenters[].upNodes` | The DC's UN (up/normal) node count from `nodetool status`. |
 | `dataCenters[].totalNodes` | The DC's total node count. |
-| `dataCenters[].pendingHints` | Cross-DC hinted-handoff backlog for this DC (a lag proxy). |
-| `dataCenters[].repairBacklog` | Anti-entropy repair staleness for this DC (a lag proxy). |
-| `dataCenters[].healthy` | Whether the DC has its expected UN nodes. |
+| `dataCenters[].hintBacklogBytes` | Cross-DC hinted-handoff backlog for this DC (a lag proxy). |
+| `dataCenters[].pendingRanges` | Streaming/pending ranges (`nodetool netstats`) for this DC, non-zero while it catches up after a rejoin or repair (a lag proxy). |
+| `dataCenters[].healthy` | Whether this DC's health Lease is fresh. |
 
 ### Useful checks
 
@@ -257,9 +258,9 @@ $ kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool gossipinfo
   local coordinator forwards to a remote coordinator that fans out to local replicas).
   There is exactly one ring, so there is no extra replication link to manage.
 - The lag signals are the **hinted-handoff backlog** (`nodetool netstats`, hints stored
-  for a temporarily down node) and **repair staleness** (how long since the last
-  cross-DC `nodetool repair`). These are surfaced into `status.disasterRecovery` as
-  `pendingHints` and `repairBacklog`.
+  for a temporarily down node) and the **pending/streaming ranges** (`nodetool netstats`,
+  non-zero while a DC catches up after a rejoin or repair). These are surfaced into
+  `status.disasterRecovery` as `hintBacklogBytes` and `pendingRanges`.
 - A **planned switchover is a routing move**, so it loses no committed data on its own;
   for the strictest handoff, drain hints and run a cross-DC repair first so the target is
   fully converged. An **unplanned failover** may lose only writes that acked at
@@ -307,7 +308,7 @@ reconciles the rest. There is **no rewind**: Cassandra is AP and reconciles by
 last-write-wins on cell timestamps, so there is nothing to roll back (unlike the Postgres
 `pg_rewind` path).
 
-After the returned DC is caught up (its `pendingHints` drained and a cross-DC repair
+After the returned DC is caught up (its `hintBacklogBytes` drained and a cross-DC repair
 complete), steer the active DC back with a planned switchover:
 
 ```bash
@@ -344,9 +345,9 @@ spec:
   horizontalScaling:
     dataCenters:
     - clusterName: dc-a
-      replicas: 4
+      node: 4
     - clusterName: dc-b
-      replicas: 3
+      node: 3
 ```
 
 > After changing a DC's node count, run `nodetool cleanup` on the DC (removes data no

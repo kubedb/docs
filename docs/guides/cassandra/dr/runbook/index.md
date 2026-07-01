@@ -100,7 +100,7 @@ the Lease resolves to.
 
 ```bash
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool status
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} writable:{.writable} hints:{.pendingHints}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} writable:{.writable} hints:{.hintBacklogBytes}{"\n"}{end}'
 ```
 
 **Action:** heal the network. The DCs re-gossip and reconcile automatically via hinted
@@ -183,7 +183,7 @@ endpoint does not move.
 
 ```bash
 # Target health and backlog from status:
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} healthy={.healthy} hints={.pendingHints} repair={.repairBacklog}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} healthy={.healthy} hints={.hintBacklogBytes} repair={.pendingRanges}{"\n"}{end}'
 # Ring and streaming from the target DC:
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool status
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool netstats
@@ -214,7 +214,7 @@ written at `EACH_QUORUM` will fail while that DC is down.
 **Verify the active DC is serving:**
 
 ```bash
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[?(@.writable==true)]}{.clusterName} up:{.upNormalNodes}/{.totalNodes}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[?(@.writable==true)]}{.clusterName} up:{.upNodes}/{.totalNodes}{end}'
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool status
 ```
 
@@ -236,7 +236,7 @@ by last-write-wins on cell timestamps.
 
 ```bash
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool status
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} healthy={.healthy} hints={.pendingHints} repair={.repairBacklog}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} healthy={.healthy} hints={.hintBacklogBytes} repair={.pendingRanges}{"\n"}{end}'
 ```
 
 **Action:** run a **full cross-DC `nodetool repair`** to reconcile everything beyond the
@@ -253,7 +253,7 @@ its hints are drained and the repair is complete.
 
 ## 9. Hint backlog growing (a DC falling behind)
 
-**Symptoms:** `pendingHints` for a DC keeps rising in `status.disasterRecovery`; that DC is
+**Symptoms:** `hintBacklogBytes` for a DC keeps rising in `status.disasterRecovery`; that DC is
 lagging.
 
 **Impact:** cross-DC replication is behind for that DC, so the RPO window on an unplanned
@@ -264,7 +264,7 @@ other DCs yet.
 
 ```bash
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool netstats
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} hints={.pendingHints} repair={.repairBacklog}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} hints={.hintBacklogBytes} repair={.pendingRanges}{"\n"}{end}'
 ```
 
 **Action:** relieve the cross-DC bottleneck (WAN bandwidth, node load in the lagging DC).
@@ -282,7 +282,7 @@ handoff.
 
 ```bash
 # Is this DC the write-routed one, and is it healthy?
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} writable:{.writable} up:{.upNormalNodes}/{.totalNodes}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} writable:{.writable} up:{.upNodes}/{.totalNodes}{"\n"}{end}'
 # What DC does the Lease route to?
 kubectl --kubeconfig <coord> -n dc-failover get lease primary-dc -o jsonpath='{.spec.holderIdentity}'
 # Ring health from a node:
@@ -341,7 +341,7 @@ repair, only cell values reconciled by timestamp).
 ```bash
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool status
 kubectl exec -n demo cas-dcdr-rack-a-0 -- nodetool netstats
-kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} hints={.pendingHints} repair={.repairBacklog}{"\n"}{end}'
+kubectl get cassandra -n demo cas-dcdr -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} hints={.hintBacklogBytes} repair={.pendingRanges}{"\n"}{end}'
 ```
 
 **Action:** let hinted handoff drain, then run a **full cross-DC `nodetool repair`** to
