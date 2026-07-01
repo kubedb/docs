@@ -15,16 +15,24 @@ section_menu_id: guides
 # PostgreSQL Alerting with Prometheus
 
 This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed PostgreSQL instance using the `postgres-alerts` Helm chart, and how to visualise live metrics using the `kubedb-grafana-dashboards` chart.
-
 ## Before You Begin
 
-- At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+* Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+* Install the KubeDB operator by following the steps [here](/docs/setup/README.md).
 
-- You need a running [kube-prometheus-stack](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack) with the Prometheus operator. This tutorial assumes the Prometheus instance is configured with both `serviceMonitorSelector` and `ruleSelector` matching the label `release: prometheus`.
+* Deploy the database in the `demo` namespace:
 
-  To check your Prometheus selectors:
+  ```bash
+  $ kubectl create ns demo
+  namespace/demo created
+  ```
+
+* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes your Prometheus instance is configured with both `serviceMonitorSelector` and `ruleSelector` matching the label `release: prometheus`.
+
+  To verify the selectors:
 
   ```bash
   $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.ruleSelector}'
@@ -34,14 +42,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   {"matchLabels":{"release":"prometheus"}}
   ```
 
-- To learn how Prometheus monitoring works with KubeDB in general, please visit [here](/docs/guides/postgres/monitoring/overview.md).
-
-- We are going to deploy the database in the `demo` namespace.
-
-  ```bash
-  $ kubectl create ns demo
-  namespace/demo created
-  ```
+* To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/postgres/monitoring/overview.md).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -239,20 +240,25 @@ $ kill %1
 
 ### Install
 
-Only `featureGates.Postgres=true` is enabled to stay within Helm's 1 MB secret size limit.
+The `kubedb-grafana-dashboards` chart bundles many large Grafana dashboard JSON files. Even with a single `featureGate` enabled, the rendered manifests can exceed Kubernetes' hard 1 MB Secret limit that Helm uses to store release state. To work around this, render the chart locally with `helm template` and apply the output directly with `kubectl apply`, which bypasses Helm's Secret storage entirely.
 
 ```bash
 $ helm repo add appscode https://charts.appscode.com/stable/
 $ helm repo update appscode
 
-$ helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+# Create the namespace first (idempotent)
+$ kubectl create namespace kubeops --dry-run=client -o yaml | kubectl apply -f -
+
+$ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
-    --create-namespace \
-    --version=v2026.6.18-rc.2 \
+    --version=v2026.6.19 \
     --set featureGates.Postgres=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<token-key-from-above>"
+    --set grafana.apikey="<token-key-from-above>" \
+  | kubectl apply -n kubeops -f -
 ```
+
+> **Note:** Because `helm template | kubectl apply` does not create a Helm release object, `helm uninstall` will not work for cleanup. Use `kubectl delete` directly (see [Cleaning up](#cleaning-up)).
 
 ### Verify dashboards are created
 
@@ -550,8 +556,14 @@ $ helm upgrade postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
 To remove all resources created in this tutorial, run the following commands.
 
 ```bash
-# Remove the Grafana dashboards
-$ helm uninstall kubedb-grafana-dashboards -n kubeops
+# Remove the Grafana dashboards (installed via helm template | kubectl apply, not helm install)
+$ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+    -n kubeops \
+    --version=v2026.6.19 \
+    --set featureGates.Postgres=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-key>" \
+  | kubectl delete -n kubeops -f - --ignore-not-found
 
 # Remove the postgres-alerts
 $ helm uninstall postgres-alerts -n demo
