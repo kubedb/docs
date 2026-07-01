@@ -29,7 +29,7 @@ KubeDB Migration lets you move an existing database — such as a MySQL instance
 
 ### Fresh Install
 
-Add `--set kubedb-migrator.enabled=true` to the standard [KubeDB helm install](/docs/setup/install/kubedb.md) guide.
+Add `--set kubedb-migrator.enabled=true` to the standard [KubeDB helm install](/docs/setup/install/kubedb/helm.md) guide.
 
 ### Upgrade Existing Install
 

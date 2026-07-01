@@ -35,9 +35,9 @@ A brief downtime occurs only during the final cutover when application endpoints
 - The source `PostgreSQL` instance must have `wal_level` set to `logical`. The database user provided for migration must have the `REPLICATION` privilege.
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [AppBinding](/docs/guides/postgres/concepts/appbinding/)
-    - [PostgreSQL](/docs/guides/postgres/concepts/postgres)
-    - [Migrator](/docs/guides/postgres/concepts/migrator)
+    - [AppBinding](/docs/guides/postgres/concepts/appbinding.md)
+    - [PostgreSQL](/docs/guides/postgres/concepts/postgres.md)
+    - [Migrator](/docs/guides/postgres/concepts/migrator.md)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -276,7 +276,7 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 migrator.migrator.kubedb.com/postgres-migrate created
 ```
 
-Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migrator CRD reference](/docs/guides/postgres/concepts/migrator).
+Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migrator CRD reference](/docs/guides/postgres/concepts/migrator.md).
 
 ## Watch Migration Progress
 

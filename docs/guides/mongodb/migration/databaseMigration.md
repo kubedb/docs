@@ -27,9 +27,9 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
 - The source `MongoDB` instance must be part of a replica set with the oplog enabled. The database user provided for migration must have appropriate read privileges on all databases.
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [AppBinding](/docs/guides/mongodb/concepts/appbinding/)
-    - [MongoDB](/docs/guides/mongodb/concepts/mongodb)
-    - [Migrator](/docs/guides/mongodb/concepts/migrator)
+    - [AppBinding](/docs/guides/mongodb/concepts/appbinding.md)
+    - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
+    - [Migrator](/docs/guides/mongodb/concepts/migrator.md)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -302,7 +302,7 @@ Here,
 - `extraConfiguration` — additional `mongoshake` configuration parameters. For example:
   - `full_sync.executor.insert_on_dup_update: "true"` — uses upsert instead of insert during full sync to handle duplicate key errors gracefully.
 
-For a full description of every field, see the [Migrator CRD reference](/docs/guides/mongodb/concepts/migrator).
+For a full description of every field, see the [Migrator CRD reference](/docs/guides/mongodb/concepts/migrator.md).
 
 ## Watch Migration Progress
 

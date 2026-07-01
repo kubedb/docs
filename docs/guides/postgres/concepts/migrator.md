@@ -111,7 +111,7 @@ PostgreSQL instance. There are two ways to provide the connection details — se
   - `serverName` — overrides the hostname used for TLS SNI and certificate verification.
 
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
-> create one for the source. Learn more about [AppBinding](/docs/guides/postgres/concepts/appbinding/).
+> create one for the source. Learn more about [AppBinding](/docs/guides/postgres/concepts/appbinding.md).
 
 ### spec.source.postgres.pgDump
 
@@ -180,5 +180,5 @@ from the source. These fields map directly to `pg_dump` command-line options.
 ## Next Steps
 
 - Migrate a PostgreSQL database step by step with the [PostgreSQL Database Migration](/docs/guides/postgres/migration/databaseMigration.md) guide.
-- Learn about the [AppBinding](/docs/guides/postgres/concepts/appbinding/) concept.
-- Learn about the Postgres CRD [here](/docs/guides/postgres/concepts/postgres).
+- Learn about the [AppBinding](/docs/guides/postgres/concepts/appbinding.md) concept.
+- Learn about the Postgres CRD [here](/docs/guides/postgres/concepts/postgres.md).

@@ -103,7 +103,7 @@ instance. There are two ways to provide the connection details — set **either*
   - `serverName` — overrides the hostname used for TLS SNI and certificate verification.
 
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
-> create one for the source. Learn more about [AppBinding](/docs/guides/mongodb/concepts/appbinding/).
+> create one for the source. Learn more about [AppBinding](/docs/guides/mongodb/concepts/appbinding.md).
 
 ### spec.source.mongodb.mongoshake
 
@@ -169,5 +169,5 @@ instance. There are two ways to provide the connection details — set **either*
 ## Next Steps
 
 - Migrate a MongoDB database step by step with the [MongoDB Database Migration](/docs/guides/mongodb/migration/databaseMigration.md) guide.
-- Learn about the [AppBinding](/docs/guides/mongodb/concepts/appbinding/) concept.
-- Learn about the MongoDB CRD [here](/docs/guides/mongodb/concepts/mongodb).
+- Learn about the [AppBinding](/docs/guides/mongodb/concepts/appbinding.md) concept.
+- Learn about the MongoDB CRD [here](/docs/guides/mongodb/concepts/mongodb.md).
