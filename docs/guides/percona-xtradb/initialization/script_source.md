@@ -103,51 +103,163 @@ script-pxc   8.4.3     Ready    3m
 You can use `kubectl dba describe` command to view which resources have been created by KubeDB for this PerconaXtraDB object:
 
 ```bash
-$ kubectl dba describe pxc -n demo script-pxc
-Name:               script-pxc
-Namespace:          demo
-CreationTimestamp:  Mon, 01 Jul 2026 10:00:00 +0600
-Labels:             <none>
-Annotations:        kubectl.kubernetes.io/last-applied-configuration=...
-Replicas:           3  total
-Status:             Ready
-Init:
-  script:
-    Volume:
-      Type:       ConfigMap (a volume populated by a ConfigMap)
-      Name:       pxc-init-script
-      Optional:   false
-StorageType:  Durable
-Volume:
-  StorageClass:  standard
-  Capacity:      1Gi
-  Access Modes:  RWO
-
-PetSet:
-  Name:               script-pxc
-  CreationTimestamp:  Mon, 01 Jul 2026 10:00:00 +0600
-  Labels:               app.kubernetes.io/name=perconaxtradbs.kubedb.com
-                        app.kubernetes.io/instance=script-pxc
-  Replicas:           3 desired | 3 total
-  Pods Status:        3 Running / 0 Waiting / 0 Succeeded / 0 Failed
-
-Service:
-  Name:         script-pxc
-  Type:         ClusterIP
-  IP:           10.96.0.100
-  Port:         db  3306/TCP
-  Endpoints:    10.244.0.10:3306
-
-Auth Secret:
-  Name:         script-pxc-auth
-  Type:         kubernetes.io/basic-auth
-
+$ kubectl dba describe perconaxtradb -n demo script-pxc
+Name:         script-pxc
+Namespace:    demo
+Labels:       <none>
+Annotations:  <none>
+API Version:  kubedb.com/v1
+Kind:         PerconaXtraDB
+Metadata:
+  Creation Timestamp:  2026-07-01T11:40:55Z
+  Finalizers:
+    kubedb.com
+  Generation:        5
+  Resource Version:  1101867
+  UID:               634db392-1587-45aa-a614-93f5b5732138
+Spec:
+  Allowed Schemas:
+    Namespaces:
+      From:  Same
+  Auth Secret:
+    Active From:  2026-07-01T11:40:57Z
+    API Group:    
+    Kind:         Secret
+    Name:         script-pxc-auth
+  Auto Ops:
+  Deletion Policy:  WipeOut
+  Health Checker:
+    Failure Threshold:  1
+    Period Seconds:     10
+    Timeout Seconds:    10
+  Init:
+    Initialized:  true
+    Script:
+      Config Map:
+        Name:  pxc-init-script
+  Pod Template:
+    Controller:
+    Metadata:
+    Spec:
+      Containers:
+        Name:  perconaxtradb
+        Resources:
+          Limits:
+            Memory:  1Gi
+          Requests:
+            Cpu:     500m
+            Memory:  1Gi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Group:     1001
+          Run As Non Root:  true
+          Run As User:      1001
+          Seccomp Profile:
+            Type:  RuntimeDefault
+        Name:      px-coordinator
+        Resources:
+          Limits:
+            Memory:  256Mi
+          Requests:
+            Cpu:     200m
+            Memory:  256Mi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Group:     1001
+          Run As Non Root:  true
+          Run As User:      1001
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Init Containers:
+        Name:  px-init
+        Resources:
+          Limits:
+            Memory:  512Mi
+          Requests:
+            Cpu:     200m
+            Memory:  256Mi
+        Security Context:
+          Allow Privilege Escalation:  false
+          Capabilities:
+            Drop:
+              ALL
+          Run As Group:     1001
+          Run As Non Root:  true
+          Run As User:      1001
+          Seccomp Profile:
+            Type:  RuntimeDefault
+      Pod Placement Policy:
+        Name:  default
+      Security Context:
+        Fs Group:            1001
+      Service Account Name:  script-pxc
+  Replicas:                  3
+  Storage:
+    Access Modes:
+      ReadWriteOnce
+    Resources:
+      Requests:
+        Storage:         1Gi
+    Storage Class Name:  local-path
+  Storage Type:          Durable
+  System User Secrets:
+    Monitor User Secret:
+      API Group:  
+      Kind:       
+      Name:       script-pxc-monitor
+    Replication User Secret:
+      API Group:  
+      Kind:       
+      Name:       script-pxc-replication
+  Version:        8.4.3
+Status:
+  Conditions:
+    Last Transition Time:  2026-07-01T11:40:55Z
+    Message:               The KubeDB operator has started the provisioning of PerconaXtraDB: demo/script-pxc
+    Reason:                DatabaseProvisioningStartedSuccessfully
+    Status:                True
+    Type:                  ProvisioningStarted
+    Last Transition Time:  2026-07-01T11:42:06Z
+    Message:               All desired replicas are ready.
+    Reason:                AllReplicasReady
+    Status:                True
+    Type:                  ReplicaReady
+    Last Transition Time:  2026-07-01T11:43:49Z
+    Message:               database script-pxc/demo is accepting connection
+    Observed Generation:   5
+    Reason:                AcceptingConnection
+    Status:                True
+    Type:                  AcceptingConnection
+    Last Transition Time:  2026-07-01T11:43:49Z
+    Message:               database script-pxc/demo is ready
+    Observed Generation:   5
+    Reason:                ReadinessCheckSucceeded
+    Status:                True
+    Type:                  Ready
+    Last Transition Time:  2026-07-01T11:43:42Z
+    Message:               The PerconaXtraDB: demo/script-pxc is successfully provisioned.
+    Observed Generation:   4
+    Reason:                DatabaseSuccessfullyProvisioned
+    Status:                True
+    Type:                  Provisioned
+  Observed Generation:     4
+  Phase:                   Ready
 Events:
-  Type    Reason      Age   From                    Message
-  ----    ------      ----  ----                    -------
-  Normal  Successful  3m    KubeDB operator  Successfully created Service
-  Normal  Successful  3m    KubeDB operator  Successfully created PetSet
-  Normal  Successful  3m    KubeDB operator  Successfully created PerconaXtraDB
+  Type    Reason        Age   From             Message
+  ----    ------        ----  ----             -------
+  Normal  PhaseChanged  17m   KubeDB Operator  Phase changed from  to Provisioning.
+  Normal  Successful    17m   KubeDB Operator  Successfully created governing service
+  Normal  Successful    17m   KubeDB Operator  Successfully created Service
+  Normal  Successful    17m   KubeDB Operator  Successfully created PetSet demo/script-pxc
+  Normal  Successful    17m   KubeDB Operator  Successfully created PerconaXtraDB
+  Normal  Successful    17m   KubeDB Operator  Successfully created appbinding
+  Normal  PhaseChanged  15m   KubeDB Operator  Phase changed from Provisioning to Ready.
 ```
 
 ## Verify Initialization
@@ -172,18 +284,62 @@ Now let's connect to our PerconaXtraDB cluster to verify that the database has b
 
   ```bash
   $ kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.password}' | base64 -d
-  S3cur3P@ssw0rd
+    nsTqGdVwR!~DA(t
   ```
 
 Now, connect to the PerconaXtraDB cluster and run the following query to confirm initialization:
 
 ```bash
-$ kubectl exec -it -n demo script-pxc-0 -- mysql -u root --password=S3cur3P@ssw0rd -e "SHOW TABLES FROM test;"
-+----------------+
-| Tables_in_test |
-+----------------+
-| kubedb_table   |
-+----------------+
+$ kubectl exec -it -n demo script-pxc-0 -- mysql -u root --password='nsTqGdVwR!~DA(ta' -e "SHOW TABLES FROM mysql;"
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+mysql: [Warning] Using a password on the command line interface can be insecure.
++------------------------------------------------------+
+| Tables_in_mysql                                      |
++------------------------------------------------------+
+| columns_priv                                         |
+| component                                            |
+| db                                                   |
+| default_roles                                        |
+| engine_cost                                          |
+| func                                                 |
+| general_log                                          |
+| global_grants                                        |
+| gtid_executed                                        |
+| help_category                                        |
+| help_keyword                                         |
+| help_relation                                        |
+| help_topic                                           |
+| innodb_index_stats                                   |
+| innodb_table_stats                                   |
+| kubedb_table                                         |
+| ndb_binlog_index                                     |
+| password_history                                     |
+| plugin                                               |
+| procs_priv                                           |
+| proxies_priv                                         |
+| replication_asynchronous_connection_failover         |
+| replication_asynchronous_connection_failover_managed |
+| replication_group_configuration_version              |
+| replication_group_member_actions                     |
+| role_edges                                           |
+| server_cost                                          |
+| servers                                              |
+| slave_master_info                                    |
+| slave_relay_log_info                                 |
+| slave_worker_info                                    |
+| slow_log                                             |
+| tables_priv                                          |
+| time_zone                                            |
+| time_zone_leap_second                                |
+| time_zone_name                                       |
+| time_zone_transition                                 |
+| time_zone_transition_type                            |
+| user                                                 |
+| wsrep_cluster                                        |
+| wsrep_cluster_members                                |
+| wsrep_streaming_log                                  |
++------------------------------------------------------+
+
 ```
 
 We can see the TABLE `kubedb_table` in `test` database which was created through initialization.
@@ -202,6 +358,5 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/percona-xtradb/backup/overview/index.md) PerconaXtraDB using Stash.
 - Want to setup a PerconaXtraDB cluster? Check the [clustering guide](/docs/guides/percona-xtradb/clustering/overview/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
