@@ -134,7 +134,7 @@ rm-quickstart-pods        ClusterIP      None            <none>           4369/T
 
 $ kubectl get appbinding -n demo
 NAME            TYPE                  VERSION   AGE
-rm-quickstart   kubedb.com/rabbitmq   3.13.2    23h
+rm-quickstart   kubedb.com/rabbitmq   4.2.4    23h
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `RabbitMQ` object:
@@ -148,7 +148,7 @@ kind: RabbitMQ
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"3.13.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"4.2.4"}}
   creationTimestamp: "2024-09-10T09:23:57Z"
   finalizers:
   - kubedb.com/rabbitmq
@@ -218,7 +218,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: 3.13.2
+  version: 4.2.4
 status:
   conditions:
   - lastTransitionTime: "2024-09-10T09:23:57Z"
