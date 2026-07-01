@@ -247,7 +247,7 @@ spec:
   source:
     postgres:
       connectionInfo:
-        appbinding:
+        appBinding:
           name: source-postgres
           namespace: demo
         dbName: shop
