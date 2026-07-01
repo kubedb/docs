@@ -76,7 +76,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -117,7 +117,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   2m11s
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    2m11s
+postgres.kubedb.com/ha-postgres   18.3      Ready    2m11s
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Postgres.
@@ -141,7 +141,7 @@ service/ha-postgres-pods      ClusterIP   None            <none>        5432/TCP
 service/ha-postgres-standby   ClusterIP   10.43.106.75    <none>        5432/TCP                     3m29s
 
 NAME                                             TYPE                  VERSION   AGE
-appbinding.appcatalog.appscode.com/ha-postgres   kubedb.com/postgres   16.6      3m26s
+appbinding.appcatalog.appscode.com/ha-postgres   kubedb.com/postgres   18.3      3m26s
 ```
 
 ## Update Postgres Database using GitOps
@@ -157,7 +157,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -189,7 +189,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   13m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    13m
+postgres.kubedb.com/ha-postgres   18.3      Ready    13m
 
 NAME                                                                   TYPE              STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l   VerticalScaling   Progressing   2s
@@ -219,7 +219,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 5
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -250,7 +250,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   21m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    21m
+postgres.kubedb.com/ha-postgres   18.3      Ready    21m
 
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Progressing   6s
@@ -281,7 +281,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 5
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -313,7 +313,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   27m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    27m
+postgres.kubedb.com/ha-postgres   18.3      Ready    27m
 
 NAME                                                                     TYPE                STATUS       AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful   6m
@@ -370,7 +370,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -402,7 +402,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   36m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    36m
+postgres.kubedb.com/ha-postgres   18.3      Ready    36m
 
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful    15m
@@ -416,7 +416,7 @@ After Ops Request becomes `Succesful`, lets check these parameters,
 $ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql
-psql (16.1)
+psql (18.3)
 Type "help" for help.
 
 postgres=# show max_connections;
@@ -478,7 +478,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -510,7 +510,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   44m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    44m
+postgres.kubedb.com/ha-postgres   18.3      Ready    44m
 
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful    22m
@@ -525,7 +525,7 @@ $ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -U postgres -W
 Password: <new-password>
-psql (16.6)
+psql (18.3)
 Type "help" for help.
 
 ```
@@ -595,7 +595,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "16.6"
+  version: "18.3"
   storageType: Durable
   sslMode: verify-full
   tls:
@@ -642,7 +642,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h17m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    3h17m
+postgres.kubedb.com/ha-postgres   18.3      Ready    3h17m
 
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful    176m
@@ -657,7 +657,7 @@ After Ops Request becomes `Successful`, We can validate the changes connecting p
 $ kubectl exec -it -n demo ha-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres -d "sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt sslcert=/tls/certs/client/client.crt sslkey=/tls/certs/client/client.key"
-psql (13.13)
+psql (18.3)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 ```
@@ -668,7 +668,7 @@ Type "help" for help.
 
 List postgres versions using `kubectl get postgresversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/postgres/update-version/versionupgrading/index.md).
 
-Let's choose `17.4` in this example.
+Let's choose `18.3` in this example.
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -684,7 +684,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "17.4"
+  version: "18.3"
   storageType: Durable
   sslMode: verify-full
   tls:
@@ -721,7 +721,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `17.4`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Postgres` CR is updated in your cluster.
+Update the `version` field to `18.3`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Postgres` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` PostgresOpsRequest to update the `Postgres` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -731,7 +731,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h25m
 
 NAME                              VERSION   STATUS   AGE
-postgres.kubedb.com/ha-postgres   16.6      Ready    3h25m
+postgres.kubedb.com/ha-postgres   18.3      Ready    3h25m
 
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful    3h3m
@@ -747,13 +747,13 @@ Now, we are going to verify whether the `Postgres`, `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get postgres -n demo ha-postgres -o=jsonpath='{.spec.version}{"\n"}'
-17.4
+18.3
 
 $ kubectl get petset -n demo ha-postgres -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/postgres:17.4-alpine
+ghcr.io/appscode-images/postgres:18.3-alpine
 
 $ kubectl get pod -n demo ha-postgres-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/postgres:17.4-alpine
+ghcr.io/appscode-images/postgres:18.3-alpine
 ```
 
 ### Enable Monitoring
@@ -774,7 +774,7 @@ spec:
   configuration:
     secretName: pg-configuration
   replicas: 5
-  version: "17.4"
+  version: "18.3"
   storageType: Durable
   sslMode: verify-full
   tls:
@@ -827,7 +827,7 @@ NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h34m
 
 NAME                              VERSION   STATUS     AGE
-postgres.kubedb.com/ha-postgres   16.6      NotReady   3h34m
+postgres.kubedb.com/ha-postgres   18.3      NotReady   3h34m
 
 NAME                                                                     TYPE                STATUS       AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful   3h13m

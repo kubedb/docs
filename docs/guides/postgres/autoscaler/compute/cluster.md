@@ -41,7 +41,7 @@ Here, we are going to deploy a `Postgres` Cluster using a supported version by `
 
 #### Deploy Postgres Cluster
 
-In this section, we are going to deploy a Postgres Cluster with version `16.1`. Then, in the next section we will set up autoscaling for this database using `PostgresAutoscaler` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
+In this section, we are going to deploy a Postgres Cluster with version `18.3`. Then, in the next section we will set up autoscaling for this database using `PostgresAutoscaler` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
 > If you want to autoscale Postgres `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
 ```yaml
@@ -51,7 +51,7 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -87,7 +87,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get postgres -n demo
 NAME             VERSION   STATUS   AGE
-ha-postgres        16.1    Ready    14m
+ha-postgres        18.3    Ready    14m
 ```
 
 Let's check the Pod containers resources,

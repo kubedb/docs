@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: sample-mariadb
   updateVersion:
-    targetVersion: "11.8.5"
+    targetVersion: "12.1.2"

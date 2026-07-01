@@ -14,7 +14,7 @@ spec:
           - --root=/root
           # terminate after one successful sync
           - --one-time
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     accessModes:
       - ReadWriteOnce

@@ -86,14 +86,14 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: md-issuer
-  version: 11.8.5
+  version: 12.1.2
 ```
 
 ### spec.version
 
 `spec.version` is a required field specifying the name of the [MariaDBVersion](/docs/guides/mariadb/concepts/mariadb-version) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MariaDBVersion` resources,
 
-- `11.8.5`, `10.4.32`
+- `12.1.2`, `10.4.32`
 
 ### spec.authSecret
 
@@ -162,7 +162,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 11.8.5
+  version: 12.1.2
   init:
     script:
       configMap:
@@ -359,7 +359,7 @@ KubeDB allows following fields to set in `spec.serviceTemplates`:
 
 ```bash
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   serviceTemplates:
     - alias: primary
       metadata:

@@ -58,7 +58,7 @@ Now, we are going to deploy a `MariaDB` replicaset using a supported version by 
 
 #### Deploy MariaDB Cluster
 
-In this section, we are going to deploy a MariaDB replicaset database with version `11.8.5`.  Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
+In this section, we are going to deploy a MariaDB replicaset database with version `12.1.2`.  Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD. Below is the YAML of the `MariaDB` CR that we are going to create,
 
 > If you want to autoscale MariaDB `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -69,7 +69,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

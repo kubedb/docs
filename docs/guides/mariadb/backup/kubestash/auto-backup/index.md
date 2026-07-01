@@ -218,7 +218,7 @@ metadata:
     blueprint.kubestash.com/name: mariadb-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: 11.1.3
+  version: 12.1.2
   replicas: 3
   storageType: Durable
   storage:
@@ -571,7 +571,7 @@ metadata:
     variables.kubestash.com/targetName: sample-mariadb-2
     variables.kubestash.com/targetedDatabase: mysql
 spec:
-  version: 11.1.3
+  version: 12.1.2
   replicas: 3
   storageType: Durable
   storage:

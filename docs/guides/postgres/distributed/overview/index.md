@@ -751,7 +751,7 @@ spec:
       requests:
         storage: 2Gi
   storageType: Durable
-  version: "17.2"
+  version: "18.3"
   podTemplate:
     spec:
       podPlacementPolicy:
@@ -776,7 +776,7 @@ $ kubectl get pg,pods,secret -n demo --context demo-controller --kubeconfig $HOM
 
 ```bash
 NAME                           VERSION   STATUS   AGE
-postgres.kubedb.com/postgres   17.2      Ready    99s
+postgres.kubedb.com/postgres   18.3      Ready    99s
 
 NAME              READY   STATUS    RESTARTS   AGE
 pod/postgres-0    2/2     Running   0          95s

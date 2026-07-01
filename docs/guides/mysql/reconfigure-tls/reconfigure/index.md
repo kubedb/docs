@@ -71,7 +71,7 @@ metadata:
   name: mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: GroupReplication
   storageType: Durable
@@ -138,7 +138,7 @@ metadata:
   name: semi-sync-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: SemiSync
@@ -176,7 +176,7 @@ metadata:
   name: mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"

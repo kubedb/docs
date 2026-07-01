@@ -33,7 +33,7 @@ metadata:
   name: p1
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 2
   standbyMode: Hot
   streamingMode: Asynchronous
@@ -279,7 +279,7 @@ metadata:
   name: postgres-db
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   init:
     script:
       configMap:

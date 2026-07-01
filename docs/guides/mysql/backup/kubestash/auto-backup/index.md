@@ -212,7 +212,7 @@ metadata:
     blueprint.kubestash.com/name: mysql-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:
@@ -515,7 +515,7 @@ metadata:
     variables.kubestash.com/targetName: sample-mysql-2
     variables.kubestash.com/targetedDatabases: mysql
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:

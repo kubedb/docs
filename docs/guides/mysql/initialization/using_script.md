@@ -112,7 +112,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: GroupReplication
   replicas: 3
@@ -182,7 +182,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: SemiSync
@@ -220,7 +220,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -445,7 +445,7 @@ spec:
   storageType: Durable
   deletionPolicy: Delete
   useAddressType: DNS
-  version: 8.4.8
+  version: 9.6.0
 status:
   conditions:
     ...
