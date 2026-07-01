@@ -29,6 +29,11 @@ This page is the conceptual overview and a quick start. See also:
 
 > **New to KubeDB?** Please start [here](/docs/README.md).
 
+> **Availability:** the distributed MongoDB substrate (`spec.distributed`, the
+> `PlacementPolicy`, cross-cluster networking) and the DC-DR layer are net-new for
+> MongoDB. Treat the field names and flows here as the intended user experience and
+> confirm availability in your release before relying on them in production.
+
 ## Why MongoDB DC-DR is different
 
 Most KubeDB engines (Postgres, MariaDB, MSSQL) keep their consensus quorum **inside**

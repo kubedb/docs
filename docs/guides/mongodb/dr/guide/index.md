@@ -197,7 +197,7 @@ $ kubectl get mongodb -n demo mg-dcdr -o jsonpath='{.status.disasterRecovery}' |
 | `dataCenters[].primary` | That DC's elected primary pod, empty if the DC holds no primary. |
 | `dataCenters[].writable` | True only for the active DC. |
 | `dataCenters[].oplogLagSeconds` | The DC's cross-DC oplog lag behind the active primary, in seconds. |
-| `dataCenters[].healthy` | Whether the DC has a ready member. |
+| `dataCenters[].healthy` | Whether the DC's health signal (its health Lease) is fresh. |
 
 ### Useful checks
 
@@ -281,13 +281,44 @@ $ kubectl annotate mongodb -n demo mg-dcdr dr.kubedb.com/switchover-to=dc-a
 
 ## Scaling and day-2 operations
 
-The standard `MongoDBOpsRequest` operations (`VerticalScaling`, `VolumeExpansion`,
-`UpdateVersion`, `Reconfigure`, `ReconfigureTLS`, `Restart`, `Reprovision`,
-`RotateAuth`, `Horizons`, `StorageMigration`) apply to a DC-DR cluster. They act on the
-distributed member groups across the DCs and are issued exactly as for a
-single-cluster MongoDB. There is no failover ops type: failover is MongoDB's native
+The standard `MongoDBOpsRequest` operations (`HorizontalScaling`, `VerticalScaling`,
+`VolumeExpansion`, `UpdateVersion`, `Reconfigure`, `ReconfigureTLS`, `Restart`,
+`Reprovision`, `RotateAuth`, `Horizons`, `StorageMigration`) apply to a DC-DR cluster.
+They act on the distributed member groups across the DCs and are issued exactly as for
+a single-cluster MongoDB. There is no failover ops type: failover is MongoDB's native
 election, and the planned switchover is the `dr.kubedb.com/switchover-to` annotation,
 not an ops request.
+
+### Scale a single data center
+
+The one replica set spans the DCs, so for a DC-DR cluster scale each data center
+independently with `spec.horizontalScaling.dataCenters` instead of the cluster-wide
+`spec.horizontalScaling.replicas`. Each entry names a `Member` data center (by its
+`clusterName`, matching a Member `distributionRule`) and its desired local node count;
+data centers not listed are left unchanged:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mg-dcdr-hscale
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: mg-dcdr
+  horizontalScaling:
+    dataCenters:
+    - clusterName: dc-a
+      replicas: 3
+    - clusterName: dc-b
+      replicas: 3
+```
+
+Each data center's members are scaled within that single replica set. Keep the vote
+total odd when adding voting members (see [Votes, roles, and the
+arbiter](#votes-roles-and-the-arbiter)); add extra data redundancy as `votes:0`
+members so the vote balance does not change.
 
 > **Note:** the distributed MongoDB substrate and the DC-DR layer are net-new for
 > MongoDB. Treat the field names and flows in this guide as the intended user
