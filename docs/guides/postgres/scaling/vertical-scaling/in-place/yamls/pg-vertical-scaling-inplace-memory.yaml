@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-scale-vertical-inplace-mem
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pg
+  verticalScaling:
+    mode: InPlace
+    memoryPolicy: ResizeOnly
+    postgres:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
