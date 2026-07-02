@@ -60,7 +60,7 @@ Now, we are going to deploy a `MongoDB` standalone using a supported version by 
 
 #### Deploy MongoDB standalone
 
-In this section, we are going to deploy a MongoDB standalone database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB standalone database with version `8.0.17`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -69,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: topolvm-provisioner

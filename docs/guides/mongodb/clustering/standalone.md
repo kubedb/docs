@@ -46,7 +46,7 @@ metadata:
   name: mg-alone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   podTemplate:
     spec:
       containers:
@@ -288,7 +288,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2022-11-04T04:30:07Z"

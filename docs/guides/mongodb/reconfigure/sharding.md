@@ -41,7 +41,7 @@ Now, we are going to deploy a  `MongoDB` sharded database using a supported vers
 
 ### Prepare MongoDB Shard
 
-Now, we are going to deploy a `MongoDB` sharded database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` sharded database with version `8.0.17`.
 
 ### Deploy MongoDB database 
 
@@ -70,7 +70,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3
