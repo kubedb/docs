@@ -76,7 +76,7 @@ Now, wait until quick-postgres has status Ready. i.e,
 ```shell
 $ kubectl get pg -n demo -w
 NAME             VERSION   STATUS   AGE
-quick-postgres   13.13     Ready    7m36s
+quick-postgres   18.3     Ready    7m36s
 ```
 ## Verify authentication 
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
@@ -95,7 +95,7 @@ $ kubectl exec -it -n demo quick-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, postgres-init-container (init)
  
 quick-postgres-0:/$ PGPASSWORD=yFj_WnVA9rxfQlLt psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 postgres=# \dt
                List of relations

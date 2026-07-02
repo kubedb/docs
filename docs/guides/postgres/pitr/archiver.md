@@ -400,8 +400,8 @@ restore-pg-restoresession-2tsbv                      0/1     Completed   0      
 ```bash
 $ kubectl get pg -n demo
 NAME         VERSION   STATUS   AGE
-demo-pg      17.8      Ready    44m
-restore-pg   17.8      Ready    2m36s
+demo-pg      18.3      Ready    44m
+restore-pg   18.3      Ready    2m36s
 ```
 
 **Validating data on Restored PostgreSQL**

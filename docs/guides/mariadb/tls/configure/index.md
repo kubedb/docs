@@ -92,7 +92,7 @@ metadata:
   name: md-standalone-tls
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -280,7 +280,7 @@ metadata:
   name: md-cluster-tls
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

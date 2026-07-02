@@ -84,7 +84,7 @@ Let's check if the database is ready to use,
 ```bash
 ❯ kubectl get pg -n demo sample-postgres
 NAME              VERSION   STATUS   AGE
-sample-postgres   11.11     Ready    50s
+sample-postgres   18.3     Ready    50s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
@@ -110,7 +110,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 ❯ kubectl get appbindings -n demo
 NAME              TYPE                  VERSION   AGE
-sample-postgres   kubedb.com/postgres   11.11      3m54s
+sample-postgres   kubedb.com/postgres   18.3      3m54s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -147,9 +147,9 @@ spec:
     stash:
       addon:
         backupTask:
-          name: postgres-backup-11.9
+          name: postgres-backup-18.2
         restoreTask:
-          name: postgres-restore-11.9
+          name: postgres-restore-18.2
   type: kubedb.com/postgres
   version: "18.3"
 ```
@@ -452,7 +452,7 @@ This time, the database will get stuck in the `Provisioning` state because we ha
 ```bash
 ❯ kubectl get postgres -n demo restored-postgres
 NAME                VERSION   STATUS         AGE
-restored-postgres   11.11     Provisioning   6m7s
+restored-postgres   18.3     Provisioning   6m7s
 ```
 
 You can check the log from the database pod to be sure whether the database is ready to accept connections or not.
@@ -478,7 +478,7 @@ Check AppBinding has been created for the `restored-postgres` database using the
 ```bash
 ❯ kubectl get appbindings -n demo restored-postgres
 NAME                TYPE                  VERSION   AGE
-restored-postgres   kubedb.com/postgres   11.11   6m45s
+restored-postgres   kubedb.com/postgres   18.3   6m45s
 ```
 
 > If you are not using KubeDB to deploy the database, then create the AppBinding manually.
@@ -540,7 +540,7 @@ At first, check if the database has gone into `Ready` state using the following 
 ```bash
 ❯ kubectl get pg -n demo restored-postgres
 NAME                VERSION   STATUS   AGE
-restored-postgres   11.11     Ready    11m
+restored-postgres   18.3     Ready    11m
 ```
 
 Now, exec into the database pod and verify restored data.

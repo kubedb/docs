@@ -96,7 +96,7 @@ placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
-In this section, we are going to deploy a distributed MariaDB Galera cluster with version `11.5.2`. Note that `spec.distributed` is set to `true` and `spec.replicas` is `3`  which is less than the five indices defined in the `PlacementPolicy`. The operator will only create pods for indices `0`, `1`, and `2`.
+In this section, we are going to deploy a distributed MariaDB Galera cluster with version `12.1.2`. Note that `spec.distributed` is set to `true` and `spec.replicas` is `3`  which is less than the five indices defined in the `PlacementPolicy`. The operator will only create pods for indices `0`, `1`, and `2`.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -105,7 +105,7 @@ metadata:
   name: mariadb
   namespace: demo
 spec:
-  version: "11.5.2"
+  version: "12.1.2"
   distributed: true
   replicas: 3
   storageType: Durable

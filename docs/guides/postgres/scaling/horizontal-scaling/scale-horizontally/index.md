@@ -127,7 +127,7 @@ $ watch -n 3 kubectl get postgres -n demo pg
 Every 3.0s: kubectl get postgres -n demo pg                        emon-r7: Thu Dec  2 15:31:16 2021
 
 NAME   VERSION   STATUS   AGE
-pg     13.2      Ready    4h40m
+pg     18.3      Ready    4h40m
 
 
 $ watch -n 3 kubectl get sts -n demo pg
@@ -308,7 +308,7 @@ Attempting query on primary
 take base basebackup...
 2021-12-02 11:50:11.062 GMT [17] LOG:  skipping missing configuration file "/etc/config/user.conf"
 2021-12-02 11:50:11.062 GMT [17] LOG:  skipping missing configuration file "/etc/config/user.conf"
-2021-12-02 11:50:11.075 UTC [17] LOG:  starting PostgreSQL 13.2 on x86_64-pc-linux-musl, compiled by gcc (Alpine 10.2.1_pre1) 10.2.1 20201203, 64-bit
+2021-12-02 11:50:11.075 UTC [17] LOG:  starting PostgreSQL 18.3 on x86_64-pc-linux-musl, compiled by gcc (Alpine 10.2.1_pre1) 10.2.1 20201203, 64-bit
 2021-12-02 11:50:11.075 UTC [17] LOG:  listening on IPv4 address "0.0.0.0", port 5432
 2021-12-02 11:50:11.075 UTC [17] LOG:  listening on IPv6 address "::", port 5432
 2021-12-02 11:50:11.081 UTC [17] LOG:  listening on Unix socket "/var/run/postgresql/.s.PGSQL.5432"
@@ -460,7 +460,7 @@ $ kubectl get postgres -n demo pg
 Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu Dec  2 18:16:39 2021
 
 NAME   VERSION   STATUS   AGE
-pg     13.2      Ready    7h26m
+pg     18.3      Ready    7h26m
 
 ```
 

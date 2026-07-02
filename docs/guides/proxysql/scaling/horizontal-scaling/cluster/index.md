@@ -82,7 +82,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "3.0.1-debian"
   replicas: 3
   backend:
     name: mysql-server
@@ -102,7 +102,7 @@ Now, wait until `proxy-server` has status `Ready`. i.e,
 ```bash
 $ kubectl get proxysql -n demo
 NAME             VERSION       STATUS    AGE
-proxy-server   2.3.2-debian    Ready    2m36s
+proxy-server   3.0.1-debian    Ready    2m36s
 ```
 
 Let's check the number of replicas this cluster has from the ProxySQL object, number of pods the petset have,
