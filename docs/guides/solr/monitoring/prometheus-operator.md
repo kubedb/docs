@@ -179,7 +179,7 @@ metadata:
   name: operator-prom-sl
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   replicas: 2
   monitor:
     agent: prometheus.io/operator

@@ -66,7 +66,7 @@ NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
 
-In this tutorial, we will use `9.4.1` SolrVersion CR to create a Solr cluster.
+In this tutorial, we will use `9.8.0` SolrVersion CR to create a Solr cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use SolrVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
 
@@ -138,7 +138,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   deletionPolicy: Delete
   replicas: 2
   zookeeperRef:
@@ -155,7 +155,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.4.1` will be created.
+- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.8.0` will be created.
 - `spec.replicas` - specifies the number of Solr nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
