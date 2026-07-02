@@ -81,7 +81,7 @@ Wait until `STATUS` shows `Ready` before proceeding.
 
 ```
 NAME         VERSION     STATUS   AGE
-neo4j-test   2025.10.1   Ready    3m
+neo4j-test   2025.12.1   Ready    3m
 ```
 
 ---

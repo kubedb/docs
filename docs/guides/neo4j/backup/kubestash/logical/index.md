@@ -91,7 +91,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get neo4j -n demo sample-neo4j
 NAME           VERSION     STATUS   AGE
-sample-neo4j   2025.11.2   Ready    5m1s
+sample-neo4j   2025.12.1   Ready    5m1s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -118,7 +118,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME           TYPE               VERSION                AGE
-sample-neo4j   kubedb.com/Neo4j   2025.11.2-enterprise   86s
+sample-neo4j   kubedb.com/Neo4j   2025.12.1-enterprise   86s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -133,7 +133,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Neo4j","metadata":{"annotations":{},"name":"sample-neo4j","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}}},"storageType":"Durable","version":"2025.11.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Neo4j","metadata":{"annotations":{},"name":"sample-neo4j","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"2Gi"}}},"storageType":"Durable","version":"2025.12.1"}}
   creationTimestamp: "2026-06-22T05:50:48Z"
   generation: 1
   labels:
@@ -166,7 +166,7 @@ spec:
   secret:
     name: sample-neo4j-auth
   type: kubedb.com/Neo4j
-  version: 2025.11.2-enterprise
+  version: 2025.12.1-enterprise
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following fields to be set in the AppBinding's `.spec` section.
@@ -450,7 +450,7 @@ apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
   annotations:
-    kubedb.com/db-version: 2025.11.2-enterprise
+    kubedb.com/db-version: 2025.12.1-enterprise
   creationTimestamp: "2026-06-22T06:11:20Z"
   finalizers:
     - kubestash.com/cleanup
@@ -572,7 +572,7 @@ Let's wait for the database to be ready to use,
 ```bash
 $ kubectl get neo4j -n demo restored-neo4j
 NAME            VERSION     STATUS   AGE
-restored-neo4j   2025.11.2   Ready    5m1s
+restored-neo4j   2025.12.1   Ready    5m1s
 ```
 
 The database is `Ready`. Now, we are going to restore the backed up data into this database.
@@ -654,7 +654,7 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get neo4j -n demo restored-neo4j
 NAME            VERSION     STATUS   AGE
-restored-neo4j   2025.11.2   Ready    6m31s
+restored-neo4j   2025.12.1   Ready    6m31s
 ```
 
 Now, find out the database `Pod` by the following command,

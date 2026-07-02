@@ -34,7 +34,7 @@ namespace/demo created
   ```bash
   $ kubectl get neo4jversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
   NAME      VERSION   DB_IMAGE                       DEPRECATED
-  2025.11.2 2025.11.2 kubedb/neo4j:2025.11.2         <none>
+  2025.12.1 2025.12.1 kubedb/neo4j:2025.12.1         <none>
   ```
 
 ## Create ImagePullSecret
