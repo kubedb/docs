@@ -118,7 +118,7 @@ KubeDB will create the necessary resources to deploy the OpenSearch cluster acco
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION            STATUS   AGE
-os-cluster   opensearch-2.19.2   Ready    3m25s
+os-cluster   opensearch-3.4.0   Ready    3m25s
 ```
 Here, OpenSearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -260,7 +260,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   opensearch-2.19.2
+  Version:                   opensearch-3.4.0
 Status:
   Conditions:
     Last Transition Time:  2022-06-08T06:01:54Z

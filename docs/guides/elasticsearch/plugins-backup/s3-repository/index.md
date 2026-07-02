@@ -138,9 +138,9 @@ elasticsearch.kubedb.com/sample-es created
 ```bash
 $ kubectl get es -n demo -w
 NAME        VERSION               STATUS   AGE
-sample-es   xpack-8.19.9            0s
-sample-es   xpack-8.19.9   Provisioning   19s
-sample-es   xpack-8.19.9   Ready          41s
+sample-es   xpack-9.2.3            0s
+sample-es   xpack-9.2.3   Provisioning   19s
+sample-es   xpack-9.2.3   Ready          41s
 ```
 
 ### Populate Data
@@ -245,7 +245,7 @@ $ curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_
     "uuid" : "JKoF5sgtS3WPBQ8A_OvWbw",
     "repository" : "sample_s3_repo",
     "version_id" : 7140099,
-    "version" : "7.14.0",
+    "version" : "9.2.3",
     "indices" : [
       ".geoip_databases",
       "companies",

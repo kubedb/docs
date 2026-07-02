@@ -103,8 +103,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   opensearch-2.19.2   Provisioning   113s
-es-topology   opensearch-2.19.2   Ready          115s
+es-topology   opensearch-3.4.0   Provisioning   113s
+es-topology   opensearch-3.4.0   Ready          115s
 ```
 
 Let's check an ingest node containers resources,

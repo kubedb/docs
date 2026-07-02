@@ -101,7 +101,7 @@ Now, wait until `es-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME         VERSION        STATUS   AGE
-es-cluster   xpack-8.19.9   Ready    53m
+es-cluster   xpack-9.2.3   Ready    53m
 
 ```
 

@@ -171,7 +171,7 @@ elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `8.2.3` will be created with `x-pack` security plugin.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `9.2.3` will be created with `x-pack` security plugin.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -185,9 +185,9 @@ The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION       STATUS         AGE
-es-quickstart   xpack-8.2.3   Provisioning   7s
+es-quickstart   xpack-9.2.3   Provisioning   7s
 ... ...
-es-quickstart   xpack-8.2.3   Ready          39s
+es-quickstart   xpack-9.2.3   Ready          39s
 ```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -354,7 +354,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  xpack-8.2.3
+  Version:  xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-12-27T05:25:39Z
@@ -441,7 +441,7 @@ NAME                             READY   AGE
 petset.apps/es-quickstart   3/3     8m2s
 
 NAME                                               TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     8m2s
+appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   9.2.3     8m2s
 
 NAME                                               TYPE                       DATA   AGE
 secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      8m8s

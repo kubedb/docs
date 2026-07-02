@@ -82,7 +82,7 @@ Now, wait until `es` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo
 NAME   VERSION       STATUS   AGE
-es     xpack-9.1.4   Ready    3m53s
+es     xpack-9.2.3   Ready    3m53s
 ```
 
 Let's check the number of replicas has from Elasticsearch object, number of pods the petset have,
@@ -113,7 +113,7 @@ service/es-master   ClusterIP   None           <none>        9300/TCP   5m5s
 service/es-pods     ClusterIP   None           <none>        9200/TCP   5m5s
 
 NAME                                    TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es   kubedb.com/elasticsearch   9.1.4     5m2s
+appbinding.appcatalog.appscode.com/es   kubedb.com/elasticsearch   9.2.3     5m2s
 
 NAME                                    TYPE                       DATA   AGE
 secret/es-apm-system-cred               kubernetes.io/basic-auth   2      5m4s

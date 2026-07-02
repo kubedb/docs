@@ -93,8 +93,8 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME          VERSION             STATUS         AGE
-es-combined   xpack-8.19.9   Provisioning   5s
-es-combined   xpack-8.19.9   Ready          50s
+es-combined   xpack-9.2.3   Provisioning   5s
+es-combined   xpack-9.2.3   Ready          50s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

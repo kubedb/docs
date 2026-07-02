@@ -116,7 +116,7 @@ KubeDB will create the necessary resources to deploy the Elasticsearch cluster a
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION              STATUS   AGE
-es-cluster   xpack-8.2.3          Ready    4m32s
+es-cluster   xpack-9.2.3          Ready    4m32s
 ```
 Here, Elasticsearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -260,7 +260,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   xpack-8.2.3
+  Version:                   xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-06-08T11:03:43Z
@@ -344,7 +344,7 @@ petset.apps/es-cluster-ingest   2/2     13m
 petset.apps/es-cluster-master   2/2     13m
 
 NAME                                            TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-cluster   kubedb.com/elasticsearch   8.2.0     13m
+appbinding.appcatalog.appscode.com/es-cluster   kubedb.com/elasticsearch   9.2.3     13m
 
 NAME                                            TYPE                       DATA   AGE
 secret/es-cluster-apm-system-cred               kubernetes.io/basic-auth   2      13m

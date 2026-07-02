@@ -154,7 +154,7 @@ Spec:
     Name:  es-demo
   Type:    UpdateVersion
   Update Version:
-    Target Version:  xpack-9.1.4
+    Target Version:  xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2025-11-06T05:19:15Z
@@ -290,13 +290,13 @@ Now, we are going to verify whether the `Elasticsearch` and the related `PetSets
 
 ```bash
 $ kubectl get es -n demo es-demo -o=jsonpath='{.spec.version}{"\n"}'
-xpack-9.1.4
+xpack-9.2.3
 
 $ kubectl get petset -n demo es-demo -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.1.4@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 
 $ kubectl get pods -n demo es-demo-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.1.4
+ghcr.io/appscode-images/elastic:9.2.3
 
 ```
 

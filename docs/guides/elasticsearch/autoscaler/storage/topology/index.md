@@ -116,8 +116,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   xpack-8.19.9   Provisioning   12s
-es-topology   xpack-8.19.9   Ready          1m50s
+es-topology   xpack-9.2.3   Provisioning   12s
+es-topology   xpack-9.2.3   Ready          1m50s
 ```
 
 Let's check volume size from the data petset, and from the persistent volume,

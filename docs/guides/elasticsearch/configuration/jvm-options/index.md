@@ -133,7 +133,7 @@ Wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-test       opensearch-2.19.2   Provisioning   12s
-es-test       opensearch-2.19.2   Provisioning   2m2s
-es-test       opensearch-2.19.2   Ready          2m2s
+es-test       opensearch-3.4.0   Provisioning   12s
+es-test       opensearch-3.4.0   Provisioning   2m2s
+es-test       opensearch-3.4.0   Ready          2m2s
 ```

@@ -180,11 +180,11 @@ Wait for few minutes until the `STATUS` will go from `Provisioning` to `Ready`. 
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS         AGE
-sample-opensearch   opensearch-2.19.2   Provisioning   49s
+sample-opensearch   opensearch-3.4.0   Provisioning   49s
 ... ...
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS   AGE
-sample-opensearch   opensearch-2.19.2   Ready    5m4s
+sample-opensearch   opensearch-3.4.0   Ready    5m4s
 ```
 
 Describe the object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -288,7 +288,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  opensearch-2.19.2
+  Version:  opensearch-3.4.0
 Status:
   Conditions:
     Last Transition Time:  2022-02-15T07:00:21Z

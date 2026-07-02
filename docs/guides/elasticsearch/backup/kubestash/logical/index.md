@@ -95,7 +95,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get es -n demo es-quickstart
 NAME              VERSION        STATUS   AGE
-es-quickstart     xpack-8.17.6   Ready    3h
+es-quickstart     xpack-9.2.3   Ready    3h
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -132,7 +132,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
  $ kubectl get appbindings -n demo
 NAME              TYPE                       VERSION   AGE
-es-quickstart     kubedb.com/elasticsearch   8.15.0    3h6m
+es-quickstart     kubedb.com/elasticsearch   9.2.3    3h6m
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -149,7 +149,7 @@ items:
     metadata:
       annotations:
         kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-8.17.6"}}
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-9.2.3"}}
       creationTimestamp: "2024-09-18T09:46:17Z"
       generation: 1
       labels:
@@ -200,7 +200,7 @@ items:
       tlsSecret:
         name: es-quickstart-client-cert
       type: kubedb.com/elasticsearch
-      version: 8.15.0
+      version: 9.2.3
 kind: List
 metadata:
   resourceVersion: ""
@@ -522,7 +522,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart
     kubestash.com/app-ref-namespace: demo
@@ -631,7 +631,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 ```bash
 $ kubectl get es -n demo restored-es
 NAME               VERSION   STATUS         AGE
-es-cluster         8.15.0    Provisioning   61s
+es-cluster         9.2.3    Provisioning   61s
 ```
 
 #### Create RestoreSession:
@@ -697,7 +697,7 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get es -n demo es-cluster
 NAME            VERSION        STATUS   AGE
-es-cluster      xpack-8.17.6   Ready    6m14s
+es-cluster      xpack-9.2.3   Ready    6m14s
 ```
 
 ```bash

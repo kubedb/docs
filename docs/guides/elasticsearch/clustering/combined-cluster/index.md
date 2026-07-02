@@ -72,11 +72,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-standalone   opensearch-2.19.2   Provisioning   1m32s
-es-standalone   opensearch-2.19.2   Provisioning   2m17s
-es-standalone   opensearch-2.19.2   Provisioning   2m17s
-es-standalone   opensearch-2.19.2   Provisioning   2m20s
-es-standalone   opensearch-2.19.2   Ready          2m20s
+es-standalone   opensearch-3.4.0   Provisioning   1m32s
+es-standalone   opensearch-3.4.0   Provisioning   2m17s
+es-standalone   opensearch-3.4.0   Provisioning   2m17s
+es-standalone   opensearch-3.4.0   Provisioning   2m20s
+es-standalone   opensearch-3.4.0   Ready          2m20s
 ```
 
 Hence the cluster is ready to use.
@@ -190,11 +190,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-multinode    opensearch-2.19.2   Provisioning   18s
-es-multinode    opensearch-2.19.2   Provisioning   78s
-es-multinode    opensearch-2.19.2   Provisioning   78s
-es-multinode    opensearch-2.19.2   Provisioning   81s
-es-multinode    opensearch-2.19.2   Ready          81s
+es-multinode    opensearch-3.4.0   Provisioning   18s
+es-multinode    opensearch-3.4.0   Provisioning   78s
+es-multinode    opensearch-3.4.0   Provisioning   78s
+es-multinode    opensearch-3.4.0   Provisioning   81s
+es-multinode    opensearch-3.4.0   Ready          81s
 ```
 
 Hence the cluster is ready to use.

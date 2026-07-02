@@ -5,22 +5,22 @@ metadata:
 spec:
   authPlugin: SearchGuard
   db:
-    image: kubedb/elasticsearch:7.9.3-searchguard
+    image: kubedb/elasticsearch:8.19.9-searchguard
   distribution: SearchGuard
   exporter:
     image: kubedb/elasticsearch_exporter:1.1.0
   initContainer:
     image: kubedb/toybox:0.8.4
-    yqImage: kubedb/elasticsearch-init:7.9.3-searchguard
+    yqImage: kubedb/elasticsearch-init:8.19.9-searchguard
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2
+        name: elasticsearch-backup-8.19.9
         params:
         - name: args
           value: --match=^(?![.])(?!searchguard).+
       restoreTask:
-        name: elasticsearch-restore-7.3.2
-  version: 7.9.3
+        name: elasticsearch-restore-8.19.9
+  version: 8.19.9

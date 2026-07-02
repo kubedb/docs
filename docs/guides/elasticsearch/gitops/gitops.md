@@ -114,7 +114,7 @@ NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   20m
 
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    20m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    20m
 ```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Elasticsearch.
@@ -148,7 +148,7 @@ service/es-gitops-master   ClusterIP   None           <none>        9300/TCP   2
 service/es-gitops-pods     ClusterIP   None           <none>        9200/TCP   20m
 
 NAME                                           TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-gitops   kubedb.com/elasticsearch   8.2.3     20m
+appbinding.appcatalog.appscode.com/es-gitops   kubedb.com/elasticsearch   8.18.8     20m
 ```
 
 ## Update Elasticsearch Database using GitOps
@@ -182,7 +182,7 @@ resources created by `gitops` operator in the `demo` namespace.
 ```bash
 $ kubectl get es,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    64m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    64m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   HorizontalScaling   Successful   39m
@@ -256,7 +256,7 @@ Now, `gitops` operator will detect the resource changes and create a `Elasticsea
 ```bash
 $ kubectl get es,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    64m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    64m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-injx1l   HorizontalScaling   Successful   15m
@@ -322,7 +322,7 @@ Now, `gitops` operator will detect the volume changes and create a `VolumeExpans
 ```bash
 $  kubectl get es,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    3h1m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    3h1m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   HorizontalScaling   Successful   157m
@@ -408,7 +408,7 @@ Now, `gitops` operator will detect the configuration changes and create a `Recon
 ```bash
 $ kubectl get es,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    3h53m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    3h53m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   HorizontalScaling   Successful   3h29m
@@ -494,7 +494,7 @@ Now, `gitops` operator will detect the auth changes and create a `RotateAuth` El
 ```bash
 $ kubectl get es,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.2.3   Ready    32m
+elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    32m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-kn71nl   HorizontalScaling   Successful   28m
@@ -554,7 +554,7 @@ Now, `gitops` operator will detect the version changes and create a `VersionUpda
 ```bash
 $ kubectl get es,elasticsearch,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    54m
+elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    54m
 
 NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   54m
@@ -573,11 +573,11 @@ Now, we are going to verify whether the `Elasticsearch`, `PetSet` and it's `Pod`
 
 ```bash
 $ kubectl get Elasticsearch -n demo es-gitops -o=jsonpath='{.spec.version}{"\n"}'
-xpack-8.5.3
+xpack-9.2.3
 $ kubectl get petset -n demo es-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:8.5.3@sha256:705db3750fa6739ddf06e416b52788446b19f79b6b162c0238078790545898d0
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 $ kubectl get pod -n demo es-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:8.5.3@sha256:705db3750fa6739ddf06e416b52788446b19f79b6b162c0238078790545898d0
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 ```
 
 
@@ -637,7 +637,7 @@ Now, `gitops` operator will detect the monitoring changes and create a `Restart`
 ```bash
 $ kubectl get es,elasticsearch,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    66m
+elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    66m
 
 NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   66m
@@ -775,7 +775,7 @@ Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS`
 ```bash
 $ kubectl get es,elasticsearch,esops -n demo
 NAME                                 VERSION       STATUS   AGE
-elasticsearch.kubedb.com/es-gitops   xpack-8.5.3   Ready    66m
+elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    66m
 
 NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   66m

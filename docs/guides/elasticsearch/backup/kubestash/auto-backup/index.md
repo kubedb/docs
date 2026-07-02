@@ -408,7 +408,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart
     kubestash.com/app-ref-namespace: demo
@@ -754,7 +754,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart-2
     kubestash.com/app-ref-namespace: demo

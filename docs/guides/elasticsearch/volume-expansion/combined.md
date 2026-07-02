@@ -95,7 +95,7 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME          VERSION        STATUS   AGE
-es-combined   xpack-8.19.9   Ready    75s
+es-combined   xpack-9.2.3   Ready    75s
 
 ```
 

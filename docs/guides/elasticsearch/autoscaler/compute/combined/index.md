@@ -90,11 +90,11 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION       STATUS         AGE
-es-combined   xpack-8.2.3   Provisioning   4s
-es-combined   xpack-8.2.3   Provisioning   7s
+es-combined   xpack-9.2.3   Provisioning   4s
+es-combined   xpack-9.2.3   Provisioning   7s
 ....
 ....
-es-combined   xpack-8.2.3   Ready          60s
+es-combined   xpack-9.2.3   Ready          60s
 
 ```
 

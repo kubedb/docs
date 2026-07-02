@@ -129,9 +129,9 @@ Now, wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get es -n demo -w
 NAME           VERSION          STATUS         AGE
-es-multinode   xpack-8.19.9   Provisioning   18s
-es-multinode   xpack-8.19.9   Provisioning   2m5s
-es-multinode   xpack-8.19.9   Ready          2m5s
+es-multinode   xpack-9.2.3   Provisioning   18s
+es-multinode   xpack-9.2.3   Provisioning   2m5s
+es-multinode   xpack-9.2.3   Ready          2m5s
 ```
 
 ## Verify Configuration

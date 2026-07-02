@@ -70,7 +70,7 @@ elasticsearch.kubedb.com/ssl-elasticsearch created
 ```bash
 $ kubectl get es -n demo ssl-elasticsearch
 NAME                VERSION   STATUS    AGE
-ssl-elasticsearch   7.3.2     Running   5m54s
+ssl-elasticsearch   xpack-9.2.3     Running   5m54s
 ```
 
 ## Connect to Elasticsearch Database
@@ -184,7 +184,7 @@ $ curl --user "elastic:err5ns7w"  "https://localhost:9200/_nodes/_all/settings?p
       "transport_address" : "10.4.1.109:9300",
       "host" : "10.4.1.109",
       "ip" : "10.4.1.109",
-      "version" : "7.3.2",
+      "version" : "xpack-9.2.3",
       "build_flavor" : "default",
       "build_type" : "docker",
       "build_hash" : "508c38a",
@@ -265,7 +265,7 @@ $ curl --user "elastic:err5ns7w"  "https://localhost:9200/_nodes/_all/settings?p
       "transport_address" : "10.4.0.174:9300",
       "host" : "10.4.0.174",
       "ip" : "10.4.0.174",
-      "version" : "7.3.2",
+      "version" : "xpack-9.2.3",
       "build_flavor" : "default",
       "build_type" : "docker",
       "build_hash" : "508c38a",

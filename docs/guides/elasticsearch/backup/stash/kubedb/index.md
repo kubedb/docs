@@ -101,8 +101,8 @@ KubeDB will create the necessary resources to deploy the Elasticsearch database 
 ```console
 ❯ kubectl get elasticsearch -n demo -w
 NAME        VERSION          STATUS         AGE
-sample-es   xpack-8.19.9   Provisioning   89s
-sample-es   xpack-8.19.9   Ready          5m26s
+sample-es   xpack-9.2.3   Provisioning   89s
+sample-es   xpack-9.2.3   Ready          5m26s
 ```
 
 The database is in `Ready` state. It means the database is ready to accept connections.
@@ -871,7 +871,7 @@ spec:
             storage: 1Gi
 ```
 
-Notice that this time, we are using `1.9.0-opendistro` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
+Notice that this time, we are using `opensearch-3.4.0` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
 
 Let's deploy the above Elasticsearch,
 
