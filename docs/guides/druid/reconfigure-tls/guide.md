@@ -48,7 +48,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -71,11 +71,11 @@ Now, wait until `druid-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w
 NAME            TYPE                  VERSION   STATUS         AGE
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Provisioning   15s
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Provisioning   37s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   15s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   37s
 .
 .
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Ready          2m27s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready          2m27s
 ```
 
 Now, we can exec one druid broker pod and verify configuration that the TLS is disabled.

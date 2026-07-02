@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Druid` cluster using a supported version by `Kub
 
 ### Prepare Druid Cluster
 
-Now, we are going to deploy a `Druid` topology cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` topology cluster with version `36.0.0`.
 
 #### Create External Dependency (Deep Storage)
 
@@ -101,7 +101,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:

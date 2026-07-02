@@ -38,7 +38,7 @@ spec:
   databaseRef:
     name: druid-prod
   updateVersion:
-    targetVersion: 30.0.1
+    targetVersion: 36.0.0
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
