@@ -45,7 +45,7 @@ Here, we are going to deploy a `Memcached` database using a supported version by
 
 #### Deploy Memcached Database
 
-In this section, we are going to deploy a Memcached database with version `1.6.22`.  Then, in the next section we will set up autoscaling for this database using `MemcachedAutoscaler` CRD. Below is the YAML of the `Memcached` CR that we are going to create:
+In this section, we are going to deploy a Memcached database with version `1.6.40`.  Then, in the next section we will set up autoscaling for this database using `MemcachedAutoscaler` CRD. Below is the YAML of the `Memcached` CR that we are going to create:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -82,7 +82,7 @@ Now, wait until `mc-compute-autoscaler` has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME                    VERSION     STATUS    AGE
-mc-autoscaler-compute   1.6.22      Ready     2m
+mc-autoscaler-compute   1.6.40      Ready     2m
 ```
 
 Let's check the Pod containers resources,
