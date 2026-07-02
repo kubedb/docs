@@ -184,7 +184,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"36.0.0"}}
   creationTimestamp: "2024-09-17T12:17:27Z"
   generation: 1
   labels:
@@ -530,7 +530,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-druid-repo
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   name: gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835
   namespace: demo
   ownerReferences:

@@ -273,7 +273,7 @@ Spec:
   Timeout:  5m
   Type:     UpdateVersion
   Update Version:
-    Target Version:  30.0.1
+    Target Version:  36.0.0
 Status:
   Conditions:
     Last Transition Time:  2024-10-21T13:04:51Z
@@ -407,13 +407,13 @@ Now, we are going to verify whether the `Druid` and the related `PetSets` and th
 
 ```bash
 $ kubectl get dr -n demo druid-cluster -o=jsonpath='{.spec.version}{"\n"}'
-30.0.1
+36.0.0
 
 $ kubectl get petset -n demo druid-cluster-brokers -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.1@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
+ghcr.io/appscode-images/druid:36.0.0@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
 
 $ kubectl get pods -n demo druid-cluster-brokers-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.1
+ghcr.io/appscode-images/druid:36.0.0
 ```
 
 You can see from above, our `Druid` has been updated with the new version. So, the updateVersion process is successfully completed.

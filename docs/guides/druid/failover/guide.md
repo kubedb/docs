@@ -79,6 +79,7 @@ NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
 28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                24h
 30.0.1   30.0.1    ghcr.io/appscode-images/druid:30.0.1                24h
 31.0.0   31.0.0    ghcr.io/appscode-images/druid:31.0.0                24h
+36.0.0   36.0.0    ghcr.io/appscode-images/druid:36.0.0                24h
 
 ```
 

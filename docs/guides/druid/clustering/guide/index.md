@@ -432,7 +432,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-cluster-zk
     Namespace:  demo
@@ -804,7 +804,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-cluster-zk
     Namespace:  demo

@@ -60,7 +60,7 @@ When you install the KubeDB operator, it registers a CRD named [DruidVersion](/d
 ```bash
 $ kubectl get druidversion
 NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
-28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                4h47m
+36.0.0   36.0.0    ghcr.io/appscode-images/druid:36.0.0                4h47m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
@@ -540,7 +540,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-quickstart-zk
     Namespace:  demo
