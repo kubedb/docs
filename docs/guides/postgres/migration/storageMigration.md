@@ -81,7 +81,7 @@ Now, wait until sample-postgres has status `Ready` and check the `StorageClass`,
 ```bash
 $ kubectl get postgres,pvc -n demo
 NAME              VERSION   STATUS   AGE
-sample-postgres   13.13     Ready    101s
+sample-postgres   18.3     Ready    101s
 
 NAME                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   3Gi        RWO            local-path     <unset>                 96s
@@ -100,7 +100,7 @@ sample-postgres-0
 $ kubectl exec -it -n demo sample-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 sample-postgres-0:/$ psql
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 
 postgres=# create table hello(id int);
@@ -179,7 +179,7 @@ The `PersistentVolumeClaim` StorageClass has changed to `standard-custom`. Now, 
 $ kubectl exec -it -n demo sample-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 sample-postgres-0:/$ psql
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 
 postgres=# select count(*) from hello;

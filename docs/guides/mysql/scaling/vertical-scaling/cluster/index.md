@@ -67,7 +67,7 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `8.4.8`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `9.6.0`.
 
 **Deploy MySQL Cluster:**
 
@@ -99,7 +99,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -172,7 +172,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: SemiSync

@@ -57,7 +57,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:
@@ -165,7 +165,7 @@ spec:
   secret:
     name: sample-mysql-auth
   type: kubedb.com/mysql
-  version: 8.4.8
+  version: 9.6.0
 ```
 
 Stash uses the AppBinding CRD to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -445,7 +445,7 @@ metadata:
   name: restored-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 1
   storageType: Durable
   storage:

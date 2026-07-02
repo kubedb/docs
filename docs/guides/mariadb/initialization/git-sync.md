@@ -52,7 +52,7 @@ spec:
        - --root=/root
        # terminate after one successful sync
        - --one-time 
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce
@@ -175,7 +175,7 @@ spec:
        # run as git sync user 
        securityContext:
          runAsUser: 65533
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce
@@ -229,7 +229,7 @@ spec:
        # run as git sync user 
        securityContext:
          runAsUser: 65533
-  version: "11.8.5"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce

@@ -75,7 +75,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -99,7 +99,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -307,7 +307,7 @@ spec:
   storageType: Durable
   deletionPolicy: Delete
   useAddressType: DNS
-  version: 8.4.8
+  version: 9.6.0
 status:
   conditions:
   - lastTransitionTime: "2022-06-03T06:50:40Z"

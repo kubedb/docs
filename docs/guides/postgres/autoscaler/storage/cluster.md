@@ -93,7 +93,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get postgres -n demo
 NAME             VERSION   STATUS   AGE
-ha-postgres        16.1    Ready    3m46s
+ha-postgres        18.3    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

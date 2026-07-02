@@ -70,7 +70,7 @@ Let's check in the postgres cluster that we have deployed. Now, exec into the cu
 ```bash
 $ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
 bash-5.1$ psql
-psql (14.2)
+psql (18.3)
 Type "help" for help.
 
 postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn, sync_state from pg_stat_replication;
@@ -90,7 +90,7 @@ That`s all, Then you can see that all the replicas are configured as synchronous
 ```bash
 $ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
 bash-5.1$ psql
-psql (14.2)
+psql (18.3)
 Type "help" for help.
 
 postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn, sync_state from pg_stat_replication;

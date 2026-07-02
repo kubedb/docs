@@ -93,7 +93,7 @@ Now, wait until `pg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get pg -n demo
 NAME            VERSION    STATUS    AGE
-pg-standalone   13.13      Ready     3m47s
+pg-standalone   18.3      Ready     3m47s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

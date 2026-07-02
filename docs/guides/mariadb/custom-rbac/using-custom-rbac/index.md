@@ -135,7 +135,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   storageType: Durable
   podTemplate:
     spec:
@@ -197,7 +197,7 @@ metadata:
   name: another-mariadb
   namespace: demo
 spec:
-  version: "11.8.5"
+  version: "12.1.2"
   storageType: Durable
   podTemplate:
     spec:
