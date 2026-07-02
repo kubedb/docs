@@ -57,7 +57,7 @@ spec:
   licenseSecret:
     name: hz-license-key
   replicas: 2
-  version: 5.5.2
+  version: 5.5.6
   storage:
     accessModes:
       - ReadWriteOnce
