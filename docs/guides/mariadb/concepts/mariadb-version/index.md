@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-mariadbversion
     name: MariaDBVersion
     parent: guides-mariadb-concepts
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

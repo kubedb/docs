@@ -1,0 +1,22 @@
+apiVersion: migrator.kubedb.com/v1alpha1
+kind: Migrator
+metadata:
+  name: mongodb-migrate
+  namespace: demo
+spec:
+  source:
+    mongodb:
+      connectionInfo:
+        appBinding:
+          name: mgo-source
+          namespace: demo
+      mongoshake:
+        syncMode: all
+        extraConfiguration:
+          full_sync.executor.insert_on_dup_update: "true"
+  target:
+    mongodb:
+      connectionInfo:
+        appBinding:
+          name: mgo-destination
+          namespace: demo
