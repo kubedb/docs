@@ -1,0 +1,45 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-london
+  namespace: demo
+spec:
+  authSecret:
+    name: pg-london-auth
+  clientAuthMode: md5
+  deletionPolicy: Delete
+  podTemplate:
+    spec:
+      containers:
+      - name: postgres
+        resources:
+          limits:
+            memory: 1Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+  replicas: 3
+  sslMode: verify-ca
+  standbyMode: Hot
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: pg-issuer
+      kind: Issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 3Gi
+  storageType: Durable
+  version: "17.4"

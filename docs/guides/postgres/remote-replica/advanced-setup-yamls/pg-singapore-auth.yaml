@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pg-singapore-auth
+  namespace: demo
+stringData:
+  password: WMtWHOOLYR)aopDw
+  username: postgres
+type: kubernetes.io/basic-auth
