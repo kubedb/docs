@@ -56,7 +56,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   replicas: 2
   zookeeperRef:
     name: zoo
