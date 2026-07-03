@@ -393,15 +393,15 @@ Now, you can connect to this database through [mongo-rs-hid](https://docs.mongod
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.password}' | base64 -d
 OX4yb!IFm;~yAHkD
 
 $ kubectl exec -it mongo-rs-hid-0 -n demo bash
 
-bash-4.4$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+bash-4.4$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("11890d64-37da-43dd-acb6-0f36a3678875") }
@@ -757,7 +757,7 @@ We will exec in `mongo-rs-hid-hidden-0`(which is a hidden node right now) to che
 
 ```bash
 $ kubectl exec -it mongo-rs-hid-hidden-0 -n demo bash
-bash-4.4$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+bash-4.4$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 7.0.4
@@ -836,7 +836,7 @@ Now verify the automatic failover, Let's exec in `mongo-rs-hid-0` pod,
 
 ```bash
 $ kubectl exec -it mongo-rs-hid-0  -n demo bash
-bash-4.4:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+bash-4.4:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 7.0.4

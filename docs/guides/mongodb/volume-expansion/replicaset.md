@@ -100,7 +100,7 @@ mg-replicaset   4.4.26      Ready     10m
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo                                                                                          
@@ -225,7 +225,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
 $ kubectl get pv -n demo                                                                                          

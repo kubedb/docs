@@ -198,11 +198,11 @@ sample-mgo-rs-2   1/1     Running   0          15m
 Now, let's exec into the pod and create a table,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
 
 rs0:PRIMARY> rs.isMaster().primary
 sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
@@ -411,7 +411,7 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```bash
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
 
 rs0:PRIMARY> rs.isMaster().primary
 sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
@@ -487,7 +487,7 @@ In this section, we are going to verify that the desired data has been restored 
 Lets, exec into the database pod and list available tables,
 
 ```bash
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
 
 rs0:PRIMARY> rs.isMaster().primary
 restored-mgo-rs-0.restored-mgo-rs-gvr.demo.svc.cluster.local:27017
@@ -671,13 +671,13 @@ restored-mongodb   4.4.26         Ready   2m
 Now, exec into the database pod and list available tables,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo restored-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo restored-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
-mongodb@restored-mongodb-0:/$ mongo admin -u root -p CRz6EuxvKdFjopfP
+mongodb@restored-mongodb-0:/$ mongosh admin -u root -p CRz6EuxvKdFjopfP
 
 > show dbs
 admin   0.000GB

@@ -351,14 +351,14 @@ If you want to use custom or existing secret please specify that when creating t
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.password}' | base64 -d
   7QiqLcuSCmZ8PU5a
   ```
 
@@ -376,7 +376,7 @@ mongo-sh-mongos-1   1/1     Running   0          49m
 
 $ kubectl exec -it mongo-sh-mongos-0 -n demo bash
 
-mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("8b7abf57-09e4-4e30-b4a0-a37ebf065e8f") }
@@ -683,7 +683,7 @@ mongo-sh-mongos-1   1/1     Running   0          3m52s
 
 $ kubectl exec -it mongo-sh-mongos-0 -n demo bash
 
-mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
 
 mongos> use test;
 switched to db test

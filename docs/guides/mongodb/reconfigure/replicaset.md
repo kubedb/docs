@@ -105,17 +105,17 @@ Now, we will check if the database has started with the custom configuration we 
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d                                                                       
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 nrKuxni0wDSMrgwy
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
 {
 	"argv" : [
 		"mongod",
@@ -355,7 +355,7 @@ Events:
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
 		"mongod",
@@ -582,7 +582,7 @@ Events:
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
 		"mongod",

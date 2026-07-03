@@ -286,13 +286,13 @@ Now, we are going to verify whether the `MongoDB` and the related `PetSets` of `
 $ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'
 8.0.17
 
-$ kubectl get sts -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mongo:8.0.17
 
-$ kubectl get sts -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mongo:8.0.17
 
-$ kubectl get sts -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mongo:8.0.17
 
 $ kubectl get pods -n demo mg-sharding-configsvr-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'

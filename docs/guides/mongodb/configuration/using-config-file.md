@@ -127,15 +127,15 @@ Now, we will check if the database has started with the custom configuration we 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.password}' | base64 -d
 ErialNojWParBFoP
 
 $ kubectl exec -it mgo-custom-config-0 -n demo sh
 
-> mongo admin
+> mongosh admin
 
 > db.auth("root","ErialNojWParBFoP")
 1

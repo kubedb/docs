@@ -254,7 +254,7 @@ Here, we are going to connect to the database with the login credentials and ins
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
+root@mongodb-0:/# mongosh --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
 MongoDB shell version v4.4.26
 ...
 
@@ -285,7 +285,7 @@ Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because 
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
+root@mongodb-0:/# mongosh --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/emptydb?authSource=emptydb&compressors=disabled&gssapiServiceName=mongodb
 Error: Authentication failed. :
