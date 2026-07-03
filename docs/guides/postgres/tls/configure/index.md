@@ -143,7 +143,7 @@ NAMESPACE   NAME   VERSION   STATUS   AGE
 demo        pg     18.3      Ready    62s
 
 
-$ watch -n 3 kubectl get sts -n demo pg
+$ watch -n 3 kubectl get petset -n demo pg
 NAME   READY   AGE
 pg     3/3     2m30s
 

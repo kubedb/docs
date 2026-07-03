@@ -99,7 +99,7 @@ pg-ha-cluster   18.3     Ready    3m6s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "10Gi"
 
 $ kubectl get pv -n demo
@@ -233,7 +233,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the `pg-ha-cluster` has expanded to meet the desired state, Let's check that particular petset,
 
 ```bash
-$ kubectl get sts -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "12Gi"
 
 $ kubectl get pv -n demo

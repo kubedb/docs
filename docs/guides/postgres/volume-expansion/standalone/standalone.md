@@ -99,7 +99,7 @@ pg-standalone   18.3      Ready     3m47s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "10Gi"
 
 $ kubectl get pv -n demo
@@ -233,7 +233,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "12Gi"
 
 $ kubectl get pv -n demo
