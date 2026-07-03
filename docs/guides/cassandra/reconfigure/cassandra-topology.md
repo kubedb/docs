@@ -40,7 +40,7 @@ Now, we are going to deploy a  `Cassandra` Topology cluster using a supported ve
 
 ### Prepare Cassandra Topology Cluster
 
-Now, we are going to deploy a `Cassandra` topology cluster with version `5.0.3`.
+Now, we are going to deploy a `Cassandra` topology cluster with version `5.0.7`.
 
 ### Deploy Cassandra
 
@@ -84,7 +84,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   configuration:
     secretName: cas-topology-custom-config
   topology:
