@@ -42,7 +42,7 @@ Here, we are going to deploy a `ClickHouse` cluster using a supported version by
 
 ### Prepare ClickHouse Standalone
 
-Now, we are going to deploy a `ClickHouse` cluster database with version `24.4.1`.
+Now, we are going to deploy a `ClickHouse` cluster database with version `26.2.6`.
 
 ### Deploy ClickHouse Standalone
 
@@ -55,7 +55,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   replicas: 1
   storage:
     accessModes:
