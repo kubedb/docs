@@ -5,11 +5,11 @@ metadata:
   namespace: demo
 rules:
   - apiGroups:
-      - apps
+      - apps.k8s.appscode.com
     resourceNames:
       - quick-postgres
     resources:
-      - statefulsets
+      - petsets
     verbs:
       - get
   - apiGroups:
