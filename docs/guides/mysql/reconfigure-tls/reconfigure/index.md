@@ -329,10 +329,10 @@ Now, we can connect to this database through `mysql-shell` and verify that the T
 
 
 ```bash
-$ kubectl get secrets -n demo mysql-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-auth -o jsonpath='{.data.password}' | base64 -d
 f8EyKG)mNMIMdS~a
 
 $ kubectl exec -it mysql-0 -n demo -- mysql -u root --password='f8EyKG)mNMIMdS~a'  --host=mysql-0.mysql-pods.demo -e "show variables like '%require_secure_transport%';";

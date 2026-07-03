@@ -86,8 +86,8 @@ Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode:
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get sts -n demo my-group
-ery 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
+$ watch -n 3 kubectl get petset -n demo my-group
+ery 3.0s: kubectl get petset -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
 
 NAME       READY   AGE
 my-group   3/3     15m
@@ -299,10 +299,10 @@ KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysq
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 RmxLjEomvE6tVj4-
 ```
 

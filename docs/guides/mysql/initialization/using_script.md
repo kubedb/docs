@@ -471,7 +471,7 @@ $ kubectl get pods mysql-init-script-0 -n demo -o yaml | grep IP
 $ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.\user}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.password}' | base64 -d
 1Pc7bwSygrv1MX1Q
 ```
 

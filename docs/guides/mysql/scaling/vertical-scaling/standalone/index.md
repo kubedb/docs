@@ -111,8 +111,8 @@ Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode:
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   2m58s
 
-$ watch -n 3 kubectl get sts -n demo my-standalone
-Every 3.0s: kubectl get sts -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020
+$ watch -n 3 kubectl get petset -n demo my-standalone
+Every 3.0s: kubectl get petset -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020
 
 NAME            READY   AGE
 my-standalone   1/1     3m36s
