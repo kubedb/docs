@@ -48,7 +48,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 4.0.0
+  version: 4.2.0
   topology:
     broker:
       replicas: 2
