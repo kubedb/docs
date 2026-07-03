@@ -26,7 +26,7 @@ Here, some sample `RabbitMQOpsRequest` CRs for different administrative operatio
 
 **Sample `RabbitMQOpsRequest` for updating database:**
 
-Let's assume that you have a KubeDB managed RabbitMQ cluster named `rm-quickstart` running on your kubernetes with version `3.12.12`. Now, You can update it's version to `3.13.2` using the following manifest.
+Let's assume that you have a KubeDB managed RabbitMQ cluster named `rm-quickstart` running on your kubernetes with version `4.0.4`. Now, You can update it's version to `4.2.4` using the following manifest.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -39,7 +39,7 @@ spec:
   databaseRef:
     name: rm-quickstart
   updateVersion:
-    targetVersion: 3.13.2
+    targetVersion: 4.2.4
 ```
 
 **Sample `RabbitMQOpsRequest` Objects for Horizontal Scaling of the database Cluster:**

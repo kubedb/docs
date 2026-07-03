@@ -40,7 +40,7 @@ Now, we are going to deploy a  `RabbitMQ` cluster using a supported version by `
 
 ### Prepare RabbitMQ Standalone Database
 
-Now, we are going to deploy a `RabbitMQ` cluster with version `3.13.2`.
+Now, we are going to deploy a `RabbitMQ` cluster with version `4.2.4`.
 
 ### Deploy RabbitMQ standalone 
 
@@ -68,7 +68,7 @@ metadata:
   name: rm-cluster
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -93,7 +93,7 @@ Now, wait until `rm-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-rm-cluster      kubedb.com/v1alpha2   3.13.2    Ready    79m
+rm-cluster      kubedb.com/v1alpha2   4.2.4    Ready    79m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
