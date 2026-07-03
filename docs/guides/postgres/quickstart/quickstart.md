@@ -444,8 +444,8 @@ KubeDB operator has created a new Secret called `quick-postgres-auth` for storin
  $ kubectl get secret -n demo quick-postgres-auth -o yaml
 apiVersion: v1
 data:
-  POSTGRES_PASSWORD: REQ4aTU2VUJJY3M2M1BWTw==
-  POSTGRES_USER: cG9zdGdyZXM=
+  password: REQ4aTU2VUJJY3M2M1BWTw==
+  username: cG9zdGdyZXM=
 kind: Secret
 metadata:
   creationTimestamp: 2018-09-03T11:25:39Z
@@ -455,13 +455,12 @@ metadata:
   name: quick-postgres-auth
   namespace: demo
   resourceVersion: "1677"
-  selfLink: /api/v1/namespaces/demo/secrets/quick-postgres-auth
   uid: 15b3e8a1-af6c-11e8-996d-0800270d7bae
-type: Opaque
+type: kubernetes.io/basic-auth
 ```
 
-This secret contains superuser name for `postgres` database as `POSTGRES_USER` key and
-password as `POSTGRES_PASSWORD` key. By default, superuser name is `postgres` and password is randomly generated.
+This secret contains superuser name for `postgres` database as `username` key and
+password as `password` key. By default, superuser name is `postgres` and password is randomly generated.
 
 If you want to use custom password, please create the secret manually and specify that when creating the Postgres object using `spec.authSecret.name`. For more details see [here](/docs/guides/postgres/concepts/postgres.md#specdatabasesecret).
 
@@ -480,14 +479,14 @@ Now, you can connect to this database from the pgAdmin dashboard using `quick-po
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
+  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
+  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   DD8i56UBIcs63PVO
   ```
 
