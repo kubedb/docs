@@ -54,7 +54,7 @@ shared_buffers=256MB
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
+$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 secret/pg-configuration created
 ```
 
@@ -80,7 +80,7 @@ metadata:
 Now, create Postgres crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-configuration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
 postgres.kubedb.com/custom-postgres created
 ```
 

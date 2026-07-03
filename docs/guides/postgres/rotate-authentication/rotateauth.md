@@ -386,9 +386,9 @@ Events:
 ```shell
 $ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-user-auth"
-$ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.username}' | base64 -d
 postgres                                        
-$ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.password}' | base64 -d
 postgres-secret                                                                
 ```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
