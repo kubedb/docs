@@ -100,10 +100,10 @@ Now, we will check if the database has started with the custom configuration we 
 
 First we need to get the username and password to connect to a redis instance,
 ```bash
-$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.username}' | base64 -d
 default
 
-$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.password}' | base64 -d
 0PI1tYTyzp;YaXOh
 ```
 
