@@ -60,12 +60,12 @@ When you install the KubeDB operator, it registers a CRD named [DruidVersion](/d
 ```bash
 $ kubectl get druidversion
 NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
-28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                4h47m
+36.0.0   36.0.0    ghcr.io/appscode-images/druid:36.0.0                4h47m
 ```
 
 Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
 
-In this tutorial, we will use `28.0.1` DruidVersion CR to create a Druid cluster.
+In this tutorial, we will use `36.0.0` DruidVersion CR to create a Druid cluster.
 
 ## Get External Dependencies Ready
 
@@ -165,7 +165,7 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -184,7 +184,7 @@ spec:
 ```
 
 Here,
-- `spec.version` - is the name of the DruidVersion CR. Here, a Druid of version `28.0.1` will be created.
+- `spec.version` - is the name of the DruidVersion CR. Here, a Druid of version `36.0.0` will be created.
 - `spec.deepStorage` - contains the information of deep storage configuration with `spec.deepStorage.type` being the deep storage type and `spec.deepStorage.configSecret` is a reference to the configuration secret. 
 - `spec.topology` - is the definition of the topology that will be deployed. The required nodes such as `coordinators`, `historicals`, `middleManagers`, and `brokers` will be deployed by default with one replica. You can also add optional nodes including `routers` and `overlords` in the topology. 
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Druid CR. Deletion policy `Delete` will delete the database pods and PVC when the Druid CR is deleted.
@@ -203,11 +203,11 @@ The Druid's `STATUS` will go from `Provisioning` to `Ready` state within few min
 ```bash
 $ kubectl get druid -n demo -w
 NAME               TYPE                  VERSION   STATUS         AGE
-druid-quickstart   kubedb.com/v1alpha2   28.0.1    Provisioning   17s
-druid-quickstart   kubedb.com/v1alpha2   28.0.1    Provisioning   28s
+druid-quickstart   kubedb.com/v1alpha2   36.0.0    Provisioning   17s
+druid-quickstart   kubedb.com/v1alpha2   36.0.0    Provisioning   28s
 .
 .
-druid-quickstart   kubedb.com/v1alpha2   28.0.1    Ready          82s
+druid-quickstart   kubedb.com/v1alpha2   36.0.0    Ready          82s
 ```
 
 Describe the Druid object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -540,7 +540,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-quickstart-zk
     Namespace:  demo
@@ -607,7 +607,7 @@ service/druid-quickstart-pods           ClusterIP      None            <none>   
 service/druid-quickstart-routers        LoadBalancer   10.96.134.202   10.86.51.181  8888:32751/TCP                                          2m13s
 
 NAME                                                  TYPE               VERSION   AGE
-appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   28.0.1    2m1s
+appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   36.0.0    2m1s
 
 NAME                                 TYPE                       DATA   AGE
 secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      2m13s

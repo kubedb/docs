@@ -160,7 +160,7 @@ metadata:
   name: druid-with-monitoring
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -196,7 +196,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get dr -n demo druid
 NAME                    TYPE                  VERSION   STATUS   AGE
-druid-with-monitoring   kubedb.com/v1alpha2   28.0.1    Ready    2m24s
+druid-with-monitoring   kubedb.com/v1alpha2   36.0.0    Ready    2m24s
 ```
 
 KubeDB will create a separate stats service with name `{Druid crd name}-stats` for monitoring purpose.
