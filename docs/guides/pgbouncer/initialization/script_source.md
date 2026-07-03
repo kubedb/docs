@@ -52,7 +52,7 @@ $ kubectl create configmap -n demo pb-init-script \
 --from-literal=init.sh="$(curl -fsSL https://raw.githubusercontent.com/kubedb/pgbouncer-pgpool-init-scripts/master/pgbouncer/init.sh)"
 configmap/pb-init-script created
 ```
-
+> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully.
 ## Create PgBouncer with Script Source
 
 Following YAML describes the PgBouncer object with `init.script`:
@@ -132,11 +132,21 @@ Now let's connect to our PgBouncer instance to verify that it has been initializ
 Connect to PgBouncer and verify that it is successfully proxying connections to PostgreSQL:
 
 ```bash
-$ kubectl exec -it -n demo script-pgbouncer-0 -- psql -h localhost -p 5432 -U postgres -d postgres -c "SHOW POOLS;"
- database | user | cl_active | cl_waiting | sv_active | sv_idle | sv_used | sv_tested | sv_login | maxwait | pool_mode
-----------+------+-----------+------------+-----------+---------+---------+-----------+----------+---------+-----------
- postgres | postgres |         0 |          0 |         0 |       0 |       0 |         0 |        0 |       0 | session
-(1 row)
+$ kubectl exec -it -n demo script-pgbouncer-0 -- \
+                                  psql -h localhost -p 5432 -U postgres -d postgres
+Password for user postgres: 
+psql (16.14, server 17.5)
+WARNING: psql major version 16, server major version 17.
+         Some psql features might not work.
+Type "help" for help.
+
+postgres=# \dt
+                    List of relations
+ Schema |             Name             | Type  |  Owner   
+--------+------------------------------+-------+----------
+ public | kubedb_write_check_pgbouncer | table | postgres
+ public | my_table                     | table | postgres
+(2 rows)
 ```
 
 We can see that PgBouncer is running and proxying connections to the PostgreSQL backend through the initialized connection pool.

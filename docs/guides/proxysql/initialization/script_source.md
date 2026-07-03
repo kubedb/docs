@@ -84,7 +84,7 @@ Let's create a ConfigMap with the initialization script:
 
 ```bash
 $ kubectl create configmap -n demo proxysql-init-script \
---from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/proxysql-init-scripts/master/init.sql)"
+--from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/proxysql-init-scripts/master/init.sql)" #here will be your script path 
 configmap/proxysql-init-script created
 ```
 
