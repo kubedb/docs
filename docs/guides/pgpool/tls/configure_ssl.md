@@ -122,7 +122,7 @@ metadata:
   name: pp-tls
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres

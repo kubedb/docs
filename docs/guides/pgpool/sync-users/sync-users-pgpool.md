@@ -65,7 +65,7 @@ For a Pgpool surely we will need a Postgres server so, prepare a KubeDB Postgres
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `4.5.0`.
+Now, we are going to deploy a `Pgpool` with version `4.6.0`.
 
 ### Deploy Pgpool
 
@@ -78,7 +78,7 @@ metadata:
   name: pgpool-sync
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   syncUsers: true
   postgresRef:

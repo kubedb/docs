@@ -45,7 +45,7 @@ Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/cl
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `4.5.0`.
+Now, we are going to deploy a `Pgpool` with version `4.6.0`.
 
 ### Deploy Pgpool 
 
@@ -58,7 +58,7 @@ metadata:
   name: pp-horizontal
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres
