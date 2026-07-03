@@ -100,7 +100,7 @@ es-combined   xpack-9.2.3   Ready          50s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1Gi"
@@ -308,7 +308,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1594884096"
