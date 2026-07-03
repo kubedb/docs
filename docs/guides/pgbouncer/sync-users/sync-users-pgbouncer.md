@@ -65,7 +65,7 @@ For a PgBouncer surely we will need a Postgres server so, prepare a KubeDB Postg
 
 ### Prepare PgBouncer
 
-Now, we are going to deploy a `PgBouncer` with version `1.23.1`.
+Now, we are going to deploy a `PgBouncer` with version `1.24.0`.
 
 ### Deploy PgBouncer
 
@@ -78,7 +78,7 @@ metadata:
   name: pgbouncer-sync
   namespace: demo
 spec:
-  version: "1.23.1"
+  version: "1.24.0"
   replicas: 1
   database:
     syncUsers: true
