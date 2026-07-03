@@ -141,7 +141,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -182,7 +182,7 @@ mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Here,
 
-- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
+- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2025-cu0` database is going to be created.
 - `spec.replicas` denotes the number of replicas of the created availability group
 - `spec.topology` specifies the mode `AvailabilityGroup` and the list of names of the databases that we want in our availability group. 
    KubeDB operator will create and add these databases to the created availability group automatically. User don't have to create, configure or add the database to the availability group manually. User can update this list later as well. 

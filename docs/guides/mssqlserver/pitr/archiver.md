@@ -254,7 +254,7 @@ spec:
     ref:
       name: sample-mssqlserverarchiver
       namespace: demo
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 2
   topology:
     mode: AvailabilityGroup
@@ -475,7 +475,7 @@ spec:
       fullDBRepository:
         name: sample-mssqlserver-ag-archiver
         namespace: demo
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 2
   topology:
     mode: AvailabilityGroup
