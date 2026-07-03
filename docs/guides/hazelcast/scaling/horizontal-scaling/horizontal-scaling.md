@@ -42,7 +42,7 @@ Here, we are going to deploy a `Hazelcast` database using a supported version by
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.6`.
 
 ### Deploy Hazelcast
 
@@ -67,7 +67,7 @@ spec:
   licenseSecret:
     name: hz-license-key
   replicas: 3
-  version: 5.5.2
+  version: 5.5.6
   storage:
     accessModes:
       - ReadWriteOnce

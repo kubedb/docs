@@ -59,7 +59,7 @@ Now, we are going to deploy a `Hazelcast`  using a supported version by `KubeDB`
 
 #### Deploy Hazelcast 
 
-In this section, we are going to deploy a Hazelcast  cluster with version `5.5.2`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
+In this section, we are going to deploy a Hazelcast  cluster with version `5.5.6`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -69,7 +69,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 5.5.2
+  version: 5.5.6
   licenseSecret:
     name: hz-license-key
   podTemplate:
