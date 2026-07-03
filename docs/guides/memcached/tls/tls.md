@@ -105,7 +105,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -132,7 +132,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 $ watch kubectl get rd -n demo
 Every 2.0s: kubectl get memcached -n demo
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    19m
+memcd-quickstart   1.6.40    Ready    19m
 ```
 
 ### Verify TLS/SSL in Memcached
