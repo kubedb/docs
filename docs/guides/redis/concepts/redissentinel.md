@@ -31,7 +31,7 @@ metadata:
 spec:
   autoOps:
     disabled: true
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   disableAuth: false
   authSecret:
@@ -399,7 +399,7 @@ metadata:
   name: redis1
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sentinel1

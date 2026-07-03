@@ -48,7 +48,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:
@@ -84,7 +84,7 @@ metadata:
   name: rd-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sen-demo
@@ -211,7 +211,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: 6.2.14
+  version: 8.2.2
 status:
   conditions:
   - lastTransitionTime: "2023-02-03T06:36:16Z"

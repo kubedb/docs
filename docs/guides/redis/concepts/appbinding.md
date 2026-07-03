@@ -80,7 +80,7 @@ spec:
   tlsSecret:
     name: redis1-client-cert
   type: kubedb.com/redis
-  version: 6.2.14
+  version: 8.2.2
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.
