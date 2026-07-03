@@ -141,7 +141,7 @@ kubectl delete ns demo
 ## Next Steps
 
 - Detail concepts of [RabbitMQ object](/docs/guides/rabbitmq/concepts/rabbitmq.md).
-(/docs/guides/RabbitMQ/monitoring/using-prometheus-operator.md).
+(/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md).
 - Monitor your RabbitMQ database with KubeDB using [out-of-the-box builtin-Prometheus](/docs/guides/rabbitmq/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [RabbitMQ object](/docs/guides/rabbitmq/concepts/rabbitmq.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

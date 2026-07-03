@@ -75,10 +75,10 @@ rm      4.2.4     Ready     10m
 
 
 ```bash
-$ kubectl get secrets -n demo rm-admin-cred -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo rm-admin-cred -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo rm-admin-cred -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo rm-admin-cred -o jsonpath='{.data.password}' | base64 -d
 U6(h_pYrekLZ2OOd
 
 We can verify from the above output that TLS is disabled for this database.
