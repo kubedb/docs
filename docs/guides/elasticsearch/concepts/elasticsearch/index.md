@@ -134,7 +134,7 @@ spec:
     timeoutSeconds: 10
     failureThreshold: 2
     disableWriteCheck: false
-  version: xpack-8.19.9
+  version: xpack-9.2.3
 ```
 ### spec.autoOps
 AutoOps is an optional field to control the generation of versionUpdate & TLS-related recommendations.
@@ -148,7 +148,7 @@ AutoOps is an optional field to control the generation of versionUpdate & TLS-re
 
 ```yaml
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
 ```
 
 ### spec.kernelSettings
