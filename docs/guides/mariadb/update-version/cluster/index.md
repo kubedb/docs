@@ -139,7 +139,7 @@ Now, we are going to verify whether the `MariaDB` and the related `PetSets` and 
 $ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'
 12.1.2
 
-$ kubectl get sts -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mariadb:12.1.2
 
 $ kubectl get pods -n demo sample-mariadb-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'

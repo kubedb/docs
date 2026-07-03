@@ -89,7 +89,7 @@ Next, we will connect to the MariaDB database and verify the data inserted from 
 kubectl exec -it -n demo sample-mariadb-0 -- bash
 Defaulted container "mariadb" out of: mariadb, mariadb-init (init), git-sync (init)
 
-mysql@sample-mariadb-0:/$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql@sample-mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 6
 Server version: 10.5.23-MariaDB-1:11.8.5+maria~ubu2004 mariadb.org binary distribution
