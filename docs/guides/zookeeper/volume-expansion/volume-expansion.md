@@ -55,7 +55,7 @@ standard-static        driver.standard.io      Delete          Immediate        
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `ZooKeeper` standalone database with version `3.8.3`.
+Now, we are going to deploy a `ZooKeeper` standalone database with version `3.9.1`.
 
 #### Deploy ZooKeeper Ensemble
 
@@ -68,7 +68,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:

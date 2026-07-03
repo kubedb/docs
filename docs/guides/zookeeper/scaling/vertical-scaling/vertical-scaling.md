@@ -42,7 +42,7 @@ Here, we are going to deploy a  `ZooKeeper` standalone using a supported version
 
 ### Prepare ZooKeeper Standalone Database
 
-Now, we are going to deploy a `ZooKeeper` standalone database with version `3.8.3`.
+Now, we are going to deploy a `ZooKeeper` standalone database with version `3.9.1`.
 
 ### Deploy ZooKeeper standalone
 
@@ -55,7 +55,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
