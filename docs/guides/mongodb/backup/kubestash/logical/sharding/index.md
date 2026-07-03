@@ -57,7 +57,7 @@ metadata:
   name: sample-mg-sh
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -422,7 +422,7 @@ metadata:
   name: sample-mg-sh-restore
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3

@@ -154,7 +154,7 @@ metadata:
   annotations:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -329,7 +329,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
     stash.appscode.com/schedule: "*/3 * * * *"
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -515,7 +515,7 @@ metadata:
     stash.appscode.com/backup-blueprint: mongodb-backup-template
     params.stash.appscode.com/args: "--db=testdb"
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"

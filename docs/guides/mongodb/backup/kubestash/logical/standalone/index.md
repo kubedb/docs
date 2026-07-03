@@ -57,7 +57,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -409,7 +409,7 @@ metadata:
   name: restore-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"

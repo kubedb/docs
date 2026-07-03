@@ -43,7 +43,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `8.0.17`.
 
 ### Deploy MongoDB replicaset 
 
@@ -56,7 +56,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet: 
     name: "replicaset"
   replicas: 3

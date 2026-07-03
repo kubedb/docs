@@ -54,7 +54,7 @@ spec:
   updateConstraints:
     allowlist:
       - '>= 4.4.0, < 5.0.0'
-  version: 4.4.26
+  version: "8.0.17"
 ```
 
 ### metadata.name

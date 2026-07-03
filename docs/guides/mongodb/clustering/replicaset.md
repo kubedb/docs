@@ -48,7 +48,7 @@ metadata:
   name: mgo-replicaset
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicas: 3
   replicaSet:
     name: rs0
@@ -315,7 +315,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: Delete
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2021-02-11T04:29:29Z"
