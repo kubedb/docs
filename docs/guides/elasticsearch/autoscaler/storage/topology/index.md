@@ -123,7 +123,7 @@ es-topology   xpack-9.2.3   Ready          1m50s
 Let's check volume size from the data petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1Gi"
@@ -339,7 +339,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1594884096"
