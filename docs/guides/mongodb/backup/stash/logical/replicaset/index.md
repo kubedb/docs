@@ -677,8 +677,6 @@ $ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpat
 
 $ kubectl exec -it -n demo restored-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
-mongodb@restored-mongodb-0:/$ mongosh admin -u root -p CRz6EuxvKdFjopfP
-
 > show dbs
 admin   0.000GB
 config  0.000GB

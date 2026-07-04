@@ -593,7 +593,7 @@ Now, If you again exec into the primary `pod` and look for previous data, you wi
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 
-mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 rs0:PRIMARY> use newdb
 switched to db newdb

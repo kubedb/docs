@@ -611,7 +611,7 @@ Now verify the automatic failover, Let's exec in `mongo-arb-0` pod,
 
 ```bash
 $ kubectl exec -it mongo-arb-0  -n demo bash
-mongodb@mongo-arb-1:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
+mongodb@mongo-arb-0:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26

@@ -468,7 +468,7 @@ Now, If you again exec into the primary `pod` and look for previous data, you wi
 ```bash
 $ kubectl exec -it mg-alone-1 -n demo bash
 
-mongodb@mg-alone-1:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mg-alone-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 > use newdb
 switched to db newdb

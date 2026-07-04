@@ -504,7 +504,7 @@ Now, If you again exec into the `pod` and look for previous data, you will see t
 ```bash
 $ kubectl exec -it mgo-quickstart-0 -n demo bash
 
-mongodb@mgo-quickstart-0:/$ mongosh admin -u root -p CaM8v9LmmSGB~&hj
+mongodb@mgo-quickstart-0:/$ mongosh admin -u root -p 'CaM8v9LmmSGB~&hj'
 rs1:SECONDARY> use mydb
 switched to db mydb
 
