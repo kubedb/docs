@@ -137,7 +137,7 @@ redundancy and its standby read capacity until it returns.
 **Verify the active DC is still writable:**
 
 ```bash
-kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery.dataCenters[?(@.writable==true)].name}'
+kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery.dataCenters[?(@.writable==true)].clusterName}'
 ```
 
 **Action:** recover the DC's nodes; the per-DC group reschedules and re-seeds from the

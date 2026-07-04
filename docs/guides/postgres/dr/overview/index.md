@@ -282,17 +282,22 @@ $ kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery}' | jq
   "phase": "Steady",
   "lastTransitionTime": "2026-06-30T10:00:00Z",
   "dataCenters": [
-    { "clusterName": "dc-east", "role": "primary", "leader": "pg-dcdr-dc-east-0", "writable": true,  "healthy": true },
-    { "clusterName": "dc-west", "role": "standby", "leader": "pg-dcdr-dc-west-0", "writable": false, "healthy": true, "lagBytes": 4096 }
+    { "clusterName": "dc-east",    "role": "Member",  "leader": "pg-dcdr-dc-east-0", "writable": true,  "healthy": true },
+    { "clusterName": "dc-west",    "role": "Member",  "leader": "pg-dcdr-dc-west-0", "writable": false, "healthy": true, "lagBytes": 4096 },
+    { "clusterName": "dc-arbiter", "role": "Arbiter", "healthy": true }
   ]
 }
 ```
 
 - `activeDC` is the DC that currently holds the Lease and runs the writable primary.
 - `phase` is `Steady`, `FailingOver`, `FailingBack`, or `Degraded`.
-- Each `dataCenters` entry reports that DC's local leader, whether it is the writable
-  primary, its health, and its cross-DC replication `lagBytes` (the in-DC coordinator
-  computes this and surfaces it; the hub never opens cross-cluster SQL).
+- Each `dataCenters` entry carries that DC's placement `role` (`Member`, `Arbiter`, or
+  `Witness`), its local raft `leader`, whether it is the `writable` primary, its
+  `healthy` state (from the DC's `dr-controlplane` health Lease), and, for a standby
+  Member DC, its cross-DC replication `lagBytes`. The hub computes `lagBytes` from the
+  active primary's `pg_stat_replication` (a single read of the writable endpoint); it
+  never dials the standby DCs. The `role` here is the DC's PlacementPolicy role, not its
+  primary/standby state; that is the `writable` field.
 
 ## Unplanned failover
 

@@ -181,11 +181,11 @@ $ kubectl get pg -n demo pg-dcdr -o jsonpath='{.status.disasterRecovery}' | jq
 | `phase` | `Steady`, `FailingOver`, `FailingBack`, or `Degraded`. |
 | `lastTransitionTime` | When `activeDC` last changed. |
 | `dataCenters[].clusterName` | The data center, by its OCM managed cluster name. |
-| `dataCenters[].role` | `primary` for the active DC's leader, else `standby`. |
+| `dataCenters[].role` | The DC's PlacementPolicy role: `Member`, `Arbiter`, or `Witness`. (Which DC is writable is the `writable` field, not this.) |
 | `dataCenters[].leader` | That DC's local raft leader pod. |
 | `dataCenters[].writable` | True only for the active DC. |
-| `dataCenters[].lagBytes` | The DC's cross-DC replication lag behind the active primary. |
-| `dataCenters[].healthy` | Whether the DC has a ready pod. |
+| `dataCenters[].lagBytes` | A standby Member DC's cross-DC replication lag behind the active primary (unset for the active DC and for non-data DCs). |
+| `dataCenters[].healthy` | Whether the DC is up, from its `dr-controlplane` health Lease (`dc-health-<dc>`) freshness. |
 
 ### Useful checks
 
@@ -210,9 +210,11 @@ $ kubectl get pod -n demo <leader-pod> -o jsonpath='{.metadata.annotations.kubed
 - Cross-DC replication is **asynchronous** leader-to-leader streaming. Within a
   standby DC, the local followers **cascade** from their DC's leader, so each standby
   DC opens exactly one cross-DC link.
-- `lagBytes` is how far a DC's leader is behind the active primary, computed by that
-  DC's coordinator (the hub never opens cross-cluster SQL). It is the basis for the
-  RPO of an unplanned failover.
+- `lagBytes` is how far a standby DC's leader is behind the active primary. The hub
+  computes it from the active primary's `pg_stat_replication` (a single read of the
+  writable endpoint; it never dials the standby DCs). Each standby DC's coordinator also
+  stamps its own measurement on its leader pod as the `kubedb.com/dc-lag-bytes`
+  annotation. It is the basis for the RPO of an unplanned failover.
 - A **planned switchover loses no committed rows** (zero RPO) because writes are
   frozen and the target fully catches up before the handoff. An **unplanned failover**
   may lose the last unreplicated bytes (bounded by the standby's lag at the moment the
