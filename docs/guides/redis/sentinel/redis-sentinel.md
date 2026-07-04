@@ -257,14 +257,14 @@ status:
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.password}' | base64 -d
   5VjZ7iYaoo8YRp!p
   ```
 Now, you can connect to this redis database using the service using the credentials.
@@ -277,14 +277,14 @@ Now, you can connect to this redis database using the service using the credenti
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.password}' | base64 -d
   Gw_sd;~Vrsj9kJSL
   ```
 

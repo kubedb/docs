@@ -155,7 +155,7 @@ redis.kubedb.com/sample-redis-1 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-1 sample-redis-1-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n demo-1 sample-redis-1-auth -o jsonpath='{.data.password}' | base64 -d)
 ❯ kubectl exec -it -n demo-1 sample-redis-1-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1
@@ -338,7 +338,7 @@ redis.kubedb.com/sample-redis-2 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-2 sample-redis-2-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n demo-2 sample-redis-2-auth -o jsonpath='{.data.password}' | base64 -d)
 ❯ kubectl exec -it -n demo-2 sample-redis-2-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1
@@ -515,7 +515,7 @@ redis.kubedb.com/sample-redis-3 created
 Now, let's insert some sample data into it.
 
 ```bash
-❯ export PASSWORD=$(kubectl get secrets -n demo-3 sample-redis-3-auth -o jsonpath='{.data.\password}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n demo-3 sample-redis-3-auth -o jsonpath='{.data.password}' | base64 -d)
 ❯ kubectl exec -it -n demo-3 sample-redis-3-0 -- redis-cli -a $PASSWORD
 Warning: Using a password with '-a' or '-u' option on the command line interface may not be safe.
 127.0.0.1:6379> set key1 value1

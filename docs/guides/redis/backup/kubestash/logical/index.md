@@ -219,14 +219,14 @@ redis-cluster-shard2-1   1/1     Running   0          10m
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   8UnSPM;(~cXWWs60
   ```
 Now, let’s exec into the pod and insert some data,

@@ -219,14 +219,14 @@ status:
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   AO8iK)s);o5kQVFs
   ```
 

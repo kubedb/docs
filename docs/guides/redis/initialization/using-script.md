@@ -331,10 +331,10 @@ type: kubernetes.io/basic-auth
 Now, you can connect to this database through redis cli. In this tutorial, we are connecting to the Redis server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.username}' | base64 -d
 default
 
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.password}' | base64 -d
 I4LN__V2nh9lvwar
 
 $ kubectl exec -it rd-init-script-0 -n demo -- bash
