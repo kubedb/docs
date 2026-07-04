@@ -273,10 +273,10 @@ If you want to use an existing secret please specify that when creating the Mari
 Now, we need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `sample-mariadb-auth`  secret holds username and password.
 
 ```bash
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.password}' | base64 -d
 w*yOU$b53dTbjsjJ
 ```
 
@@ -336,7 +336,7 @@ mariadb.kubedb.com "sample-mariadb" deleted
 Now, run the following command to get all mariadb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
 secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
@@ -363,7 +363,7 @@ mariadb.kubedb.com "sample-mariadb" deleted
 Now, run the following command to get all mariadb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
 secret/sample-mariadb-auth   kubernetes.io/basic-auth              2      39s
@@ -387,7 +387,7 @@ mariadb.kubedb.com "sample-mariadb" deleted
 Now, run the following command to get all mariadb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
