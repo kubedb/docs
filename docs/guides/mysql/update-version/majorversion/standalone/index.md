@@ -188,7 +188,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   3m
 
-$ watch -n 3 kubectl get sts -n demo my-standalone
+$ watch -n 3 kubectl get petset -n demo my-standalone
 
 NAME            READY   AGE
 my-standalone   1/1     3m42s
@@ -205,7 +205,7 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
 8.4.8
 
-$ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 kubedb/my:8.4.8
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -332,7 +332,7 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
 8.0.36
 
-$ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mysql:8.0.36
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
