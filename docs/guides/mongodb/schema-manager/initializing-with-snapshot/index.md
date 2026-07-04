@@ -319,7 +319,7 @@ Here, we are going to connect to the database with the login credentials and ver
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
+root@mongodb-0:/# mongosh --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
 MongoDB shell version v4.4.26
 ...
 
@@ -350,9 +350,9 @@ Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because 
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
+root@mongodb-0:/# mongosh --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
 MongoDB shell version v4.4.26
-connecting to: mongodb://127.0.0.1:27017/initdb?authSource=initdb&compressors=disabled&gssapiServiceName=mongodb
+connecting to: mongodb://127.0.0.1:27017/products?authSource=products&compressors=disabled&gssapiServiceName=mongodb
 Error: Authentication failed. :
 connect@src/mongo/shell/mongo.js:374:17
 @(connect):2:6

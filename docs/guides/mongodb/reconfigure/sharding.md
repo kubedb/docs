@@ -116,17 +116,17 @@ Now, we will check if the database has started with the custom configuration we 
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-sharding-auth -o jsonpath='{.data.password}' | base64 -d
 Dv8F55zVNiEkhHM6
 ```
 
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,
@@ -137,7 +137,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zV
 	}
 }
 
-$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,
@@ -148,7 +148,7 @@ $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F5
 	}
 }
 
-$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,
@@ -254,7 +254,7 @@ $ kubectl describe mongodbopsrequest -n demo mops-reconfigure-shard
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
   	"maxIncomingConnections" : 20000,
@@ -264,7 +264,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zV
   	}
   }
 
-$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
   	"maxIncomingConnections" : 20000,
@@ -274,7 +274,7 @@ $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F5
   	}
   }
 
-$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
   {
   	"bindIp" : "0.0.0.0",
   	"maxIncomingConnections" : 20000,
@@ -525,7 +525,7 @@ Events:
 Now let's connect to a mongodb instance from each type of nodes and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-mongos-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,
@@ -536,7 +536,7 @@ $ kubectl exec -n demo  mg-sharding-mongos-0  -- mongo admin -u root -p Dv8F55zV
 	}
 }
 
-$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,
@@ -547,7 +547,7 @@ $ kubectl exec -n demo  mg-sharding-configsvr-0  -- mongo admin -u root -p Dv8F5
 	}
 }
 
-$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongo admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
+$ kubectl exec -n demo  mg-sharding-shard0-0  -- mongosh admin -u root -p Dv8F55zVNiEkhHM6 --eval "db._adminCommand( {getCmdLineOpts: 1}).parsed.net" --quiet
 {
 	"bindIp" : "*",
 	"ipv6" : true,

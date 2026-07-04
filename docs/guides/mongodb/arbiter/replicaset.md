@@ -342,15 +342,15 @@ Now, you can connect to this database through [mongo-arb](https://docs.mongodb.c
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.password}' | base64 -d
 OX4yb!IFm;~yAHkD
 
 $ kubectl exec -it mongo-arb-0 -n demo bash
 
-mongodb@mongo-arb-0:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+mongodb@mongo-arb-0:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -540,7 +540,7 @@ We will exec in `mongo-arb-1`(which is secondary member right now) to check the 
 
 ```bash
 $ kubectl exec -it mongo-arb-1 -n demo bash
-mongodb@mongo-arb-1:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+mongodb@mongo-arb-1:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -611,7 +611,7 @@ Now verify the automatic failover, Let's exec in `mongo-arb-0` pod,
 
 ```bash
 $ kubectl exec -it mongo-arb-0  -n demo bash
-mongodb@mongo-arb-1:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+mongodb@mongo-arb-0:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -703,7 +703,7 @@ Now, If you again exec into the primary `pod` and look for previous data, you wi
 ```bash
 $ kubectl exec -it mongo-arb-1 -n demo bash
 
-mongodb@mongo-arb-1:/$ mongo admin -u root -p 'OX4yb!IFm;~yAHkD'
+mongodb@mongo-arb-1:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 
 rs0:PRIMARY> use mydb
 switched to db mydb

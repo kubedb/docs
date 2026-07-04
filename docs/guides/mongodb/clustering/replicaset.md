@@ -361,15 +361,15 @@ Now, you can connect to this database through [mgo-replicaset](https://docs.mong
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
 5O4R2ze2bWXcWsdP
 
 $ kubectl exec -it mgo-replicaset-0 -n demo bash
 
-mongodb@mgo-replicaset-0:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
+mongodb@mgo-replicaset-0:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -420,7 +420,7 @@ We will exec in `mgo-replicaset-1`(which is secondary member right now) to check
 
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
-mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
+mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -488,7 +488,7 @@ Now verify the automatic failover, Let's exec in `mgo-replicaset-1` pod,
 
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
-mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
+mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -593,7 +593,7 @@ Now, If you again exec into the primary `pod` and look for previous data, you wi
 ```bash
 $ kubectl exec -it mgo-replicaset-1 -n demo bash
 
-mongodb@mgo-replicaset-1:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 rs0:PRIMARY> use newdb
 switched to db newdb

@@ -133,11 +133,11 @@ sample-mg-sh-mongos-1   1/1     Running   0          21m
 Now, let's exec into the pod and create a table,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mg-sh-mongos-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mg-sh-mongos-0 -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin          0.000GB
@@ -462,11 +462,11 @@ sample-mg-sh-restore   4.4.26     Ready    7m47s
 Let's verify all the databases of this `sample-mg-sh-restore` by exec into its mongos pod
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mg-sh-restore-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mg-sh-restore-mongos-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mg-sh-restore-mongos-0 -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin          0.000GB
@@ -558,7 +558,7 @@ In this section, we are going to verify that the desired data has been restored 
 Lets, exec into the database's mongos pod and list available tables,
 
 ```bash
-$ kubectl exec -it -n demo sample-mg-sh-restore-mongos-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mg-sh-restore-mongos-0 -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin          0.000GB

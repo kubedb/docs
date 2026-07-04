@@ -374,15 +374,15 @@ If you want to use custom or existing secret please specify that when creating t
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 CaM8v9LmmSGB~&hj
 
 $ kubectl exec -it mgo-quickstart-0 -n demo sh
 
-> mongo admin
+> mongosh admin
 
 rs1:PRIMARY> db.auth("root","CaM8v9LmmSGB~&hj")
 1
@@ -504,7 +504,7 @@ Now, If you again exec into the `pod` and look for previous data, you will see t
 ```bash
 $ kubectl exec -it mgo-quickstart-0 -n demo bash
 
-mongodb@mgo-quickstart-0:/$ mongo admin -u root -p CaM8v9LmmSGB~&hj
+mongodb@mgo-quickstart-0:/$ mongosh admin -u root -p 'CaM8v9LmmSGB~&hj'
 rs1:SECONDARY> use mydb
 switched to db mydb
 

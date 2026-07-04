@@ -244,7 +244,7 @@ Now, we are going to verify whether the `MongoDB` and the related `PetSets` thei
 $ kubectl get mg -n demo mg-standalone -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
 8.0.17
 
-$ kubectl get sts -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+$ kubectl get petset -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
 mongo:8.0.17
 
 $ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           

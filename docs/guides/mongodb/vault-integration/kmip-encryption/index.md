@@ -210,15 +210,15 @@ We should see these logs which confirm that this `MongoDB` is setup with KMIP
 Now, we can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.password}' | base64 -d
 bJI!1H!)V7!2U.wJ
 
 $ kubectl exec -it mg-kmip-0 -n demo -- bash
 
-> mongo admin
+> mongosh admin
 
 > db.auth("root","bJI!1H!)V7!2U.wJ")
 1

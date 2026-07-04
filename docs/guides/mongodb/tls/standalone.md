@@ -174,7 +174,7 @@ subject=CN=root,O=kubedb
 Now, we can connect using `CN=root,O=kubedb` as root to connect to the mongo shell,
 
 ```bash
-mongodb@mgo-tls-0:/$ mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb" --quiet
+mongodb@mgo-tls-0:/$ mongosh --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb" --quiet
 >
 ```
 
