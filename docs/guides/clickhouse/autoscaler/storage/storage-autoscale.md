@@ -59,7 +59,7 @@ Now, we are going to deploy a `ClickHouse` cluster using a supported version by 
 
 #### Deploy ClickHouse Cluster
 
-In this section, we are going to deploy a ClickHouse cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `ClickHouseAutoscaler` CRD. Below is the YAML of the `ClickHouse` CR that we are going to create,
+In this section, we are going to deploy a ClickHouse cluster with version `26.2.6`.  Then, in the next section we will set up autoscaling for this database using `ClickHouseAutoscaler` CRD. Below is the YAML of the `ClickHouse` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -115,7 +115,7 @@ spec:
 Let's create the `ClickHouse` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/examples/clickhouse/autoscaling/storage/clickhouse-autoscale.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/storage/clickhouse-autoscale.yaml
 clickhouse.kubedb.com/clickhouse-prod created
 ```
 

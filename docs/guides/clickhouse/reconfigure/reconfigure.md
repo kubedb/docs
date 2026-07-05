@@ -431,7 +431,7 @@ Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-reconfigure-ops-with-apply-config.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfiugre-with-config created
+clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfigure-with-config created
 ```
 
 #### Verify the new configuration is working
@@ -441,9 +441,9 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `ClickHouseOpsRequest` to be `Successful`.  Run the following command to watch `ClickHouseOpsRequest` CR,
 
 ```bash
-➤ kubectl get chops -n demo chops-cluster-reconfiugre-with-config 
+➤ kubectl get chops -n demo chops-cluster-reconfigure-with-config 
 NAME                                    TYPE          STATUS       AGE
-chops-cluster-reconfiugre-with-config   Reconfigure   Successful   12m
+chops-cluster-reconfigure-with-config   Reconfigure   Successful   12m
 ```
 
 We can see from the above output that the `ClickHouseOpsRequest` has succeeded. If we describe the `ClickHouseOpsRequest` we will get an overview of the steps that were followed to reconfigure the cluster.
@@ -451,8 +451,8 @@ We can see from the above output that the `ClickHouseOpsRequest` has succeeded. 
 
 
 ```bash
-➤ kubectl describe chops -n demo chops-cluster-reconfiugre-with-config 
-Name:         chops-cluster-reconfiugre-with-config
+➤ kubectl describe chops -n demo chops-cluster-reconfigure-with-config 
+Name:         chops-cluster-reconfigure-with-config
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -562,9 +562,9 @@ Status:
 Events:
   Type     Reason                                                                               Age   From                         Message
   ----     ------                                                                               ----  ----                         -------
-  Normal   Starting                                                                             13m   KubeDB Ops-manager Operator  Start processing for ClickHouseOpsRequest: demo/chops-cluster-reconfiugre-with-config
+  Normal   Starting                                                                             13m   KubeDB Ops-manager Operator  Start processing for ClickHouseOpsRequest: demo/chops-cluster-reconfigure-with-config
   Normal   Starting                                                                             13m   KubeDB Ops-manager Operator  Pausing ClickHouse databse: demo/clickhouse-prod
-  Normal   Successful                                                                           13m   KubeDB Ops-manager Operator  Successfully paused ClickHouse database: demo/clickhouse-prod for ClickHouseOpsRequest: chops-cluster-reconfiugre-with-config
+  Normal   Successful                                                                           13m   KubeDB Ops-manager Operator  Successfully paused ClickHouse database: demo/clickhouse-prod for ClickHouseOpsRequest: chops-cluster-reconfigure-with-config
   Warning  reconcile; ConditionStatus:True                                                      13m   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                                                      13m   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
   Warning  reconcile; ConditionStatus:True                                                      13m   KubeDB Ops-manager Operator  reconcile; ConditionStatus:True
@@ -580,7 +580,7 @@ Events:
   Warning  evict pod; ConditionStatus:True; PodName:clickhouse-prod-appscode-cluster-shard-1-1  11m   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:clickhouse-prod-appscode-cluster-shard-1-1
   Normal   RestartNodes                                                                         10m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                             10m   KubeDB Ops-manager Operator  Resuming ClickHouse database: demo/clickhouse-prod
-  Normal   Successful                                                                           10m   KubeDB Ops-manager Operator  Successfully resumed ClickHouse database: demo/clickhouse-prod for ClickHouseOpsRequest: chops-cluster-reconfiugre-with-config
+  Normal   Successful                                                                           10m   KubeDB Ops-manager Operator  Successfully resumed ClickHouse database: demo/clickhouse-prod for ClickHouseOpsRequest: chops-cluster-reconfigure-with-config
 ```
 
 Now let's exec into one of the instance to check the new configuration we have provided.

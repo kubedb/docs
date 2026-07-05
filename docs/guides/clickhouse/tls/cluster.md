@@ -158,7 +158,7 @@ spec:
 ### Deploy ClickHouse Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-prod-tls.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-cluster-tls.yaml
 clickhouse.kubedb.com/clickhouse-prod-tls created
 ```
 
