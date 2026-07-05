@@ -168,7 +168,7 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaling/storage/hazelcast-storage-autoscaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/storage/hazelcast-storage-autoscaler.yaml
 hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler created
 ```
 
@@ -439,7 +439,7 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete hazelcastopsrequests -n demo zops-hazelcast-dev-a89p
+kubectl delete hazelcastopsrequests -n demo hzops-hazelcast-dev-a89pwf
 kubectl delete hazelcastautoscaler -n demo hz-storage-autoscaler
 kubectl delete hz -n demo hazelcast-dev
 ```

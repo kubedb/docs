@@ -139,7 +139,7 @@ spec:
 ### Deploy Hazelcast with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hazelcast-sample.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hazelcast.yaml
 hazelcast.kubedb.com/hazelcast-sample created
 ```
 

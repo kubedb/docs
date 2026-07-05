@@ -56,7 +56,23 @@ secret/hz-license-key created
 In this section, we are going to deploy a Hazelcast database. Then, in the next section we will update the resources using `HazelcastOpsRequest` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
-
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hz-prod
+  namespace: demo
+spec:
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: hz-license-key
+  replicas: 3
+  version: 5.5.6
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
 ```
 
 Let's create the `Hazelcast` CR we have shown above,
