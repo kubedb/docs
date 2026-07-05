@@ -148,7 +148,7 @@ The database is `Ready`. Verify that KubeDB has created the necessary `Secrets` 
 ```bash
 $ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-druid 
 NAME                      TYPE                       DATA   AGE
-sample-druid-admin-cred   kubernetes.io/basic-auth   2      48s
+sample-druid-auth   kubernetes.io/basic-auth   2      48s
 
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-druid
 NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                 AGE
@@ -158,7 +158,7 @@ sample-druid-pods           ClusterIP   None             <none>        8081/TCP,
 sample-druid-routers        ClusterIP   10.128.95.51     <none>        8888/TCP                                                72s
 ```
 
-Here, we have to use service `sample-druid-routers` and secret `sample-druid-admin-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/druid/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-druid-routers` and secret `sample-druid-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/druid/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 
@@ -216,7 +216,7 @@ spec:
       scheme: http
     url: http://sample-druid-coordinators-0.sample-druid-pods.demo.svc.cluster.local:8081,http://sample-druid-overlords-0.sample-druid-pods.demo.svc.cluster.local:8090,http://sample-druid-middlemanagers-0.sample-druid-pods.demo.svc.cluster.local:8091,http://sample-druid-historicals-0.sample-druid-pods.demo.svc.cluster.local:8083,http://sample-druid-brokers-0.sample-druid-pods.demo.svc.cluster.local:8082,http://sample-druid-routers-0.sample-druid-pods.demo.svc.cluster.local:8888
   secret:
-    name: sample-druid-admin-cred
+    name: sample-druid-auth
   type: kubedb.com/druid
   version: 36.0.0
 ```
@@ -243,14 +243,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 
@@ -718,14 +718,14 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list. 

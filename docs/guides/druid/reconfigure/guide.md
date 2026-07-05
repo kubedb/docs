@@ -141,7 +141,7 @@ Then, we will create a new secret with this configuration file.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: config-secret
+  name: new-config
   namespace: demo
 stringData:
   middleManagers.properties: |-
@@ -151,7 +151,7 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/config-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/reconfigure/yamls/config-secret.yaml
 secret/new-config created
 ```
 

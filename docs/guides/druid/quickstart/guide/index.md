@@ -279,7 +279,7 @@ Metadata:
   UID:               5a52ae03-1e4a-4262-9d04-384025c372db
 Spec:
   Auth Secret:
-    Name:  druid-quickstart-admin-cred
+    Name:  druid-quickstart-auth
   Deep Storage:
     Config Secret:
       Name:          deep-storage-config
@@ -610,7 +610,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   36.0.0    2m1s
 
 NAME                                 TYPE                       DATA   AGE
-secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      2m13s
+secret/druid-quickstart-auth   kubernetes.io/basic-auth   2      2m13s
 
 NAME                                                           AGE
 petset.apps.k8s.appscode.com/druid-quickstart-brokers          2m4s
@@ -663,14 +663,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 
