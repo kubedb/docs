@@ -28,7 +28,7 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 $ kubectl get storageclass
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  12d
-longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   12d
+longhorn               driver.longhorn.io      Delete          Immediate              true                   12d
 ```
 
 > **Note:** `local-path` has `ALLOWVOLUMEEXPANSION: false`, so it cannot be used for volume expansion. Use a storage class such as `longhorn` that supports it.

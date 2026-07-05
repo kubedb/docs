@@ -180,12 +180,12 @@ spec:
 #### Core Parameters
 - `version`: Oracle database version (e.g., 21.3.0)
 - `mode`: Deployment mode (Standalone or DataGuard)
-- `edition`: Oracle edition (enterprise, standard)
+- `edition`: Oracle edition (enterprise)
 - `replicas`: Number of database instances
 
 #### DataGuard Specific Parameters
 - `protectionMode`: Defines the data protection mode (MaximumProtection, MaximumAvailability, MaximumPerformance)
-- `standbyType`: Type of standby database (PHYSICAL)
+- `standbyType`: Type of standby database (PHYSICAL, LOGICAL)
 - `syncMode`: Synchronization mode between primary and standby (SYNC, ASYNC)
 - `applyLagThreshold`: Maximum acceptable lag in applying changes
 - `transportLagThreshold`: Maximum acceptable transport lag

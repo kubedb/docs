@@ -40,12 +40,10 @@ Oracle allows configuring the database via a configuration file. When KubeDB pro
 To provide a custom configuration for an Oracle database, you set `spec.configuration`. There are three options, which can be combined:
 
 - **Secret** — point `spec.configuration.secretName` at a Kubernetes `Secret` whose key is **`oracle.cnf`**.
-- **Inline** — put one or more configuration files directly under `spec.configuration.inline`.
+- **Inline** — put the configuration directly under `spec.configuration.inline` in a single entry keyed **`oracle.cnf`**.
 - **Both** — supply a Secret *and* inline configuration. Inline values override the ones from the Secret.
 
-> Note: for Secret-based configuration, the Secret key **must** be `oracle.cnf`. Inline configuration keys can use any file name.
-
-When you provide inline configuration, you may include multiple files if needed. KubeDB applies inline files in lexicographical order by key name, so prefix file names with a priority number, such as `1-sga.cnf` and `2-backup-files.txt`, to control the processing order.
+> Note: for both Secret-based and inline configuration, the key **must** be `oracle.cnf`. `spec.configuration.inline` must contain exactly one entry, and it must be named `oracle.cnf`; any other name, or more than one entry, is rejected by the admission webhook.
 
 ## Custom Configuration via a Secret
 
@@ -154,7 +152,7 @@ metadata:
 spec:
   configuration:
     inline:
-      1-sga.cnf: |
+      oracle.cnf: |
         SGA_TARGET=1G
   podTemplate:
     spec:
@@ -177,7 +175,7 @@ spec:
 
 Here,
 
-- `spec.configuration.inline` holds one or more configuration files directly in the `Oracle` CR. Inline file names can be any valid key name and are processed in lexicographical order.
+- `spec.configuration.inline` holds the configuration directly in the `Oracle` CR. It must contain exactly one entry named `oracle.cnf`.
 
 ## Combining Secret and Inline Configuration
 
@@ -193,7 +191,7 @@ spec:
   configuration:
     secretName: oracle-custom-config
     inline:
-      1-sga.cnf: |
+      oracle.cnf: |
         SGA_TARGET=5G
   podTemplate:
     spec:
