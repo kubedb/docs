@@ -94,10 +94,10 @@ Now, we will check if the database has started with the custom configuration we 
 
 First we need to get the username and password to connect to a Ignite instance,
 ```bash
-$ kubectl get secrets -n demo ig-cluster-admin-cred -o jsonpath='{.data.\username}' | base64 -d
-admin
+$ kubectl get secrets -n demo ig-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+ignite
 
-$ kubectl get secrets -n demo ig-cluster-admin-cred  -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo ig-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
 m6lXjZugrC4VEpB8
 ```
 
