@@ -130,7 +130,7 @@ spec:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-      name: "pg"
+      name: "ha-postgres"
       namespace: demo
   connectionPool:
     poolMode: session
@@ -145,7 +145,7 @@ spec:
   tls:
     issuerRef:
       apiGroup: cert-manager.io
-      name: pb-ca-issuer
+      name: pgbouncer-ca-issuer
       kind: Issuer
     certificates:
       - alias: server

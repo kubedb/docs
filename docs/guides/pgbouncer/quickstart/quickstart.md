@@ -1,5 +1,5 @@
 ---
-bastitle: PgBouncer Quickstart
+title: PgBouncer Quickstart
 menu:
   docs_{{ .version }}:
     identifier: pb-quickstart-quickstart
