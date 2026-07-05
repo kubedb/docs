@@ -116,7 +116,7 @@ metadata:
 spec:
   type: UpdateVersion
   databaseRef:
-    name: cass
+    name: cassandra-prod
   updateVersion:
     targetVersion: 5.0.7
   timeout: 5m

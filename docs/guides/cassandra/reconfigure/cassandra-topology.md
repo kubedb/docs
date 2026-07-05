@@ -519,7 +519,7 @@ As we can see from the configuration of ready cassandra, the value of `read_requ
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete cas -n demo cassandra-dev
+kubectl delete cas -n demo cassandra-prod
 kubectl delete cassandraopsrequest -n demo casops-reconfigure-apply-topology casops-reconfigure-topology
 kubectl delete secret -n demo cas-topology-custom-config new-cas-topology-custom-config
 kubectl delete ns demo
