@@ -94,7 +94,7 @@ $ kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
 1
 ```
 
-We can see from both command that the pgpool has 3 replicas. 
+We can see from both command that the pgpool has 1 replica. 
 
 We are now ready to apply the `PgpoolOpsRequest` CR to scale this pgpool.
 
@@ -124,12 +124,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `pp-horizontal` pgpool.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our pgpool.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.node` specifies the desired replicas after scaling.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/horizontal-scaling/ppops-hscale-up-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-up-ops.yaml
 pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-up created
 ```
 
@@ -304,12 +304,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `pp-horizontal` pgpool.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our pgpool.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.node` specifies the desired replicas after scaling.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/horizontal-scaling/ppops-hscale-down-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-down-ops.yaml
 pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-down created
 ```
 
@@ -434,6 +434,6 @@ From all the above outputs we can see that the replicas of the pgpool is `2`. Th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete mg -n pp-horizontal
+kubectl delete pp -n demo pp-horizontal
 kubectl delete pgpoolopsrequest -n demo pgpool-horizontal-scale-down
 ```

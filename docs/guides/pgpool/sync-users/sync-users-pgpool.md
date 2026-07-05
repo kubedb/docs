@@ -35,7 +35,7 @@ KubeDB supports providing a way to add/update users to Pgpool in runtime simply 
 
 KubeDB operator allows us to sync additional Postgres users to Pgpool on runtime by setting `spec.syncUsers` to `true`, if this option is true KubeDB operator searches for secrets in the namespace of the Postgres mentioned with some certain labels. Then if the secret have username and password as key KubeDB operator will sync the username and password to Pgpool. Again not only to add a user but also this feature can also be used for updating a user's password.
 
-At first, we need to create a secret that contains a `user` key and a `password` key which contains the `username` and `password` respectively. Also, we need to add two labels `<Appbinding name mentioned in .spec.postgresRef.name>` and `postgreses.kubedb.com`. The namespace must be `<Namespace mentioned in .spec.postgresRef.namespace>`. Below given a sample structure of the secret.
+At first, we need to create a secret that contains a `username` key and a `password` key which contains the `username` and `password` respectively. Also, we need to add two labels `<Appbinding name mentioned in .spec.postgresRef.name>` and `postgreses.kubedb.com`. The namespace must be `<Namespace mentioned in .spec.postgresRef.namespace>`. Below given a sample structure of the secret.
 
 Example:
 

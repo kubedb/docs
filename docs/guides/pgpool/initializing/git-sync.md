@@ -96,7 +96,7 @@ Here,
 Now, wait until `pgpool` has status `Ready`. i.e,
 
 ```bash
-$ kkubectl get Pgpool -n demo
+$ kubectl get Pgpool -n demo
 NAME     TYPE                  VERSION   STATUS   AGE
 pgpool   kubedb.com/v1alpha2   4.4.5     Ready    4m
 ```
@@ -199,7 +199,7 @@ Here, replace `<private_git_repo_ssh_url>` with your private Git repository's SS
 The `git-sync` container has two required flags:
 - `--repo`  – specifies the remote Git repository to sync.
 - `--root`  – specifies the working directory where the repository will be cloned.
-- `spec.init.git.authSecret` specifies the secret containing the `SSH` key.
+- `spec.init.script.git.authSecret` specifies the secret containing the `SSH` key.
 - `<private_git_repo_ssh_url>` with your private Git repository's SSH URL.
 - `spec.init.script.scriptPath` – specifies the path within the repository and folder where the initialization scripts are located.
   for more about `git-sync` configuration visit this [link](https://github.com/kubernetes/git-sync/blob/master/docs/ssh.md)
@@ -289,7 +289,7 @@ Here,
 - `--credential`Provides authentication information for accessing a private Git repository over HTTPS.
 - `<private_git_repo_http_url>` with your private Git repository's HTTPS URL.
 
-OOnce the database reaches the `Ready` state, you can verify the data using the method described above.
+Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
 $ kubectl get Pgpool -n demo
 NAME     TYPE                  VERSION   STATUS   AGE

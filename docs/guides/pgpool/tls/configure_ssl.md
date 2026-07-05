@@ -35,13 +35,13 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clientAuthMode
 
 ## Overview
 
-KubeDB uses following crd fields to enable SSL/TLS encryption in Mongodb.
+KubeDB uses following crd fields to enable SSL/TLS encryption in Pgpool.
 
 - `spec:`
   - `sslMode`
   - `tls:`
     - `issuerRef`
-    - `certificate`
+    - `certificates`
   - `clientAuthMode`
 
 Read about the fields in details in [pgpool concept](/docs/guides/pgpool/concepts/pgpool.md),
@@ -311,7 +311,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete pgpool -n demo pp-tls
-kubectl delete issuer -n demo pp-ca-issuer
+kubectl delete issuer -n demo pgpool-ca-issuer
 kubectl delete ns demo
 ```
 
