@@ -105,7 +105,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/retentionPolicy.yaml 
 retentionpolicy.storage.kubestash.com/postgres-retention-policy created
 ```
 
@@ -172,9 +172,9 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/postgresarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/postgresarchiver.yaml
  postgresarchiver.archiver.kubedb.com/postgresarchiver-sample created
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pirt/yamls/encryptionSecret.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/encryptionSecret.yaml
 ```
 
 ## Ensure volumeSnapshotClass

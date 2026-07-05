@@ -533,7 +533,7 @@ Say, the Postgres CR was deleted with `spec.deletionPolicy` to `Halt` and you wa
 
 You can do it by simpily re-deploying the original Postgres object:
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 ## Cleaning up
