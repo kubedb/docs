@@ -171,7 +171,7 @@ mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 2048
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0 -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  
@@ -344,7 +344,7 @@ mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 2560
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0 -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  
@@ -511,7 +511,7 @@ mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 3072
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P SERtEyH1RMMEsvE0 -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  

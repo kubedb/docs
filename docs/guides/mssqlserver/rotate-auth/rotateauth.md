@@ -143,7 +143,7 @@ $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.pas
 Now, you can exec into the pod `mssqlserver-quickstart-0` and connect to database using `username` and `password`
 ```bash
 $ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U" -No
 1> select name from sys.databases
 2> go
 name                                                  
@@ -302,7 +302,7 @@ Let's verify if we can connect to the database using the new credentials.
 
 ```shell
 $ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X" -No
 1> select name from sys.databases
 2> go
 name                                                                                                                            
@@ -331,7 +331,7 @@ $ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ inde
 Let's confirm that the previous credentials no longer work.
 ```shell
 kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U" -No
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login failed for user 'sa'..
 mssql@mssqlserver-quickstart-0:/$ 
 
@@ -496,7 +496,7 @@ Mssqlserver2⏎
 Let's verify if we can connect to the database using the new credentials.
 ```shell
 $ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Mssqlserver2"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Mssqlserver2" -No
 1> SELECT name FROM sys.databases 
 2> go
 name                                                                                                                            
@@ -514,13 +514,13 @@ Also, there will be two more new keys in the secret that stores the previous cre
 ```shell
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 sa⏎                                                                                         
-$ kubectl get secret -n demo quick-mssqlserver-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 zTBVvzgoEb2qUe3X⏎ 
 ```
 Let's confirm that the previous credentials no longer work.
 ```shell
 kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X" -No
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Login failed for user 'sa'..
 mssql@mssqlserver-quickstart-0:/$ 
 
@@ -535,10 +535,10 @@ Or, you can delete one by one resource by their name by this tutorial, run:
 ```shell
 $ kubectl delete MSSQLServeropsrequest msops-rotate-auth-generated msops-rotate-auth-user -n demo
 MSSQLServeropsrequest.ops.kubedb.com "msops-rotate-auth-generated" "msops-rotate-auth-user" deleted
-$ kubectl delete secret -n demoquick-mssqlserver-user-auth
-secret "quick-mssqlserver-user-auth" deleted
-$ kubectl delete secret -n demo   mssqlserver-quickstart-auth 
-secret "mssqlserver-quickstart-auth " deleted
+$ kubectl delete secret -n demo mssqlserver-quickstart-auth-user
+secret "mssqlserver-quickstart-auth-user" deleted
+$ kubectl delete secret -n demo mssqlserver-quickstart-auth
+secret "mssqlserver-quickstart-auth" deleted
 
 ```
 

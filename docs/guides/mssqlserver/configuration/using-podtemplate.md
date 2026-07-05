@@ -200,7 +200,7 @@ $ kubectl get secrets -n demo custom-config-podtemplate-auth -o jsonpath='{.data
 3K7lJibYg3y6ICXc
 
 $ kubectl exec -it custom-config-podtemplate-0 -n demo -c mssql -- bash
-mssql@custom-config-podtemplate-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P 3K7lJibYg3y6ICXc
+mssql@custom-config-podtemplate-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 3K7lJibYg3y6ICXc -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  
