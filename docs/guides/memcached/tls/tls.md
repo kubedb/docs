@@ -89,7 +89,7 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/memcached-ca-issuer.yaml
 issuer.cert-manager.io/memcached-ca-issuer created
 ```
 

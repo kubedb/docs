@@ -73,7 +73,7 @@ spec:
 Let's create the `Memcached` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/autoscaler/compute/mc-compute-autoscaler.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached.yaml
 Memcached.kubedb.com/mc-compute-autoscaler created
 ```
 
@@ -171,7 +171,7 @@ Here,
 Let's create the `MemcachedAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/autoscaling/compute/mc-compute-autoscaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached-autoscaler-compute.yaml
 Memcachedautoscaler.autoscaling.kubedb.com/rd-as created
 ```
 

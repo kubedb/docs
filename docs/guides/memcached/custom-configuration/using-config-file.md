@@ -89,7 +89,7 @@ type: Opaque
 Now, create Memcached crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/mc-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-memcached.yaml
 memcached.kubedb.com/custom-memcached created
 ```
 

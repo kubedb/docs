@@ -64,19 +64,7 @@ spec:
             cpu: 500m
             memory: 256Mi
   monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-      exporter:
-        resources:
-          requests:
-            memory: 512Mi
-            cpu: 200m
-          limits:
-            memory: 512Mi
-            cpu: 250m
+    agent: prometheus.io/builtin
 ```
 
 Here,
@@ -119,7 +107,11 @@ Labels:            app.kubernetes.io/component=database
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=memcacheds.kubedb.com
                    kubedb.com/role=stats
-Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
+Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
+                   prometheus.io/path: /metrics
+                   prometheus.io/port: 56790
+                   prometheus.io/scheme: http
+                   prometheus.io/scrape: true
 Selector:          app.kubernetes.io/instance=builtin-prom-memcd,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=memcacheds.kubedb.com
 Type:              ClusterIP
 IP Family Policy:  SingleStack

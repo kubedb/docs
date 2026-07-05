@@ -4,7 +4,7 @@ metadata:
   name: memcd-quickstart
   namespace: demo
 spec:
-  replicas: 1
+  replicas: 3
   version: "1.6.40"
   podTemplate:
     spec:
