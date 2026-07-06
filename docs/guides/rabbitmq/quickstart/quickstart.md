@@ -160,7 +160,7 @@ metadata:
 spec:
   authSecret:
     kind: Secret
-    name: rm-quickstart-admin-cred
+    name: rm-quickstart-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
@@ -268,16 +268,16 @@ status:
 
 ## Connect with RabbitMQ database
 
-Unless provided by the user in `.spec.authSecret.name` field, KubeDB operator creates a new Secret called `rm-quickstart-admin-cred` *(format: {rabbitmq-object-name}-admin-cred)* for storing the password for `admin` user who has administrative authorizations over `/` vhost of RabbitMQ cluster. This secret contains a `username` key which contains the *username* for RabbitMQ `admin` user and a `password` key which contains the *password* for this user.
+Unless provided by the user in `.spec.authSecret.name` field, KubeDB operator creates a new Secret called `rm-quickstart-auth` *(format: {rabbitmq-object-name}-auth)* for storing the password for `admin` user who has administrative authorizations over `/` vhost of RabbitMQ cluster. This secret contains a `username` key which contains the *username* for RabbitMQ `admin` user and a `password` key which contains the *password* for this user.
 
 If you want to use an existing secret please specify that when creating the RabbitMQ object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `admin` as value of `username`.
 
 Now, we need `username` and `password` to connect to this database. 
 
 ```bash
-$ kubectl get secrets -n demo rm-quickstart-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secrets -n demo rm-quickstart-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 password
 ```
 We can check client connectivity using an opensource load-testing tool called `perf-test`. It runs producers and consumers to continuously publish and consume messages in RabbitMQ cluster. Here's how to run it on kubernetes using the credentials and the address for operator generated primary service.
@@ -355,7 +355,7 @@ Now, run the following command to get all rabbitmq resources in `demo` namespace
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/rm-quickstart-admin-cred   kubernetes.io/basic-auth   2      3m35s
+secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      3m35s
 
 NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 rm-quickstart-data-rm-quickstart-0   Bound    pvc-596bd8de-4123-40fd-a8d1-a864b9acddc2   1Gi        RWO            standard       <unset>                 6m38s
@@ -386,7 +386,7 @@ Now, run the following command to get all RabbitMQ resources in `demo` namespace
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/rm-quickstart-admin-cred   kubernetes.io/basic-auth   2      17m
+secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      17m
 ```
 
 From the above output, you can see that all RabbitMQ resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.

@@ -62,7 +62,7 @@ spec:
       scheme: http
     url: amqp://<username>:<password>@rabbitmq.rabbit.svc.cluster.local:5672/
   secret:
-    name: rabbitmq-admin-cred
+    name: rabbitmq-auth
   type: kubedb.com/rabbitmq
   version: 4.2.4
 ```
