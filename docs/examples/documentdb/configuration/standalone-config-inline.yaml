@@ -1,0 +1,30 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DocumentDB
+metadata:
+  name: documentdb-sa-sample
+  namespace: demo
+spec:
+  version: 'pg17-0.109.0'
+  storageType: Durable
+  deletionPolicy: Delete
+  replicas: 1
+  configuration:
+    inline:
+      user.conf: |
+        max_connections=300
+        work_mem=16MB
+  podTemplate:
+    spec:
+      containers:
+        - name: documentdb
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
