@@ -551,7 +551,7 @@ Here,
   - `.repositories[*].directory` defines two variables, `${namespace}` and `${targetName}`, which are used to determine the path where the backup will be stored. 
   - `.addon.tasks[*]databases` defines `${targetedDatabases}` variable, which identifies list of databases to backup.
 
-> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-restore`
+> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-backup`
 
 Let's create the `BackupBlueprint` we have shown above,
 

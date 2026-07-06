@@ -18,4 +18,4 @@ spec:
   addon:
     name: druid-addon
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore

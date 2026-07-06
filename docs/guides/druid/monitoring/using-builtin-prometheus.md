@@ -103,7 +103,7 @@ druid-with-monitoring-stats           ClusterIP     10.96.222.96    <none>      
 Here, `druid-with-monitoring-stats` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n druid-demo builtin-prom-stats
+$ kubectl describe svc -n demo druid-with-monitoring-stats
 Name:              druid-with-monitoring-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database

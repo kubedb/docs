@@ -381,7 +381,7 @@ Status:
     Status:                True
     Type:                  CheckPodRunning--druid-cluster-historicals-0
     Last Transition Time:  2024-10-21T12:54:23Z
-    Message:               Successfully completed the vertical scaling for RabbitMQ
+    Message:               Successfully completed the vertical scaling for Druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True

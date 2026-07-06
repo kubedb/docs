@@ -357,10 +357,11 @@ Example usage of this field is given below:
 ```yaml
 spec:
   volumeExpansion:
-    node: "2Gi"
+    historicals: "2Gi"
+    middleManagers: "2Gi"
 ```
 
-This will expand the volume size of all the combined nodes to 2 GB.
+This will expand the volume size of the `historicals` and `middleManagers` nodes to 2 GB.
 
 ### spec.configuration
 
@@ -377,7 +378,7 @@ middleManagers.properties: |
 
 - `applyConfig` contains the new custom config as a string which will be merged with the previous configuration.
 
-- `applyConfig` is a map where key supports 3 values, namely `server.properties`, `broker.properties`, `controller.properties`. And value represents the corresponding configurations.
+- `applyConfig` is a map where key supports values like `common.runtime.properties`, `coordinators.properties`, `overlords.properties`, `brokers.properties`, `routers.properties`, `historicals.properties` and `middleManagers.properties`. And value represents the corresponding configurations.
 
 ```yaml
   applyConfig:
