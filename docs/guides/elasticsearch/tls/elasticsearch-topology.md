@@ -195,7 +195,7 @@ Now, let's exec into the master node and verify the configuration that TLS is en
 
 ```bash
 $ kubectl exec -n demo es-topology-tls-master-0 -c elasticsearch -- \
-                                      cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.securit
+                                      cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
 xpack.security.enabled: true
 
 xpack.security.transport.ssl.enabled: true
