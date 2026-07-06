@@ -249,7 +249,7 @@ Let's create the `MariaDBAutoscaler` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/mdas-compute.yaml --context demo-controller
-mariadbautoscaler.autoscaling.kubedb.com/mdas-compute created
+mariadbautoscaler.autoscaling.kubedb.com/md-as-compute created
 ```
 
 #### Verify Autoscaling is set up successfully

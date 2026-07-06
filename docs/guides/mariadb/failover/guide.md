@@ -225,7 +225,7 @@ MariaDB [(none)]> quit;
 Bye
 
 # Slave Node
-$ kubectl exec -it -n demo svc/ha-mariadb-slave -- bash
+$ kubectl exec -it -n demo svc/ha-mariadb-standby -- bash
 mysql@ha-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
@@ -275,7 +275,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 MariaDB [(none)]> CREATE DATABASE playground;
 Query OK, 1 row affected (0.001 sec)
 
-MariaDB [(none)]> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), `Master` KEY(id));
+MariaDB [(none)]> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));
 Query OK, 0 rows affected (0.032 sec)
 
 MariaDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');

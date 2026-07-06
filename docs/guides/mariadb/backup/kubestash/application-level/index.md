@@ -399,7 +399,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/kubestash/application-level/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/application-level/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 ```
 

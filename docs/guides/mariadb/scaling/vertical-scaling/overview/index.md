@@ -22,7 +22,7 @@ This guide will give an overview on how KubeDB Ops Manager vertically scales up 
   - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
   - [MariaDBOpsRequest](/docs/guides/mariadb/concepts/opsrequest/)
 
-## How Horizontal Scaling Process Works
+## How Vertical Scaling Process Works
 
 The following diagram shows how KubeDB Ops Manager scales up or down `MariaDB` database components. Open the image in a new tab to see the enlarged version.
 

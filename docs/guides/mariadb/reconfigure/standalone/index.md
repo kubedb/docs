@@ -264,7 +264,7 @@ Status:
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
 
 ```bash
-$ $ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+$ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
 root@sample-mariadb-0:/# mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 21
