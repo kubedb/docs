@@ -1,20 +1,21 @@
 apiVersion: kubedb.com/v1
 kind: PgBouncer
 metadata:
-  name: pgbouncer-server
+  name: coreos-prom-pb
   namespace: demo
 spec:
-  version: "1.24.0"
   replicas: 1
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"
     databaseRef:
-      name: "quick-postgres"
+      name: "ha-postgres"
       namespace: demo
   connectionPool:
-    maxClientConnections: 20
-    reservePoolSize: 5
+    poolMode: session
+    port: 5432
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:

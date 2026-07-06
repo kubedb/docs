@@ -80,6 +80,8 @@ spec:
     databaseRef:
       name: "ha-postgres"
       namespace: demo
+  configSecret:
+    name: pb-custom-config
   connectionPool:
     poolMode: session
     port: 5432
