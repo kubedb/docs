@@ -86,7 +86,7 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/example/redis/volume-expansion/sample-redis.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/sample-redis.yaml
 redis.kubedb.com/sample-redis created
 ```
 
@@ -101,7 +101,7 @@ sample-redis     6.2.14    Ready    5m4s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset-n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -157,7 +157,7 @@ are deleted and PVC is updated. Then the database Pods are recreated with update
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/example/redis/volume-expansion/online-vol-expansion.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/online-vol-expansion.yaml
 redisopsrequest.ops.kubedb.com/rd-online-volume-expansion created
 ```
 

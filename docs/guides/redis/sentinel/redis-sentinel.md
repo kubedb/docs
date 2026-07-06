@@ -108,7 +108,7 @@ redis.kubedb.com/rd-demo created
 
 Here,
 
-- `spec.mode` specifies the mode for Redis. Here we have used `Redis` to tell the operator that we want to deploy Redis in sentinel mode.
+- `spec.mode` specifies the mode for Redis. Here we have used `Sentinel` to tell the operator that we want to deploy Redis in sentinel mode.
 - `spec.replicas` denotes the number of replica nodes
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
