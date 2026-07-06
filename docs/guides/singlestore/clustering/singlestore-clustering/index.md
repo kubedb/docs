@@ -357,7 +357,7 @@ status:
 
 KubeDB operator has created a new Secret called `sample-sdb-auth` *(format: {singlestore-object-name}-auth)* for storing the password for `singlestore` superuser. This secret contains a `username` key which contains the *username* for SingleStore superuser and a `password` key which contains the *password* for SingleStore superuser.
 
-If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/database/index.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [the SingleStore database secret reference](/docs/guides/mysql/concepts/database/index.md#specauthsecret).
 
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sample-sdb-auth` secret holds username and password
 
