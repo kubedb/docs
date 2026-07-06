@@ -165,7 +165,7 @@ persistentvolumeclaim/solr-combined-data-solr-combined-0   Bound    pvc-c073b8b8
     - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.
 - `AppBinding` - an [AppBinding](/docs/guides/solr/concepts/appbinding.md) which hold to connect information for the database. It is also named after the solr instance.
 - `Secrets` - 3 types of secrets are generated for each Solr database.
-    - `{Solr-Name}-auth` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
+    - `{Solr-Name}-auth` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-auth` holds the `username` and `password` for `admin` user which lets administrative access.
     - `{Solr-Name}-config` - the default configuration secret created by the operator.
     - `{Solr-Name}-auth-config` - the configuration secret of admin user information created by the operator.
     - `{Solr-Name}-zk-digest` - the auth secret which contains the `username` and `password` for zookeeper digest secret which is able to access zookeeper data.
@@ -192,14 +192,14 @@ Now, our Solr cluster is accessible at `localhost:8983`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
   admin
     ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
   Xy3ZjyU)~(9IO8_n
   ```
 
@@ -266,7 +266,7 @@ spec:
   replicas: 2
   enableSSL: true
   zookeeperRef:
-    name: zoo
+    name: zoo-com
     namespace: demo
   storage:
     accessModes:
@@ -280,7 +280,7 @@ spec:
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clusteringyamls/combined-multinode.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/combined-multinode.yaml
 solr.kubedb.com/solr-combined created
 ```
 
