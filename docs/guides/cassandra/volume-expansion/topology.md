@@ -77,7 +77,7 @@ spec:
         replicas: 2
         storage:
           storageClassName:
-            longhorn
+            standard
           accessModes:
             - ReadWriteOnce
           resources:
@@ -165,8 +165,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `cassandra-prod`.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
-- `spec.volumeExpansion.broker` specifies the desired volume size for broker node.
-- `spec.volumeExpansion.controller` specifies the desired volume size for controller node.
+- `spec.volumeExpansion.node` specifies the desired volume size for the cassandra nodes.
 
 > If you want to expand the volume of only one node, you can specify the desired volume size for that node only.
 

@@ -664,5 +664,5 @@ kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-cassand
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo s3-storage
 kubectl delete secret -n demo medusa-cred
-kubectl delete my -n demo cas-sample
+kubectl delete cas -n demo cas-sample
 ```

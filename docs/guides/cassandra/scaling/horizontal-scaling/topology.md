@@ -261,7 +261,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `cassandra-prod` cluster.
 - `spec.type` specifies that we are performing `HorizontalScaling` on cassandra.
-- `spec.horizontalScaling.topology.node` specifies the desired replicas after scaling for the cassandra nodes.
+- `spec.horizontalScaling.node` specifies the desired replicas after scaling for the cassandra nodes.
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
