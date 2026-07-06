@@ -8,7 +8,7 @@ spec:
   deletionPolicy: Halt
   replicas: 2
   zookeeperRef:
-    name: zk-com
+    name: zoo-com
     namespace: demo
   storage:
     accessModes:
