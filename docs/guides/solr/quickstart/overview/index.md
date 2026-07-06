@@ -66,7 +66,7 @@ NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
 
-In this tutorial, we will use `9.4.1` SolrVersion CR to create a Solr cluster.
+In this tutorial, we will use `9.8.0` SolrVersion CR to create a Solr cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use SolrVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `9.4.1` over `8.11.2`.
 
@@ -115,7 +115,7 @@ Here,
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 zooKeeper.kubedb.com/zoo-com created
 ```
 
@@ -138,11 +138,11 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   deletionPolicy: Delete
   replicas: 2
   zookeeperRef:
-    name: zk-com
+    name: zoo-com
     namespace: demo
   storage:
     accessModes:
@@ -155,7 +155,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.4.1` will be created.
+- `spec.version` - is the name of the SolrVersion CR. Here, a Solr of version `9.8.0` will be created.
 - `spec.replicas` - specifies the number of Solr nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the Petset created by the KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests. If you don't specify `spec.storageType: Ephemeral`, then this field is required.
@@ -353,7 +353,7 @@ persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2
     - `{Solr-Name}-pods` - the node discovery service which is used by the Solr nodes to communicate each other. It is a headless service.
 - `AppBinding` - an [AppBinding](/docs/guides/solr/concepts/appbinding.md) which hold to connect information for the database. It is also named after the solr instance.
 - `Secrets` - 3 types of secrets are generated for each Solr database.
-    - `{Solr-Name}-admin-cred` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-admin-cred` holds the `username` and `password` for `admin` user which lets administrative access.
+    - `{Solr-Name}-auth` - the auth secrets which hold the `username` and `password` for the solr users. The auth secret `solr-combined-auth` holds the `username` and `password` for `admin` user which lets administrative access.
     - `{Solr-Name}-config` - the default configuration secret created by the operator.
     - `{Solr-Name}-auth-config` - the configuration secret of admin user information created by the operator.
     - `{Solr-Name}-zk-digest` - the auth secret which contains the `username` and `password` for zookeeper digest secret which is able to access zookeeper data.
@@ -380,14 +380,14 @@ Now, our Solr cluster is accessible at `localhost:8983`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
   admin
     ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
   Xy3ZjyU)~(9IO8_n
   ```
 

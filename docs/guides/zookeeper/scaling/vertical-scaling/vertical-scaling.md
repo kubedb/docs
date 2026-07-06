@@ -42,7 +42,7 @@ Here, we are going to deploy a  `ZooKeeper` standalone using a supported version
 
 ### Prepare ZooKeeper Standalone Database
 
-Now, we are going to deploy a `ZooKeeper` standalone database with version `3.8.3`.
+Now, we are going to deploy a `ZooKeeper` standalone database with version `3.9.1`.
 
 ### Deploy ZooKeeper standalone
 
@@ -55,7 +55,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -81,7 +81,7 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME            VERSION    STATUS    AGE
-zk-quickstart   3.8.3      Ready     5m56s
+zk-quickstart   3.9.1      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,
@@ -136,15 +136,15 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `vscale` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `zk-quickstart` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
 - Have a look [here](/docs/guides/zookeeper/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/vertical-scaling/zk-vscale.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-vscale.yaml
 zookeeperopsrequest.ops.kubedb.com/vscale created
 ```
 

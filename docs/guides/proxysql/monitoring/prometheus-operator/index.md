@@ -127,7 +127,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/builtin-prometheus/example/mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/prometheus-operator/examples/mysql.yaml
 mysql.kubedb.com/mysql-grp created 
 ```
 

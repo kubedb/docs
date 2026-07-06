@@ -116,7 +116,7 @@ metadata:
   name: connectcluster-quickstart
   namespace: demo
 spec:
-  version: 4.0.0
+  version: 4.2.0
   replicas: 3
   connectorPlugins:
     - mongodb-1.14.1

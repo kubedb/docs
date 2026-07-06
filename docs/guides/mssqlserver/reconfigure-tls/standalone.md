@@ -85,7 +85,7 @@ metadata:
   name: ms-standalone
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   tls:
     issuerRef:
@@ -288,13 +288,13 @@ $ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
 mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "b1HLv9EV4CaSalX6" -N
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "b1HLv9EV4CaSalX6" -N
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SSL Provider: [error:0A000086:SSL routines::certificate verify failed:self-signed certificate].
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establish connection.
 
 
 So Now, we have to connect with -C [Trust Server Certificate]
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "b1HLv9EV4CaSalX6" -N -C
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "b1HLv9EV4CaSalX6" -N -C
 1> 
 ```
 
@@ -482,7 +482,7 @@ forceencryption = 1
 tlscert = /var/opt/mssql/tls/server.crt
 tlskey = /var/opt/mssql/tls/server.key
 tlsprotocols = 1.2,1.1,1.0
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P l2mGQRMETAS96QRb -N
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P l2mGQRMETAS96QRb -N
 1> 
 ```
 
@@ -981,12 +981,12 @@ $ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
 mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SSL Provider: [error:0A000086:SSL routines::certificate verify failed:self-signed certificate].
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establish connection.
 
 So Now, we have to connect with -C [Trust Server Certificate]
-mssql@ms-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N -C
+mssql@ms-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P b1HLv9EV4CaSalX6 -N -C
 1> 
 ```
 

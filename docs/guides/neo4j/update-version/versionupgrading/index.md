@@ -99,7 +99,7 @@ kubectl get neo4jversions
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
 2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
 2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                2d23h
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
 ```
 
 ---
@@ -212,7 +212,7 @@ The version must exist as a `Neo4jVersion` catalog entry in your cluster. If the
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
 2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
 2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                2d23h
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
 ```
 
 Update your KubeDB operator to get the latest catalog.

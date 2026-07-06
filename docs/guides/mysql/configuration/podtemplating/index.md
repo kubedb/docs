@@ -178,7 +178,7 @@ $ kubectl get pods mysql-misc-config-0 -n demo -o yaml | grep IP
 $ kubectl get secrets -n demo mysql-misc-config-auth -o jsonpath='{.data.\user}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-misc-config-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-misc-config-auth -o jsonpath='{.data.password}' | base64 -d
 MLO5_fPVKcqPiEu9
 ```
 

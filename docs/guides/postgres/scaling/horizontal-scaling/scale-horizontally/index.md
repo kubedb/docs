@@ -113,7 +113,7 @@ spec:
 Let's create the `Postgres` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/postgres.yaml
 postgres.kubedb.com/pg created
 ```
 
@@ -130,8 +130,8 @@ NAME   VERSION   STATUS   AGE
 pg     18.3      Ready    4h40m
 
 
-$ watch -n 3 kubectl get sts -n demo pg
-Every 3.0s: kubectl get sts -n demo pg                             emon-r7: Thu Dec  2 15:31:38 2021
+$ watch -n 3 kubectl get petset -n demo pg
+Every 3.0s: kubectl get petset -n demo pg                             emon-r7: Thu Dec  2 15:31:38 2021
 
 NAME   READY   AGE
 pg     3/3     4h41m
@@ -151,10 +151,10 @@ pg-2   2/2     Running   0          4h26m
 Let's verify that the PetSet's pods have joined into cluster,
 
 ```bash
-$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.username}' | base64 -d
 postgres
 
-$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.password}' | base64 -d
 b3b5838EhjwsiuFU
 
 ```

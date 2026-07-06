@@ -108,35 +108,38 @@ KubeDB operator creates three Pod as PostgreSQL server.
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY   STATUS    RESTARTS   AGE   LABELS
 ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-1
+ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
 
 - Pod `ha-postgres-0` is serving as *primary* server, indicated by label `kubedb.com/role=primary`
-- Pod `ha-postgres-1` & `ha-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=replica`
+- Pod `ha-postgres-1` & `ha-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=standby`
 
-And two services for Postgres `ha-postgres` are created.
+Services for Postgres `ha-postgres` are created.
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres"
-NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-ha-postgres            ClusterIP   10.102.19.49   <none>        5432/TCP   4m
-ha-postgres-replicas   ClusterIP   10.97.36.117   <none>        5432/TCP   4m
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                               AGE
+ha-postgres           ClusterIP   10.102.19.49   <none>        5432/TCP,2379/TCP                     4m
+ha-postgres-pods      ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP,2384/TCP   4m
+ha-postgres-standby   ClusterIP   10.97.36.117   <none>        5432/TCP                              4m
 ```
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
-NAME                   SELECTOR
-ha-postgres            map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:primary]
-ha-postgres-replicas   map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres]
+NAME                  SELECTOR
+ha-postgres           map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:primary]
+ha-postgres-pods      map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres]
+ha-postgres-standby   map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:standby]
 ```
 
 Here,
 
 - Service `ha-postgres` targets Pod `ha-postgres-0`, which is *primary* server, by selector `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary`.
-- Service `ha-postgres-replicas` targets all Pods (*`ha-postgres-0`*, *`ha-postgres-1`* and *`ha-postgres-2`*) with label `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres`.
+- Service `ha-postgres-pods` targets all Pods (*`ha-postgres-0`*, *`ha-postgres-1`* and *`ha-postgres-2`*) with label `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres`.
+- Service `ha-postgres-standby` targets the *standby* Pods by selector `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby`.
 
 >These *standby* servers are asynchronous *warm standby* server. That means, you can only connect to *primary* sever.
 
@@ -152,14 +155,14 @@ Now connect to this *primary* server Pod `ha-postgres-0` using pgAdmin installed
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
+  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
+  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   MHRrOcuyddfh3YpU
   ```
 
@@ -217,7 +220,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: "10.2"-v5
+  version: "18.3"
 status:
   observedGeneration: 2$4213139756412538772
   phase: Running
@@ -244,9 +247,9 @@ kubectl delete pod -n demo ha-postgres-0
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
 NAME            READY     STATUS    RESTARTS   AGE       LABELS
-ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-0
+ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-0
 ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
+ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-2
 ```
 
 Here,
@@ -329,14 +332,14 @@ KubeDB operator creates three Pod as PostgreSQL server.
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
 NAME             READY     STATUS    RESTARTS   AGE       LABELS
 hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=hot-postgres-0
-hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-1
-hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-2
+hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=hot-postgres-1
+hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=hot-postgres-2
 ```
 
 Here,
 
 - Pod `hot-postgres-0` is serving as *primary* server, indicated by label `kubedb.com/role=primary`
-- Pod `hot-postgres-1` & `hot-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=replica`
+- Pod `hot-postgres-1` & `hot-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=standby`
 
 > These *standby* servers are asynchronous *hot standby* servers.
 
@@ -347,21 +350,21 @@ Now connect to one of our *hot standby* servers Pod `hot-postgres-2` using pgAdm
 **Connection information:**
 
 - Host name/address: you can use any of these
-  - Service: `hot-postgres-replicas.demo`
+  - Service: `hot-postgres-standby.demo`
   - Pod IP: (`$kubectl get pods hot-postgres-2 -n demo -o yaml | grep podIP`)
 - Port: `5432`
 - Maintenance database: `postgres`
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
+  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   postgres
   ```
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
+  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ZZgjjQMUdKJYy1W9
   ```
 
@@ -375,9 +378,9 @@ ERROR:  cannot execute CREATE DATABASE in a read-only transaction
 Failed to execute write operation. But it can execute following read query
 
 ```bash
-postgres=# select pg_last_xlog_receive_location();
- pg_last_xlog_receive_location
--------------------------------
+postgres=# select pg_last_wal_receive_lsn();
+ pg_last_wal_receive_lsn
+-------------------------
  0/7000220
 ```
 

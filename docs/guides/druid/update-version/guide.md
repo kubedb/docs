@@ -37,7 +37,7 @@ namespace/demo created
 
 ## Prepare Druid
 
-Now, we are going to deploy a `Druid` cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` cluster with version `35.0.1`.
 
 ### Create External Dependency (Deep Storage)
 
@@ -99,7 +99,7 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 35.0.1
   deepStorage:
     type: s3
     configSecret:
@@ -122,11 +122,11 @@ Now, wait until `druid-cluster` created has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w                                                                                                                                           
 NAME            TYPE                  VERSION    STATUS         AGE
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Provisioning   0s
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Provisioning   55s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Provisioning   0s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Provisioning   55s
 .
 .
-druid-cluster   kubedb.com/v1aplha2   28.0.1     Ready          119s
+druid-cluster   kubedb.com/v1aplha2   35.0.1     Ready          119s
 ```
 
 We are now ready to apply the `DruidOpsRequest` CR to update.
@@ -150,14 +150,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 
@@ -168,11 +168,11 @@ After providing the credentials correctly, you should be able to access the web 
 </p>
 
 
-Here, we can see that the version of the druid cluster is `28.0.1`.
+Here, we can see that the version of the druid cluster is `35.0.1`.
 
 ### Update Druid Version
 
-Here, we are going to update `Druid` from `28.0.1` to `30.0.1`.
+Here, we are going to update `Druid` from `35.0.1` to `36.0.0`.
 
 #### Create DruidOpsRequest:
 
@@ -189,7 +189,7 @@ spec:
   databaseRef:
     name: druid-cluster
   updateVersion:
-    targetVersion: 30.0.1
+    targetVersion: 36.0.0
   timeout: 5m
   apply: IfReady
 ```
@@ -198,12 +198,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `druid-cluster` Druid.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `30.0.1`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `36.0.0`.
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/druid-hscale-up.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/update-version-ops.yaml
 druidopsrequest.ops.kubedb.com/druid-update-version created
 ```
 
@@ -273,7 +273,7 @@ Spec:
   Timeout:  5m
   Type:     UpdateVersion
   Update Version:
-    Target Version:  30.0.1
+    Target Version:  36.0.0
 Status:
   Conditions:
     Last Transition Time:  2024-10-21T13:04:51Z
@@ -407,13 +407,13 @@ Now, we are going to verify whether the `Druid` and the related `PetSets` and th
 
 ```bash
 $ kubectl get dr -n demo druid-cluster -o=jsonpath='{.spec.version}{"\n"}'
-30.0.1
+36.0.0
 
 $ kubectl get petset -n demo druid-cluster-brokers -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.1@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
+ghcr.io/appscode-images/druid:36.0.0@sha256:4cd60a1dc6a124e27e91ec52ca39e2b9ca6809df915ae2dd712a2dd7462626d7
 
 $ kubectl get pods -n demo druid-cluster-brokers-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/druid:30.0.1
+ghcr.io/appscode-images/druid:36.0.0
 ```
 
 You can see from above, our `Druid` has been updated with the new version. So, the updateVersion process is successfully completed.
@@ -422,7 +422,7 @@ You can see from above, our `Druid` has been updated with the new version. So, t
 
 You can also see the version of druid cluster from the druid ui by following the steps described previously in this tutorial. [Check Druid Version from UI](/docs/guides/druid/update-version/guide.md/#Check-Druid-Version-from-UI)
 
-If you follow the steps properly, you should be able to see that the version is upgraded to `30.0.1` from the druid console as shown below.
+If you follow the steps properly, you should be able to see that the version is upgraded to `36.0.0` from the druid console as shown below.
 
 <p align="center">
   <img alt="lifecycle"  src="/docs/guides/druid/update-version/images/druid-ui-30.png">

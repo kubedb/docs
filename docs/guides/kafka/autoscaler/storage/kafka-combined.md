@@ -69,7 +69,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 4.0.0
+  version: 4.2.0
   podTemplate:
     spec:
       containers:

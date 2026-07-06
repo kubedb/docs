@@ -353,10 +353,10 @@ Now, we need `username` and `password` to connect to this database from `kubectl
 $ kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
   podIP: 10.244.0.30
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 H(Y.s)pg&cX1Ds3J
 ```
 we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
@@ -514,7 +514,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
 secret/mysql-quickstart-auth   Opaque                                2      20h
@@ -543,7 +543,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
 secret/mysql-quickstart-auth   Opaque
@@ -567,7 +567,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 

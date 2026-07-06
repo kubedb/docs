@@ -102,7 +102,7 @@ metadata:
   name: mongo-sh-tls
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   sslMode: requireSSL
   tls:
     issuerRef:
@@ -188,7 +188,7 @@ subject=CN=root,O=kubedb
 Now, we can connect using `CN=root,O=kubedb` as root to connect to the mongo shell,
 
 ```bash
-root@mongo-sh-tls-mongos-0:/# mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb" --quiet
+root@mongo-sh-tls-mongos-0:/# mongosh --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,O=kubedb" --quiet
 Welcome to the MongoDB shell.
 For interactive help, type "help".
 For more comprehensive documentation, see

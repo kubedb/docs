@@ -114,7 +114,7 @@ metadata:
   name: sample-druid
   namespace: demo
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -143,7 +143,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get druids.kubedb.com -n demo
 NAME           TYPE                  VERSION   STATUS   AGE
-sample-druid   kubedb.com/v1alpha2   30.0.1    Ready    4m14s
+sample-druid   kubedb.com/v1alpha2   36.0.0    Ready    4m14s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -151,7 +151,7 @@ The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Servic
 ```bash
 $ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-druid
 NAME                      TYPE                       DATA   AGE
-sample-druid-admin-cred   kubernetes.io/basic-auth   2      2m34s
+sample-druid-auth   kubernetes.io/basic-auth   2      2m34s
 sample-druid-config       Opaque                     11     2m34s
 
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-druid
@@ -162,7 +162,7 @@ sample-druid-pods           ClusterIP   None             <none>        8081/TCP,
 sample-druid-routers        ClusterIP   10.128.191.186   <none>        8888/TCP                                                2m53s
 ```
 
-Here, we have to use service `sample-druid-routers` and secret `sample-druid-admin-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/druid/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-druid-routers` and secret `sample-druid-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/druid/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
 **Verify Internal Dependencies:**
 
@@ -183,7 +183,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
-sample-druid                  kubedb.com/druid       30.0.1    4m7s
+sample-druid                  kubedb.com/druid       36.0.0    4m7s
 sample-druid-mysql-metadata   kubedb.com/mysql       9.1.0    6m31s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     6m34s
 ```
@@ -202,7 +202,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"30.0.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"sample-druid","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"deletionPolicy":"WipeOut","topology":{"routers":{"replicas":1}},"version":"36.0.0"}}
   creationTimestamp: "2024-09-19T13:02:20Z"
   generation: 1
   labels:
@@ -234,9 +234,9 @@ spec:
       scheme: http
     url: http://sample-druid-coordinators-0.sample-druid-pods.demo.svc.cluster.local:8081,http://sample-druid-overlords-0.sample-druid-pods.demo.svc.cluster.local:8090,http://sample-druid-middlemanagers-0.sample-druid-pods.demo.svc.cluster.local:8091,http://sample-druid-historicals-0.sample-druid-pods.demo.svc.cluster.local:8083,http://sample-druid-brokers-0.sample-druid-pods.demo.svc.cluster.local:8082,http://sample-druid-routers-0.sample-druid-pods.demo.svc.cluster.local:8888
   secret:
-    name: sample-druid-admin-cred
+    name: sample-druid-auth
   type: kubedb.com/druid
-  version: 30.0.1
+  version: 36.0.0
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to be set in AppBinding's `.spec` section.
@@ -261,14 +261,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 
@@ -544,7 +544,7 @@ apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   creationTimestamp: "2024-09-20T11:09:00Z"
   finalizers:
     - kubestash.com/cleanup
@@ -709,7 +709,7 @@ In this section, we will verify whether the desired `Druid` database manifest ha
 ```bash
 $ kubectl get druids.kubedb.com -n dev
 NAME           VERSION   STATUS   AGE
-restored-druid   30.0.1    Ready    39m
+restored-druid   36.0.0    Ready    39m
 ```
 
 The output confirms that the `Druid` database has been successfully created with the same configuration as it had at the time of backup.
@@ -735,7 +735,7 @@ At first, check if the database has gone into `Ready` state by the following com
 ```bash
 $ kubectl get druid -n dev restored-druid
 NAME             VERSION   STATUS  AGE
-restored-druid   30.0.1    Ready   34m
+restored-druid   36.0.0    Ready   34m
 ```
 
 Now, let's verify if our datasource `wikipedia` exists or not. For that, first find out the database `Sevices` by the following command,
@@ -760,14 +760,14 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n dev restored-druid-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n dev restored-druid-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n dev restored-druid-auth -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list.

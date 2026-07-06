@@ -65,7 +65,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: 7.4.0
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -175,7 +175,7 @@ spec:
   secret:
     name: sample-redis-auth
   type: kubedb.com/redis
-  version: 7.4.0
+  version: 8.2.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.

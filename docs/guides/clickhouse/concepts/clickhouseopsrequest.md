@@ -307,9 +307,9 @@ If you want to update you ClickHouse version, you have to specify the `spec.upda
 
 > You can only update between ClickHouse versions. KubeDB does not support downgrade for ClickHouse.
 
-### spec.horizontalScaling.node
+### spec.horizontalScaling.replicas
 
-If you want to scale-up or scale-down your ClickHouse cluster or different components of it, you have to specify `spec.horizontalScaling.node` section.
+If you want to scale-up or scale-down your ClickHouse cluster or different components of it, you have to specify `spec.horizontalScaling.replicas` section.
 
 ### spec.verticalScaling.node
 

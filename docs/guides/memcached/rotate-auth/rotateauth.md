@@ -50,7 +50,7 @@ NAME       VERSION   DB_IMAGE                                          DEPRECATE
 1.5.22     1.5.22    ghcr.io/appscode-images/memcached:1.5.22-alpine                5d19h
 1.5.4      1.5.4     ghcr.io/kubedb/memcached:1.5.4                    true         5d19h
 1.5.4-v1   1.5.4     ghcr.io/kubedb/memcached:1.5.4-v1                 true         5d19h
-1.6.22     1.6.22    ghcr.io/appscode-images/memcached:1.6.22-alpine                5d19h
+1.6.40     1.6.40    ghcr.io/appscode-images/memcached:1.6.40-alpine                5d19h
 1.6.29     1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine                5d19h
 1.6.33     1.6.33    ghcr.io/appscode-images/memcached:1.6.33-alpine                5d19h
 ```
@@ -71,7 +71,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -96,7 +96,7 @@ Now, wait until memcd-quickstart has status Ready. i.e,
 ```shell
 $  kubectl get mc -n demo -w
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    17h
+memcd-quickstart   1.6.40    Ready    17h
 ```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
@@ -143,7 +143,7 @@ STORED
 
 #now you can use DB
 version
-VERSION 1.6.22
+VERSION 1.6.40
 
 # Exit
 quit
@@ -304,7 +304,7 @@ STORED
 #command
 version
 #output
-VERSION 1.6.22
+VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.
@@ -502,7 +502,7 @@ STORED
 #command
 version
 #output
-VERSION 1.6.22
+VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.

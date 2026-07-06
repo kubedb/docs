@@ -139,7 +139,7 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/proxyops-update.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/proxyops-upgrade.yaml
 proxysqlopsrequest.ops.kubedb.com/proxyops-update created
 ```
 
@@ -164,7 +164,7 @@ Now, we are going to verify whether the `ProxySQL` and the related `PetSets` and
 $ kubectl get proxysql -n demo proxy-server -o=jsonpath='{.spec.version}{"\n"}'
 3.0.1-debian
 
-$ kubectl get sts -n demo proxy-server -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo proxy-server -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 kubedb/proxysql:3.0.1-debian@sha256....
 
 $ kubectl get pods -n demo proxy-server-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'

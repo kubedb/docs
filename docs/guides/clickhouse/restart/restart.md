@@ -42,7 +42,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -98,14 +98,14 @@ clickhouse.kubedb.com/clickhouse-prod created
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ClickHouseOpsRequest
 metadata:
-  name: restart
+  name: clickhouse-restart
   namespace: demo
 spec:
   type: Restart
   databaseRef:
     name: clickhouse-prod
-  timeout: 3m
-  apply: Always
+  timeout: 10m
+  apply: IfReady
 ```
 
 - `spec.type` specifies the Type of the ops Request

@@ -230,7 +230,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f standalone-rotate-auth-user.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth/standalone-rotate-auth-user.yaml
 oracleopsrequest.ops.kubedb.com/standalone-rotate-auth-user created
 ```
 

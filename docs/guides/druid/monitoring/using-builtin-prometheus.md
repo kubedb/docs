@@ -49,7 +49,7 @@ metadata:
   name: druid-with-monitoring
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -77,7 +77,7 @@ Here,
 Let's create the Druid crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/druid-builtin-monitoring.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/druid-monitoring-builtin.yaml
 druid.kubedb.com/druid-with-monitoring created
 ```
 
@@ -85,7 +85,7 @@ Now, wait for the cluster to go into `Ready` state.
 
 ```bash
 NAME                    TYPE                  VERSION    STATUS           AGE
-druid-with-monitoring   kubedb.com/v1alpha2   28.0.1     Ready          31s
+druid-with-monitoring   kubedb.com/v1alpha2   36.0.0     Ready          31s
 ```
 
 KubeDB will create a separate stats service with name `{Druid crd name}-stats` for monitoring purpose.

@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: mv-change-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: milvus-cluster
+  tls:
+    issuerRef:
+      name: mv-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

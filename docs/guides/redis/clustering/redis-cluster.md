@@ -48,7 +48,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3
@@ -175,7 +175,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: 6.2.14
+  version: 8.2.2
 status:
   conditions:
   - lastTransitionTime: "2023-02-02T11:16:57Z"
@@ -219,14 +219,14 @@ status:
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   AO8iK)s);o5kQVFs
   ```
 

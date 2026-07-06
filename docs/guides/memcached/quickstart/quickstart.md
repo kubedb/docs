@@ -47,7 +47,7 @@ When you have installed KubeDB, it has created `MemcachedVersion` crd for all su
 $ kubectl get memcachedversions
 NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
 1.5.22      1.5.22     ghcr.io/appscode-images/memcached:1.5.22-alpine                  2h
-1.6.22      1.6.22     ghcr.io/appscode-images/memcached:1.6.22-alpine                  2h
+1.6.40      1.6.40     ghcr.io/appscode-images/memcached:1.6.40-alpine                  2h
 1.6.29      1.6.29     ghcr.io/appscode-images/memcached:1.6.29-alpine                  2h
 ```
 
@@ -65,7 +65,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -93,7 +93,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       resources:
@@ -122,7 +122,7 @@ KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Me
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
-memcd-quickstart   1.6.22     Running   2m
+memcd-quickstart   1.6.40     Ready     2m
 
 $ kubectl describe mc -n demo memcd-quickstart
 Name:         memcd-quickstart
@@ -173,7 +173,7 @@ Spec:
         Fs Group:            999
       Service Account Name:  memcd-quickstart
   Replicas:                  1
-  Version:                   1.6.22
+  Version:                   1.6.40
 Status:
   Conditions:
     Last Transition Time:  2024-08-22T13:54:45Z
@@ -233,7 +233,7 @@ memcd-quickstart        ClusterIP   10.96.115.90   <none>        11211/TCP   9m7
 memcd-quickstart-pods   ClusterIP   None           <none>        11211/TCP   9m7s
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Memcached object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Memcached object:
 
 ```yaml
 $ kubectl get mc -n demo memcd-quickstart -o yaml
@@ -242,7 +242,7 @@ kind: Memcached
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcd-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}}}]}},"replicas":3,"version":"1.6.22"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcd-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"500m","memory":"128Mi"},"requests":{"cpu":"250m","memory":"64Mi"}}}]}},"replicas":3,"version":"1.6.40"}}
   creationTimestamp: "2024-08-22T13:54:45Z"
   finalizers:
   - kubedb.com
@@ -286,7 +286,7 @@ spec:
         fsGroup: 999
       serviceAccountName: memcd-quickstart
   replicas: 1
-  version: 1.6.22
+  version: 1.6.40
 status:
   conditions:
   - lastTransitionTime: "2024-08-22T13:54:45Z"
@@ -322,6 +322,20 @@ status:
 ```
 ## Connect with Memcached database
 
+By default, KubeDB enables authentication for Memcached. The credentials are stored in the auth secret named `{Memcached crd name}-auth`. You need these credentials to connect to the server.
+
+Retrieve the credentials from the auth secret. They are stored in the `authData` key in the `username:password` format.
+
+```bash
+$ kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.authSecret.name}'
+memcd-quickstart-auth
+
+$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+user:tysiujogcmzapyhz
+```
+
+Here, `username` is `user` and `password` is `tysiujogcmzapyhz`.
+
 Now, you can connect to this database using `telnet`.
 Here, we will connect to Memcached server from local-machine through port-forwarding.
 
@@ -340,6 +354,14 @@ Forwarding from [::1]:11211 -> 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the `username` and `password` separated by a space, and the byte
+# count (21 here) is the length of that value.
+set auth 0 0 21
+user tysiujogcmzapyhz
+# Output:
+STORED
 
 # Save data Command:
 set my_key 0 2592000 1

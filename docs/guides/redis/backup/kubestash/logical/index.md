@@ -68,7 +68,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3
@@ -183,7 +183,7 @@ spec:
   secret:
     name: redis-cluster-auth
   type: kubedb.com/redis
-  version: 7.4.0
+  version: 8.2.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -219,14 +219,14 @@ redis-cluster-shard2-1   1/1     Running   0          10m
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo redis-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   8UnSPM;(~cXWWs60
   ```
 Now, let’s exec into the pod and insert some data,
@@ -572,7 +572,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3

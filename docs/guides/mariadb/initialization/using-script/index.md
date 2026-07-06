@@ -126,7 +126,7 @@ Now, we will connect to this database and check the data inserted by the initliz
 ```bash
 # Connecting to the database
 $ kubectl exec -it -n demo sample-mariadb-0 -- bash
-root@sample-mariadb-0:/ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 40
 Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution

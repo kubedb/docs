@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: wvops-update-issuer
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: weaviate-sample
+  tls:
+    issuerRef:
+      name: weaviate-new-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"

@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
+Now, we are going to deploy a `RedisSentinel` instance with version `8.2.2` and a `Redis` database with version `8.2.2`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
 
 ### Deploy RedisSentinel :
 
@@ -52,7 +52,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:
@@ -113,7 +113,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sen-sample

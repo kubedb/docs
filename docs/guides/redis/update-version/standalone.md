@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare Redis Standalone Database
 
-Now, we are going to deploy a `Redis` standalone database with version `6.2.14`.
+Now, we are going to deploy a `Redis` standalone database with version `7.4.6`.
 
 ### Deploy Redis standalone :
 
@@ -51,7 +51,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 7.4.6
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -81,7 +81,7 @@ We are now ready to apply the `RedisOpsRequest` CR to update this database.
 
 ### Update Redis Version
 
-Here, we are going to update `Redis` standalone from `6.2.14` to `7.0.14`.
+Here, we are going to update `Redis` standalone from `7.4.6` to `8.2.2`.
 
 #### Create RedisOpsRequest:
 
@@ -98,14 +98,14 @@ spec:
   databaseRef:
     name: redis-quickstart
   updateVersion:
-    targetVersion: 7.0.14
+    targetVersion: 8.2.2
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `redis-quickstart` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.2.2`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

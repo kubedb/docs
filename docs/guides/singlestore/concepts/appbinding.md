@@ -77,7 +77,7 @@ spec:
         restoreTask:
           name: ""
   secret:
-    name: sdb-root-cred
+    name: sdb-auth
   type: kubedb.com/singlestore
   version: 8.9.3
 ```

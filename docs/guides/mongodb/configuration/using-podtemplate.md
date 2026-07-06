@@ -72,7 +72,7 @@ metadata:
   name: mgo-misc-config
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: "Durable"
   storage:
     storageClassName: "standard"
@@ -114,15 +114,15 @@ Now, check if the database has started with the custom configuration we have pro
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.password}' | base64 -d
 zyp5hDfRlVOWOyk9
 
 $ kubectl exec -it mgo-misc-config-0 -n demo sh
 
-> mongo admin
+> mongosh admin
 
 > db.auth("root","zyp5hDfRlVOWOyk9")
 1

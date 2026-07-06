@@ -57,7 +57,7 @@ standard-static        driver.standard.io      Delete          Immediate        
 We can see from the output that `standard (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
 
 
-Now, we are going to deploy a `MSSQLServer` in `AvailabilityGroup` Mode with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` in `AvailabilityGroup` Mode with version `2025-cu0`.
 
 ### Deploy MSSQLServer
 
@@ -104,7 +104,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

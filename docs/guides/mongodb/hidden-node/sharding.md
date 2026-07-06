@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-hid
   namespace: demo
 spec:
-  version: "percona-7.0.18"
+  version: "percona-8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -252,7 +252,7 @@ spec:
   storageEngine: inMemory
   storageType: Ephemeral
   deletionPolicy: WipeOut
-  version: percona-7.0.18
+  version: "percona-8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2022-10-31T05:59:43Z"
@@ -301,14 +301,14 @@ If you want to use custom or existing secret please specify that when creating t
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.password}' | base64 -d
   6&UiN5;qq)Tnai=7
   ```
 
@@ -326,7 +326,7 @@ mongo-sh-hid-mongos-1   1/1     Running   0          6m20s
 
 $ kubectl exec -it mongo-sh-hid-mongos-0 -n demo bash
 
-mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
+mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("e6979884-81b0-41c9-9745-50654f6fb39b") }
@@ -432,7 +432,7 @@ As `sh.status()` command only shows the general members, if we want to assure th
 ```bash
 kubectl exec -it -n demo pod/mongo-sh-hid-shard1-0 -- bash
 
-root@mongo-sh-hid-shard0-1:/ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
+root@mongo-sh-hid-shard0-1:/ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 Defaulted container "mongodb" out of: mongodb, copy-config (init)
 Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb

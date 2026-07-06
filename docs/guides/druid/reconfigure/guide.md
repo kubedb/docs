@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Druid` cluster using a supported version by `Kub
 
 ### Prepare Druid Cluster
 
-Now, we are going to deploy a `Druid` topology cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` topology cluster with version `36.0.0`.
 
 #### Create External Dependency (Deep Storage)
 
@@ -101,7 +101,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -141,7 +141,7 @@ Then, we will create a new secret with this configuration file.
 apiVersion: v1
 kind: Secret
 metadata:
-  name: config-secret
+  name: new-config
   namespace: demo
 stringData:
   middleManagers.properties: |-
@@ -151,7 +151,7 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/config-secret.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/reconfigure/yamls/config-secret.yaml
 secret/new-config created
 ```
 

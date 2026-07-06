@@ -191,7 +191,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingress.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingres.yaml
 ingress.networking.k8s.io/pg-singapore created
 $ kubectl get ingress -n demo
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
@@ -360,7 +360,7 @@ kubectl delete -n demo pg/pg-singapore
 kubectl delete -n demo pg/pg-london
 kubectl delete secret -n demo pg-singapore-auth
 kubectl delete secret -n demo pg-london-auth
-kubectl delete ingres -n demo pg-singapore
+kubectl delete ingress -n demo pg-singapore
 kubectl delete ns demo
 ```
 

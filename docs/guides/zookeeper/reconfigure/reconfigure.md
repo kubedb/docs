@@ -40,7 +40,7 @@ Now, we are going to deploy a  `ZooKeeper` cluster using a supported version by 
 
 ### Prepare ZooKeeper Ensemble
 
-Now, we are going to deploy a `ZooKeeper` cluster with version `3.8.3`.
+Now, we are going to deploy a `ZooKeeper` cluster with version `3.9.1`.
 
 ### Deploy ZooKeeper Ensemble
 
@@ -73,7 +73,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   configuration:
@@ -99,7 +99,7 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME               VERSION     STATUS    AGE
-zk-quickstart      3.8.3      Ready     23s
+zk-quickstart      3.9.1      Ready     23s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -108,7 +108,7 @@ Now, you can exec into the zookeeper pod and find if the custom configuration is
 
 ```bash
 $ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ echo conf | nc localhost 2181
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
 dataDir=/data/version-2
@@ -131,7 +131,7 @@ membership:
 server.1=zk-quickstart-0.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
-version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ exit
+version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
 ```
 
@@ -302,14 +302,14 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME            VERSION     STATUS    AGE
-zk-quickstart   3.8.3      Ready     20s
+zk-quickstart   3.9.1      Ready     20s
 ```
 
 Now let’s exec into the zookeeper pod and check the new configuration we have provided.
 
 ```bash
 $ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ echo conf | nc localhost 2181
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
 dataDir=/data/version-2
@@ -332,7 +332,7 @@ membership:
 server.1=zk-quickstart-0.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
-version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ exit
+version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
 ```
 
@@ -483,14 +483,14 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME            VERSION     STATUS    AGE
-zk-quickstart   3.8.3      Ready     20s
+zk-quickstart   3.9.1      Ready     20s
 ```
 
 Now let’s exec into the zookeeper pod and check the new configuration we have provided.
 
 ```bash
 $ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ echo conf | nc localhost 2181
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
 dataDir=/data/version-2
@@ -513,7 +513,7 @@ membership:
 server.1=zk-quickstart-0.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
-version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ exit
+version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
 ```
 

@@ -103,7 +103,7 @@ custom-ignite-0      1/1     Running   0          30s
 Now, check if the ignite has started with the custom configuration we have provided. First, we will exec in the pod. Then, we will check if the environment variable is set or not.
 
 ```bash
-$ kubectl exec -it custom-ignite-0 -n demo ignite -- sh
+$ kubectl exec -it -n demo custom-ignite-0 -c ignite -- sh
 $ echo $Ignite_Key
 KubeDB
 $ echo $Ignite_Value
@@ -437,7 +437,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/ignite-without-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/ignite-without-tolerations.yaml
 ignite.kubedb.com/ignite-without-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-without-tolerations-0` has been created and running.
@@ -562,7 +562,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/with-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/with-tolerations.yaml
 ignite.kubedb.com/ignite-with-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `ignite-with-tolerations-0` has been created.

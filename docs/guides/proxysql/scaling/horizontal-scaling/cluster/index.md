@@ -61,7 +61,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/example/sample-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created 
 ```
 
@@ -93,7 +93,7 @@ spec:
 Let's create the `ProxySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/example/sample-proxysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-proxysql.yaml
 proxysql.kubedb.com/proxy-server created
 ```
 
@@ -110,7 +110,7 @@ Let's check the number of replicas this cluster has from the ProxySQL object, nu
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
 3
-$ kubectl get sts -n demo proxy-server -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
 3
 ```
 
@@ -168,7 +168,7 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/example/proxyops-upscale.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-upscale.yaml
 proxysqlopsrequest.ops.kubedb.com/scale-up created
 ```
 
@@ -190,7 +190,7 @@ We can see from the above output that the `ProxySQLOpsRequest` has succeeded. No
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
 5
-$ kubectl get sts -n demo proxy-server -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
 5
 ```
 
@@ -246,7 +246,7 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/example/proxyops-downscale.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-downscale.yaml
 proxysqlopsrequest.ops.kubedb.com/scale-down created
 ```
 
@@ -268,7 +268,7 @@ We can see from the above output that the `ProxySQLOpsRequest` has succeeded. No
 ```bash
 $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas' 
 4
-$ kubectl get sts -n demo proxy-server -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
 4
 ```
 

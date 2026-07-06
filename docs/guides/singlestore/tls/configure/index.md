@@ -204,7 +204,7 @@ Let's check the tls-secrets have created,
 ```bash
 $ kubectl get secret -n demo | grep sdb-tls
 sdb-tls-client-cert   kubernetes.io/tls          3      5m41s
-sdb-tls-root-cred     kubernetes.io/basic-auth   2      5m41s
+sdb-tls-auth     kubernetes.io/basic-auth   2      5m41s
 sdb-tls-server-cert   kubernetes.io/tls 
 ```
 

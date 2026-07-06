@@ -103,8 +103,8 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
     "memory": "1Gi"
   },
   "requests": {
-    "cpu": "250m",
-    "memory": "512Mi"
+    "cpu": "500m",
+    "memory": "1Gi"
   }
 }
 ```

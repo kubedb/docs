@@ -131,7 +131,7 @@ xpack-8.5.2                 8.5.2     ElasticStack   elasticsearch:8.5.2        
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `xpack-8.2.3` ElasticsearchVersion CR to create an Elasticsearch cluster.
+In this tutorial, we will use `xpack-9.2.3` ElasticsearchVersion CR to create an Elasticsearch cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `xpack-8.19.9` over `7.9.1-xpack`.
 
@@ -150,7 +150,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.2.3
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -171,7 +171,7 @@ elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `8.2.3` will be created with `x-pack` security plugin.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, an Elasticsearch of version `9.2.3` will be created with `x-pack` security plugin.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of Elasticsearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -185,9 +185,9 @@ The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION       STATUS         AGE
-es-quickstart   xpack-8.2.3   Provisioning   7s
+es-quickstart   xpack-9.2.3   Provisioning   7s
 ... ...
-es-quickstart   xpack-8.2.3   Ready          39s
+es-quickstart   xpack-9.2.3   Ready          39s
 ```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -354,7 +354,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  xpack-8.2.3
+  Version:  xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-12-27T05:25:39Z
@@ -441,7 +441,7 @@ NAME                             READY   AGE
 petset.apps/es-quickstart   3/3     8m2s
 
 NAME                                               TYPE                       VERSION   AGE
-appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   8.2.0     8m2s
+appbinding.appcatalog.appscode.com/es-quickstart   kubedb.com/elasticsearch   9.2.3     8m2s
 
 NAME                                               TYPE                       DATA   AGE
 secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      8m8s

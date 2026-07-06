@@ -45,7 +45,7 @@ Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/cl
 
 ### Prepare PgBouncer
 
-Now, we are going to deploy a `PgBouncer` with version `1.18.0`.
+Now, we are going to deploy a `PgBouncer` with version `1.24.0`.
 
 ### Deploy PgBouncer 
 
@@ -59,7 +59,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.18.0"
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"

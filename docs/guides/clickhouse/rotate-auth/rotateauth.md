@@ -46,7 +46,7 @@ metadata:
   name: clickhouse
   namespace: demo
 spec:
-  version: 25.7.1
+  version: 26.2.6
   replicas: 1
   storage:
     accessModes:
@@ -503,7 +503,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete clickhouseopsrequests -n demo chops-rotate-auth-generated chops-rotate-auth-user
-$ kubectl delete clickhouse -n demo clickhouse-prod
+$ kubectl delete clickhouse -n demo clickhouse
 $ kubectl delete secret -n demo clickhouse-user-auth
 $ kubectl delete ns demo
 ```
