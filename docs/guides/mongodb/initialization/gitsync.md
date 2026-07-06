@@ -67,7 +67,7 @@ spec:
 
 ```
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/git-sync-public.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/git-sync-public.yaml
 MongoDB.kubedb.com/mg-git created
 ```
 

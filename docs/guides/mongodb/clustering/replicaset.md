@@ -555,7 +555,7 @@ After that, kubedb will delete the petsets and services and you can see the data
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME                                VERSION   STATUS   AGE
 mongodb.kubedb.com/mgo-replicaset   4.4.26     Halted   9m43s
 
