@@ -176,7 +176,7 @@ $ kubectl get proxysql -n demo proxy-server
 NAME             VERSION       STATUS   AGE
 proxy-server   3.0.1-debian    Ready    5m48s
 
-$ kubectl get sts -n demo proxy-server
+$ kubectl get petset -n demo proxy-server
 NAME             READY   AGE
 proxy-server     3/3     7m5s
 ```
@@ -262,7 +262,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 mysql> create user 'test'@'%' identified by 'pass';
 Query OK, 0 rows affected (0.00 sec)
 
-mysql> grant all privileges on test.* to 'again'@'%';
+mysql> grant all privileges on test.* to 'test'@'%';
 Query OK, 0 rows affected (0.00 sec)
 
 mysql> flush privileges;
