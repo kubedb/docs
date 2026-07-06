@@ -629,7 +629,7 @@ petset.apps.k8s.appscode.com/druid-quickstart-routers          2m1s
     - `{Druid-Name}-{routers}` - Like the previous one, this primary service is only created if `spec.topology.routers` is provided. It is used to connect the routers with external clients.
 - `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the Druid. Like other resources, it is named after the Druid instance.
 - `Secrets` - A secret is generated for each Druid cluster.
-    - `{Druid-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
+    - `{Druid-Name}-auth` - the auth secret which holds the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
 
 ## Connect with Druid Database
 We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our routers of the Druid database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Druid database is working well. It is also possible to use `External-IP` to access druid nodes if you make `service` type of that node as `LoadBalancer`.

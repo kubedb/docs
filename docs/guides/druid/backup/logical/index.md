@@ -708,7 +708,7 @@ restored-druid-pods           ClusterIP   None             <none>        8081/TC
 restored-druid-routers        ClusterIP   10.128.228.193   <none>        8888/TCP                                                10m
 ```
 ```bash
-kubectl port-forward -n demo svc/sample-druid-routers 8888
+kubectl port-forward -n demo svc/restored-druid-routers 8888
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
 ```
@@ -718,14 +718,14 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.password}' | base64 -d
   DqG5E63NtklAkxqC
   ```
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list. 
