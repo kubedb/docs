@@ -189,7 +189,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `pp-custom` pgpool.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgpool.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
-- Have a look [here](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
+- Have a look at the [Pgpool OpsRequest concept](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 

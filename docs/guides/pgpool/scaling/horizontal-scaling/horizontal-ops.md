@@ -435,5 +435,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete pp -n demo pp-horizontal
+kubectl delete pgpoolopsrequest -n demo pgpool-horizontal-scale-up
 kubectl delete pgpoolopsrequest -n demo pgpool-horizontal-scale-down
 ```

@@ -67,7 +67,7 @@ The value of `clientAuthMode` field can be one of the following:
 
 The  `pool_hba.conf` of Pgpool will have the configuration based on the specified clientAuthMode.
 
-When, SSLMode is anything other than `disabled`, users must specify the `tls.issuerRef` field. KubeDB uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets. These certificate secrets are then used to generate required certificates including `ca.pem`, `tls.crt` and `tls.key`.
+When, SSLMode is anything other than `disabled`, users must specify the `tls.issuerRef` field. KubeDB uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificates` to generate certificate secrets. These certificate secrets are then used to generate required certificates including `ca.pem`, `tls.crt` and `tls.key`.
 
 ## Create Issuer/ ClusterIssuer
 

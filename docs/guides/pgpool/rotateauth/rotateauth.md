@@ -216,7 +216,7 @@ Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```shell
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauthuser.yaml
-Pgpoolopsrequest.ops.kubedb.com/ppops-rotate-auth-user created
+pgpoolopsrequest.ops.kubedb.com/ppops-rotate-auth-user created
 ```
 Let’s wait for `PgpoolOpsRequest` to be Successful. Run the following command to watch `PgpoolOpsRequest` CR:
 
