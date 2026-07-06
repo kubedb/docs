@@ -19,7 +19,7 @@ section_menu_id: guides
 `Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on AWS RDS or any external instance — into a
 KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
-object, and the KubeDB courier operator will run the migration Job that copies the data and keeps
+object, and the kubedb-courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
 `Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and

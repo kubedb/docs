@@ -20,7 +20,7 @@ This guide will show you how to use `KubeDB` Migration to migrate an existing `M
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` operator with the courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
+- Install `KubeDB` operator with the kubedb-courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
 - The source `MongoDB` instance must be network-reachable from within your Kubernetes cluster.
 
@@ -188,7 +188,7 @@ kubectl create secret generic ca-secret \
 
 > **Note:** For mTLS, also include the client certificate and key by appending <br> `--from-file=tls.crt=$CERT_PATH/tls.crt` <br> `--from-file=tls.key=$CERT_PATH/tls.key` <br> to the command above.
 
-Now create an `AppBinding` with the necessary information. The courier operator reads the source MongoDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The kubedb-courier operator reads the source MongoDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1

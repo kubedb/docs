@@ -28,7 +28,7 @@ A brief downtime occurs only during the final cutover when application endpoints
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` operator with the courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
+- Install `KubeDB` operator with the kubedb-courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
 - The source `PostgreSQL` instance must be network-reachable from within your Kubernetes cluster.
 
@@ -172,7 +172,7 @@ kubectl create secret generic ca-secret \
   --namespace=demo
 ```
 
-Now create an `AppBinding` with the necessary information. The courier operator reads the source PostgreSQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The kubedb-courier operator reads the source PostgreSQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
