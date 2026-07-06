@@ -386,7 +386,7 @@ When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validation
 
 ```bash
 $ kubectl delete zk zk-quickstart -n demo
-The ZooKeeper "zk-quickstart" is invalid: spec.teminationPolicy: Invalid value: "zk-quickstart": Can not delete as terminationPolicy is set to "DoNotTerminate"
+The ZooKeeper "zk-quickstart" is invalid: spec.deletionPolicy: Invalid value: "zk-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 ```
 
 Now, run `kubectl edit zk zk-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.

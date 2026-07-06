@@ -415,5 +415,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete zk -n demo
+kubectl delete zookeeperopsrequest -n demo horizontal-scale-up
 kubectl delete zookeeperopsrequest -n demo horizontal-scale-down
 ```
