@@ -238,7 +238,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
+- `spec.databaseRef.name` specifies that we are performing operation on `my-standalone` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
 - `spec.updateVersion.targetVersion` specifies expected version `9.1.0` after updating.
 
@@ -284,7 +284,7 @@ Spec:
     Name:  my-standalone
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  8.0.36
+    TargetVersion:  9.1.0
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -330,13 +330,13 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-8.0.36
+9.1.0
 
 $ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mysql:8.0.36
+mysql:9.1.0
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:8.0.36
+mysql:9.1.0
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.

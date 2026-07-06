@@ -85,4 +85,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a standalone MySQL server using Stash by following the guides from [here](/docs/guides/mysql/backup/stash/standalone/index.md).
+- Backup a standalone MySQL server using Stash by following the [Backup & Restore Standalone MySQL](/docs/guides/mysql/backup/stash/standalone/index.md) guide.

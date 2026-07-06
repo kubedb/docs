@@ -378,7 +378,7 @@ mysql> show variables like 'read_buffer_size';
 
 ```
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/mysql/configuration/config-file/index.md)
+To know more about this configuration file, check the [Run MySQL with Custom Configuration](/docs/guides/mysql/configuration/config-file/index.md) guide.
 ```yaml
 apiVersion: v1
 stringData:
@@ -809,7 +809,7 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 
 ### Update Version
 
-List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/mysql/update-version/overview/index.md).
+List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request in the [Updating MySQL Overview](/docs/guides/mysql/update-version/overview/index.md).
 
 Let's choose `9.6.0` in this example.
 
@@ -987,6 +987,6 @@ Verify the monitoring is enabled by checking the prometheus targets.
 - Learn MySQL Scaling 
   - [Horizontal Scaling](/docs/guides/mysql/scaling/horizontal-scaling/overview/index.md)
   - [Vertical Scaling](/docs/guides/mysql/scaling/vertical-scaling/overview/index.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/mysql/update-version/overview/index.md)
+- Learn Version Update Ops Request and Constraints in the [Updating MySQL Overview](/docs/guides/mysql/update-version/overview/index.md)
 - Monitor your MySQL database with KubeDB using [built-in Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
