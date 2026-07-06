@@ -73,7 +73,7 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ watch kubectl get zookeeper -n demo
 NAME              TYPE                    VERSION   STATUS    AGE
-zk-quickstart     kubedb.com/v1alpha2     3.8.3     Ready     60s
+zk-quickstart     kubedb.com/v1alpha2     3.9.1     Ready     60s
 ```
 
 Now, we can exec one zookeeper broker pod and verify configuration that the TLS is disabled.
@@ -81,7 +81,7 @@ Now, we can exec one zookeeper broker pod and verify configuration that the TLS 
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ cat ../conf/zoo.cfg
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
 dataDir=/data
 tickTime=2000
@@ -105,7 +105,7 @@ authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
 reconfigEnabled=true
 standaloneEnabled=false
 dynamicConfigFile=/data/zoo.cfg.dynamic
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ 
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
 ```
 
 We can verify from the above output that TLS is disabled for this Ensemble.
@@ -171,7 +171,7 @@ spec:
     name: zk-quickstart
   tls:
     issuerRef:
-      name: zookeeper-ca-issuer
+      name: zk-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     certificates:
@@ -232,7 +232,7 @@ Spec:
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       zookeeper-ca-issuer
+      Name:       zk-issuer
   Type:           ReconfigureTLS
 Status:
   Conditions:
@@ -326,7 +326,7 @@ Now, Let's exec into a zookeeper ensemble pod and verify the configuration that 
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ cat ../conf/zoo.cfg
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
 dataDir=/data
 tickTime=2000
@@ -363,7 +363,7 @@ ssl.quorum.keyStore.password=fdjk2dgffqn9
 ssl.quorum.trustStore.location=/var/private/ssl/server.truststore.jks
 ssl.quorum.trustStore.password=fdjk2dgffqn9
 ssl.quorum.hostnameVerification=false
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ 
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
 ```
 
 We can see from the above output that, keystore location is `/var/private/ssl/server.keystore.jks` which means that TLS is enabled.
@@ -375,7 +375,7 @@ Now we are going to rotate the certificate of this cluster. First let's check th
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb  2 12:53:30 2025 GMT
 ```
 
@@ -566,7 +566,7 @@ Now, let's check the expiration date of the certificate.
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb 2 13:12:42 2025 GMT
 ```
 
@@ -597,7 +597,7 @@ $ kubectl create secret tls zookeeper-new-ca \
 secret/zookeeper-new-ca created
 ```
 
-Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create a new `Issuer` using the `zookeeper-new-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -648,7 +648,7 @@ Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-update-tls-issuer.yaml
-zookeeperpsrequest.ops.kubedb.com/zkops-update-issuer created
+zookeeperopsrequest.ops.kubedb.com/zkops-update-issuer created
 ```
 
 #### Verify Issuer is changed successfully
@@ -806,7 +806,7 @@ Now, Let's exec into a zookeeper node and find out the ca subject to see if it m
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass fdjk2dgffqn9 | grep 'Issuer'
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass fdjk2dgffqn9 | grep 'Issuer'
 Issuer: O=kubedb-updated, CN=ca-updated
 Issuer: O=kubedb-updated, CN=ca-updated
 ```
@@ -967,7 +967,7 @@ Now, Let's exec into one of the broker node and find out that TLS is disabled or
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ cat ../conf/zoo.cfg
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
 dataDir=/data
 tickTime=2000
@@ -991,7 +991,7 @@ authProvider.1=org.apache.zookeeper.server.auth.SASLAuthenticationProvider
 reconfigEnabled=true
 standaloneEnabled=false
 dynamicConfigFile=/data/zoo.cfg.dynamic
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ 
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
 ```
 
 So, we can see from the above that, output that tls is disabled successfully.

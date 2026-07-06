@@ -75,7 +75,7 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME            VERSION    STATUS    AGE
-zk-quickstart   3.8.3      Ready     5m56s
+zk-quickstart   3.9.1      Ready     5m56s
 ```
 
 Let's check the number of replicas this zookeeper has from the ZooKeeper object, number of pods the PetSet have,
@@ -104,7 +104,7 @@ In order to scale up the replicas of the zookeeper, we have to create a `ZooKeep
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ZooKeeperOpsRequest
 metadata:
-  name: zookeeper-horizontal-scale-up
+  name: horizontal-scale-up
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -123,8 +123,8 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/horizontal-scaling/zk-hscale-up-ops.yaml
-zookeeperopsrequest.ops.kubedb.com/zookeeper-horizontal-scale-up created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-up-ops.yaml
+zookeeperopsrequest.ops.kubedb.com/horizontal-scale-up created
 ```
 
 #### Verify replicas scaled up successfully
@@ -136,14 +136,14 @@ Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following comm
 ```bash
 $ watch kubectl get zookeeperopsrequest -n demo
 NAME                            TYPE                STATUS       AGE
-zookeeper-horizontal-scale-up   HorizontalScaling   Successful   2m49s
+horizontal-scale-up   HorizontalScaling   Successful   2m49s
 ```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to scale the zookeeper.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zookeeper-horizontal-scale-up
-Name:         zookeeper-horizontal-scale-up
+$ kubectl describe zookeeperopsrequest -n demo horizontal-scale-up
+Name:         horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -224,7 +224,7 @@ Events:
   Normal   Successful                                                      27s   KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: horizontal-scale-up
 ```
 
-Now, we are going to verify the number of replicas this zookeeper has from the Pgpool object, number of pods the PetSet have,
+Now, we are going to verify the number of replicas this zookeeper has from the ZooKeeper object, number of pods the PetSet have,
 
 ```bash
 $ kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
@@ -248,7 +248,7 @@ In order to scale down the replicas of the zookeeper, we have to create a `ZooKe
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ZooKeeperOpsRequest
 metadata:
-  name: zookeeper-horizontal-scale-down
+  name: horizontal-scale-down
   namespace: demo
 spec:
   type: HorizontalScaling
@@ -268,8 +268,8 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/horizontal-scaling/zk-hscale-down-ops.yaml
-zookeeperopsrequest.ops.kubedb.com/zookeeper-horizontal-scale-down created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-down-ops.yaml
+zookeeperopsrequest.ops.kubedb.com/horizontal-scale-down created
 ```
 
 #### Verify replicas scaled down successfully
@@ -281,14 +281,14 @@ Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following comm
 ```bash
 $ watch kubectl get zookeeperopsrequest -n demo
 NAME                              TYPE                STATUS       AGE
-zookeeper-horizontal-scale-down   HorizontalScaling   Successful   75s
+horizontal-scale-down   HorizontalScaling   Successful   75s
 ```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to scale the zookeeper.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zookeeper-horizontal-scale-down
-Name:         zookeeper-horizontal-scale-down
+$ kubectl describe zookeeperopsrequest -n demo horizontal-scale-down
+Name:         horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -415,5 +415,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete zk -n demo
-kubectl delete zookeeperopsrequest -n demo zookeeper-horizontal-scale-down
+kubectl delete zookeeperopsrequest -n demo horizontal-scale-up
+kubectl delete zookeeperopsrequest -n demo horizontal-scale-down
 ```

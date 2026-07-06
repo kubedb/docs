@@ -50,7 +50,7 @@ We are going to store our backed up data into a `s3` bucket. We have to create a
 
 **Create Secret:**
 
-Let's create a secret called `s3-secret` with access credentials to our desired GCS bucket,
+Let's create a secret called `s3-secret` with access credentials to our desired s3 bucket,
 
 ```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
@@ -715,7 +715,7 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 ```bash
 $ kubectl get backupsession -n demo -w
 NAME                                                        INVOKER-TYPE          INVOKER-NAME                   PHASE       DURATION   AGE
-appbinding-sample-zookeeper-2-frequent-backup-1726742400    BackupConfiguration   appbinding-sample-zookeeper     Succeeded   58s        112s
+appbinding-sample-zookeeper-2-frequent-backup-1726742400    BackupConfiguration   appbinding-sample-zookeeper-2   Succeeded   58s        112s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
