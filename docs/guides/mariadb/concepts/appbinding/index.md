@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-appbinding
     name: AppBinding
     parent: guides-mariadb-concepts
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
