@@ -790,7 +790,7 @@ Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-tls-remove.yaml
-Memcachedopsrequest.ops.kubedb.com/mc-ops-tls-remove created
+memcachedopsrequest.ops.kubedb.com/mc-ops-tls-remove created
 ```
 
 #### Verify TLS Removed Successfully

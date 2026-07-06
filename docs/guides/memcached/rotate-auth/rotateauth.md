@@ -55,7 +55,7 @@ NAME       VERSION   DB_IMAGE                                          DEPRECATE
 1.6.33     1.6.33    ghcr.io/appscode-images/memcached:1.6.33-alpine                5d19h
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached/update-version) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached/rotate-auth](/docs/examples/memcached/rotate-auth) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Create a Memcached Server
 
@@ -509,7 +509,7 @@ Connection closed by foreign host.
 ```
 Your credentials have been rotated successfully, so everything’s working.
 
-Also, there will be two more new keys in the secretthat stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secretand its data by running the following command:
+Also, there will be a new key in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
 ```shell
 $ kubectl get secret -n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 user:yjf3Oc;ZlSs.iMVO
@@ -524,12 +524,15 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
 ```shell
-$ kubectl delete Memcachedopsrequest mcops-rotate-auth-generated mcops-rotate-auth-user -n demo
-Memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" "mcops-rotate-auth-user" deleted
+$ kubectl delete memcachedopsrequest -n demo mcops-rotate-auth-generated mcops-rotate-auth-user
+memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" deleted
+memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-user" deleted
 $ kubectl delete secret -n demo mc-new-auth
-secret"mc-new-auth" deleted
-$ kubectl delete secret -n demo  memcd-quickstart-auth
-secret"memcd-quickstart-auth" deleted
+secret "mc-new-auth" deleted
+$ kubectl delete secret -n demo memcd-quickstart-auth
+secret "memcd-quickstart-auth" deleted
+$ kubectl delete memcached -n demo memcd-quickstart
+memcached.kubedb.com "memcd-quickstart" deleted
 ```
 
 ## Next Steps
