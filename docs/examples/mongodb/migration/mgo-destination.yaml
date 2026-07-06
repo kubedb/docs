@@ -7,7 +7,7 @@ spec:
   version: "4.4.26"
   replicaSet:
     name: "rs1"
-  replicas: 2
+  replicas: 3
   storageType: Durable
   storage:
     storageClassName: "local-path"
@@ -16,13 +16,3 @@ spec:
     resources:
       requests:
         storage: 15Gi
-  serviceTemplates:
-  - alias: primary
-    metadata:
-      annotations:
-        passMe: ToService
-    spec:
-      type: NodePort
-      ports:
-      - name:  http
-        port:  27017

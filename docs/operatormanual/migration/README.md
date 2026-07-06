@@ -33,7 +33,7 @@ Add `--set kubedb-migrator.enabled=true` to the standard [KubeDB helm install](/
 
 ### Upgrade Existing Install
 
-The Migrator CRD is required to apply the Migrator CR. Helm upgrade command doesnt apply CRD. So apply it manually:
+The Migrator CRD is required to apply the Migrator CR. Helm upgrade command doesn't apply CRD. So apply it manually:
 
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/migrator.kubedb.com_migrators.yaml
@@ -61,3 +61,5 @@ The following database has migration support.
 [MySQL](/docs/guides/mysql/migration/databaseMigration.md)
 
 [MariaDB](/docs/guides/mariadb/migration/databaseMigration.md)
+
+[MongoDB](/docs/guides/mongodb/migration/databaseMigration.md)
