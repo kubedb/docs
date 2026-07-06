@@ -133,7 +133,7 @@ mssqlserver-quickstart   2022-cu12   Ready    75m
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
 "mssqlserver-quickstart-auth"
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 sa⏎                            
@@ -291,7 +291,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
 "mssqlserver-quickstart-auth"
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 sa⏎  
@@ -485,7 +485,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
 "mssqlserver-quickstart-auth "
 $ kubectl get secret -n demo mssqlserver-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 sa⏎                                      
