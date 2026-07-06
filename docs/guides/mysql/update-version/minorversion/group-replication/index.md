@@ -276,7 +276,7 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/group-replication/yamls/update_minor_version_group.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/group-replication/yamls/upgrade_minor_version_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-update-minor-group created
 ```
 
