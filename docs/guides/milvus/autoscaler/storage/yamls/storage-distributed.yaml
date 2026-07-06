@@ -1,0 +1,20 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MilvusAutoscaler
+metadata:
+  name: milvus-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: milvus-cluster
+  storage:
+    streamingnode:
+      trigger: "On"
+      usageThreshold: 34
+      expansionMode: "Online"
+
+      scalingRules:
+        - appliesUpto: "100Ti"
+          threshold: "50%"
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 10m
