@@ -267,7 +267,7 @@ w*yOU$b53dTbjsjJ
 We will exec into the pod `sample-pxc-0` and connet to the database using `username` and `password`.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- perconaxtradb -u root --password='w*yOU$b53dTbjsjJ'
+$ kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='w*yOU$b53dTbjsjJ'
 
 Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 

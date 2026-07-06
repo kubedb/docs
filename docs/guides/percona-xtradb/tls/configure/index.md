@@ -31,7 +31,7 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/percona-xtradb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/percona-xtradb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/percona-xtradb/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ### Deploy PerconaXtraDB database with TLS/SSL configuration
 
@@ -370,7 +370,7 @@ From the above output, you can see that only using client certificate we can acc
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete  perconaxtradb demo  sample-pxc
+$ kubectl delete perconaxtradb -n demo sample-pxc
 perconaxtradb.kubedb.com "sample-pxc" deleted
 $ kubectl delete ns demo
 namespace "demo" deleted
