@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # MongoDB Database Migration
 
-This guide will show you how to use `KubeDB` Migrator to migrate an existing `MongoDB` database — such as one running on DigitalOcean Managed MongoDB or any external instance — entirely into a KubeDB-managed `MongoDB` with minimal downtime.
+This guide will show you how to use `KubeDB` Migration to migrate an existing `MongoDB` database — such as one running on DigitalOcean Managed MongoDB or any external instance — entirely into a KubeDB-managed `MongoDB` with minimal downtime.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` operator with the Migrator operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
+- Install `KubeDB` operator with the courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
 - The source `MongoDB` instance must be network-reachable from within your Kubernetes cluster.
 
@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Mo
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mongodb/concepts/appbinding.md)
     - [MongoDB](/docs/guides/mongodb/concepts/mongodb.md)
-    - [Migrator](/docs/guides/mongodb/concepts/migrator.md)
+    - [Migration](/docs/guides/mongodb/concepts/migrator.md)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -188,7 +188,7 @@ kubectl create secret generic ca-secret \
 
 > **Note:** For mTLS, also include the client certificate and key by appending <br> `--from-file=tls.crt=$CERT_PATH/tls.crt` <br> `--from-file=tls.key=$CERT_PATH/tls.key` <br> to the command above.
 
-Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MongoDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The courier operator reads the source MongoDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -258,13 +258,13 @@ mongodb.kubedb.com/mgo-destination created
 
 Wait until `mgo-destination` has status `Ready`.
 
-## Apply Migrator CR
+## Apply Migration CR
 
-To migrate the database we have to create a `Migrator` CR. KubeDB uses `mongoshake` to perform the migration. Below is the YAML of the `Migrator` CR that we are going to create:
+To migrate the database we have to create a `Migration` CR. KubeDB uses `mongoshake` to perform the migration. Below is the YAML of the `Migration` CR that we are going to create:
 
 ```yaml
-apiVersion: migrator.kubedb.com/v1alpha1
-kind: Migrator
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
 metadata:
   name: mongodb-migrate
   namespace: demo
@@ -289,7 +289,7 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mongodb-migrate.yaml
-migrator.migrator.kubedb.com/mongodb-migrate created
+migration.courier.kubedb.com/mongodb-migrate created
 ```
 
 Here,
@@ -302,14 +302,14 @@ Here,
 - `extraConfiguration` — additional `mongoshake` configuration parameters. For example:
   - `full_sync.executor.insert_on_dup_update: "true"` — uses upsert instead of insert during full sync to handle duplicate key errors gracefully.
 
-For a full description of every field, see the [Migrator CRD reference](/docs/guides/mongodb/concepts/migrator.md).
+For a full description of every field, see the [Migration CRD reference](/docs/guides/mongodb/concepts/migrator.md).
 
 ## Watch Migration Progress
 
-Let's wait for the Migration to finish the full sync and enter the incremental sync. Run the following command to watch `Migrator` CR:
+Let's wait for the Migration to finish the full sync and enter the incremental sync. Run the following command to watch `Migration` CR:
 
 ```bash
-Every 2.0s: kubectl get migrator -n demo
+Every 2.0s: kubectl get migration -n demo
 ```
 
 During the **full** stage, you'll see progress advancing to 100%:
@@ -328,10 +328,10 @@ mongodb-migrate   Running   mongodb   incr    0                17h
 
 ### View detailed progress via pod logs
 
-You can also see collection-wise progress, detailed checkpoints, and sync metrics by checking the migrator pod logs:
+You can also see collection-wise progress, detailed checkpoints, and sync metrics by checking the migration pod logs:
 
 ```bash
-$ kubectl logs -n demo migrator-<migrator-pod-name>
+$ kubectl logs -n demo migration-<migration-pod-name>
 ```
 
 Example output during the full sync stage — showing per-collection progress, total/finished/processing/waiting collections:
@@ -348,7 +348,7 @@ Example output during incremental sync — showing LAG, checkpoint timestamps, a
 
 ### Verify initial snapshot on target
 
-Once the migrator reaches the `incr` stage (continuous oplog tailing), exec into the KubeDB target pod and confirm all seed documents were copied over:
+Once the migration reaches the `incr` stage (continuous oplog tailing), exec into the KubeDB target pod and confirm all seed documents were copied over:
 
 ```bash
 $ kubectl exec -it -n demo mgo-destination-0 -- mongosh -u root -p<root-password>
@@ -387,7 +387,7 @@ db.orders.find().pretty()
 
 ### Test live CDC streaming
 
-With the migrator still running, connect to the **source DigitalOcean** instance and run some DML:
+With the migration still running, connect to the **source DigitalOcean** instance and run some DML:
 
 ```bash
 $ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u migrator -p
@@ -450,11 +450,11 @@ The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming
 
 Once the `LAG` drops to near zero, stop all writes to the source database. Wait until the `LAG` reaches exactly zero — at that point both databases are fully in sync.
 
-Now delete the `Migrator` CR to stop the migration process:
+Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migrator -n demo mongodb-migrate
-migrator.migrator.kubedb.com "mongodb-migrate" deleted
+$ kubectl delete migration -n demo mongodb-migrate
+migration.courier.kubedb.com "mongodb-migrate" deleted
 ```
 
 Finally, update your application's connection string to point to the target KubeDB-managed `MongoDB` database. The migration is complete.

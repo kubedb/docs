@@ -1,9 +1,9 @@
 ---
-title: Migrator CRD
+title: Migration CRD
 menu:
   docs_{{ .version }}:
     identifier: pg-migrator-concepts
-    name: Migrator
+    name: Migration
     parent: pg-concepts-postgres
     weight: 26
 menu_name: docs_{{ .version }}
@@ -12,29 +12,29 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Migrator
+# Migration
 
-## What is Migrator
+## What is Migration
 
-`Migrator` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
+`Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on an external or managed instance — into a
-KubeDB-managed database. You only need to describe the source and target databases in a `Migrator`
-object, and the KubeDB Migrator operator will run the migration Job that copies the data and keeps
+KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
+object, and the KubeDB courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
-`Migrator` is a single shared CRD (`migrator.kubedb.com/v1alpha1`). Its `spec.source` and
+`Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and
 `spec.target` each carry a per-database sub-spec (`mysql`, `mariadb`, `postgres`, `mongodb`). This
-page describes the `Migrator` object for a **PostgreSQL** source and target.
+page describes the `Migration` object for a **PostgreSQL** source and target.
 
-## Migrator Spec
+## Migration Spec
 
-As with all other Kubernetes objects, a `Migrator` needs `apiVersion`, `kind`, and `metadata`
-fields. It also needs a `.spec` section. Below is an example `Migrator` object for migrating a
+As with all other Kubernetes objects, a `Migration` needs `apiVersion`, `kind`, and `metadata`
+fields. It also needs a `.spec` section. Below is an example `Migration` object for migrating a
 PostgreSQL database.
 
 ```yaml
-apiVersion: migrator.kubedb.com/v1alpha1
-kind: Migrator
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
 metadata:
   name: postgres-migrate
   namespace: demo
@@ -87,7 +87,7 @@ It holds a per-database sub-spec; for a PostgreSQL migration you set `spec.targe
 
 ### spec.source.postgres.connectionInfo
 
-`connectionInfo` (also under `spec.target.postgres`) tells the Migrator how to connect to the
+`connectionInfo` (also under `spec.target.postgres`) tells the Migration how to connect to the
 PostgreSQL instance. There are two ways to provide the connection details — set **either**
 `appBinding` **or** `url`:
 
@@ -101,7 +101,7 @@ PostgreSQL instance. There are two ways to provide the connection details — se
   `postgres://user:password@host:5432/postgres`). Use this as an alternative to `appBinding` when you
   want to provide the endpoint inline instead of through an AppBinding.
 - `dbName` — the database used as the initial connection entry point.
-- `maxConnections` — limits the number of concurrent connections the Migrator opens to this
+- `maxConnections` — limits the number of concurrent connections the Migration opens to this
   PostgreSQL instance.
 - `tls` — paths to PEM files for a TLS-enabled connection. You can set the following fields:
   - `caFile` — path to the PEM-encoded CA certificate file.
@@ -149,7 +149,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 
 `spec.jobDefaults` is an optional field that sets default settings for the migration Job.
 
-- `imagePullPolicy` — the image pull policy for the Migrator Job. Defaults to `IfNotPresent`.
+- `imagePullPolicy` — the image pull policy for the Migration Job. Defaults to `IfNotPresent`.
 - `backoffLimit` — the number of retries before the Job is marked as failed. Defaults to `6`.
 - `ttlSecondsAfterFinished` — the TTL (in seconds) for cleaning up a completed Job.
 - `activeDeadlineSeconds` — the duration (in seconds) relative to its start time that the Job may be
@@ -161,7 +161,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migrator Status
+## Migration Status
 
 `status` reflects the observed state of the migration.
 
@@ -173,7 +173,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 - `status.progress` — the current progress of the migration:
   - `dbType` — the type of database being migrated.
   - `info` — additional progress information, including the current `Stage`, `Lag`, and `Progress`
-    (these are surfaced as columns in `kubectl get migrator`).
+    (these are surfaced as columns in `kubectl get migration`).
 - `status.conditions` — an array of conditions describing the migration's state over time (for
   example, `MigratorJobTriggered`, `MigrationRunning`, `MigrationSucceeded`, `MigrationFailed`).
 

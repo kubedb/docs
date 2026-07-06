@@ -33,10 +33,10 @@ Add `--set kubedb-migrator.enabled=true` to the standard [KubeDB helm install](/
 
 ### Upgrade Existing Install
 
-The Migrator CRD is required to apply the Migrator CR. Helm upgrade command doesn't apply CRD. So apply it manually:
+The Migration CRD is required to apply the Migration CR. Helm upgrade command doesn't apply CRD. So apply it manually:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/migrator.kubedb.com_migrators.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_migrations.yaml
 ```
 
 Add `--set kubedb-migrator.enabled=true` to the [Kubedb helm upgrade](/docs/setup/upgrade/index.md) 
@@ -44,8 +44,8 @@ Add `--set kubedb-migrator.enabled=true` to the [Kubedb helm upgrade](/docs/setu
 
 ## Migration Steps
 
-1. **Create a Migrator CR** with your source connection details and target KubeDB database reference. Migration starts automatically.
-2. **Source stays live** — the KubeDB Migrator first copies the schema, then takes an initial bulk snapshot of your data. Your source database continues to accept reads and writes throughout.
+1. **Create a Migration CR** with your source connection details and target KubeDB database reference. Migration starts automatically.
+2. **Source stays live** — the KubeDB Migration first copies the schema, then takes an initial bulk snapshot of your data. Your source database continues to accept reads and writes throughout.
 3. **Streaming phase begins** — once the snapshot is complete, KubeDB streams ongoing changes from the source using CDC (change-data capture). 
 4. **Stop writes to the source** — when the streaming lag approaches zero, stop source database write
 5. **Wait for lag to reach zero** — once lag is exactly zero, the two databases are fully in sync.

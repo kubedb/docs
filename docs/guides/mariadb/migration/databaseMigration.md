@@ -14,13 +14,13 @@ section_menu_id: guides
 
 # MariaDB Database Migration
 
-This guide will show you how to use `KubeDB` Migrator to migrate an existing `MariaDB` database — such as one running on AWS RDS or any external instance — entirely into a KubeDB-managed `MariaDB` with minimal downtime.
+This guide will show you how to use `KubeDB` Migration to migrate an existing `MariaDB` database — such as one running on AWS RDS or any external instance — entirely into a KubeDB-managed `MariaDB` with minimal downtime.
 
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` operator with the Migrator operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
+- Install `KubeDB` operator with the courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
 - The source `MariaDB` instance must be network-reachable from within your Kubernetes cluster.
 
@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migrator to migrate an existing `Ma
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mariadb/concepts/appbinding/)
     - [MariaDB](/docs/guides/mariadb/concepts/mariadb)
-    - [Migrator](/docs/guides/mariadb/concepts/migrator/)
+    - [Migration](/docs/guides/mariadb/concepts/migrator/)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -180,7 +180,7 @@ kubectl create secret generic ca-secret \
 `--from-file=tls.key=$CERT_PATH/tls.key` <br> 
 to the command above.
 
-Now create an `AppBinding` with the necessary information. The Migrator operator reads the source MariaDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The courier operator reads the source MariaDB connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -238,13 +238,13 @@ mariadb.kubedb.com/target-mariadb created
 
 Wait until `target-mariadb` has status `Ready`.
 
-## Apply Migrator CR
+## Apply Migration CR
 
-To migrate the database we have to create a `Migrator` CR. Below is the YAML of the `Migrator` CR that we are going to create:
+To migrate the database we have to create a `Migration` CR. Below is the YAML of the `Migration` CR that we are going to create:
 
 ```yaml
-apiVersion: migrator.kubedb.com/v1alpha1
-kind: Migrator
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
 metadata:
   name: mariadb-migrate
   namespace: demo
@@ -285,17 +285,17 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/mariadb-migrate.yaml
-migrator.migrator.kubedb.com/mariadb-migrate created
+migration.courier.kubedb.com/mariadb-migrate created
 ```
 
-Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migrator CRD reference](/docs/guides/mariadb/concepts/migrator/).
+Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migration CRD reference](/docs/guides/mariadb/concepts/migrator/).
 
 ## Watch Migration Progress
 
-Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migrator` CR:
+Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migration` CR:
 
 ```bash
-Every 2.0s: kubectl get migrator -n demo
+Every 2.0s: kubectl get migration -n demo
 
 NAME              PHASE     DBTYPE    STAGE       LAG   PROGRESS   AGE
 mariadb-migrate   Running   mariadb   Streaming   0B    100%       4h36m
@@ -303,7 +303,7 @@ mariadb-migrate   Running   mariadb   Streaming   0B    100%       4h36m
 
 ### Verify initial snapshot on target
 
-Once the migrator reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
+Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
 
 ```bash
 $ kubectl exec -it -n demo target-mariadb-0 -- mysql -u root -p<root-password>
@@ -324,7 +324,7 @@ SELECT * FROM orders;
 
 ### Test live CDC streaming
 
-With the migrator still running, connect to the **source RDS** instance and run some DML:
+With the migration still running, connect to the **source RDS** instance and run some DML:
 
 ```bash
 $ mysql -h <rds-endpoint>.rds.amazonaws.com -u migrator -p
@@ -363,11 +363,11 @@ The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming
 
 Once the `LAG` drops to near zero, stop all writes to the source database. Wait until the `LAG` reaches exactly zero — at that point both databases are fully in sync.
 
-Now delete the `Migrator` CR to stop the migration process:
+Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migrator -n demo mariadb-migrate
-migrator.migrator.kubedb.com "mariadb-migrate" deleted
+$ kubectl delete migration -n demo mariadb-migrate
+migration.courier.kubedb.com "mariadb-migrate" deleted
 ```
 
 Finally, update your application's connection string to point to the target KubeDB-managed `MariaDB` database. The migration is complete.

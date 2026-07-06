@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # PostgreSQL Database Migration
 
-This guide will show you how to use `KubeDB` Migrator to migrate an existing `PostgreSQL` database to a KubeDB-managed `PostgreSQL` instance with minimal downtime. The tool supports migration from a wide range of source environments — including Amazon RDS, CloudNativePG (CNPG), Zalando PostgreSQL Operator, Bitnami Helm charts, and self-hosted PostgreSQL instances.
+This guide will show you how to use `KubeDB` Migration to migrate an existing `PostgreSQL` database to a KubeDB-managed `PostgreSQL` instance with minimal downtime. The tool supports migration from a wide range of source environments — including Amazon RDS, CloudNativePG (CNPG), Zalando PostgreSQL Operator, Bitnami Helm charts, and self-hosted PostgreSQL instances.
 
 The migration operates in three phases:
 
@@ -28,7 +28,7 @@ A brief downtime occurs only during the final cutover when application endpoints
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
 
-- Install `KubeDB` operator with the Migrator operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
+- Install `KubeDB` operator with the courier operator enabled in your cluster following the steps [here](/docs/operatormanual/migration/).
 
 - The source `PostgreSQL` instance must be network-reachable from within your Kubernetes cluster.
 
@@ -37,7 +37,7 @@ A brief downtime occurs only during the final cutover when application endpoints
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/postgres/concepts/appbinding.md)
     - [PostgreSQL](/docs/guides/postgres/concepts/postgres.md)
-    - [Migrator](/docs/guides/postgres/concepts/migrator.md)
+    - [Migration](/docs/guides/postgres/concepts/migrator.md)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -172,7 +172,7 @@ kubectl create secret generic ca-secret \
   --namespace=demo
 ```
 
-Now create an `AppBinding` with the necessary information. The Migrator operator reads the source PostgreSQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
+Now create an `AppBinding` with the necessary information. The courier operator reads the source PostgreSQL connection information from this AppBinding CR. Use the following YAML to create your AppBinding:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -229,13 +229,13 @@ postgres.kubedb.com/target-postgres created
 
 Wait until `target-postgres` has status `Ready`.
 
-## Apply Migrator CR
+## Apply Migration CR
 
-To migrate the database we have to create a `Migrator` CR. Below is the YAML of the `Migrator` CR that we are going to create:
+To migrate the database we have to create a `Migration` CR. Below is the YAML of the `Migration` CR that we are going to create:
 
 ```yaml
-apiVersion: migrator.kubedb.com/v1alpha1
-kind: Migrator
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
 metadata:
   name: postgres-migrate
   namespace: demo
@@ -269,17 +269,17 @@ spec:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/postgres-migrate.yaml
-migrator.migrator.kubedb.com/postgres-migrate created
+migration.courier.kubedb.com/postgres-migrate created
 ```
 
-Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migrator CRD reference](/docs/guides/postgres/concepts/migrator.md).
+Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migration CRD reference](/docs/guides/postgres/concepts/migrator.md).
 
 ## Watch Migration Progress
 
-Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migrator` CR:
+Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migration` CR:
 
 ```bash
-Every 2.0s: kubectl get migrator -n demo
+Every 2.0s: kubectl get migration -n demo
 
 NAME               PHASE     DBTYPE     STAGE       LAG   PROGRESS   AGE
 postgres-migrate   Running   postgres   Streaming   0B    100%       4h36m
@@ -287,7 +287,7 @@ postgres-migrate   Running   postgres   Streaming   0B    100%       4h36m
 
 ### Verify initial snapshot on target
 
-Once the migrator reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
+Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
 
 ```bash
 $ kubectl exec -it -n demo target-postgres-0 -- psql -U postgres -d shop
@@ -305,7 +305,7 @@ SELECT * FROM orders;
 
 ### Test live CDC streaming
 
-With the migrator still running, connect to the **source RDS** instance and run some DML:
+With the migration still running, connect to the **source RDS** instance and run some DML:
 
 ```bash
 $ psql -h <rds-endpoint>.rds.amazonaws.com -U migrator -d shop -p 5432
@@ -341,11 +341,11 @@ The INSERT, UPDATE, and DELETE are all reflected on the target — logical repli
 
 Once the `LAG` drops to near zero, stop all writes to the source database. Wait until the `LAG` reaches exactly zero — at that point both databases are fully in sync.
 
-Now delete the `Migrator` CR to stop the migration process:
+Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migrator -n demo postgres-migrate
-migrator.migrator.kubedb.com "postgres-migrate" deleted
+$ kubectl delete migration -n demo postgres-migrate
+migration.courier.kubedb.com "postgres-migrate" deleted
 ```
 
 Finally, update your application's connection string to point to the target KubeDB-managed `PostgreSQL` database. The migration is complete.

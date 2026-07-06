@@ -1,5 +1,5 @@
-apiVersion: migrator.kubedb.com/v1alpha1
-kind: Migrator
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
 metadata:
   name: postgres-migrate
   namespace: demo
