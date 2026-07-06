@@ -122,7 +122,7 @@ KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Me
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION    STATUS    AGE
-memcd-quickstart   1.6.40     Running   2m
+memcd-quickstart   1.6.40     Ready     2m
 
 $ kubectl describe mc -n demo memcd-quickstart
 Name:         memcd-quickstart
@@ -233,7 +233,7 @@ memcd-quickstart        ClusterIP   10.96.115.90   <none>        11211/TCP   9m7
 memcd-quickstart-pods   ClusterIP   None           <none>        11211/TCP   9m7s
 ```
 
-KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Memcached object:
+KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Memcached object:
 
 ```yaml
 $ kubectl get mc -n demo memcd-quickstart -o yaml
@@ -322,6 +322,20 @@ status:
 ```
 ## Connect with Memcached database
 
+By default, KubeDB enables authentication for Memcached. The credentials are stored in the auth secret named `{Memcached crd name}-auth`. You need these credentials to connect to the server.
+
+Retrieve the credentials from the auth secret. They are stored in the `authData` key in the `username:password` format.
+
+```bash
+$ kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.authSecret.name}'
+memcd-quickstart-auth
+
+$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+user:tysiujogcmzapyhz
+```
+
+Here, `username` is `user` and `password` is `tysiujogcmzapyhz`.
+
 Now, you can connect to this database using `telnet`.
 Here, we will connect to Memcached server from local-machine through port-forwarding.
 
@@ -340,6 +354,14 @@ Forwarding from [::1]:11211 -> 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the `username` and `password` separated by a space, and the byte
+# count (21 here) is the length of that value.
+set auth 0 0 21
+user tysiujogcmzapyhz
+# Output:
+STORED
 
 # Save data Command:
 set my_key 0 2592000 1

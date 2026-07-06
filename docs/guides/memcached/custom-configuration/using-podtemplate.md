@@ -437,7 +437,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/memcached-without-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/without-toleration.yaml
 memcached.kubedb.com/memcached-without-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-without-tolerations-0` has been created and running.
@@ -557,7 +557,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/with-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/with-tolerations.yaml
 memcached.kubedb.com/memcached-with-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-with-tolerations-0` has been created.
