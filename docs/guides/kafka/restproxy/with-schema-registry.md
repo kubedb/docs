@@ -71,7 +71,7 @@ The RestProxy instance used for this tutorial:
 apiVersion: kafka.kubedb.com/v1alpha1
 kind: RestProxy
 metadata:
-  name: restproxy-interal-sr
+  name: restproxy-internal-sr
   namespace: demo
 spec:
   version: 3.15.0
@@ -96,8 +96,8 @@ Before create RestProxy, you have to deploy a `Kafka` cluster first. To deploy k
 Let's create the RestProxy CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restproxy/restproxy-interal-sr.yaml
-restproxy.kafka.kubedb.com/restproxy-interal-sr created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restproxy/restproxy-internal-sr.yaml
+restproxy.kafka.kubedb.com/restproxy-internal-sr created
 ```
 
 The RestProxy's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the RestProxy.
@@ -115,8 +115,8 @@ restproxy-internal-sr       kafka.kubedb.com/v1alpha1   3.15.0    kafka-quicksta
 Describe the `RestProxy` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe restproxy -n demo restproxy-interal-sr
-Name:         restproxy-interal-sr
+$ kubectl describe restproxy -n demo restproxy-internal-sr
+Name:         restproxy-internal-sr
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -170,7 +170,7 @@ Spec:
 Status:
   Conditions:
     Last Transition Time:  2024-09-02T06:27:36Z
-    Message:               The KubeDB operator has started the provisioning of RestProxy: demo/restproxy-interal-sr
+    Message:               The KubeDB operator has started the provisioning of RestProxy: demo/restproxy-internal-sr
     Observed Generation:   1
     Reason:                RestProxyProvisioningStartedSuccessfully
     Status:                True
@@ -182,19 +182,19 @@ Status:
     Status:                True
     Type:                  ReplicaReady
     Last Transition Time:  2024-09-02T06:28:29Z
-    Message:               The RestProxy: demo/restproxy-interal-sr is accepting client requests
+    Message:               The RestProxy: demo/restproxy-internal-sr is accepting client requests
     Observed Generation:   1
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
     Last Transition Time:  2024-09-02T06:28:29Z
-    Message:               The RestProxy: demo/restproxy-interal-sr is ready.
+    Message:               The RestProxy: demo/restproxy-internal-sr is ready.
     Observed Generation:   1
     Reason:                ReadinessCheckSucceeded
     Status:                True
     Type:                  Ready
     Last Transition Time:  2024-09-02T06:28:30Z
-    Message:               The RestProxy: demo/restproxy-interal-sr is successfully provisioned.
+    Message:               The RestProxy: demo/restproxy-internal-sr is successfully provisioned.
     Observed Generation:   1
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
@@ -208,20 +208,20 @@ Events:                    <none>
 On deployment of a RestProxy CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=restproxy-interal-sr'
+$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=restproxy-internal-sr'
 NAME                         READY   STATUS    RESTARTS   AGE
-pod/restproxy-interal-sr-0   1/1     Running   0          117s
-pod/restproxy-interal-sr-1   1/1     Running   0          79s
+pod/restproxy-internal-sr-0   1/1     Running   0          117s
+pod/restproxy-internal-sr-1   1/1     Running   0          79s
 
 NAME                                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-service/restproxy-interal-sr        ClusterIP   10.96.117.46   <none>        8082/TCP   119s
-service/restproxy-interal-sr-pods   ClusterIP   None           <none>        8082/TCP   119s
+service/restproxy-internal-sr        ClusterIP   10.96.117.46   <none>        8082/TCP   119s
+service/restproxy-internal-sr-pods   ClusterIP   None           <none>        8082/TCP   119s
 
 NAME                                 TYPE     DATA   AGE
-secret/restproxy-interal-sr-config   Opaque   1      119s
+secret/restproxy-internal-sr-config   Opaque   1      119s
 
 NAME                                                AGE
-petset.apps.k8s.appscode.com/restproxy-interal-sr   117s
+petset.apps.k8s.appscode.com/restproxy-internal-sr   117s
 ```
 
 - `PetSet` - a PetSet named after the RestProxy instance.
@@ -231,7 +231,7 @@ petset.apps.k8s.appscode.com/restproxy-interal-sr   117s
 
 ### Create RestProxy CR with External SchemaRegistry
 
-Here, We will create a RestProxy CR with an external SchemaRegistry. We have already deployed a SchemaRegistry `Apicurio` instance named `schemaregistry-qucikstart` in the `demo` namespace. If you have not deployed a SchemaRegistry instance yet, you can follow the [SchemaRegistry Quickstart](/docs/guides/kafka/schemaregistry/overview.md) guide to deploy a SchemaRegistry instance. Let's create a RestProxy CR that uses this external SchemaRegistry.
+Here, We will create a RestProxy CR with an external SchemaRegistry. We have already deployed a SchemaRegistry `Apicurio` instance named `schemaregistry-quickstart` in the `demo` namespace. If you have not deployed a SchemaRegistry instance yet, you can follow the [SchemaRegistry Quickstart](/docs/guides/kafka/schemaregistry/overview.md) guide to deploy a SchemaRegistry instance. Let's create a RestProxy CR that uses this external SchemaRegistry.
 
 The RestProxy instance used for this tutorial:
 
@@ -245,7 +245,7 @@ spec:
   version: 3.15.0
   replicas: 2
   schemaRegistryRef:
-    name: schemaregistry-qucikstart
+    name: schemaregistry-quickstart
     namespace: demo
   kafkaRef:
     name: kafka-quickstart
@@ -405,7 +405,7 @@ We are going to create schema first for message validation. There are many ways 
 * If you are using internal SchemaRegistry, port forward the `restproxy-internal-sr` service to port `8082`, and export `SCHEMA_BASE_URL` like below:
 
 ```bash
-$ kubectl port-forward svc/restproxy-interal-sr 8082:8082 -n demo
+$ kubectl port-forward svc/restproxy-internal-sr 8082:8082 -n demo
 Forwarding from 127.0.0.1:8082 -> 8082
 Forwarding from [::1]:8082 -> 8082
 Handling connection for 8082
@@ -458,7 +458,7 @@ You can access `Kafka` using the REST API. The RestProxy REST API is available a
 To access the RestProxy REST API, you can use `kubectl port-forward` command to forward the port to your local machine.
 
 ```bash
-$ kubectl port-forward svc/restproxy-interal-sr 8082:8082 -n demo
+$ kubectl port-forward svc/restproxy-internal-sr 8082:8082 -n demo
 Forwarding from 127.0.0.1:8082 -> 8082
 Forwarding from [::1]:8082 -> 8082
 ```
@@ -529,7 +529,7 @@ $  curl -X POST http://localhost:8082/consumers/my_consumer_group \
         "auto.offset.reset": "earliest"
       }' | jq
 {
-  "base_uri": "http://restproxy-interal-sr-0:8082/consumers/my_consumer_group/instances/my_consumer",
+  "base_uri": "http://restproxy-internal-sr-0:8082/consumers/my_consumer_group/instances/my_consumer",
   "instance_id": "my_consumer"
 }
 ```
@@ -600,11 +600,11 @@ $ curl -X DELETE -H "Content-Type: application/vnd.kafka.v2+json" http://localho
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo restproxy restproxy-interal-sr -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-restproxy.kafka.kubedb.com/restproxy-interal-sr patched
+$ kubectl patch -n demo restproxy restproxy-internal-sr -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+restproxy.kafka.kubedb.com/restproxy-internal-sr patched
 
-$ kubectl delete krp restproxy-interal-sr,restproxy-external-sr  -n demo
-restproxy.kafka.kubedb.com "restproxy-interal-sr,restproxy-external-sr" deleted
+$ kubectl delete krp restproxy-internal-sr,restproxy-external-sr  -n demo
+restproxy.kafka.kubedb.com "restproxy-internal-sr,restproxy-external-sr" deleted
 
 $ kubectl delete ksr schemaregistry-quickstart -n demo
 schemaregistry.kafka.kubedb.com "schemaregistry-quickstart" deleted

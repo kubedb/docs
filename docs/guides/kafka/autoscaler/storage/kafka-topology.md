@@ -171,7 +171,7 @@ Here,
 Let's create the `KafkaAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaling/storage/kafka-storage-autoscaler-topology.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/storage/kafka-storage-autoscaler-topology.yaml
 kafkaautoscaler.autoscaling.kubedb.com/kf-storage-autoscaler-topology created
 ```
 
