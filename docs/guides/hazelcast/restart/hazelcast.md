@@ -204,8 +204,8 @@ Events:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete hazelcastopsrequest -n demo restart
-kubectl delete hazelcast -n demo hazelcast-qickstart
+kubectl delete hazelcastopsrequest -n demo hazelcast-restart
+kubectl delete hazelcast -n demo hazelcast-quickstart
 kubectl delete ns demo
 ```
 

@@ -299,7 +299,7 @@ $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc 
 3
 ```
 
-From all the above outputs we can see that the number of member nodes are 3. That means we have successfully scaled down the member nodes of the Hazelcast database.
+From all the above outputs we can see that the number of member nodes are 2. That means we have successfully scaled down the member nodes of the Hazelcast database.
 
 ## Cleaning up
 

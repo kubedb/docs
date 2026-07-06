@@ -429,7 +429,7 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hzops-rotate.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-rotate.yaml
 hazelcastopsrequest.ops.kubedb.com/hzops-rotate created
 ```
 
@@ -942,7 +942,7 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hzops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-remove-tls.yaml
 hazelcastopsrequest.ops.kubedb.com/hzops-remove created
 ```
 

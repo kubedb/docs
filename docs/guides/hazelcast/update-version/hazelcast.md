@@ -120,7 +120,7 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/update-version.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/opsrequest-version-update.yaml
 hazelcastopsrequest.ops.kubedb.com/hzops-update-version created
 ```
 
@@ -260,7 +260,7 @@ ghcr.io/appscode-images/hazelcast:5.5.6@sha256:abc123def456...
 Let's also verify that the database is ready to take connections:
 
 ```bash
-$ kubectl get hazelcast -n demo hz-quickstart
+$ kubectl get hazelcast -n demo hz-prod
 NAME      TYPE                  VERSION   STATUS   AGE
 hz-prod   kubedb.com/v1alpha2   5.5.6     Ready    3h14m
 ```

@@ -376,7 +376,7 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 
 ```bash
 # cleanup database
-kubectl delete sl -n demo operator-prom-sl
+kubectl delete hz -n demo operator-prom-hz
 
 # cleanup prometheus resources
 kubectl delete -n monitoring prometheus prometheus
