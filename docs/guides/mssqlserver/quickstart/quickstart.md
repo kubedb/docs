@@ -49,13 +49,13 @@ When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all s
 
 ```bash
 $ kubectl get msversion
-NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
-2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                7d19h
-2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                7d19h
-2022-cu16   2022      mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04                7d19h
-2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                7d19h
-2022-cu22   2022      mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04                7d19h
-2025-cu0    2025      mcr.microsoft.com/mssql/server:2025-RTM-ubuntu-22.04                 7d19h
+NAME        VERSION     DB_IMAGE                                                DEPRECATED   AGE
+2022-cu12   2022-cu12   mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                7d19h
+2022-cu14   2022-cu14   mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                7d19h
+2022-cu16   2022-cu16   mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04                7d19h
+2022-cu19   2022-cu19   mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                7d19h
+2022-cu22   2022-cu22   mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04                7d19h
+2025-cu0    2025-cu0    mcr.microsoft.com/mssql/server:2025-RTM-ubuntu-22.04                 7d19h
 
 ```
 
@@ -380,7 +380,7 @@ mssql@mssqlserver-quickstart-0:/$
 
 You can connect to the database using the `sqlcmd` utility, which comes with the mssql-tools package on Linux. To check the installed version of sqlcmd, run the following command:
 ```bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd "-?"
 Microsoft (R) SQL Server Command Line Tool
 Version 17.10.0001.1 Linux
 Copyright (C) 2017 Microsoft Corporation. All rights reserved.
@@ -416,7 +416,7 @@ usage: sqlcmd            [-U login id]          [-P password]
 
 Now, connect to the database using username and password 
 ```bash
-mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK"
+mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK" -No
 1> select name from sys.databases
 2> go
 name                                                  

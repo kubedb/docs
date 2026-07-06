@@ -376,7 +376,7 @@ mssql@mssqlserver-standalone-0:/$
 
 You can connect to the database using the `sqlcmd` utility, which comes with the mssql-tools package on Linux. To check the installed version of sqlcmd, run the following command:
 ```bash
-mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
+mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd "-?"
 Microsoft (R) SQL Server Command Line Tool
 Version 17.10.0001.1 Linux
 Copyright (C) 2017 Microsoft Corporation. All rights reserved.
@@ -412,7 +412,7 @@ usage: sqlcmd            [-U login id]          [-P password]
 
 Now, connect to the database using username and password
 ```bash
-mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK"
+mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK" -No
 1> select name from sys.databases
 2> go
 name                                                  

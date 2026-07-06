@@ -257,7 +257,7 @@ kkvAFfl8sIxRO2i3⏎
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo sample-mssqlserver-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3"
+$ kubectl exec -it -n demo sample-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3" -No
 # list available databases
 1> SELECT name from sys.databases;
 2> GO
@@ -751,7 +751,7 @@ Ag9qi8zQiFew0xHo⏎
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and verify restored data,
 
 ```bash
-$ kubectl exec -it -n demo restored-mssqlserver-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo"
+$ kubectl exec -it -n demo restored-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo" -No
 1> SELECT name from sys.databases;
 2> GO
 name                                                                                                                            
