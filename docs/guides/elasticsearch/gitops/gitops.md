@@ -345,15 +345,13 @@ At first, we will create a secret containing `user.conf` file with required conf
 To know more about this configuration file, check [here](/docs/guides/elasticsearch/configuration/combined-cluster/index.md)
 ```yaml
 apiVersion: v1
-stringData:
-  user.conf: |
-    max_connections=200
-    shared_buffers=256MB    
 kind: Secret
 metadata:
   name: es-configuration
   namespace: demo
-type: Opaque
+stringData:
+  elasticsearch.yml: |-
+    indices.query.bool.max_clause_count: 2048
 ```
 
 Now, we will add this file to `kubedb/es-configuration.yaml`.
