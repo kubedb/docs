@@ -149,7 +149,7 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version-ops.yaml
 kafkaopsrequest.ops.kubedb.com/kafka-update-version created
 ```
 

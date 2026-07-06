@@ -37,7 +37,7 @@ NAME                 STATUS   AGE
 demo                 Active   9s
 ```
 
-> Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/connectcluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [examples/kafka/connectcluster](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/connectcluster) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 > We have designed this tutorial to demonstrate a production setup of KubeDB managed Apache Kafka Connect Cluster. If you just want to try out KubeDB, you can bypass some safety features following the tips [here](/docs/guides/kafka/connectcluster/quickstart.md#tips-for-testing).
 
@@ -156,7 +156,7 @@ Before create ConnectCluster, you have to deploy a `Kafka` cluster first. To dep
 Let's create the ConnectCluster CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls/connectcluster-quickstart.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/connectcluster-quickstart.yaml
 connectcluster.kafka.kubedb.com/connectcluster-quickstart created
 ```
 
@@ -440,7 +440,7 @@ Here,
 Now, create the `Connector` CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/connectcluster/yamls/mongodb-source-connector.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/mongodb-source-connector.yaml
 connector.kafka.kubedb.com/mongodb-source-connector created
 ```
 
