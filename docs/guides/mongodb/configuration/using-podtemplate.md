@@ -84,7 +84,7 @@ spec:
   podTemplate:
     spec:
       containers:
-      - name: mongo
+      - name: mongodb
         args:
         - --maxConns=100
         resources:

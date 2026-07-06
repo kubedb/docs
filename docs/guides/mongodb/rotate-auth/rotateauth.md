@@ -65,7 +65,7 @@ spec:
 Command:
 
 ```shell
-$ kubectl apply -f mongobd.yaml 
+$ kubectl apply -f mongodb.yaml
 mongodb.kubedb.com/mgo-quickstart created
 ```
 
@@ -87,7 +87,7 @@ mgo-quickstart   4.4.26    Ready      8m1s
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
 ````shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
 "mgo-quickstart-auth"
 $ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                  
@@ -295,7 +295,7 @@ Events:
 ```
 **Verify Auth is rotated**
 ```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
 "mgo-quickstart-auth"
 $ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                               
@@ -345,12 +345,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `mgo-quickstart`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on MongoDB.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-mg-user-auth` as `spec.authsecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-mg-user-auth` as `spec.authSecret.name` for authentication.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/v2025.6.30/docs/examples/mongodb/rotate-auth/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-user.yaml
 mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-user created
 ```
 Let’s wait for `MongoDBOpsRequest` to be Successful. Run the following command to watch `MongoDBOpsRequest` CRO:
@@ -505,7 +505,7 @@ Events:
 ```
 **Verify auth is rotate**
 ```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authsecret.name
+$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
 "quick-mg-user-auth"
 $ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.username}' | base64 -d
 root⏎                                                                    

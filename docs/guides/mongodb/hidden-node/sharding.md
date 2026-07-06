@@ -120,7 +120,7 @@ MongoDB `mongo-sh-hid` state,
 All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
-$ kubectl get mg,sts,svc,pvc,pv -n demo
+$ kubectl get mg,petset,svc,pvc,pv -n demo
 NAME                              VERSION          STATUS   AGE
 mongodb.kubedb.com/mongo-sh-hid   percona-7.0.18   Ready    4m46s
 

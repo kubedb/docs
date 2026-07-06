@@ -46,29 +46,25 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 
 ## Find Available MongoDBVersion
 
-When you have installed KubeDB, it has created `MongoDBVersion` crd for all supported MongoDB versions. Check 0
+When you have installed KubeDB, it has created `MongoDBVersion` crd for all supported MongoDB versions. Check it out.
 
 ```bash
 $ kubectl get mongodbversions
-NAME             VERSION   DISTRIBUTION   DB_IMAGE                                 DEPRECATED   AGE
-3.4.17-v1        3.4.17    Official       mongo:3.4.17                                          68s
-3.4.22-v1        3.4.22    Official       mongo:3.4.22                                          68s
-3.6.13-v1        3.6.13    Official       mongo:3.6.13                                          68s
-4.4.26         3.6.8     Official       mongo:3.6.8                                           68s
-4.0.11-v1        4.0.11    Official       mongo:4.0.11                                          68s
-4.0.3-v1         4.0.3     Official       mongo:4.0.3                                           68s
-4.4.26         4.0.5     Official       mongo:4.0.5                                           68s
-4.4.26        4.1.13    Official       mongo:4.1.13                                          68s
-4.1.4-v1         4.1.4     Official       mongo:4.1.4                                           68s
-4.1.7-v3         4.1.7     Official       mongo:4.1.7                                           68s
-4.4.26            4.4.26     Official       mongo:4.4.26                                           68s
-4.4.26            4.4.26     Official       mongo:4.4.26                                           68s
-5.0.2            5.0.2     Official       mongo:5.0.2                                           68s
-5.0.3            5.0.3     Official       mongo:5.0.3                                           68s
-percona-3.6.18   3.6.18    Percona        percona/percona-server-mongodb:3.6.18                 68s
-percona-4.0.10   4.0.10    Percona        percona/percona-server-mongodb:4.0.10                 68s
-percona-4.2.7    4.2.7     Percona        percona/percona-server-mongodb:4.2.7-7                68s
-percona-4.4.10   4.4.10    Percona        percona/percona-server-mongodb:4.4.10                 68s
+NAME             VERSION   DISTRIBUTION   DB_IMAGE                                            DEPRECATED   AGE
+4.4.26           4.4.26    Official       ghcr.io/appscode-images/mongo:4.4.26                             13d
+5.0.31           5.0.31    Official       ghcr.io/appscode-images/mongo:5.0.31                             13d
+6.0.24           6.0.24    Official       ghcr.io/appscode-images/mongo:6.0.24                             13d
+7.0.21           7.0.21    Official       ghcr.io/appscode-images/mongo:7.0.21                             13d
+7.0.28           7.0.28    Official       ghcr.io/appscode-images/mongo:7.0.28                             13d
+8.0.10           8.0.10    Official       ghcr.io/appscode-images/mongo:8.0.10                             13d
+8.0.17           8.0.17    Official       ghcr.io/appscode-images/mongo:8.0.17                             13d
+percona-4.4.26   4.4.26    Percona        docker.io/percona/percona-server-mongodb:4.4.26                  13d
+percona-5.0.29   5.0.29    Percona        docker.io/percona/percona-server-mongodb:5.0.29                  13d
+percona-6.0.24   6.0.24    Percona        docker.io/percona/percona-server-mongodb:6.0.24                  13d
+percona-7.0.18   7.0.18    Percona        docker.io/percona/percona-server-mongodb:7.0.18                  13d
+percona-7.0.28   7.0.28    Percona        docker.io/percona/percona-server-mongodb:7.0.28                  13d
+percona-8.0.17   8.0.17    Percona        docker.io/percona/percona-server-mongodb:8.0.17                  13d
+percona-8.0.8    8.0.8     Percona        docker.io/percona/percona-server-mongodb:8.0.8                   13d
 
 ```
 
@@ -466,7 +462,7 @@ After that, kubedb will delete the petsets and services and you can see the data
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME                                VERSION   STATUS   AGE
 mongodb.kubedb.com/mgo-quickstart   4.4.26     Halted   12m
 
@@ -530,7 +526,7 @@ When the DeletionPolicy is set to Delete and the mongodb object is deleted, the 
 $ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
 kubectl delete -n demo mg/mgo-quickstart
 
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-swg6h   kubernetes.io/service-account-token   3      27m
 secret/mgo-quickstart-auth   Opaque                                2      27m
@@ -546,7 +542,7 @@ But if you want to cleanup each of the Kubernetes resources created by this tuto
 $ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete -n demo mg/mgo-quickstart
 
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME              TYPE              DATA   AGE
 
 $ kubectl delete ns demo

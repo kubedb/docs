@@ -50,7 +50,7 @@ spec:
   podTemplate:
     spec:
       containers:
-      - name: mongo
+      - name: mongodb
         resources:
           requests:
             cpu: "300m"
@@ -432,7 +432,7 @@ After that, kubedb will delete the petsets and services and you can see the data
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME                          VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-alone   4.4.26     Halted   2m4s
 
