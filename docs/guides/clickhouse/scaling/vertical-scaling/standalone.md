@@ -135,7 +135,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `clickhouse-prod` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on clickhouse.
-- `spec.verticalScaling.standalone` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 

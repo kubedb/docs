@@ -1097,7 +1097,7 @@ So, we can see from the above that, output that tls is disabled successfully.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete chops-add-tls chops-remove-tls chops-rotate chops-update-issuer
+kubectl delete chops -n demo chops-add-tls chops-remove-tls chops-rotate chops-update-issuer
 kubectl delete clickhouse -n demo clickhouse-prod
 kubectl delete issuer -n demo clickhouse-ca-issuer ch-new-issuer
 kubectl delete ns demo

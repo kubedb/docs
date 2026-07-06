@@ -154,7 +154,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on `clickhouse-prod` cluster.
 - `spec.type` specifies that we are performing `HorizontalScaling` on clickhouse.
-- `spec.horizontalScaling.cluster[index].replicas` specifies the desired replicas after scaling for clickhouse cluster.
+- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling for clickhouse cluster.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
@@ -343,7 +343,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `clickhouse-prod` cluster.
 - `spec.type` specifies that we are performing `HorizontalScaling` on clickhouse.
-- `spec.horizontalScaling.cluster[index].replicas` specifies the desired replicas after scaling for the clickhouse nodes.
+- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling for the clickhouse nodes.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
