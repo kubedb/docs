@@ -66,7 +66,7 @@ Now, create a Secret with this configuration file.
 
 ```bash
 $ kubectl create secret generic -n demo px-configuration --from-file=./px-config.cnf
-secret/md-configuration created
+secret/px-configuration created
 ```
 
 Verify the Secret has the configuration file.
@@ -90,7 +90,7 @@ Now, create PerconaXtraDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-config-file/examples/px-custom.yaml
-mysql.kubedb.com/custom-mysql created
+perconaxtradb.kubedb.com/sample-pxc created
 ```
 
 Below is the YAML for the PerconaXtraDB crd we just created.
@@ -129,7 +129,6 @@ sample-pxc-1   2/2     Running   0          95m
 sample-pxc-2   2/2     Running   0          95m
 
 $ kubectl get perconaxtradb -n demo 
-NAME             VERSION   STATUS   AGE
 NAME         VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    96m
 ```

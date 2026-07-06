@@ -87,7 +87,7 @@ Let's check the number of replicas this database has from the PerconaXtraDB obje
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
 3
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
 3
 ```
 
@@ -165,8 +165,8 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 ```bash
 $ watch kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
-NAME                        TYPE                STATUS       AGE
-pxps-scale-horizontal    HorizontalScaling    Successful     106s
+NAME                          TYPE                STATUS       AGE
+pxops-scale-horizontal-up     HorizontalScaling   Successful   106s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
@@ -174,7 +174,7 @@ We can see from the above output that the `PerconaXtraDBOpsRequest` has succeede
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
 5
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
 5
 ```
 
@@ -218,7 +218,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `sample-pxc` database.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our database.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.member` specifies the desired replicas after scaling.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -237,7 +237,7 @@ Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following 
 $ watch kubectl get perconaxtradbopsrequest -n demo
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
-mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
+pxops-scale-horizontal-down   HorizontalScaling   Successful   2m32s
 ```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
@@ -245,7 +245,7 @@ We can see from the above output that the `PerconaXtraDBOpsRequest` has succeede
 ```bash
 $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas' 
 3
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
 3
 ```
 
@@ -256,11 +256,11 @@ root@sample-pxc-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'ws
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
-| wsrep_cluster_size | 5     |
+| wsrep_cluster_size | 3     |
 +--------------------+-------+
 ```
 
-From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled down the replicas of the PerconaXtraDB replicaset.
+From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the PerconaXtraDB replicaset.
 
 ## Cleaning Up
 
