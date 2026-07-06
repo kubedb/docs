@@ -104,7 +104,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/overview/yamls/retentionPolicy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/overview/yamls/retention-policy.yaml 
 retentionpolicy.storage.kubestash.com/mariadb-retention-policy created
 ```
 
