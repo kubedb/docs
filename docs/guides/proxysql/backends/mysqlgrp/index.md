@@ -62,7 +62,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -154,7 +154,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
 proxysql.kubedb.com/mysql-proxy created
 ```
 
@@ -276,7 +276,7 @@ spec:
 Let's apply the yaml. 
 
 ```yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/ubuntu.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/ubuntu.yaml
 deployment.apps/ubuntu created
 ```
 

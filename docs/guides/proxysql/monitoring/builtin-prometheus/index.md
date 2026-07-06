@@ -65,7 +65,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/builtin-prometheus/example/mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/builtin-prometheus/examples/mysql.yaml
 mysql.kubedb.com/mysql-grp created 
 ```
 
@@ -88,7 +88,7 @@ spec:
     name: mysql-grp
   syncUsers: true
   monitor:
-    agent: prometheus.io/operator
+    agent: prometheus.io/builtin
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
