@@ -192,7 +192,7 @@ The `ElasticsearchUserSpec` contains the following fields:
 -  `hash` ( `string` | `""` ) - Specifies the hash of the password.
 -  `full_name` ( `string` | `""` ) - Specifies The full name of the user. Only applicable for xpack authplugin.
 -  `metadata` ( `map[string]string` | `""` ) - Specifies Arbitrary metadata that you want to associate with the user. Only applicable for xpack authplugin.
--  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred".
+-  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred". The `elastic` superuser is an exception: its credentials are stored in the shared `spec.authSecret` (`<resource-name>-auth`) instead of a per-user `-cred` secret.
 -  `roles` ( `[]string` | `nil` ) - A set of roles the user has. The roles determine the user’s access permissions. To create a user without any roles, specify an empty list: []. Only applicable for xpack authplugin.
 -  `email` ( `string` | `""` ) - Specifies the email of the user. Only applicable for xpack authplugin.
 -  `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
@@ -237,6 +237,8 @@ spec:
       backendRoles:
       - beats_system
       secretName: es-cluster-beats-system-cred
+    # the elastic superuser reads from the shared spec.authSecret (es-cluster-auth),
+    # not the per-user es-cluster-elastic-cred default.
     elastic:
       backendRoles:
       - superuser

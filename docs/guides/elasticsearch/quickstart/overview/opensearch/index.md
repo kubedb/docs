@@ -419,7 +419,7 @@ sample-opensearch-snapshotrestore-cred   kubernetes.io/basic-auth              2
 sample-opensearch-token-zbn46            kubernetes.io/service-account-token   3      10m
 sample-opensearch-transport-cert         kubernetes.io/tls                     3      10m
 ```
-Now, we can connect to the database with any of these secret that have the prefix `cred`. Here, we are using `sample-opensearch-auth` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database using the `sample-opensearch-auth` secret, which holds the `admin` credentials used to connect with the database.
 
 
 ### Accessing Database Through CLI

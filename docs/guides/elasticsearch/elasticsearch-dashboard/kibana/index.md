@@ -464,7 +464,7 @@ es-cluster-remote-monitoring-user-cred   kubernetes.io/basic-auth              2
 es-cluster-token-8tbg6                   kubernetes.io/service-account-token   3      14m
 es-cluster-transport-cert                kubernetes.io/tls                     3      14m
 ```
-Now, we can connect to the database with `es-cluster-auth` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database with the `es-cluster-auth` secret, which holds the `elastic` superuser credentials used to connect with the database.
 
 ### Accessing Database Through Dashboard
 

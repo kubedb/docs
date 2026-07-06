@@ -671,11 +671,14 @@ Once the backup has been completed successfully, you should see that Stash has c
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/
+❯ kubectl delete backupblueprint elasticsearch-backup-template
 backupblueprint.stash.appscode.com "elasticsearch-backup-template" deleted
-elasticsearch.kubedb.com "es-demo-2" deleted
-elasticsearch.kubedb.com "es-demo-3" deleted
+❯ kubectl delete elasticsearch -n demo es-demo
 elasticsearch.kubedb.com "es-demo" deleted
+❯ kubectl delete elasticsearch -n demo-2 es-demo-2
+elasticsearch.kubedb.com "es-demo-2" deleted
+❯ kubectl delete elasticsearch -n demo-3 es-demo-3
+elasticsearch.kubedb.com "es-demo-3" deleted
 
 ❯ kubectl delete repository -n demo --all
 repository.stash.appscode.com "app-es-demo" deleted
