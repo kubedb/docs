@@ -53,7 +53,7 @@ fc7c635c745b8c74c4422300e945eadb4251add6 10.2.0.87:10050@10056,rd0-0.kubedb.apps
 e45749edaf324b980bbf5148644d500d6842ff5c 10.2.0.87:10054@10060,rd0-0.kubedb.appscode master - 0 1754481555065 3 connected 10923-16383
 673060b3b589f06fe6a12e6f47ea8910042b6be6 10.2.0.87:10052@10058,rd0-0.kubedb.appscode master - 0 1754481555000 2 connected 5461-10922
 
-$ kubectl exec -it -n demo redis-cluster-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
+$ kubectl exec -it -n demo redis-announce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
 3
 ```
 
@@ -120,7 +120,7 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas a
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo redisops-horizontal
+$ watch kubectl get redisopsrequest -n demo redisops-horizontal-external
 NAME                           TYPE                STATUS       AGE
 redisops-horizontal-external   HorizontalScaling   Successful   3m8s
 ```
@@ -128,9 +128,9 @@ redisops-horizontal-external   HorizontalScaling   Successful   3m8s
 Now, we are going to verify if the number of shards and replicas the redis cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get redis -n demo redis-anounce -o json | jq '.spec.cluster.shards'
+$ kubectl get redis -n demo redis-announce -o json | jq '.spec.cluster.shards'
 4
-$ kubectl get redis -n demo redis-anounce -o json | jq '.spec.cluster.replicas'
+$ kubectl get redis -n demo redis-announce -o json | jq '.spec.cluster.replicas'
 3
 ```
 
@@ -143,15 +143,15 @@ rd-at86h7                      Announce            Successful   2m
 redisops-horizontal-external   HorizontalScaling   Successful   4m
 ```
 
-Now let's connect to redis-anounce using `redis-cli` and verify master and replica count of the cluster
+Now let's connect to redis-announce using `redis-cli` and verify master and replica count of the cluster
 ```bash
-$ kubectl exec -it -n demo redis-anounce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep master
+$ kubectl exec -it -n demo redis-announce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep master
 fc7c635c745b8c74c4422300e945eadb4251add6 10.2.0.87:10050@10056,rd0-0.kubedb.appscode myself,master - 0 1754484135000 1 connected 1365-5460
 039d9b38874ee6dca807836646bbdc8b25f544d5 10.2.0.87:10065@10071,rd0-0.kubedb.appscode master - 0 1754484137945 4 connected 0-1364 5461-6826 10923-12287
 e45749edaf324b980bbf5148644d500d6842ff5c 10.2.0.87:10054@10060,rd0-0.kubedb.appscode master - 0 1754484137000 3 connected 12288-16383
 673060b3b589f06fe6a12e6f47ea8910042b6be6 10.2.0.87:10052@10058,rd0-0.kubedb.appscode master - 0 1754484136539 2 connected 6827-10922
 
-$ kubectl exec -it -n demo redis-cluster-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
+$ kubectl exec -it -n demo redis-announce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
 8
 ```
 
