@@ -136,13 +136,13 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `pp-vertical` pgpool.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
 - Have a look [here](/docs/guides/pgpool/concepts/opsrequest.md) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/vertical-scaling/pp-vertical-ops.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-vertical-ops.yaml
 pgpoolopsrequest.ops.kubedb.com/pgpool-scale-vertical created
 ```
 

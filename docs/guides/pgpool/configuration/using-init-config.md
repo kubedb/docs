@@ -64,7 +64,7 @@ spec:
     inline:
       pgpool.conf: |
         num_init_children=6
-        max_pooL=65
+        max_pool=65
         child_life_time=400
   deletionPolicy: WipeOut
 ```
@@ -74,7 +74,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 pgpool.kubedb.com/pp-init-config created
 ```
 
-Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-custom-config-0` has been created.
+Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-init-config-0` has been created.
 
 Check that the petset's pod is running
 
