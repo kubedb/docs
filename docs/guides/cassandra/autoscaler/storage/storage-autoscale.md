@@ -59,7 +59,7 @@ Now, we are going to deploy a `Cassandra` cluster using a supported version by `
 
 #### Deploy Cassandra Cluster
 
-In this section, we are going to deploy a Cassandra cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
+In this section, we are going to deploy a Cassandra cluster with version `5.0.7`.  Then, in the next section we will set up autoscaling for this database using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
 
 > If you want to autoscale Cassandra `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -103,7 +103,7 @@ spec:
 Let's create the `Cassandra` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
 cassandra.kubedb.com/cassandra-autoscale created
 ```
 
@@ -576,6 +576,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete cassandra -n demo cassandra-autoscale
-kubectl delete cassandraautoscaler -n demo casops-cassandra-autoscale-xojkua
+kubectl delete cassandraautoscaler -n demo cassandra-storage-autoscaler
 kubectl delete ns demo
 ```

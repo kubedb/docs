@@ -237,7 +237,7 @@ Here,
 Let's create the cassandra object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/cas-with-monirtoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/cas-with-monitoring.yaml
 cassandras.kubedb.com/cassandra created
 ```
 
@@ -374,7 +374,7 @@ Check the `endpoint` and `service` labels. It verifies that the target is our ex
 To clean up the Kubernetes resources created by this tutorial, run following commands
 
 ```bash
-kubectl delete -n demo cas/cassandra
+kubectl delete -n demo cas/cassandra-prod
 kubectl delete ns demo
 ```
 

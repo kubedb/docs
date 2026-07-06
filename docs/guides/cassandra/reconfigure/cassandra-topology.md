@@ -156,7 +156,7 @@ Now, update our `cassandra.yaml` file with the new configuration.
 **cassandra.yaml:**
 
 ```properties
-read_request_timeout=6500ms
+read_request_timeout: 6500ms
 ```
 
 Then, we will create a new secret with this configuration file.
@@ -205,7 +205,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `cassandra-prod` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
-- `spec.configuration.secretName` specifies the name of the new secret.
+- `spec.configuration.configSecret.name` specifies the name of the new secret.
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
@@ -511,7 +511,7 @@ counter_write_request_timeout: 5000ms
 truncate_request_timeout: 60000ms
 request_timeout: 10000ms```
 
-As we can see from the configuration of ready cassandra, the value of `read_request_timeout` has been changed from `125` to `150`. So the reconfiguration of the database using the `applyConfig` field is successful.
+As we can see from the configuration of ready cassandra, the value of `read_request_timeout` has been changed from `6500ms` to `5500ms`. So the reconfiguration of the database using the `applyConfig` field is successful.
 
 
 ## Cleaning Up
