@@ -212,7 +212,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get zk -n demo zookeeper
 NAME              VERSION    STATUS    AGE
-zookeeper         3.8.3      Ready     34s
+zookeeper         3.9.1      Ready     34s
 ```
 
 KubeDB will create a separate stats service with name `{ZooKeeper crd name}-stats` for monitoring purpose.

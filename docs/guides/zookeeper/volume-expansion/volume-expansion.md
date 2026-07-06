@@ -93,7 +93,7 @@ Now, wait until `zk-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo
 NAME            VERSION    STATUS    AGE
-zk-quickstart   3.8.3      Ready     5m56s
+zk-quickstart   3.9.1      Ready     5m56s
 ```
 
 Let's check volume size from PetSet, and from the persistent volume,
