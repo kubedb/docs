@@ -40,6 +40,7 @@ spec:
       requests:
         storage: 1Gi
   authSecret:
+    kind: Secret
     name: weaviate-sample-auth
   configuration:
     secretName: weaviate-custom-config

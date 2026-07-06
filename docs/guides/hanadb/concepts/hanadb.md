@@ -43,6 +43,7 @@ spec:
       replicationMode: fullsync
       operationMode: logreplay_readaccess
   authSecret:
+    kind: Secret
     name: hanadb-cluster-auth
   configuration:
     secretName: hanadb-configuration

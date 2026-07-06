@@ -491,8 +491,6 @@ spec:
       port: 8080
       scheme: http
   secret:
-    apiGroup: ""
-    kind: ""
     name: weaviate-sample-auth
   type: kubedb.com/weaviate
   version: 1.33.1

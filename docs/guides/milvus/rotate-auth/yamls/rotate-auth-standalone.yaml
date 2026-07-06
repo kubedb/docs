@@ -20,4 +20,5 @@ spec:
     name: milvus-standalone
   authentication:
     secretRef:
+      kind: Secret
       name: milvus-new-auth1
