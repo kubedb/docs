@@ -113,6 +113,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 500
@@ -296,6 +301,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 2000
@@ -453,6 +463,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 3000

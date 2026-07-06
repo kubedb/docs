@@ -179,7 +179,7 @@ Now, create Memcached crd `minute-memcached` using the existing service account 
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-rbac/mc-custom-db-two.yaml
-memcached.kubedb.com/quick-memcached created
+memcached.kubedb.com/minute-memcached created
 ```
 
 Below is the YAML for the Memcached crd we just created.

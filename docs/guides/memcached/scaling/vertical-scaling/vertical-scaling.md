@@ -185,7 +185,7 @@ To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
 
-$ kubectl patch -n demo mc/memcached-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 memcached.kubedb.com/memcd-quickstart patched
 
 $ kubectl delete -n demo memcached memcd-quickstart
