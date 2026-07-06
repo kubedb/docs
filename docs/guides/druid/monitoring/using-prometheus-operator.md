@@ -187,7 +187,7 @@ Here,
 Let's create the druid object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/monitoring/yamls/druid-with-monirtoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/druid-with-monitoring.yaml
 druids.kubedb.com/druid-with-monitoring created
 ```
 

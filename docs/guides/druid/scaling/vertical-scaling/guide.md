@@ -119,7 +119,7 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 

@@ -158,7 +158,7 @@ Here,
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
  Druidopsrequest.ops.kubedb.com/druidops-rotate-auth-generated created
 ```
 Let's wait for `DruidOpsrequest` to be `Successful`. Run the following command to watch `DruidOpsrequest` CRO

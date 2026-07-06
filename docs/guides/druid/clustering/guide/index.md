@@ -107,7 +107,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-with-monitoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -180,7 +180,7 @@ Metadata:
   UID:               a2e12db2-6694-419f-ad07-2c906df5b611
 Spec:
   Auth Secret:
-    Name:  druid-cluster-admin-cred
+    Name:  druid-cluster-auth
   Deep Storage:
     Config Secret:
       Name:         deep-storage-config
@@ -552,7 +552,7 @@ Metadata:
   UID:               a2e12db2-6694-419f-ad07-2c906df5b611
 Spec:
   Auth Secret:
-    Name:  druid-cluster-admin-cred
+    Name:  druid-cluster-auth
   Deep Storage:
     Config Secret:
       Name:         deep-storage-config
@@ -884,14 +884,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 

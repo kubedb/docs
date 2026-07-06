@@ -150,7 +150,7 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-topology.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -224,7 +224,7 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-volume-expansion-topology.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/volume-expansion-ops.yaml
 druidopsrequest.ops.kubedb.com/dr-volume-exp created
 ```
 

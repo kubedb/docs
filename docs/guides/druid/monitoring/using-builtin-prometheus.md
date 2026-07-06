@@ -77,7 +77,7 @@ Here,
 Let's create the Druid crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/druid-builtin-monitoring.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/druid-monitoring-builtin.yaml
 druid.kubedb.com/druid-with-monitoring created
 ```
 

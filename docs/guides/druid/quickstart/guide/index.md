@@ -279,7 +279,7 @@ Metadata:
   UID:               5a52ae03-1e4a-4262-9d04-384025c372db
 Spec:
   Auth Secret:
-    Name:  druid-quickstart-admin-cred
+    Name:  druid-quickstart-auth
   Deep Storage:
     Config Secret:
       Name:          deep-storage-config
@@ -610,7 +610,7 @@ NAME                                                  TYPE               VERSION
 appbinding.appcatalog.appscode.com/druid-quickstart   kubedb.com/druid   36.0.0    2m1s
 
 NAME                                 TYPE                       DATA   AGE
-secret/druid-quickstart-admin-cred   kubernetes.io/basic-auth   2      2m13s
+secret/druid-quickstart-auth   kubernetes.io/basic-auth   2      2m13s
 
 NAME                                                           AGE
 petset.apps.k8s.appscode.com/druid-quickstart-brokers          2m4s
@@ -629,7 +629,7 @@ petset.apps.k8s.appscode.com/druid-quickstart-routers          2m1s
     - `{Druid-Name}-{routers}` - Like the previous one, this primary service is only created if `spec.topology.routers` is provided. It is used to connect the routers with external clients.
 - `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the Druid. Like other resources, it is named after the Druid instance.
 - `Secrets` - A secret is generated for each Druid cluster.
-    - `{Druid-Name}-{username}-cred` - the auth secrets which hold the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
+    - `{Druid-Name}-auth` - the auth secret which holds the `username` and `password` for the Druid users. Operator generates credentials for `admin` user and creates a secret for authentication.
 
 ## Connect with Druid Database
 We will use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to connect with our routers of the Druid database. Then we will use `curl` to send `HTTP` requests to check cluster health to verify that our Druid database is working well. It is also possible to use `External-IP` to access druid nodes if you make `service` type of that node as `LoadBalancer`.
@@ -663,14 +663,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 

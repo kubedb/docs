@@ -267,14 +267,14 @@ After that you will be prompted to provide the credential of the druid database.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 
