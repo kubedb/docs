@@ -242,10 +242,10 @@ Now, we will check if the database has started with the custom configuration we 
 First we need to get the username and password to connect to a mysql instance,
 
 ```bash
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\username}' | base64 -d                                                                       
+$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
 root
 
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         
+$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 86TwLJ!2Kpq*vv1y
 ```
 

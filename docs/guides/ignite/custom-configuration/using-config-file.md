@@ -98,7 +98,7 @@ type: Opaque
 Now, create Ignite crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/configuration/custom-ignite.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/custom-ignite.yaml
 ignite.kubedb.com/custom-ignite created
 ```
 
@@ -139,8 +139,8 @@ Now, we will check if the database has started with the custom configuration we 
 We will connect to `custom-ignite-0` pod:
 
 ```bash
-$ kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
-[ignite@ignite-quickstart-0 config]$ cat /ignite/config/node-configuration.xml
+$ kubectl exec -it -n demo custom-ignite-0 -c ignite -- bash
+[ignite@custom-ignite-0 config]$ cat /ignite/config/node-configuration.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"

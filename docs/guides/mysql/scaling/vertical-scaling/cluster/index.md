@@ -216,8 +216,8 @@ Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: 
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get sts -n demo my-group
-Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kubectl get sts -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
+$ watch -n 3 kubectl get petset -n demo my-group
+Every 3.0s: kubectl get petset -n demo my-group                     Every 3.0s: kubectl get petset -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
 
 NAME       READY   AGE
 my-group   3/3     16m

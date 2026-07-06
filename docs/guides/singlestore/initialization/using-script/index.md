@@ -150,7 +150,7 @@ metadata:
   uid: ccfe9d0e-6f13-4187-b652-4e157a21568e
 spec:
   authSecret:
-    name: sdb-sample-root-cred
+    name: sdb-sample-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1

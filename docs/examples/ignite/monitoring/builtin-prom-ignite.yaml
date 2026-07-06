@@ -1,7 +1,7 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Ignite
 metadata:
-  name: ignite-quickstart
+  name: builtin-prom-ignite
   namespace: demo
 spec:
   replicas: 3

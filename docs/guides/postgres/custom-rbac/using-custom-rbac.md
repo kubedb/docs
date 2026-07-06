@@ -84,7 +84,7 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
+  - apps.k8s.appscode.com
   resourceNames:
   - quick-postgres
   resources:
@@ -256,9 +256,9 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
+  - apps.k8s.appscode.com
   resourceNames:
-  - miniute-postgres
+  - minute-postgres
   resources:
   - petsets
   verbs:
@@ -266,7 +266,7 @@ rules:
 - apiGroups:
   - ""
   resourceNames:
-  - miniute-postgres-leader-lock
+  - minute-postgres-leader-lock
   resources:
   - configmaps
   verbs:

@@ -42,7 +42,7 @@ Here, we are going to deploy a `Hazelcast` database using a supported version by
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.6`.
 
 ### Deploy Hazelcast
 
@@ -56,7 +56,23 @@ secret/hz-license-key created
 In this section, we are going to deploy a Hazelcast database. Then, in the next section we will update the resources using `HazelcastOpsRequest` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
-
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hz-prod
+  namespace: demo
+spec:
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: hz-license-key
+  replicas: 3
+  version: 5.5.6
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
 ```
 
 Let's create the `Hazelcast` CR we have shown above,
@@ -223,7 +239,7 @@ Status:
     Status:                True
     Type:                  EvictPod--hz-prod-1
     Last Transition Time:  2025-08-19T11:12:50Z
-    Message:               Successfully completed the vertical scaling for RabbitMQ
+    Message:               Successfully completed the vertical scaling for Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True

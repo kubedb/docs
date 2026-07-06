@@ -54,7 +54,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `Redis` database with in `Cluster` Mode version `6.2.14`.
+Now, we are going to deploy a `Redis` database with in `Cluster` Mode version `8.2.2`.
 
 ### Deploy Redis
 
@@ -67,7 +67,7 @@ metadata:
   name: sample-redis
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3

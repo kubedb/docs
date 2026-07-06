@@ -72,14 +72,15 @@ Now, wait until `ig` has status `Ready`. i.e,
 $ kubectl get ig -n demo
 NAME    VERSION    STATUS    AGE
 ig      2.17.0     Ready     10m
-
+```
 
 ```bash
-$ kubectl get secrets -n demo ig-admin-cred -o jsonpath='{.data.\username}' | base64 -d
-root
+$ kubectl get secrets -n demo ig-auth -o jsonpath='{.data.username}' | base64 -d
+ignite
 
-$ kubectl get secrets -n demo ig-admin-cred -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo ig-auth -o jsonpath='{.data.password}' | base64 -d
 U6(h_pYrekLZ2OOd
+```
 
 We can verify from the above output that TLS is disabled for this database.
 

@@ -43,7 +43,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `8.0.17`.
 
 ### Deploy MongoDB replicaset 
 
@@ -56,7 +56,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -91,7 +91,7 @@ Let's check the number of replicas this database has from the MongoDB object, nu
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
 3
 
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 3
 ```
 
@@ -101,17 +101,17 @@ Also, we can verify the replicas of the replicaset from an internal mongodb comm
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
 nrKuxni0wDSMrgwy
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
 [
 	{
 		"_id" : 0,
@@ -336,13 +336,13 @@ Now, we are going to verify the number of replicas this database has from the Mo
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
 4
 
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 4
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
 [
 	{
 		"_id" : 0,
@@ -593,13 +593,13 @@ Now, we are going to verify the number of replicas this database has from the Mo
 $ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas' 
 3
 
-$ kubectl get sts -n demo mg-replicaset -o json | jq '.spec.replicas'
+$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 3
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongo admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
+$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
 [
 	{
 		"_id" : 0,

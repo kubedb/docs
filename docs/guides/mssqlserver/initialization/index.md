@@ -118,7 +118,7 @@ metadata:
   name: ms-init
   namespace: demo
 spec:
-  version: "2022-cu19"
+  version: "2025-cu0"
   storageType: Durable
   tls:
     issuerRef:
@@ -168,7 +168,7 @@ metadata:
   name: ms-ag-init
   namespace: demo
 spec:
-  version: "2022-cu19"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

@@ -430,7 +430,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/kubestash/application-level/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-postgres-backup created
 ```
 

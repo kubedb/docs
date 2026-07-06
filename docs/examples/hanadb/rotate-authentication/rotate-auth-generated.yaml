@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: hanadb-standalone
+  timeout: 30m
+  apply: IfReady

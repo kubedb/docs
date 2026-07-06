@@ -191,7 +191,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 NAME       VERSION      STATUS    AGE
 my-group   8.4.8    Running   5m52s
 
-$ watch -n 3 kubectl get sts -n demo my-group
+$ watch -n 3 kubectl get petset -n demo my-group
 
 NAME       READY   AGE
 my-group   3/3     7m12s
@@ -210,7 +210,7 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 8.4.8
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "kubedb/mysql:8.4.8"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
@@ -222,10 +222,10 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 Let's also verify that the PetSet’s pods have joined into a group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 7gUARa&Jkg.ypJE8
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -369,7 +369,7 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 8.0.36
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "kubedb/mysql:8.0.36"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
@@ -381,10 +381,10 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 Let's also check the PetSet pods have joined the `MySQL` group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 7gUARa&Jkg.ypJE8
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"

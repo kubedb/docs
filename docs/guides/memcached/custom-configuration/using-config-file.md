@@ -89,7 +89,7 @@ type: Opaque
 Now, create Memcached crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/mc-custom.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-memcached.yaml
 memcached.kubedb.com/custom-memcached created
 ```
 
@@ -103,7 +103,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   configuration:
     secretName: mc-configuration
   podTemplate:
@@ -127,7 +127,7 @@ Check if the database is ready
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
-custom-memcached   1.6.22    Ready    17m
+custom-memcached   1.6.40    Ready    17m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided. We will use [stats](https://github.com/memcached/memcached/wiki/ConfiguringServer#inspecting-running-configuration) command to check the configuration.

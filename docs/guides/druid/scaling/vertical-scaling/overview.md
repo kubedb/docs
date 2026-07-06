@@ -19,8 +19,8 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Druid](/docs/guides/kafka/concepts/kafka.md)
-    - [DruidOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
+    - [Druid](/docs/guides/druid/concepts/druid.md)
+    - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
 
 ## How Vertical Scaling Process Works
 

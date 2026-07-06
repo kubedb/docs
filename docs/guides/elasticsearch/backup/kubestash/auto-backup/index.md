@@ -219,7 +219,7 @@ metadata:
     blueprint.kubestash.com/name: es-quickstart-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -408,7 +408,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart
     kubestash.com/app-ref-namespace: demo
@@ -567,7 +567,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/args: --ignoreType=template,settings
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -754,7 +754,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart-2
     kubestash.com/app-ref-namespace: demo

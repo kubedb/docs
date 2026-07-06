@@ -1,0 +1,9 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DocumentDBOpsRequest
+metadata:
+  name: documentdb-sa-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: documentdb-sa-sample

@@ -54,7 +54,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -101,8 +101,8 @@ KubeDB will create the necessary resources to deploy the Elasticsearch database 
 ```console
 ❯ kubectl get elasticsearch -n demo -w
 NAME        VERSION          STATUS         AGE
-sample-es   xpack-8.19.9   Provisioning   89s
-sample-es   xpack-8.19.9   Ready          5m26s
+sample-es   xpack-9.2.3   Provisioning   89s
+sample-es   xpack-9.2.3   Ready          5m26s
 ```
 
 The database is in `Ready` state. It means the database is ready to accept connections.
@@ -147,8 +147,8 @@ sample-es-transport-cert   kubernetes.io/tls                     3      21m
 Here, `sample-es-elastic-cred` contains the credentials require to connect with the database. Let's export the credentials as environment variable to our current shell so that we can easily environment variables to connect with the database.
 
 ```bash
-❯ export USER=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.\username}' | base64 -d)
-❯ export PASSWORD=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.\password}' | base64 -d)
+❯ export USER=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.username}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.password}' | base64 -d)
 ```
 
 #### Insert data
@@ -834,7 +834,7 @@ metadata:
   name: init-sample
   namespace: restored
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   init:
     waitForInitialRestore: true
@@ -871,7 +871,7 @@ spec:
             storage: 1Gi
 ```
 
-Notice that this time, we are using `1.9.0-opendistro` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
+Notice that this time, we are using `opensearch-3.4.0` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
 
 Let's deploy the above Elasticsearch,
 
@@ -1019,8 +1019,8 @@ stash-restore-init-sample-restore-0-token-vscdt   kubernetes.io/service-account-
 Here, we are going to use the `init-sample-admin-cred` for connecting with the database. Let's export the `username` and `password` keys.
 
 ```bash
-❯ export USER=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.\username}' | base64 -d)
-❯ export PASSWORD=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.\password}' | base64 -d)
+❯ export USER=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.username}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.password}' | base64 -d)
 ```
 
 Now, let's verify whether the indexes have been restored or not.

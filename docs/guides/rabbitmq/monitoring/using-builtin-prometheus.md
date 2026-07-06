@@ -49,7 +49,7 @@ metadata:
   name: builtin-rabbitmq
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get rm -n demo builtin-rabbitmq
 NAME               VERSION   STATUS    AGE
-builtin-rabbitmq   3.13.2     Ready     2m34s
+builtin-rabbitmq   4.2.4     Ready     2m34s
 ```
 
 KubeDB will create a separate stats service with name `{RabbitMQ crd name}-stats` for monitoring purpose.

@@ -43,7 +43,7 @@ Here, we are going to deploy a `Elasticsearch` topology cluster using a supporte
 
 ### Prepare Elasticsearch Topology Cluster
 
-Now, we are going to deploy a `Elasticsearch` topology cluster database with version `xpack-8.19.9`.
+Now, we are going to deploy a `Elasticsearch` topology cluster database with version `xpack-9.2.3`.
 
 ### Deploy Elasticsearch Topology Cluster
 
@@ -57,7 +57,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -101,7 +101,7 @@ Now, wait until `es-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME         VERSION        STATUS   AGE
-es-cluster   xpack-8.19.9   Ready    53m
+es-cluster   xpack-9.2.3   Ready    53m
 
 ```
 

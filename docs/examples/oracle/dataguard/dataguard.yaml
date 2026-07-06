@@ -11,6 +11,8 @@ spec:
     observer:
       podTemplate:
         spec:
+          imagePullSecrets:
+            - name: orclcred
           containers:
             - name: observer
               resources:
@@ -43,6 +45,8 @@ spec:
   mode: DataGuard
   podTemplate:
     spec:
+      imagePullSecrets:
+        - name: orclcred
       containers:
         - name: oracle
           resources:

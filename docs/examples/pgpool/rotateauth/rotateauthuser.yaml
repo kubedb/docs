@@ -10,6 +10,6 @@ spec:
   authentication:
     secretRef:
       kind: Secret
-      name: quick-pb-user-auth
+      name: quick-pp-user-auth
   timeout: 5m
   apply: IfReady

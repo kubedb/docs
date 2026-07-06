@@ -42,7 +42,7 @@ Here, we are going to deploy a `ClickHouse` cluster using a supported version by
 
 ### Prepare ClickHouse Cluster
 
-Now, we are going to deploy a `ClickHouse` cluster database with version `24.4.1`.
+Now, we are going to deploy a `ClickHouse` cluster database with version `26.2.6`.
 
 ### Deploy ClickHouse Cluster
 
@@ -55,7 +55,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -167,7 +167,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `clickhouse-prod` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on clickhouse.
-- `spec.VerticalScaling.cluster[index].node` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 

@@ -1,5 +1,5 @@
 ---
-title: Oracle Faoilover and Disaster Recovery
+title: Oracle Failover and Disaster Recovery
 menu:
   docs_{{ .version }}:
     identifier: guides-oracle-fdr-overview
@@ -178,7 +178,7 @@ $ kubectl apply -f oracle-dataguard.yaml
 
 ```shell
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/dataguard/dataguard.yaml
-oracle.kubedb.com/oracle created
+oracle.kubedb.com/oracle-sample created
 
 ```
 Monitor status until all pods are ready:
@@ -462,8 +462,8 @@ SQL> SELECT * FROM kathak;
    ID NAME		    AGE
 ----- -------------------- ----
     1 Radha		     25
-    3 Gopal		     28
-    2 Mohan		     30
+    2 Gopal		     28
+    3 Mohan		     30
 
 SQL> exit
 Disconnected from Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production

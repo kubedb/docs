@@ -46,7 +46,7 @@ metadata:
   name: mg-alone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   podTemplate:
     spec:
       containers:
@@ -194,7 +194,7 @@ Events:
 
 
 
-$ kubectl get sts,svc,pvc,pv -n demo
+$ kubectl get petset,svc,pvc,pv -n demo
 NAME                        READY   AGE
 petset.apps/mg-alone   1/1     65s
 
@@ -248,7 +248,7 @@ spec:
           command:
             - bash
             - -c
-            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            - "set -x; if [[ $(mongosh admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
             --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
             --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
             \         exit 0\n        fi\n        exit 1"
@@ -261,7 +261,7 @@ spec:
           command:
             - bash
             - -c
-            - "set -x; if [[ $(mongo admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
+            - "set -x; if [[ $(mongosh admin --host=localhost  --username=$MONGO_INITDB_ROOT_USERNAME
             --password=$MONGO_INITDB_ROOT_PASSWORD --authenticationDatabase=admin
             --quiet --eval \"db.adminCommand('ping').ok\" ) -eq \"1\" ]]; then \n
             \         exit 0\n        fi\n        exit 1"
@@ -288,7 +288,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2022-11-04T04:30:07Z"
@@ -335,15 +335,15 @@ Now, you can connect to this database through [mg-alone](https://docs.mongodb.co
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.password}' | base64 -d
 5O4R2ze2bWXcWsdP
 
 $ kubectl exec -it mg-alone-0 -n demo bash
 
-mongodb@mg-alone-0:/$ mongo admin -u root -p 5O4R2ze2bWXcWsdP
+mongodb@mg-alone-0:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -468,7 +468,7 @@ Now, If you again exec into the primary `pod` and look for previous data, you wi
 ```bash
 $ kubectl exec -it mg-alone-1 -n demo bash
 
-mongodb@mg-alone-1:/$ mongo admin -u root -p 7QiqLcuSCmZ8PU5a
+mongodb@mg-alone-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 > use newdb
 switched to db newdb

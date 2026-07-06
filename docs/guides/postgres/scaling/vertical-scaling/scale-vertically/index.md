@@ -125,8 +125,8 @@ Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu
 NAME   VERSION   STATUS   AGE
 pg     18.3      Ready    3m16s
 
-$ watch -n 3 kubectl get sts -n demo pg
-Every 3.0s: kubectl get sts -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021
+$ watch -n 3 kubectl get petset -n demo pg
+Every 3.0s: kubectl get petset -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021
 
 NAME   READY   AGE
 pg     3/3     3m54s

@@ -35,13 +35,13 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clientAuthMode
 
 ## Overview
 
-KubeDB uses following crd fields to enable SSL/TLS encryption in Mongodb.
+KubeDB uses following crd fields to enable SSL/TLS encryption in Pgpool.
 
 - `spec:`
   - `sslMode`
   - `tls:`
     - `issuerRef`
-    - `certificate`
+    - `certificates`
   - `clientAuthMode`
 
 Read about the fields in details in [pgpool concept](/docs/guides/pgpool/concepts/pgpool.md),
@@ -67,7 +67,7 @@ The value of `clientAuthMode` field can be one of the following:
 
 The  `pool_hba.conf` of Pgpool will have the configuration based on the specified clientAuthMode.
 
-When, SSLMode is anything other than `disabled`, users must specify the `tls.issuerRef` field. KubeDB uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificate` to generate certificate secrets. These certificate secrets are then used to generate required certificates including `ca.pem`, `tls.crt` and `tls.key`.
+When, SSLMode is anything other than `disabled`, users must specify the `tls.issuerRef` field. KubeDB uses the `issuer` or `clusterIssuer` referenced in the `tls.issuerRef` field, and the certificate specs provided in `tls.certificates` to generate certificate secrets. These certificate secrets are then used to generate required certificates including `ca.pem`, `tls.crt` and `tls.key`.
 
 ## Create Issuer/ ClusterIssuer
 
@@ -122,7 +122,7 @@ metadata:
   name: pp-tls
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres
@@ -311,7 +311,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete pgpool -n demo pp-tls
-kubectl delete issuer -n demo pp-ca-issuer
+kubectl delete issuer -n demo pgpool-ca-issuer
 kubectl delete ns demo
 ```
 

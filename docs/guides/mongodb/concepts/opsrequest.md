@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: mg-standalone
   updateVersion:
-    targetVersion: 4.4.26
+    targetVersion: 8.0.17
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"

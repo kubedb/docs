@@ -141,7 +141,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -182,7 +182,7 @@ mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Here,
 
-- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
+- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2025-cu0` database is going to be created.
 - `spec.replicas` denotes the number of replicas of the created availability group
 - `spec.topology` specifies the mode `AvailabilityGroup` and the list of names of the databases that we want in our availability group. 
    KubeDB operator will create and add these databases to the created availability group automatically. User don't have to create, configure or add the database to the availability group manually. User can update this list later as well. 
@@ -422,7 +422,7 @@ mssql@mssqlserver-ag-cluster-0:/$
 
 You can connect to the database using the `sqlcmd` utility, which comes with the mssql-tools package on Linux. To check the installed version of sqlcmd, run the following command:
 ```bash
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd "-?"
 Microsoft (R) SQL Server Command Line Tool
 Version 17.10.0001.1 Linux
 Copyright (C) 2017 Microsoft Corporation. All rights reserved.
@@ -459,7 +459,7 @@ usage: sqlcmd            [-U login id]          [-P password]
 Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
 $ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> select name from sys.databases
 2> go
 name                                                  
@@ -514,7 +514,7 @@ From the output above, we can see that mssqlserver-ag-cluster-0 is the primary n
 
 ```bash
 $ kubectl exec -it mssqlserver-ag-cluster-0 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   
@@ -547,7 +547,7 @@ Access the secondary node (Node 2) to verify that the data is present.
 
 ```bash
 $ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   
@@ -574,7 +574,7 @@ ID    NAME                             AGE
 Now access the secondary node (Node 3) to verify that the data is present.
 ```bash
 $ kubectl exec -it mssqlserver-ag-cluster-2 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
 database_name                                                                                                                   

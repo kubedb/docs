@@ -63,7 +63,7 @@ spec:
     selector:
       matchLabels:
         "schema.kubedb.com": "mongo"
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "replicaset"
   podTemplate:
@@ -88,7 +88,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `4.4.26`.
+- `spec.version` is the name of the MongoDBVersion CR. Here, we are using MongoDB version `8.0.17`.
 - `spec.storageType` specifies the type of storage that will be used for MongoDB. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the MongoDB using `EmptyDir` volume.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.allowedSchemas` specifies the namespace and selectors of allowed `Schema Manager`.
@@ -296,7 +296,7 @@ Here, we are going to connect to the database with the login credentials and ver
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
+root@mongodb-0:/# mongosh --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
 MongoDB shell version v4.4.26
 ...
 
@@ -325,7 +325,7 @@ Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because 
 
 ```bash
 $ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
-root@mongodb-0:/# mongo --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
+root@mongodb-0:/# mongosh --authenticationDatabase=initdb --username='v-kubernetes-demo-k8s-f7695915-1e-6sXNTvVpPDtueRQWvoyH-1662641233' --password='-e4v396GFjjjMgPPuU7q' initdb
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/initdb?authSource=initdb&compressors=disabled&gssapiServiceName=mongodb
 Error: Authentication failed. :

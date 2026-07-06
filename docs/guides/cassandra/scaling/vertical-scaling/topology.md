@@ -42,7 +42,7 @@ Here, we are going to deploy a `Cassandra` topology cluster using a supported ve
 
 ### Prepare Cassandra Topology Cluster
 
-Now, we are going to deploy a `Cassandra` topology cluster database with version `5.0.3`.
+Now, we are going to deploy a `Cassandra` topology cluster database with version `5.0.7`.
 
 ### Deploy Cassandra Topology Cluster
 
@@ -55,7 +55,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -131,7 +131,7 @@ apiVersion: ops.kubedb.com/v1alpha1
 kind: CassandraOpsRequest
 metadata:
   name: cassandra-vertical-scale
-  namespace: default
+  namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:

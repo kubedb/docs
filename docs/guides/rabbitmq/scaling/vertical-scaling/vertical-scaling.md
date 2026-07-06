@@ -42,7 +42,7 @@ Here, we are going to deploy a  `RabbitMQ` standalone using a supported version 
 
 ### Prepare RabbitMQ Standalone Database
 
-Now, we are going to deploy a `RabbitMQ` standalone database with version `3.13.2`.
+Now, we are going to deploy a `RabbitMQ` standalone database with version `4.2.4`.
 
 ### Deploy RabbitMQ standalone 
 
@@ -55,7 +55,7 @@ metadata:
   name: rm-standalone
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait until `mg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo
 NAME            VERSION    STATUS    AGE
-rm-standalone   3.13.2      Ready     5m56s
+rm-standalone   4.2.4      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,

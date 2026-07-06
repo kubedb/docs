@@ -47,7 +47,7 @@ metadata:
   name: mgo-quickstart
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs1"
   replicas: 3
@@ -98,7 +98,7 @@ Now, you can exec into the pod `mgo-quickstart` and connect to database using `u
 ```shell
 $ kubectl exec -it -n demo mgo-quickstart-0 -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mgo-quickstart-0:/$ mongo -u root -p $MONGO_INITDB_ROOT_PASSWORD 
+mongodb@mgo-quickstart-0:/$ mongosh -u root -p $MONGO_INITDB_ROOT_PASSWORD 
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("dcd7f912-93d0-4f24-843d-5e2cbecbb6e0") }

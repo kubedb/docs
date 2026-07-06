@@ -40,7 +40,7 @@ namespace/demo created
 
 ### Prepare MSSQLServer Standalone Database
 
-Now, we are going to deploy a `MSSQLServer` standalone database with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` standalone database with version `2022-cu22`.
 
 ### Deploy MSSQLServer Standalone
 
@@ -93,7 +93,7 @@ metadata:
   name: mssql-standalone
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2022-cu22"
   replicas: 1
   storageType: Durable
   tls:
@@ -140,7 +140,7 @@ We are now ready to apply the `MSSQLServerOpsRequest` CR to update this database
 
 ### Update MSSQLServer Version
 
-Here, we are going to update `MSSQLServer` standalone from `2022-cu12` to `2022-cu14`.
+Here, we are going to update `MSSQLServer` standalone from `2022-cu22` to `2025-cu0`.
 
 #### Create MSSQLServerOpsRequest:
 
@@ -157,7 +157,7 @@ spec:
   databaseRef:
     name: mssql-standalone
   updateVersion:
-    targetVersion: 2022-cu14
+    targetVersion: 2025-cu0
   timeout: 5m
   apply: IfReady
 ```
@@ -166,7 +166,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mssql-standalone` database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `2022-cu14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `2025-cu0`.
 - Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the  `timeout` & `apply` fields.
 
 

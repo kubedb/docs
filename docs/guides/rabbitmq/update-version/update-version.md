@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare RabbitMQ cluster
 
-Now, we are going to deploy a `RabbitMQ` cluster with version `3.12.12`.
+Now, we are going to deploy a `RabbitMQ` cluster with version `4.0.4`.
 
 ### Deploy RabbitMQ
 
@@ -51,7 +51,7 @@ metadata:
   name: rm-cluster
   namespace: demo
 spec:
-  version: "3.12.12"
+  version: "4.0.4"
   replicas: 3
   storageType: Durable
   storage:
@@ -75,14 +75,14 @@ Now, wait until `rm-cluster` created has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo                                                                                                                                             
 NAME            VERSION    STATUS    AGE
-rm-cluster      3.12.12   Ready     109s
+rm-cluster      4.0.4   Ready     109s
 ```
 
 We are now ready to apply the `RabbitMQOpsRequest` CR to update this database.
 
 ### update RabbitMQ Version
 
-Here, we are going to update `RabbitMQ` cluster from `3.12.12` to `3.13.2`.
+Here, we are going to update `RabbitMQ` cluster from `4.0.4` to `4.2.4`.
 
 #### Create RabbitMQOpsRequest:
 
@@ -99,7 +99,7 @@ spec:
   databaseRef:
     name: rm-cluster
   updateVersion:
-    targetVersion: 3.13.2
+    targetVersion: 4.2.4
   timeout: 5m
   apply: IfReady
 ```
@@ -108,7 +108,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `rm-cluster` RabbitMQ database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `3.13.2`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `4.2.4`.
 - Have a look [here](/docs/guides/rabbitmq/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
@@ -238,13 +238,13 @@ Now, we are going to verify whether the `RabbitMQ` and the related `PetSets` and
 
 ```bash
 $ kubectl get rm -n demo rm-cluster -o=jsonpath='{.spec.version}{"\n"}'
-3.13.2
+4.2.4
 
 $ kubectl get petset -n demo rm-cluster -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine
+ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
 
 $ kubectl get pods -n demo rm-cluster-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine
+ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
 ```
 
 You can see from above, our `RabbitMQ` cluster has been updated with the new version. So, the updateVersion process is successfully completed.

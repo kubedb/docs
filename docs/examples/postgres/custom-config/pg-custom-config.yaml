@@ -6,7 +6,7 @@ metadata:
 spec:
   version: "18.3"
   configuration:
-    secretName: pg-custom-config
+    secretName: pg-configuration
   storage:
     storageClassName: "standard"
     accessModes:

@@ -163,10 +163,10 @@ mysql-singapore   8.4.8    Ready    22h
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.password}' | base64 -d
 pass
 ```
 

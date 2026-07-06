@@ -80,7 +80,7 @@ It specifies the desired version information required for the Solr version updat
 > KubeDB does not support downgrade for Solr.
 
 **Samples:**
-Let's assume we have and Solr cluster of version `9.4.1`. The Solr custom resource is named `solr-cluster` and it's provisioned in demo namespace. Now, you want to update your Solr cluster to `9.6.1`. Apply this YAML to update to your desired version.
+Let's assume we have and Solr cluster of version `9.7.0`. The Solr custom resource is named `solr-cluster` and it's provisioned in demo namespace. Now, you want to update your Solr cluster to `9.8.0`. Apply this YAML to update to your desired version.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SolrOpsRequest
@@ -92,7 +92,7 @@ spec:
     name: solr-cluster
   type: UpdateVersion
   updateVersion:
-    targetVersion: 9.6.1
+    targetVersion: 9.8.0
 ```
 
 ### spec.horizontalScaling

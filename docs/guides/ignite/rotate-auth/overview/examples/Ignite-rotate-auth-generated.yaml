@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: IgniteOpsRequest
+metadata:
+  name: igops-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: ignite-quickstart
+  timeout: 5m
+  apply: IfReady

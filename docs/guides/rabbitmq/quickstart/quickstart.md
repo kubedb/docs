@@ -64,7 +64,7 @@ metadata:
   name: rm-quickstart
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -99,7 +99,7 @@ rabbitmq.kubedb.com/rm-quickstart created
 Here,
 
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
-- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.13.2` database is going to be created.
+- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `4.2.4` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for RabbitMQ database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create RabbitMQ database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
   - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/rabbitmq/concepts/rabbitmq.md#specdeletionpolicy)
 - `.spec.podTemplate` is used to provide specific pod specifications or container specification. You can override default resources, securityContext etc.  set for rabbitmq container. Find details [here](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec)
@@ -134,7 +134,7 @@ rm-quickstart-pods        ClusterIP      None            <none>           4369/T
 
 $ kubectl get appbinding -n demo
 NAME            TYPE                  VERSION   AGE
-rm-quickstart   kubedb.com/rabbitmq   3.13.2    23h
+rm-quickstart   kubedb.com/rabbitmq   4.2.4    23h
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `RabbitMQ` object:
@@ -148,7 +148,7 @@ kind: RabbitMQ
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"3.13.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"4.2.4"}}
   creationTimestamp: "2024-09-10T09:23:57Z"
   finalizers:
   - kubedb.com/rabbitmq
@@ -218,7 +218,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: 3.13.2
+  version: 4.2.4
 status:
   conditions:
   - lastTransitionTime: "2024-09-10T09:23:57Z"

@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: pgbouncer-server
   updateVersion:
-    targetVersion: 1.18.0
+    targetVersion: 1.24.0
 ```
 
 **Sample `PgBouncerOpsRequest` Objects for Horizontal Scaling:**

@@ -136,7 +136,7 @@ metadata:
   name: pgpool
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres
@@ -298,7 +298,7 @@ Now, create Pgpool crd `pgpool-new` using the existing service account name `my-
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/pgpool-new.yaml
-pgpool.kubedb.com/quick-pgpool created
+pgpool.kubedb.com/pgpool-new created
 ```
 
 Below is the YAML for the Pgpool crd we just created.
@@ -310,7 +310,7 @@ metadata:
   name: pgpool-new
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres
