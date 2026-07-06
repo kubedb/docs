@@ -396,7 +396,7 @@ When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `Val
 
 ```bash
 $ kubectl delete mc memcd-quickstart -n demo
-Error from server (Forbidden): admission webhook "memcachedwebhook.validators.kubedb.com" denied the request: memcached demo/memcd-quickstart is can't terminated. To delete, change spec.deletionPolicy
+Error from server (Forbidden): admission webhook "memcachedwebhook.validators.kubedb.com" denied the request: memcached demo/memcd-quickstart can't be terminated. To delete, change spec.deletionPolicy
 ```
 Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy).
 
