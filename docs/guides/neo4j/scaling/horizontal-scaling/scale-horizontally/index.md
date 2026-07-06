@@ -19,7 +19,7 @@ Horizontally scaling a Neo4j cluster means adding or removing cluster members (p
 This guide walks you through:
 - Seeding a user database with test data
 - Scaling **up** from 3 → 5 members
-- Scaling **down** from 5 → 4 members
+- Scaling **down** from 5 → 3 members
 - Verifying cluster topology and data integrity at each step
 
 ---
