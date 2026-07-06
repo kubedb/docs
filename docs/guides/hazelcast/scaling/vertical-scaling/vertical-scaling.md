@@ -239,7 +239,7 @@ Status:
     Status:                True
     Type:                  EvictPod--hz-prod-1
     Last Transition Time:  2025-08-19T11:12:50Z
-    Message:               Successfully completed the vertical scaling for RabbitMQ
+    Message:               Successfully completed the vertical scaling for Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True

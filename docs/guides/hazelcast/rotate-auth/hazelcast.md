@@ -208,7 +208,7 @@ Status:
     Status:                True
     Type:                  RunningPod--hazelcast-quickstart-1
     Last Transition Time:  2025-08-18T06:57:06Z
-    Message:               Successfully completed reconfigure Ignite
+    Message:               Successfully completed reconfigure Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -373,7 +373,7 @@ Status:
     Status:                True
     Type:                  RunningPod--hazelcast-quickstart-1
     Last Transition Time:  2025-08-18T07:13:21Z
-    Message:               Successfully completed reconfigure Ignite
+    Message:               Successfully completed reconfigure Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True
