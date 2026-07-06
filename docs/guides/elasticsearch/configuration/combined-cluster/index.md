@@ -155,14 +155,14 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
   elastic
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
   ehG7*7SJZ0o9PA05
   ```
 

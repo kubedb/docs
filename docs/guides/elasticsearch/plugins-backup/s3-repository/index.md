@@ -156,9 +156,9 @@ Forwarding from [::1]:9200 -> 9200
 Keep it like that and switch to another terminal window:
 
 ```bash
-$ export ELASTIC_USER=$(kubectl get secret -n demo sample-es-elastic-cred -o jsonpath='{.data.username}' | base64 -d)
+$ export ELASTIC_USER=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo sample-es-elastic-cred -o jsonpath='{.data.password}' | base64 -d)
+$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d)
 
 $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
 {

@@ -192,7 +192,7 @@ The `ElasticsearchUserSpec` contains the following fields:
 -  `hash` ( `string` | `""` ) - Specifies the hash of the password.
 -  `full_name` ( `string` | `""` ) - Specifies The full name of the user. Only applicable for xpack authplugin.
 -  `metadata` ( `map[string]string` | `""` ) - Specifies Arbitrary metadata that you want to associate with the user. Only applicable for xpack authplugin.
--  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred".
+-  `secretName` ( `string` | `""` ) - Specifies the k8s secret name that holds the user credentials. Defaults to "<resource-name>-<username>-cred". The `elastic` superuser is an exception: its credentials are stored in the shared `spec.authSecret` (`<resource-name>-auth`) instead of a per-user `-cred` secret.
 -  `roles` ( `[]string` | `nil` ) - A set of roles the user has. The roles determine the user’s access permissions. To create a user without any roles, specify an empty list: []. Only applicable for xpack authplugin.
 -  `email` ( `string` | `""` ) - Specifies the email of the user. Only applicable for xpack authplugin.
 -  `reserved` ( `bool` | `false` ) - specifies the reserved status. The resources that have this set to `true` cannot be changed using the REST API or Kibana.
@@ -237,10 +237,12 @@ spec:
       backendRoles:
       - beats_system
       secretName: es-cluster-beats-system-cred
+    # the elastic superuser reads from the shared spec.authSecret (es-cluster-auth),
+    # not the per-user es-cluster-elastic-cred default.
     elastic:
       backendRoles:
       - superuser
-      secretName: es-cluster-elastic-cred
+      secretName: es-cluster-auth
     kibana_system:
       backendRoles:
       - kibana_system
@@ -539,7 +541,7 @@ The k8s secret must be of `type: kubernetes.io/basic-auth` with the following ke
 - `username`: Must be `elastic` for x-pack, or `admin` for searchGuard and OpenDistro.
 - `password`: Password for the `elastic`/`admin` user.
 
-If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-{UserName}-cred` with randomly generated secured credentials.
+If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with randomly generated secured credentials.
 
 We can use this field in 3 mode.
 1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Elasticsearch object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.

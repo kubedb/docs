@@ -169,7 +169,7 @@ Metadata:
   UID:               236fd414-9d94-4fce-93d3-7891fcf7f6a4
 Spec:
   Auth Secret:
-    Name:                es-cluster-elastic-cred
+    Name:                es-cluster-auth
   Enable SSL:            true
   Heap Size Percentage:  50
   Kernel Settings:
@@ -390,7 +390,7 @@ NAME                               TYPE                       DATA   AGE
 secret/es-cluster-archiver-cert    kubernetes.io/tls          3      5m51s
 secret/es-cluster-ca-cert          kubernetes.io/tls          2      5m51s
 secret/es-cluster-config           Opaque                     1      5m50s
-secret/es-cluster-elastic-cred     kubernetes.io/basic-auth   2      5m51s
+secret/es-cluster-auth     kubernetes.io/basic-auth   2      5m51s
 secret/es-cluster-http-cert        kubernetes.io/tls          3      5m51s
 secret/es-cluster-transport-cert   kubernetes.io/tls          3      5m51s
 
@@ -458,21 +458,21 @@ es-cluster-config                         Opaque                                
 es-cluster-dashboard-ca-cert              kubernetes.io/tls                     2      12m
 es-cluster-dashboard-config               Opaque                                1      12m
 es-cluster-dashboard-kibana-server-cert   kubernetes.io/tls                     3      12m
-es-cluster-elastic-cred                   kubernetes.io/basic-auth              2      12m
+es-cluster-auth                   kubernetes.io/basic-auth              2      12m
 es-cluster-http-cert                      kubernetes.io/tls                     3      12m
 es-cluster-token-v97c7                    kubernetes.io/service-account-token   3      12m
 es-cluster-transport-cert                 kubernetes.io/tls                     3      12m
 ```
-Now, we can connect to the database with `es-cluster-elastic-cred` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database with `es-cluster-auth` which contains the admin level credentials to connect with the database.
 
 ### Accessing Database Through CLI
 
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 YQB)~K6M9U)d_yVu
 ```
 

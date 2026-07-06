@@ -213,14 +213,14 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-topology-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo es-topology-auth -o jsonpath='{.data.username}' | base64 -d
   elastic
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-topology-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo es-topology-auth -o jsonpath='{.data.password}' | base64 -d
   F2sIde1TbZqOR_gF
   ```
 
