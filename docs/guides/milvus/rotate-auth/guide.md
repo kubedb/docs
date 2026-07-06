@@ -71,6 +71,7 @@ spec:
     name: milvus-standalone
   authentication:
     secretRef:
+      kind: Secret
       name: milvus-new-auth1
 ```
 
@@ -154,6 +155,7 @@ spec:
     name: milvus-cluster
   authentication:
     secretRef:
+      kind: Secret
       name: milvus-new-auth1
 ```
 

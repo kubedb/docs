@@ -94,12 +94,12 @@ Now, create the PgBouncerVersion crd,
 
 ```bash
 $ kubectl apply -f pvt-pgbouncerversion.yaml
-pgbouncerversion.kubedb.com/pvt-1.17.0 created
+pgbouncerversion.kubedb.com/1.17.0 created
 ```
 
 ## Deploy PgBouncer from Private Registry
 
-While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-1.17.0` in `spec.version` field.
+While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `1.17.0` in `spec.version` field.
 
 Below is the PgBouncer object we will create in this tutorial
 

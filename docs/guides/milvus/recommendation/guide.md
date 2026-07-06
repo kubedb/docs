@@ -68,6 +68,7 @@ spec:
       requests:
         storage: 1Gi
   authSecret:
+    kind: Secret
     name: milvus-standalone-auth
     rotateAfter: 15m
   tls:

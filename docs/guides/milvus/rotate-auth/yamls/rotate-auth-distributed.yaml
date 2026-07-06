@@ -20,4 +20,5 @@ spec:
     name: milvus-cluster
   authentication:
     secretRef:
+      kind: Secret
       name: milvus-new-auth1

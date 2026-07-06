@@ -1,7 +1,7 @@
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PgBouncerVersion
 metadata:
-  name: "pvt-1.17.0"
+  name: "1.17.0"
 spec:
   exporter:
     image: PRIVATE_REGISTRY/pgbouncer_exporter:v0.1.1

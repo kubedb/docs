@@ -21,6 +21,7 @@ spec:
             requests:
               storage: 1Gi
   authSecret:
+    kind: Secret
     name: milvus-cluster-auth
     rotateAfter: 15m
   tls:
