@@ -54,7 +54,7 @@ e45749edaf324b980bbf5148644d500d6842ff5c 10.2.0.87:10054@10060,rd0-0.kubedb.apps
 673060b3b589f06fe6a12e6f47ea8910042b6be6 10.2.0.87:10052@10058,rd0-0.kubedb.appscode master - 0 1754481555000 2 connected 5461-10922
 
 $ kubectl exec -it -n demo redis-announce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
-3
+6
 ```
 
 We can see from above output that there are 3 masters and each master has 2 replicas. So, total 6 replicas in the cluster. Each master and its two replicas belongs to a shard.
@@ -152,7 +152,7 @@ e45749edaf324b980bbf5148644d500d6842ff5c 10.2.0.87:10054@10060,rd0-0.kubedb.apps
 673060b3b589f06fe6a12e6f47ea8910042b6be6 10.2.0.87:10052@10058,rd0-0.kubedb.appscode master - 0 1754484136539 2 connected 6827-10922
 
 $ kubectl exec -it -n demo redis-announce-shard0-0 -c redis -- redis-cli -c cluster nodes | grep slave | wc -l
-8
+12
 ```
 
 The above output verifies that we have successfully scaled up the shards and scaled down the replicas of the Redis cluster database. The slots in redis shard
