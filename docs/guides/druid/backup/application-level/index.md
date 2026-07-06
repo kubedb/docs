@@ -449,7 +449,7 @@ spec:
 - `.spec.sessions[*].addon.tasks[*].name[*]` specifies that both the `manifest-backup` and `mysql-metadata-storage-backup` tasks will be executed.
 
 > **Note**: 
-> - To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-restore`
+> - To create `BackupConfiguration` for druid with `PostgreSQL` as metadata storage update the `spec.sessions[*].addon.tasks.name` from `mysql-metadata-storage-backup` to `postgres-metadata-storage-backup`
 > - When we backup a `Druid`, KubeStash operator will also take backup of the dependency of the `MySQL` and `ZooKeeper` cluster as well.
 > - When we backup a `Druid` where `spec.metadatastorage.externallyManaged` is false then KubeStash operator will also take backup of
 

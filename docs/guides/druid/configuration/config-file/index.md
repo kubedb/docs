@@ -123,7 +123,7 @@ Let's create a k8s secret containing the above configuration where the file name
 apiVersion: v1
 kind: Secret
 metadata:
-  name: configsecret
+  name: config-secret
   namespace: demo
 stringData:
   middleManagers.properties: |-
@@ -266,9 +266,9 @@ You can see that there are 5 task slots reflecting with our provided custom conf
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete dr -n demo druid-dev 
+$ kubectl delete dr -n demo druid-with-config 
 
-$ kubectl delete secret -n demo configsecret-combined 
+$ kubectl delete secret -n demo config-secret 
 
 $ kubectl delete namespace demo
 ```

@@ -222,7 +222,7 @@ spec:
 
 Here,
 
-- `spec.clusterRef.name` specifies that we are performing vertical scaling operation on `druid-cluster` cluster.
+- `spec.databaseRef.name` specifies that we are performing storage autoscaling operation on `druid-cluster` cluster.
 - `spec.storage.historicals.trigger/spec.storage.middleManagers.trigger` specifies that storage autoscaling is enabled for historicals and middleManagers of topology cluster.
 - `spec.storage.historicals.usageThreshold/spec.storage.middleManagers.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.historicals.scalingThreshold/spec.storage.historicals.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `100%` of the current amount.
@@ -882,7 +882,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete druidopsrequests -n demo drops-druid-cluster-gq9huj drops-druid-cluster-kbw4fd
-kubectl delete druidutoscaler -n demo druid-storage-autoscaler
+kubectl delete druidautoscaler -n demo druid-storage-autoscaler
 kubectl delete dr -n demo druid-cluster
 ```
 

@@ -909,7 +909,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl patch -n demo druid druid-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kafka.kubedb.com/druid-cluster patched
+druid.kubedb.com/druid-cluster patched
 
 $ kubectl delete dr druid-cluster  -n demo
 druid.kubedb.com "druid-cluster" deleted

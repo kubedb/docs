@@ -96,7 +96,7 @@ In this section, we are going to deploy a Druid topology cluster. Then, in the n
 apiVersion: kubedb.com/v1alpha2
 kind: Druid
 metadata:
-  name: druid-quickstart
+  name: druid-cluster
   namespace: demo
 spec:
   version: 35.0.1

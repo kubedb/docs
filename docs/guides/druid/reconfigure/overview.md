@@ -19,8 +19,8 @@ This guide will give an overview on how KubeDB Ops-manager operator reconfigures
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Druid](/docs/guides/kafka/concepts/kafka.md)
-    - [DruidOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
+    - [Druid](/docs/guides/druid/concepts/druid.md)
+    - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
 
 ## How Reconfiguring Druid Process Works
 
@@ -45,7 +45,7 @@ The Reconfiguring Druid process consists of the following steps:
 
 6. When it finds a `DruidOpsRequest` CR, it halts the `Druid` object which is referred from the `DruidOpsRequest`. So, the `KubeDB` Provisioner  operator doesn't perform any operations on the `Druid` object during the reconfiguring process.
 
-7. Then the `KubeDB` Ops-manager operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `MogoDBOpsRequest` CR.
+7. Then the `KubeDB` Ops-manager operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `DruidOpsRequest` CR.
 
 8. Then the `KubeDB` Ops-manager operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `DruidOpsRequest` CR.
 

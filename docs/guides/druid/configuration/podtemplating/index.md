@@ -298,9 +298,9 @@ druid-node-selector   kubedb.com/v1alpha2   36.0.0    Ready    54m
 ```
 You can verify that by running `kubectl get pods -n demo druid-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo druid-node-selector-cooridnators-0 -o wide
+$ kubectl get pods -n demo druid-node-selector-coordinators-0 -o wide
 NAME                                    READY   STATUS    RESTARTS   AGE     IP            NODE                         NOMINATED NODE   READINESS GATES
-druid-node-selector-cooridnators-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
+druid-node-selector-coordinators-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
 ```
 We can successfully verify that our pod was scheduled to our desired node.
 
@@ -385,7 +385,7 @@ Check that the petset's pod is running or not,
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=druid-without-tolerations
 NAME                                          READY   STATUS    RESTARTS   AGE
 druid-without-tolerations-brokers-0           0/1     Pending   0          3m35s
-druid-without-tolerations-cooridnators-0      0/1     Pending   0          3m35s
+druid-without-tolerations-coordinators-0      0/1     Pending   0          3m35s
 druid-without-tolerations-historicals-0       0/1     Pending   0          3m35s
 druid-without-tolerations-middlemanager-0     0/1     Pending   0          3m35s
 druid-without-tolerations-routers-0           0/1     Pending   0          3m35s
