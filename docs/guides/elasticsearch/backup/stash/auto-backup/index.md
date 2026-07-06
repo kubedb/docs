@@ -118,7 +118,7 @@ We have also used some variables in `name` field of the `interimVolumeTemplate` 
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/auto-backup/examples/backupblueprint.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/backupblueprint.yaml
 backupblueprint.stash.appscode.com/elasticsearch-backup-template created
 ```
 
@@ -172,7 +172,7 @@ Notice the `annotations` section. We are pointing to the `BackupBlueprint` that 
 Let's create the above Elasticsearch CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/auto-backup/examples/es-demo.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/es-demo.yaml
 elasticsearch.kubedb.com/sample-elasticsearch created
 ```
 
@@ -350,7 +350,7 @@ Notice the `annotations` section. This time, we have passed a schedule via `stas
 Let's create the above Elasticsearch CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/auto-backup/examples/es-demo-2.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/es-demo-2.yaml
 elasticsearch.kubedb.com/es-demo-2 created
 ```
 
@@ -529,7 +529,7 @@ Notice the `annotations` section. This time, we have passed an argument via `par
 Let's create the above Elasticsearch CRO,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/auto-backup/examples/es-demo-3.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/es-demo-3.yaml
 elasticsearch.kubedb.com/es-demo-3 created
 ```
 
@@ -671,7 +671,7 @@ Once the backup has been completed successfully, you should see that Stash has c
 To cleanup the resources crated by this tutorial, run the following commands,
 
 ```bash
-❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/auto-backup/examples/
+❯ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/auto-backup/examples/
 backupblueprint.stash.appscode.com "elasticsearch-backup-template" deleted
 elasticsearch.kubedb.com "es-demo-2" deleted
 elasticsearch.kubedb.com "es-demo-3" deleted

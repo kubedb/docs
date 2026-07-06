@@ -139,7 +139,7 @@ Metadata:
   UID:               dd90071c-8e64-420f-a836-2be9459e728a
 Spec:
   Auth Secret:
-    Name:                es-cluster-elastic-cred
+    Name:                es-cluster-auth
   Enable SSL:            true
   Heap Size Percentage:  50
   Internal Users:
@@ -154,7 +154,7 @@ Spec:
     Elastic:
       Backend Roles:
         superuser
-      Secret Name:  es-cluster-elastic-cred
+      Secret Name:  es-cluster-auth
     kibana_system:
       Backend Roles:
         kibana_system
@@ -352,7 +352,7 @@ secret/es-cluster-beats-system-cred             kubernetes.io/basic-auth   2    
 secret/es-cluster-ca-cert                       kubernetes.io/tls          2      13m
 secret/es-cluster-client-cert                   kubernetes.io/tls          3      13m
 secret/es-cluster-config                        Opaque                     1      13m
-secret/es-cluster-elastic-cred                  kubernetes.io/basic-auth   2      13m
+secret/es-cluster-auth                  kubernetes.io/basic-auth   2      13m
 secret/es-cluster-http-cert                     kubernetes.io/tls          3      13m
 secret/es-cluster-kibana-system-cred            kubernetes.io/basic-auth   2      13m
 secret/es-cluster-logstash-system-cred          kubernetes.io/basic-auth   2      13m
@@ -456,7 +456,7 @@ es-cluster-beats-system-cred             kubernetes.io/basic-auth              2
 es-cluster-ca-cert                       kubernetes.io/tls                     2      14m
 es-cluster-client-cert                   kubernetes.io/tls                     3      14m
 es-cluster-config                        Opaque                                1      14m
-es-cluster-elastic-cred                  kubernetes.io/basic-auth              2      14m
+es-cluster-auth                  kubernetes.io/basic-auth              2      14m
 es-cluster-http-cert                     kubernetes.io/tls                     3      14m
 es-cluster-kibana-system-cred            kubernetes.io/basic-auth              2      14m
 es-cluster-logstash-system-cred          kubernetes.io/basic-auth              2      14m
@@ -464,16 +464,16 @@ es-cluster-remote-monitoring-user-cred   kubernetes.io/basic-auth              2
 es-cluster-token-8tbg6                   kubernetes.io/service-account-token   3      14m
 es-cluster-transport-cert                kubernetes.io/tls                     3      14m
 ```
-Now, we can connect to the database with `es-cluster-elastic-cred` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database with `es-cluster-auth` which contains the admin level credentials to connect with the database.
 
 ### Accessing Database Through Dashboard
 
 To access the database through Dashboard, we have to get the credentials. We can do that by following command,
 
 ```bash
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 5m2YFv!JO6w5_LrD
 ```
 

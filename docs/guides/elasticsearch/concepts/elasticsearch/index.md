@@ -240,7 +240,7 @@ spec:
     elastic:
       backendRoles:
       - superuser
-      secretName: es-cluster-elastic-cred
+      secretName: es-cluster-auth
     kibana_system:
       backendRoles:
       - kibana_system
@@ -539,7 +539,7 @@ The k8s secret must be of `type: kubernetes.io/basic-auth` with the following ke
 - `username`: Must be `elastic` for x-pack, or `admin` for searchGuard and OpenDistro.
 - `password`: Password for the `elastic`/`admin` user.
 
-If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-{UserName}-cred` with randomly generated secured credentials.
+If not set, the KubeDB operator creates a new Secret `{Elasticsearch name}-auth` with randomly generated secured credentials.
 
 We can use this field in 3 mode.
 1. Using an external secret. In this case, You need to create an auth secret first with required fields, then specify the secret name when creating the Elasticsearch object using `spec.authSecret.name` & set `spec.authSecret.externallyManaged` to true.

@@ -197,7 +197,7 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backup-blueprint.yaml
 backupblueprint.core.kubestash.com/es-quickstart-backup-blueprint created
 ```
 

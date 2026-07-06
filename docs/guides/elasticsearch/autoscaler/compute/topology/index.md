@@ -94,7 +94,7 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology.yaml
 elasticsearch.kubedb.com/es-topology created
 ```
 
@@ -187,7 +187,7 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology-auto-scaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology-auto-scaler.yaml
 elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-as created
 ```
 
