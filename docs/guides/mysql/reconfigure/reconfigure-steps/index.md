@@ -149,7 +149,7 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/innob-cluster.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/inndob-cluster.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -522,20 +522,20 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-steps/reconfigure-remove.yaml
-mysqlopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-remove.yaml
+mysqlopsrequest.ops.kubedb.com/myops-reconfigure-remove created
 ```
 
 #### Verify the new configuration is working
 
 If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MySQL` object.
 
-Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
+Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
 ```bash
 $ kubectl get mysqlopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
+demo        myops-reconfigure-remove   Reconfigure   Successful   2m1s
 ```
 
 Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
@@ -586,6 +586,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  mdops-reconfigure-remove
+$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  myops-reconfigure-remove
 $ kubectl delete ns demo
 ```

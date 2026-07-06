@@ -31,7 +31,7 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/reconfigure-tls/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mysql/reconfigure-tls/reconfigure/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/reconfigure-tls/reconfigure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Add TLS to a MySQL database
 
@@ -1197,7 +1197,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 ```bash
 kubectl delete mysql -n demo mysql
 kubectl delete issuer -n demo my-issuer my-new-issuer
-kubectl delete mysqlopsrequest myops-add-tls myops-remove mops-rotate myps-change-issuer
+kubectl delete mysqlopsrequest -n demo myops-add-tls myops-remove myops-rotate myops-change-issuer
 kubectl delete ns demo
 ```
 

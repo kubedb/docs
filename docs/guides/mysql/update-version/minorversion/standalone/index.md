@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/minorversion/standalone/yamls](/docs/guides/mysql/update-version/minorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/minorversion/standalone/yamls](/docs/guides/mysql/update-version/minorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Version updating on Standalone
 
@@ -245,7 +245,7 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/standalone/yamls/update_minor_version_standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/standalone/yamls/upgrade_minor_version_standalone.yaml
 mysqlopsrequest.ops.kubedb.com/my-update-minor-standalone created
 ```
 
