@@ -240,10 +240,6 @@ metadata:
   name: postgres-migrate
   namespace: demo
 spec:
-  jobTemplate:
-    spec:
-      securityContext:
-        fsGroup: 65534
   source:
     postgres:
       connectionInfo:

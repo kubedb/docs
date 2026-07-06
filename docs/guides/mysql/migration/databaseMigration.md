@@ -248,10 +248,6 @@ metadata:
   name: mysql-migrate
   namespace: demo
 spec:
-  jobTemplate:
-    spec:
-      securityContext:
-        fsGroup: 65534
   source:
     mysql:
       connectionInfo:

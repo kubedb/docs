@@ -249,10 +249,6 @@ metadata:
   name: mariadb-migrate
   namespace: demo
 spec:
-  jobTemplate:
-    spec:
-      securityContext:
-        fsGroup: 65534
   source:
     mariadb:
       connectionInfo:
