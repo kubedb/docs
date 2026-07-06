@@ -29,7 +29,7 @@ KubeDB Migration lets you move an existing database — such as a MySQL instance
 
 ### Fresh Install
 
-Add `--set kubedb-migrator.enabled=true` to the standard [KubeDB helm install](/docs/setup/install/kubedb/helm.md) guide.
+Add `--set kubedb-courier.enabled=true` to the standard [KubeDB helm install](/docs/setup/install/kubedb/helm.md) guide.
 
 ### Upgrade Existing Install
 
@@ -39,7 +39,7 @@ The Migration CRD is required to apply the Migration CR. Helm upgrade command do
 kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_migrations.yaml
 ```
 
-Add `--set kubedb-migrator.enabled=true` to the [Kubedb helm upgrade](/docs/setup/upgrade/index.md) 
+Add `--set kubedb-courier.enabled=true` to the [Kubedb helm upgrade](/docs/setup/upgrade/index.md) 
 
 
 ## Migration Steps
