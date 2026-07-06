@@ -33,7 +33,7 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/clustering/galera-cluster/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MariaDB Cluster
 
@@ -124,7 +124,7 @@ status:
     status: "True"
     type: AcceptingConnection
   - lastTransitionTime: "2021-03-16T09:39:50Z"
-    message: 'The MySQL: demo/sample-mariadb is ready.'
+    message: 'The MariaDB: demo/sample-mariadb is ready.'
     observedGeneration: 2
     reason: ReadinessCheckSucceeded
     status: "True"

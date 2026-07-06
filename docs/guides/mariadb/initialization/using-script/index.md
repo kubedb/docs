@@ -75,8 +75,8 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/Initialization/demo-1.yaml
-mysql.kubedb.com/mysql-init-script created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/initialization/using-script/example/demo-1.yaml
+mariadb.kubedb.com/sample-mariadb created
 ```
 
 Here,

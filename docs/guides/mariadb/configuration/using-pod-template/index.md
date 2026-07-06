@@ -29,7 +29,7 @@ KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/do
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/configuration/using-pod-template/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -104,7 +104,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 Check that the petset's pod is running
 
 ```bash
-$ $ kubectl get pod -n demo
+$ kubectl get pod -n demo
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   1/1     Running   0          96s
 ```

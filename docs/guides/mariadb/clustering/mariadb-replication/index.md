@@ -33,7 +33,7 @@ Before proceeding:
   namespace/demo created
   ```
 
-> Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/clustering/mariadb-replication/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MariaDB Cluster
 
@@ -71,7 +71,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples/demo-1.yaml
 mariadb.kubedb.com/sample-mariadb created
 ```
 
@@ -541,7 +541,7 @@ Bye
 ## Checking Proxy and Read-Write Split using Maxscale
 
 
-To test the traffic routing through the ProxySQL server let's first create a pod with ubuntu base image in it. We will use the following yaml.
+To test the traffic routing through the MaxScale server let's first create a pod with ubuntu base image in it. We will use the following yaml.
 
 ```yaml
 apiVersion: apps/v1

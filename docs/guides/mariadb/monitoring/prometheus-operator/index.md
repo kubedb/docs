@@ -153,7 +153,7 @@ coreos-prom-md   10.5.23    Ready    59s
 KubeDB will create a separate stats service with name `{MariaDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-md"
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-md"
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-md         ClusterIP   10.99.96.226    <none>        3306/TCP    107s
 coreos-prom-md-pods    ClusterIP   None            <none>        3306/TCP    107s

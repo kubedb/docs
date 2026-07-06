@@ -181,7 +181,7 @@ $ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.replicas'
 Now let's connect to a mariadb instance and run a mariadb internal command to check the number of replicas,
 
 ```bash
-$ $  kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+$ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
 root@sample-mariadb-0:/ mariadb -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
 +--------------------+-------+
 | Variable_name      | Value |
@@ -251,7 +251,7 @@ $ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.replicas'
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the number of replicas,
 ```bash
-$ $  kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+$ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
 root@sample-mariadb-0:/ mariadb -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
 +--------------------+-------+
 | Variable_name      | Value |

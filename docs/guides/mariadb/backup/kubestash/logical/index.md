@@ -391,7 +391,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 ```
 
@@ -585,7 +585,7 @@ Let's create the above database,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restored-mariadb.yaml
-mariadb.kubedb.com/restore-mariadb created
+mariadb.kubedb.com/restored-mariadb created
 ```
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.
