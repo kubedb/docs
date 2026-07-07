@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Elasticsearch. This tutorial wi
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,12 +64,12 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-$ kubectl create secret tls es-ca \
+kubectl create secret tls es-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/es-ca created
 ```
+secret/es-ca created
 
 Now, create an `Issuer` using the `ca-secret` you have just created. The `YAML` file looks like this:
 
@@ -87,9 +87,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-issuer.yaml
-issuer.cert-manager.io/es-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-issuer.yaml
 ```
+issuer.cert-manager.io/es-ca-issuer created
 
 ## TLS/SSL encryption in Elasticsearch Combined Cluster
 
@@ -122,28 +122,29 @@ spec:
 ### Deploy Elasticsearch Combined Cluster
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-combined-tls.yaml
-elasticsearch.kubedb.com/es-combined-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-combined-tls.yaml
 ```
+elasticsearch.kubedb.com/es-combined-tls created
 
 Now, wait until `es-combined-tls` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME              VERSION        STATUS         AGE
 es-combined-tls   xpack-8.19.9   Provisioning   0s
 es-combined-tls   xpack-8.19.9   Provisioning   15s
 .
 .
 es-combined-tls   xpack-8.19.9   Ready          82s
-```
 
 ### Verify TLS/SSL in Elasticsearch Combined Cluster
 
 KubeDB creates a client certificate secret for Elasticsearch. Let's check it:
 
 ```bash
-$ kubectl describe secret -n demo es-combined-tls-client-cert
+kubectl describe secret -n demo es-combined-tls-client-cert
+```
 Name:         es-combined-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -169,13 +170,13 @@ Data
 tls.key:  1708 bytes
 ca.crt:   1172 bytes
 tls.crt:  1387 bytes
-```
 
 Now, let's exec into an Elasticsearch pod and verify the configuration that TLS is enabled for both transport and HTTP layers.
 
 ```bash
-$ kubectl exec -n demo es-combined-tls-0 -c elasticsearch -- \
+kubectl exec -n demo es-combined-tls-0 -c elasticsearch -- \
                                       cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
+```
 xpack.security.enabled: true
 
 xpack.security.transport.ssl.enabled: true
@@ -188,14 +189,14 @@ xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.key:  certs/http/tls.key
 xpack.security.http.ssl.certificate: certs/http/tls.crt
 xpack.security.http.ssl.certificate_authorities: [ "certs/http/ca.crt" ]
-```
 
 We can see from the above output that both `xpack.security.transport.ssl.enabled: true` and `xpack.security.http.ssl.enabled: true` are set, which means TLS is enabled for both node-to-node and client-to-node communication.
 
 Now, let's connect to the Elasticsearch cluster using HTTPS to confirm it is accessible with TLS.
 
 ```bash
-$  kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
+ kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
+```
 {
   "cluster_name" : "es-combined-tls",
   "status" : "green",
@@ -214,7 +215,6 @@ $  kubectl exec -it -n demo es-combined-tls-0 -c elasticsearch -- curl -k -XGET 
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 From the above output, we can see that we are able to connect to the Elasticsearch cluster using the TLS configuration.
 

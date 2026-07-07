@@ -25,12 +25,14 @@ This guide will show you how to use `KubeDB` GitOps operator to create MySQL dat
 - You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -95,11 +97,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── MySQL.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is created in your cluster.
 
@@ -107,18 +109,19 @@ Our `gitops` operator will create an actual `MySQL` database CR in the cluster. 
 
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   76m
 
 NAME                         VERSION   STATUS   AGE
 mysql.kubedb.com/my-gitops   9.4.0     Ready    76m
-```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` MySQL.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=my-gitops'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=my-gitops'
+```
 NAME                                     AGE
 petset.apps.k8s.appscode.com/my-gitops   78m
 
@@ -137,7 +140,6 @@ service/my-gitops-standby   ClusterIP   10.43.239.55    <none>        3306/TCP  
 
 NAME                                           TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/my-gitops   kubedb.com/mysql   9.4.0     78m
-```
 
 ## Update MySQL Database using GitOps
 
@@ -184,7 +186,8 @@ Resource requests have been updated to `700m` CPU and `1536Mi` memory, and the m
 Now, `gitops` operator will detect the resource changes and create a `MySQLOpsRequest` to update the `MySQL` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   178m
 
@@ -193,11 +196,11 @@ mysql.kubedb.com/my-gitops   9.4.0     Ready    178m
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-mw8s6j     VerticalScaling     Successful   144m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo my-gitops-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo my-gitops-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "1536Mi"
@@ -207,7 +210,6 @@ $ kubectl get pod -n demo my-gitops-0 -o json | jq '.spec.containers[0].resource
     "memory": "1536Mi"
   }
 }
-```
 
 ### Scale MySQL Replicas
 Update the `MySQL.yaml` with the following, 
@@ -249,7 +251,8 @@ Update the `replicas` to `4`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MySQLOpsRequest to update the `MySQL` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$   kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+  kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   101m
 
@@ -260,17 +263,15 @@ NAME                                                                TYPE        
 mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   5m1s
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   19m
 
-```
-
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=my-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=my-gitops'
+```
 NAME          READY   STATUS    RESTARTS   AGE
 my-gitops-0   2/2     Running   0          15m
 my-gitops-1   2/2     Running   0          19m
 my-gitops-2   2/2     Running   0          17m
 my-gitops-3   2/2     Running   0          5m37s
-```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
@@ -316,7 +317,8 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MySQLOpsRequest to update the `MySQL` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   104m
 
@@ -328,17 +330,15 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalSc
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   22m
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   112s
 
-```
-
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=my-gitops'
+kubectl get pvc -n demo -l 'app.kubernetes.io/instance=my-gitops'
+```
 NAME               STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-my-gitops-0   Bound    pvc-c926c69f-ff5e-4f93-be78-1fc1d39da25c   2Gi        RWO            longhorn       <unset>                 105m
 data-my-gitops-1   Bound    pvc-8bfcf4d8-37fb-4543-96c5-7a656270967a   2Gi        RWO            longhorn       <unset>                 101m
 data-my-gitops-2   Bound    pvc-238989bc-0a53-4db8-a3c2-2ce77aee4042   2Gi        RWO            longhorn       <unset>                 101m
 data-my-gitops-3   Bound    pvc-5345bc6a-baad-461a-a1fe-108e75c32a11   2Gi        RWO            longhorn       <unset>                8m41s
-```
 
 ## Reconfigure MySQL
 
@@ -396,12 +396,12 @@ type: Opaque
 Now, we will add this file to `kubedb/my-configuration.yaml`.
 
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── my-configuration.yaml
 │ └── MySQL.yaml
 1 directories, 2 files
-```
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -445,7 +445,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MySQLOpsRequest to update the `MySQL` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   126m
 
@@ -457,12 +458,12 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalSc
 mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-yskbt5         Reconfigure         Successful   18m
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   44m
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   23m
-```
 
 After Ops Request becomes `Succesful`, lets check these parameters,
 
 ```bash
-$ kubectl exec -it -n demo my-gitops-0 -- bash
+kubectl exec -it -n demo my-gitops-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -492,8 +493,6 @@ mysql> show variables like 'read_buffer_size';
 +------------------+---------+
 | read_buffer_size | 1044480 |
 +------------------+---------+
-
-```
 You can check the other pods same way.
 So we have configured custom parameters.
 
@@ -519,13 +518,13 @@ type: kubernetes.io/basic-auth
 
 File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── my-auth.yaml
 │ ├── my-configuration.yaml
 │ └── MySQL.yaml
 1 directories, 3 files
-```
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -571,7 +570,8 @@ Change the `authSecret.name` field to `myauth`. Commit the changes and push to y
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MySQLOpsRequest to update the `MySQL` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   19h
 
@@ -584,11 +584,11 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-reconfigure-b5s92r         Reconfigure 
 mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   24m
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   18h
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   18h
-```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting MySQL with new credentials.
 ```bash
-$ kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
+kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
+```
 bash-5.1$  mysql -uroot -p"mypassword"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -614,7 +614,6 @@ mysql> SHOW DATABASES;
 | sys                |
 +--------------------+
 5 rows in set (0.001 sec)
-```
 
 ### TLS configuration
 
@@ -631,7 +630,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret generic my-ca \
+kubectl create secret generic my-ca \
   --from-file=ca.crt=ca.crt \
   -n demo
 ```
@@ -658,7 +657,8 @@ issuer.cert-manager.io/mysql-issuer created
 
 Let's add that to our `kubedb/my-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── my-auth.yaml
 │ ├── my-configuration.yaml
@@ -666,7 +666,6 @@ $ tree .
 │ ├── my-issuer.yaml
 │ └── MySQL.yaml
 1 directories, 5 files
-```
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -718,7 +717,8 @@ Add `tls` fields in the spec. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MySQLOpsRequest to update the `MySQL` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   20h
 
@@ -732,11 +732,11 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-reconfiguretls-8kwaw9      ReconfigureT
 mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth          Successful   38m
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   18h
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   18h
-```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting MySQL with new credentials.
 ```bash
-$ kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
+kubectl exec -it -n demo my-gitops-0 -c mysql -- bash
+```
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -803,7 +803,6 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 | require_secure_transport | OFF   |
 +--------------------------+-------+
 1 row in set (0.002 sec)
-```
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MySQL.
 
@@ -870,7 +869,8 @@ Update the `version` field to `9.6.0`. Commit the changes and push to your Git r
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MySQLOpsRequest to update the `MySQL` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
@@ -886,19 +886,24 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-bskr89       UpdateVersio
 mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-g2n3y9       UpdateVersion       Successful   132m
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   21h
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   20h
-```
 
 
 Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get MySQL -n demo my-gitops -o=jsonpath='{.spec.version}{"\n"}'
-9.6.0
-$ kubectl get petset -n demo my-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
-$ kubectl get pod -n demo my-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+kubectl get MySQL -n demo my-gitops -o=jsonpath='{.spec.version}{"\n"}'
 ```
+9.6.0
+
+```bash
+kubectl get petset -n demo my-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+
+```bash
+kubectl get pod -n demo my-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 
 ### Enable Monitoring
 
@@ -960,7 +965,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MySQLOpsRequest to add the `MySQL` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+kubectl get mysql.gitops.kubedb.com,mysql.kubedb.com,MySQLopsrequest -n demo
+```
 NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
@@ -976,7 +982,6 @@ mysqlopsrequest.ops.kubedb.com/my-gitops-rotate-auth-q2z2vf         RotateAuth  
 mysqlopsrequest.ops.kubedb.com/my-gitops-versionupdate-bskr89       UpdateVersion       Successful   158m
 mysqlopsrequest.ops.kubedb.com/my-gitops-verticalscaling-zbtqnv     VerticalScaling     Successful   21h
 mysqlopsrequest.ops.kubedb.com/my-gitops-volumeexpansion-tzncw1     VolumeExpansion     Successful   21h
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 

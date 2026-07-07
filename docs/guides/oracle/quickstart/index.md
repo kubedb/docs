@@ -32,26 +32,24 @@ This tutorial will show you how to use KubeDB to run an Oracle database.
 
 - check available StorageClass in your cluster:
 
-```shell
-$ kubectl get storageclasses
+```bash
+kubectl get storageclasses
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28d
-
-```
 Use a separate namespace for isolation:
-```shell
-$ kubectl create ns demo
-namespace/demo created
+```bash
+kubectl create ns demo
 ```
+namespace/demo created
 ## Find Available Oracle Versions
 
 KubeDB maintains an OracleVersion CRD with all supported Oracle versions:
-```shell
-$ kubectl get oracleversions
+```bash
+kubectl get oracleversions
+```
 NAME     VERSION   DISTRIBUTION   DB_IMAGE                                                    DEPRECATED   AGE
 21.3.0   21.3.0                   container-registry.oracle.com/database/enterprise:21.3.0.0               28d
-
-```
 ## Create Oracle image pull secret (important)
 To pull the Oracle image, create a secret with your Oracle credentials from <https://container-registry.oracle.com>:
 
@@ -137,11 +135,10 @@ spec:
   storageType: Durable
   version: 21.3.0
 ```
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/quickstart/standalone.yaml
-oracle.kubedb.com/oracle created
-
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/quickstart/standalone.yaml
 ```
+oracle.kubedb.com/oracle created
 Here,
 - `spec.version`: Refers to the `OracleVersion CRD` specifying the docker image.
 
@@ -164,9 +161,9 @@ KubeDB operator will create a new PetSet and a Service with the matching Oracle 
 operator will also create a governing service for PetSets with the name `kubedb`, if one is not already
 present.
 If we describe the `Oracle` CRD we will get an overview of the steps that were followed.
-```shell
-$ kubectl  describe oracle -n demo oracle
-
+```bash
+kubectl  describe oracle -n demo oracle
+```
 Name:         oracle
 Namespace:    demo
 Labels:       <none>
@@ -277,8 +274,6 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-```
-
 🔹Status: (What the operator reports now)
 
     Conditions: 
@@ -293,8 +288,9 @@ Events:                    <none>
 
 
 ## Check Resources Created by KubeDB operator:
-```shell
-$ kubectl get oracle,pods,pvc,services -n demo
+```bash
+kubectl get oracle,pods,pvc,services -n demo
+```
 NAME                       VERSION   MODE         STATUS   AGE
 oracle.kubedb.com/oracle   21.3.0    Standalone   Ready    109m
 
@@ -308,11 +304,10 @@ NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 service/oracle        ClusterIP   10.43.170.95   <none>        1521/TCP   109m
 service/oracle-pods   ClusterIP   None           <none>        1521/TCP   109m
 
-```
-
 ## Connect to Oracle Database
-```shell
-$ kubectl exec -it -n demo oracle-0 -- bash
+```bash
+kubectl exec -it -n demo oracle-0 -- bash
+```
 Defaulted container "oracle" out of: oracle, oracle-init (init)
 bash-4.2$ sqlplus / as sysdba
 
@@ -328,16 +323,20 @@ Version 21.3.0.0.0
 SQL> exit
 Disconnected from Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
 Version 21.3.0.0.0
-
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete oracle -n demo oracle
-$ kubectl delete ns demo
+kubectl patch -n demo oracle/oracle -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
+
+```bash
+kubectl delete oracle -n demo oracle
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 > ## ⚠️ Legal Notice

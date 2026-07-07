@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/volume-expansion/standalone/yamls](/docs/guides/postgres/volume-expansion/standalone/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -47,10 +47,10 @@ Here, we are going to deploy a `Postgres` standalone using a supported version b
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER               RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 linode-block-storage  linodebs.csi.linode.com   Delete          Immediate           true                   13m
-```
 
 We can see the output from the `linode-block-storage` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -84,28 +84,30 @@ spec:
 Let's create the `Postgres` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/standalone/yamls/pg-standalone.yaml
-postgres.kubedb.com/pg-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/standalone/yamls/pg-standalone.yaml
 ```
+postgres.kubedb.com/pg-standalone created
 
 Now, wait until `pg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pg -n demo
+kubectl get pg -n demo
+```
 NAME            VERSION    STATUS    AGE
 pg-standalone   18.3      Ready     3m47s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "10Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS          REASON    AGE
 pvc-7a8a538d017a4f32   10Gi       RWO            Delete           Bound    demo/data-pg-standalone-0   linode-block-storage  <unset>   7m
-```
 
 You can see the petset has 10GB storage, and the capacity of the persistent volume is also 10GB.
 
@@ -149,9 +151,9 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/standalone/yamls/vol-exp-standalone.yaml
-postgresopsrequest.ops.kubedb.com/pgops-vol-exp created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/standalone/yamls/vol-exp-standalone.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pgops-vol-exp created
 
 #### Verify Postgres Standalone volume expanded successfully
 
@@ -160,15 +162,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get postgresopsrequest -n demo
+kubectl get postgresopsrequest -n demo
+```
 NAME            TYPE              STATUS       AGE
 pgops-vol-exp   VolumeExpansion   Successful   10m
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe postgresopsrequest pgops-vol-exp -n demo
+kubectl describe postgresopsrequest pgops-vol-exp -n demo
+```
 Name:         pgops-vol-exp
 Namespace:    demo
 Labels:       <none>
@@ -228,18 +231,19 @@ Events:
   Normal  PauseDatabase      11m   KubeDB Ops-manager Operator  Successfully paused Postgres demo/pg-standalone
   Normal  ReadyPetSets  10m   KubeDB Ops-manager Operator  PetSet is recreated
   Normal  Successful         10m   KubeDB Ops-manager Operator  Successfully Expanded Volume
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "12Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                       STORAGECLASS           REASON   AGE
 pvc-7a8a538d017a4f32   12Gi       RWO            Delete           Bound    demo/data-pg-standalone-0   linode-block-storage   <unset>  3m8s
-```
 
 The above output verifies that we have successfully expanded the volume of the Postgres standalone database.
 
@@ -248,9 +252,11 @@ The above output verifies that we have successfully expanded the volume of the P
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete pg -n demo pg-standalone
+kubectl delete pg -n demo pg-standalone
+```
 postgres.kubedb.com "pg-standalone" deleted
 
-$ kubectl delete postgresopsrequest -n demo pgops-vol-exp
-postgresopsrequest.ops.kubedb.com "pgops-vol-exp" deleted
+```bash
+kubectl delete postgresopsrequest -n demo pgops-vol-exp
 ```
+postgresopsrequest.ops.kubedb.com "pgops-vol-exp" deleted

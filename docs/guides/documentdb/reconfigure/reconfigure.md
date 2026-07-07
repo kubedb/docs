@@ -42,12 +42,18 @@ You can read it from the internal PostgreSQL engine (port `9712`, backend-only) 
 credentials from `<db>-admin-auth`:
 
 ```bash
-$ ADMINU=$(kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.username}' | base64 -d)
-$ ADMINP=$(kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
-    bash -lc "PGPASSWORD='$ADMINP' psql -h localhost -p 9712 -U '$ADMINU' -d postgres -tAc 'show max_connections'"
-100
+ADMINU=$(kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.username}' | base64 -d)
 ```
+
+```bash
+ADMINP=$(kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+    bash -lc "PGPASSWORD='$ADMINP' psql -h localhost -p 9712 -U '$ADMINU' -d postgres -tAc 'show max_connections'"
+```
+100
 
 ## Apply a custom configuration
 
@@ -68,24 +74,24 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-reconfigure.yaml
-documentdbopsrequest.ops.kubedb.com/documentdb-cls-reconfigure created
+kubectl apply -f cluster-reconfigure.yaml
 ```
+documentdbopsrequest.ops.kubedb.com/documentdb-cls-reconfigure created
 
 The operator performs a careful, leader-aware rollout: it transfers Raft leadership to the first
 pod, pauses the `documentdb-coordinator` so it does not trigger an automatic failover during the
 restart, then evicts the pod so it comes back with the new configuration mounted:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-reconfigure \
+kubectl get dcops -n demo documentdb-cls-reconfigure \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 Running=True :: Reconfiguring DocumentDB Database
 ReconcileDocumentDBDatabase=True :: Successfully Reconciled DocumentDB Database
 TransferLeaderShipToFirstNodeBeforeCoordinatorPaused=True :: Successfully Transferred Leadership to first pod before documentdb-coordinator paused
 PausePgCoordinatorBeforeCustomRestart=True :: Successfully Pause DocumentDB-Coordinator Before Custom Restart
 EvictPod=True :: evict pod; ConditionStatus:True
 CheckPodReady--documentdb-cls-sample-0=False :: check pod ready; ConditionStatus:False; PodName:documentdb-cls-sample-0
-```
 
 ## Remove a custom configuration
 
@@ -106,9 +112,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-reconfigure-remove.yaml
-documentdbopsrequest.ops.kubedb.com/documentdb-cls-reconfigure-remove created
+kubectl apply -f cluster-reconfigure-remove.yaml
 ```
+documentdbopsrequest.ops.kubedb.com/documentdb-cls-reconfigure-remove created
 
 The operator performs the same leader-aware rolling restart, dropping the custom-config volume
 from each pod so `max_connections` returns to its default of `100`.

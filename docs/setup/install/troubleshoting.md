@@ -17,7 +17,7 @@ section_menu_id: setup
 If you are installing KubeDB on a GKE cluster, you will need cluster admin permissions to install KubeDB operator. Run the following command to grant admin permision to the cluster.
 
 ```bash
-$ kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
+kubectl create clusterrolebinding "cluster-admin-$(whoami)" \
   --clusterrole=cluster-admin                                 \
   --user="$(gcloud config get-value core/account)"
 ```
@@ -29,10 +29,16 @@ In addition, if your GKE cluster is a [private cluster](https://cloud.google.com
 To detect KubeDB version, exec into the operator pod and run `kubedb version` command.
 
 ```bash
-$ POD_NAMESPACE=kubedb
-$ POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=kubedb-community -o jsonpath={.items[0].metadata.name})
-$ kubectl exec $POD_NAME -c operator -n $POD_NAMESPACE -- /operator version
+POD_NAMESPACE=kubedb
+```
 
+```bash
+POD_NAME=$(kubectl get pods -n $POD_NAMESPACE -l app.kubernetes.io/name=kubedb-community -o jsonpath={.items[0].metadata.name})
+```
+
+```bash
+kubectl exec $POD_NAME -c operator -n $POD_NAMESPACE -- /operator version
+```
 Version = v0.20.0
 VersionStrategy = tag
 GitTag = v0.20.0
@@ -42,4 +48,3 @@ CommitTimestamp = 2021-08-23T11:15:37
 GoVersion = go1.16.7
 Compiler = gcc
 Platform = linux/amd64
-```

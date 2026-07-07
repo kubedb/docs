@@ -31,27 +31,27 @@ This tutorial will show you how to use KubeDB to run a RabbitMQ database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available RabbitMQVersion
 
 When you have installed KubeDB, it has created `RabbitMQVersion` CR for all supported RabbitMQ versions. Check it by using the `kubectl get rabbitmqversions` command. You can also use `rmv` shorthand instead of `rabbitmqversions`.
 
 ```bash
-$ kubectl get rabbitmqversion
+kubectl get rabbitmqversion
+```
 NAME      VERSION   DB_IMAGE                                                     DEPRECATED   AGE
 3.12.12   3.12.12   ghcr.io/appscode-images/rabbitmq:3.12.12-management-alpine                7d1h
-```
 
 ## Create a RabbitMQ database
 
@@ -93,9 +93,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/quickstart/quickstart.yaml
-rabbitmq.kubedb.com/rm-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/quickstart/quickstart.yaml
 ```
+rabbitmq.kubedb.com/rm-quickstart created
 Here,
 
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
@@ -110,37 +110,45 @@ Here,
 KubeDB operator watches for `RabbitMQ` objects using Kubernetes API. When a `RabbitMQ` object is created, KubeDB provisioner operator will create new PetSet (aka StatefulSet 2.0), Services with the matching RabbitMQ object name and Required secrets for cluster communication and authentication if not present. The services will include a primary service for Client communication with AMQP,MQTT,STOMP or WebSocket, a governing service for inter-node cluster governance, a dashboard service for connecting to management UI and interact with http endpointsm and a stats service to provide metrics endpoint if enabled. KubeDB operator will also create an AppBinding resource. `AppBinding` is a Kubernetes `CustomResourceDefinition`(CRD) which points to an application using either its URL (usually for a non-Kubernetes resident service instance) or a Kubernetes service object (if self-hosted in a Kubernetes cluster), some optional parameters and a credential secret.
 
 ```bash
-$ kubectl get petset -n demo
+kubectl get petset -n demo
+```
 NAME            AGE
 rm-quickstart   6m14s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 rm-quickstart-data-rm-quickstart-0   Bound    pvc-596bd8de-4123-40fd-a8d1-a864b9acddc2   1Gi        RWO            standard       <unset>                 6m38s
 rm-quickstart-data-rm-quickstart-1   Bound    pvc-c94bd3d0-8fa7-4794-9221-8295bc3e7b38   1Gi        RWO            standard       <unset>                 6m32s
 rm-quickstart-data-rm-quickstart-2   Bound    pvc-ddfd1987-c8b2-4c72-90ad-a8361ed4de56   1Gi        RWO            standard       <unset>                 6m26s
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                         STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-596bd8de-4123-40fd-a8d1-a864b9acddc2   1Gi        RWO            Delete           Bound    demo/rm-quickstart-data-rm-quickstart-0       standard       <unset>                          7m4s
 pvc-c94bd3d0-8fa7-4794-9221-8295bc3e7b38   1Gi        RWO            Delete           Bound    demo/rm-quickstart-data-rm-quickstart-1       standard       <unset>                          6m58s
 pvc-ddfd1987-c8b2-4c72-90ad-a8361ed4de56   1Gi        RWO            Delete           Bound    demo/rm-quickstart-data-rm-quickstart-2       standard       <unset>                          6m52s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                      TYPE           CLUSTER-IP      EXTERNAL-IP      PORT(S)                                                                         AGE
 rm-quickstart             LoadBalancer   10.128.221.60   172.232.241.73   5672:31803/TCP,1883:31938/TCP,61613:31884/TCP,15675:32567/TCP,15674:32599/TCP   8m59s
 rm-quickstart-dashboard   ClusterIP      10.128.240.53   <none>           15672/TCP                                                                       8m58s
 rm-quickstart-pods        ClusterIP      None            <none>           4369/TCP,25672/TCP                                                              8m59s
 
-$ kubectl get appbinding -n demo
+```bash
+kubectl get appbinding -n demo
+```
 NAME            TYPE                  VERSION   AGE
 rm-quickstart   kubedb.com/rabbitmq   4.2.4    23h
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `RabbitMQ` object:
 
 ```bash
-$ kubectl get rm -n demo rm-quickstart -oyaml
+kubectl get rm -n demo rm-quickstart -oyaml
 ```
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -275,11 +283,14 @@ If you want to use an existing secret please specify that when creating the Rabb
 Now, we need `username` and `password` to connect to this database. 
 
 ```bash
-$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-admin
-$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-password
+kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+admin
+
+```bash
+kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+password
 We can check client connectivity using an opensource load-testing tool called `perf-test`. It runs producers and consumers to continuously publish and consume messages in RabbitMQ cluster. Here's how to run it on kubernetes using the credentials and the address for operator generated primary service.
 
 ```bash
@@ -289,7 +300,8 @@ kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://admin:p
 You can check the log for this pod which shows publish and consume rates of messages in RabbitMQ. 
 
 ```bash
-$ kubectl logs pod/perf-test -f
+kubectl logs pod/perf-test -f
+```
 id: test-104606-706, starting consumer #0
 id: test-104606-706, starting consumer #0, channel #0
 id: test-104606-706, starting producer #0
@@ -304,15 +316,14 @@ id: test-104606-706, time 7.000 s, sent: 38117 msg/s, received: 30759 msg/s, min
 id: test-104606-706, time 8.000 s, sent: 35088 msg/s, received: 31676 msg/s, min/median/75th/95th/99th consumer latency: 1578860/1799719/1915632/1985467/2024141 µs
 id: test-104606-706, time 9.000 s, sent: 29706 msg/s, received: 31375 msg/s, min/median/75th/95th/99th consumer latency: 1516415/1743385/1877037/1972570/1988962 µs
 id: test-104606-706, time 10.000 s, sent: 15903 msg/s, received: 26711 msg/s, min/median/75th/95th/99th consumer latency: 1569546/1884700/1992762/2096417/2136613 µs
-```
 
 You can also connect with the RabbitMQ Management UI. It can be accessed through Dashboard service's 15672 Port or from a localhost port if the port is forwarded. 
 
 ```bash
-$ kubectl port-forward -n demo svc/rm-quickstart-dashboard 15672
+kubectl port-forward -n demo svc/rm-quickstart-dashboard 15672
+```
 Forwarding from 127.0.0.1:15672 -> 15672
 Forwarding from [::1]:15672 -> 15672
-```
 
 Lets, open your browser and go to the **http://localhost:15672** then access using the credentials.
 
@@ -329,9 +340,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete rm rm-quickstart -n demo
-The RabbitMQ "rm-quickstart" is invalid: spec.deletionPolicy: Invalid value: "rm-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
+kubectl delete rm rm-quickstart -n demo
 ```
+The RabbitMQ "rm-quickstart" is invalid: spec.deletionPolicy: Invalid value: "rm-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 
 Now, run `kubectl patch -n demo rm rm-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the RabbitMQ object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -346,14 +357,15 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 At first, run `kubectl patch -n demo rm rm-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the RabbitMQ object,
 
 ```bash
-$ kubectl delete rm rm-quickstart -n demo
-rabbitmq.kubedb.com "rm-quickstart" deleted
+kubectl delete rm rm-quickstart -n demo
 ```
+rabbitmq.kubedb.com "rm-quickstart" deleted
 
 Now, run the following command to get all rabbitmq resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                              TYPE                       DATA   AGE
 secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      3m35s
 
@@ -361,8 +373,6 @@ NAME                                 STATUS   VOLUME                            
 rm-quickstart-data-rm-quickstart-0   Bound    pvc-596bd8de-4123-40fd-a8d1-a864b9acddc2   1Gi        RWO            standard       <unset>                 6m38s
 rm-quickstart-data-rm-quickstart-1   Bound    pvc-c94bd3d0-8fa7-4794-9221-8295bc3e7b38   1Gi        RWO            standard       <unset>                 6m32s
 rm-quickstart-data-rm-quickstart-2   Bound    pvc-ddfd1987-c8b2-4c72-90ad-a8361ed4de56   1Gi        RWO            standard       <unset>                 6m26s
-
-```
 
 From the above output, you can see that all RabbitMQ resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your RabbitMQ again using these resources.
 
@@ -377,17 +387,17 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete rm rm-quickstart -n demo
-rabbitmq.kubedb.com "rm-quickstart" deleted
+kubectl delete rm rm-quickstart -n demo
 ```
+rabbitmq.kubedb.com "rm-quickstart" deleted
 
 Now, run the following command to get all RabbitMQ resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                              TYPE                       DATA   AGE
 secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      17m
-```
 
 From the above output, you can see that all RabbitMQ resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.
 
@@ -407,9 +417,9 @@ rabbitmq.kubedb.com "rm-quickstart" deleted
 Now, run the following command to get all RabbitMQ resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
-No resources found in demo namespace.
+kubectl get petset,svc,secret,pvc -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all RabbitMQ resources are deleted. There is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 

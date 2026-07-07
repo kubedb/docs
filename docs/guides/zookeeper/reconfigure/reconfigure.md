@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [examples](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -60,9 +60,9 @@ Here, `maxClientCnxns` is set to `70`, whereas the default value is `60`.
 
 Now, we will apply the secret with custom configuration.
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/secret.yaml
-secret/zk-configuration created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/secret.yaml
 ```
+secret/zk-configuration created
 
 In this section, we are going to create a ZooKeeper object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `ZooKeeper` CR that we are going to create,
 
@@ -90,24 +90,25 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/sample-zk-configuration.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/sample-zk-configuration.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME               VERSION     STATUS    AGE
 zk-quickstart      3.9.1      Ready     23s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 Now, you can exec into the zookeeper pod and find if the custom configuration is there,
 
 ```bash
-$ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+```
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
@@ -133,7 +134,6 @@ server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:par
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
-```
 
 As we can see from the configuration of running zookeeper, the value of `maxClientCnxns` has been set to `70`.
 
@@ -157,9 +157,9 @@ Here, `maxClientCnxns` is set to `100`.
 
 Now, we will apply the secret with custom configuration.
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/new-secret.yaml
-secret/zk-new-configuration created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/new-secret.yaml
 ```
+secret/zk-new-configuration created
 
 #### Create ZooKeeperOpsRequest
 
@@ -189,9 +189,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/zkops-reconfiguration.yaml
-zookeeperopsrequest.ops.kubedb.com/zk-reconfig created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/zkops-reconfiguration.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zk-reconfig created
 
 #### Verify the new configuration is working
 
@@ -200,16 +200,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ watch kubectl get zookeeperopsrequest -n demo
+watch kubectl get zookeeperopsrequest -n demo
+```
 Every 2.0s: kubectl get zookeeperopsrequest -n demo
 NAME               TYPE          STATUS       AGE
 zk-reconfig        Reconfigure   Successful   1m
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zk-reconfig
+kubectl describe zookeeperopsrequest -n demo zk-reconfig
+```
 Name:         zk-reconfig
 Namespace:    demo
 Labels:       <none>
@@ -293,22 +294,22 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now need to check the new configuration we have provided.
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME            VERSION     STATUS    AGE
 zk-quickstart   3.9.1      Ready     20s
-```
 
 Now let’s exec into the zookeeper pod and check the new configuration we have provided.
 
 ```bash
-$ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+```
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
@@ -334,7 +335,6 @@ server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:par
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
-```
 
 As we can see from the configuration of running zookeeper, the value of `maxClientCnxns` has been changed from `70` to `100`. So the reconfiguration of the zookeeper is successful.
 
@@ -371,9 +371,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/zkops-apply-reconfiguration.yaml
-zookeeperopsrequest.ops.kubedb.com/zk-reconfig-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfiguration/zkops-apply-reconfiguration.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zk-reconfig-apply created
 
 #### Verify the new configuration is working
 
@@ -382,15 +382,16 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ watch kubectl get zookeeperopsrequest -n demo
+watch kubectl get zookeeperopsrequest -n demo
+```
 NAME                 TYPE          STATUS       AGE
 zk-reconfig-apply    Reconfigure   Successful   38s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zk-reconfig-apply
+kubectl describe zookeeperopsrequest -n demo zk-reconfig-apply
+```
 Name:         zk-reconfig-apply
 Namespace:    demo
 Labels:       <none>
@@ -474,22 +475,22 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now need to check the new configuration we have provided.
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME            VERSION     STATUS    AGE
 zk-quickstart   3.9.1      Ready     20s
-```
 
 Now let’s exec into the zookeeper pod and check the new configuration we have provided.
 
 ```bash
-$ Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
+```
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ echo conf | nc localhost 2181
 clientPort=2181
 secureClientPort=-1
@@ -515,7 +516,6 @@ server.2=zk-quickstart-1.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:par
 server.3=zk-quickstart-2.zk-quickstart-pods.demo.svc.cluster.local:2888:3888:participant;0.0.0.0:2181
 version=100000011zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ exit
 exit
-```
 
 As we can see from the configuration of running zookeeper, the value of `maxClientCnxns` has been changed from `100` to `90`. So, the reconfiguration of the database using the `applyConfig` field is successful.
 

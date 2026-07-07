@@ -27,9 +27,9 @@ KubeDB creates separate services for primary and secondary replicas. In this tut
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - You need to have a mysql client. If you don't have a mysql client install in your local machine, you can install from [here](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/)
 
@@ -68,9 +68,9 @@ spec:
 Let's create the MySQL CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clients/yamls/group-replication.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clients/yamls/group-replication.yaml
 ```
+mysql.kubedb.com/my-group created
 
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and two separate Services for client connection with the cluster. The services have the following format:
 
@@ -80,28 +80,33 @@ KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL`
 Now, wait for the `MySQL` is going to `Running` state and also wait for `SatefulSet` and `services` going to the `Ready` state.
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-group
+watch -n 3 kubectl get my -n demo my-group
+```
 Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode: Wed Sep  9 10:54:34 2020
 
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get petset -n demo my-group
+```bash
+watch -n 3 kubectl get petset -n demo my-group
+```
 ery 3.0s: kubectl get petset -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
 
 NAME       READY   AGE
 my-group   3/3     15m
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 my-group           ClusterIP   10.109.133.141   <none>        3306/TCP   31s
 my-group-pods      ClusterIP   None             <none>        3306/TCP   31s
 my-group-standby   ClusterIP   10.110.47.184    <none>        3306/TCP   31s
-```
 
 If you describe the object, you can find more details here,
 
 ```bash
-$ kubectl dba describe my -n demo my-group
+kubectl dba describe my -n demo my-group
+```
 Name:               my-group
 Namespace:          demo
 CreationTimestamp:  Mon, 15 Mar 2021 18:18:35 +0600
@@ -228,7 +233,6 @@ Events:
   Normal  Successful  2m    KubeDB Operator  Successfully created PetSet
   Normal  Successful  2m    KubeDB Operator  Successfully created appbinding
   Normal  Successful  2m    KubeDB Operator  Successfully patched PetSet
-```
 
 Our database cluster is ready to connect.
 
@@ -242,12 +246,12 @@ Our database cluster is ready to connect.
 Let's verify that the `mysql.kubedb.com/role:<primary/secondary>` label are added into the PetSet's replicas,
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+```
 Name         Labels                                                                                                                                                                           PodIP
 my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-0]     10.244.1.8
 my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
 my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-2]   10.244.2.13
-```
 
 You can see from the above output that the `my-group-0` pod is selected as a primary member in our existing database cluster. It has the `mysql.kubedb.com/role:primary` label and the podIP is `10.244.1.8`. Besides, the rest of the replicas are selected as a secondary member which has `mysql.kubedb.com/role:secondary` label.
 
@@ -256,42 +260,42 @@ KubeDB creates two separate services(already shown above) to connect with the da
 You can find the service which selects for primary replica have the following selector,
 
 ```bash
-$ kubectl get svc -n demo my-group -o json | jq '.spec.selector'
+kubectl get svc -n demo my-group -o json | jq '.spec.selector'
+```
 {
   "app.kubernetes.io/instance": "my-group",
   "app.kubernetes.io/managed-by": "kubedb.com",
   "app.kubernetes.io/name": "mysqls.kubedb.com",
   "kubedb.com/role": "primary"
 }
-```
 
 If you get the endpoint of the above service, you will see the podIP of the primary replica,
 
 ```bash
-$ kubectl get endpoints -n demo my-group
+kubectl get endpoints -n demo my-group
+```
 NAME       ENDPOINTS         AGE
 my-group   10.244.1.8:3306   5h49m
-```
 
 You can also find the service which selects for secondary replicas have the following selector,
 
 ```bash
-$ kubectl get svc -n demo my-group-standby -o json | jq '.spec.selector'
+kubectl get svc -n demo my-group-standby -o json | jq '.spec.selector'
+```
 {
   "app.kubernetes.io/instance": "my-group",
   "app.kubernetes.io/managed-by": "kubedb.com",
   "app.kubernetes.io/name": "mysqls.kubedb.com",
   "kubedb.com/role": "standby"
 }
-```
 
 If you get the endpoint of the above service, you will see the podIP of the secondary replicas,
 
 ```bash
-$ kubectl get endpoints -n demo my-group-standby
+kubectl get endpoints -n demo my-group-standby
+```
 NAME                ENDPOINTS                           AGE
 my-group-standby   10.244.2.11:3306,10.244.2.13:3306   5h53m
-```
 
 ## Connecting Information
 
@@ -300,12 +304,14 @@ KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysq
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
-RmxLjEomvE6tVj4-
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+RmxLjEomvE6tVj4-
 
 You can connect to any of these group members. In that case, you just need to specify the hostname of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using any of the services) by `--host` flag.
 
@@ -318,43 +324,45 @@ At first, we are going to port-forward the service to connect to the database cl
 Let's port-forward the `my-group` service using the following command,
 
 ```bash
-$ kubectl port-forward service/my-group -n demo 8081:3306
+kubectl port-forward service/my-group -n demo 8081:3306
+```
 Forwarding from 127.0.0.1:8081 -> 3306
 Forwarding from [::1]:8081 -> 3306
-```
 
 >For testing purpose, we need to have a mysql client to connect with the cluster. If you don't have a client in your local machine, you can install from [here](https://dev.mysql.com/doc/mysql-installation-excerpt/8.0/en/)
 
 **Write Operation :**
 
-```bash
 # create a database on cluster
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "CREATE DATABASE playground;"
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "CREATE DATABASE playground;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
-
 
 # create a table
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
-
 
 # insert a row
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
-mysql: [Warning] Using a password on the command line interface can be insecure.
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
 ```
+mysql: [Warning] Using a password on the command line interface can be insecure.
 
 **Read Operation :**
 
-```bash
 # read data from cluster
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "SELECT * FROM playground.equipment;"
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8081 --host=127.0.0.1 -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 
 You can see from the above output that both write and read operations are performed successfully using primary pod selector service named `my-group`.
 
@@ -367,33 +375,33 @@ At first, we are going to port-forward the service to connect to the database cl
 Let's port-forward the `my-group-standby` service using the following command,
 
 ```bash
-$ kubectl port-forward service/my-group-standby -n demo 8080:3306
+kubectl port-forward service/my-group-standby -n demo 8080:3306
+```
 Forwarding from 127.0.0.1:8080 -> 3306
 Forwarding from [::1]:8080 -> 3306
-```
 
 **Write Operation:**
 
-```bash
 # in our database cluster we have created a database and a table named playground and equipment respectively. so we will try to insert data into it.
 # insert a row
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8080 --host=127.0.0.1 -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 3, 'black');"
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8080 --host=127.0.0.1 -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 3, 'black');"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
-```
 
 **Read Operation:**
 
-```bash
 # read data from cluster
-$ mysql -uroot -pRmxLjEomvE6tVj4- --port=8080 --host=127.0.0.1 -e "SELECT * FROM playground.equipment;"
+```bash
+mysql -uroot -pRmxLjEomvE6tVj4- --port=8080 --host=127.0.0.1 -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 
 You can see from the above output that only read operations are performed successfully using secondary pod selector service named `my-group-standby`. No data is inserted by using this service. The error `--super-read-only` indicates that the secondary pod has only read permission.
 
@@ -404,47 +412,52 @@ To test automatic failover, we will force the primary Pod to restart. Since the 
 First, delete the primary pod `my-gorup-0` using the following command,
 
 ```bash
-$ kubectl delete pod my-group-0 -n demo
-pod "my-group-0" deleted
+kubectl delete pod my-group-0 -n demo
 ```
+pod "my-group-0" deleted
 
 Now wait for a few minute to automatically elect the primary replica and also wait for the services endpoint update for new primary and secondary replicas,
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+kubectl get pods -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -A -o=custom-columns='Name:.metadata.name,Labels:metadata.labels,PodIP:.status.podIP'
+```
 Name         Labels                                                                                                                                                                           PodIP
 my-group-0   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-0]   10.244.2.18
 my-group-1   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:secondary petset.kubernetes.io/pod-name:my-group-1]   10.244.2.11
 my-group-2   map[controller-revision-hash:my-group-55b9f49f98 app.kubernetes.io/name:mysqls.kubedb.com app.kubernetes.io/instance:my-group mysql.kubedb.com/role:primary petset.kubernetes.io/pod-name:my-group-2]     10.244.2.13
-```
 
 You can see from the above output that `my-group-2` pod is elected as a primary automatically and the others become secondary.
 
 If you get the endpoint of the `my-group` service, you will see the podIP of the primary replica,
 
 ```bash
-$ kubectl get endpoints -n demo my-group
+kubectl get endpoints -n demo my-group
+```
 NAME       ENDPOINTS          AGE
 my-group   10.244.2.13:3306   111m
-```
 
 If you get the endpoint of the `my-group-standby` service, you will see the podIP of the secondary replicas,
 
 ```bash
-$ kubectl get endpoints -n demo my-group-standby
+kubectl get endpoints -n demo my-group-standby
+```
 NAME                ENDPOINTS                           AGE
 my-group-standby   10.244.2.11:3306,10.244.2.18:3306   112m
-```
 
 ## Cleaning up
 
 Clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo my/my-group -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo my/my-group
+kubectl patch -n demo my/my-group -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo my/my-group
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

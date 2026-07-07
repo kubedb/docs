@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Now, we are going to deploy a  `SingleStore` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `SingleStoreOpsRequest` to reconfigure its configuration.
 
@@ -41,11 +41,11 @@ Now, we are going to deploy a  `SingleStore` Cluster using a supported version b
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Deploy SingleStore
 
@@ -64,9 +64,9 @@ Here, `max_connections` is set to `250`, whereas the default value is `100000`. 
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo sdb-configuration --from-file=./sdb-config.cnf
-secret/sdb-configuration created
+kubectl create secret generic -n demo sdb-configuration --from-file=./sdb-config.cnf
 ```
+secret/sdb-configuration created
 
 In this section, we are going to create a SingleStore object specifying `spec.topology.aggreagtor.configSecret` field to apply this custom configuration. Below is the YAML of the `SingleStore` CR that we are going to create,
 
@@ -134,13 +134,12 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure/reconfigure-steps/yamls/custom-sdb.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure/reconfigure-steps/yamls/custom-sdb.yaml
+```
 singlestore.kubedb.com/custom-sdb created
 
 
 Now, wait until `custom-sdb` has status `Ready`. i.e,
-
-```bash
 $ kubectl get pod -n demo
 NAME                      READY   STATUS    RESTARTS   AGE
 custom-sdb-aggregator-0   2/2     Running   0          94s

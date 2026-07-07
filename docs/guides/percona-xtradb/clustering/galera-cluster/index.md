@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,9 +60,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/clustering/galera-cluster/examples/demo-1.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/clustering/galera-cluster/examples/demo-1.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Here,
 
@@ -72,7 +72,8 @@ Here,
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes API. When a `PerconaXtraDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<perconaxtradb-object-name>-pods`.
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o yaml
+kubectl get perconaxtradb -n demo sample-pxc -o yaml
+```
 apiVersion: kubedb.com/v1
 kind: PerconaXtraDB
 metadata:
@@ -162,7 +163,9 @@ status:
   observedGeneration: 4
   phase: Ready
 
-$ kubectl get sts,svc,secret,pvc,pv,pod -n demo
+```bash
+kubectl get sts,svc,secret,pvc,pv,pod -n demo
+```
 NAME                          READY   AGE
 petset.apps/sample-pxc   3/3     7m5s
 
@@ -192,15 +195,14 @@ pod/sample-pxc-0   2/2     Running   0          7m5s
 pod/sample-pxc-1   2/2     Running   0          7m5s
 pod/sample-pxc-2   2/2     Running   0          7m5s
 
-```
-
 ## Connect with PerconaXtraDB database
 
 Once the database is in running state we can connect to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
-```bash
 # First Node
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -228,9 +230,10 @@ mysql> SELECT 1;
 mysql> quit;
 Bye
 
-
 # Second Node
-$ kubectl exec -it -n demo sample-pxc-1 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-1 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -258,9 +261,10 @@ mysql> SELECT 1;
 mysql> quit;
 Bye
 
-
 # Third Node
-$ kubectl exec -it -n demo sample-pxc-2 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-2 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -288,14 +292,13 @@ mysql> SELECT 1;
 mysql> quit;
 Bye
 
-```
-
 ## Check the Cluster Status
 
 Now, we are ready to check newly created cluster status. Connect and run the following commands from any of the hosts and you will get the same result, that is the cluster size is three.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -323,8 +326,6 @@ mysql> show status like 'wsrep_cluster_size';
 mysql> quit;
 Bye
 
-```
-
 ## Data Availability
 
 In a PerconaXtraDB Galera Cluster, Each member can read and write. In this section, we will insert data from any nodes, and we will see whether we can get the data from every other members.
@@ -332,7 +333,8 @@ In a PerconaXtraDB Galera Cluster, Each member can read and write. In this secti
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -371,7 +373,9 @@ Bye
 bash-4.4$ exit
 exit
 
-$ kubectl exec -it -n demo sample-pxc-2 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-2 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -413,7 +417,9 @@ Bye
 bash-4.4$ exit
 exit
 
-$ kubectl exec -it -n demo sample-pxc-2 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-2 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -447,7 +453,6 @@ mysql> quit;
 Bye
 bash-4.4$ exit
 exit
-```
 
 ## Automatic Failover
 
@@ -456,7 +461,8 @@ To test automatic failover, we will force the one of three pods to restart and c
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -494,7 +500,9 @@ exit
 pod "sample-pxc-0" deleted
 
 # Wait for sample-pxc-0 to restart
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -532,15 +540,17 @@ mysql [(none)]> show status like 'wsrep_cluster_size';
 
 mysql> quit
 Bye
-```
 
 ## Cleaning up
 
 Clean what we created in this tutorial.
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-perconaxtradb.kubedb.com "sample-pxc" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo sample-pxc
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

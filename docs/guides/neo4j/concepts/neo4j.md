@@ -74,12 +74,12 @@ spec:
 To see available versions in your cluster:
 
 ```bash
-$ kubectl get neo4jversions
+kubectl get neo4jversions
+```
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
 2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
 2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
 2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
-```
 
 ### spec.replicas
 
@@ -105,7 +105,7 @@ If `spec.storageType` is `Durable` (or not explicitly set), `spec.storage` is re
 To check available StorageClass resources:
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
 ```
 
 ### spec.configuration

@@ -23,13 +23,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   7s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -38,10 +40,10 @@ demo                 Active   7s
 We will have to provide `StorageClass` in Solr CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -124,22 +126,23 @@ Here,
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/topology.yaml
-solr.kubedb.com/solr-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/topology.yaml
 ```
+solr.kubedb.com/solr-cluster created
 KubeDB will create the necessary resources to deploy the Solr cluster according to the above specification. Let’s wait until the database to be ready to use,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    3d2h
-```
 Here, Solr is in `Ready` state. It means the database is ready to accept connections.
 
 Describe the Solr object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe sl -n demo solr-cluster
+kubectl describe sl -n demo solr-cluster
+```
 Name:         solr-cluster
 Namespace:    demo
 Labels:       <none>
@@ -388,7 +391,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 - Here, in `Status.Conditions`
     - `Conditions.Status` is `True` for the `Condition.Type:ProvisioningStarted` which means database provisioning has been started successfully.
     - `Conditions.Status` is `True` for the `Condition.Type:ReplicaReady` which specifies all replicas are ready in the cluster.
@@ -401,7 +403,8 @@ Events:                    <none>
 Let's check the Kubernetes resources created by the operator on the deployment of Solr CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-cluster'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-cluster'
+```
 NAME                             READY   STATUS    RESTARTS   AGE
 pod/solr-cluster-coordinator-0   1/1     Running   0          3d2h
 pod/solr-cluster-data-0          1/1     Running   0          3d2h
@@ -427,7 +430,6 @@ persistentvolumeclaim/solr-cluster-data-solr-cluster-coordinator-0   Bound    pv
 persistentvolumeclaim/solr-cluster-data-solr-cluster-data-0          Bound    pvc-6c7c1f9d-68cd-4ed6-b151-6d1b88dccbe0   1Gi        RWO            standard       <unset>                 3d2h
 persistentvolumeclaim/solr-cluster-data-solr-cluster-data-1          Bound    pvc-6c7d1f9d-68cd-4ed6-b151-6d1b88dccbe0   1Gi        RWO            standard       <unset>                 3d2h
 persistentvolumeclaim/solr-cluster-data-solr-cluster-overseer-0      Bound    pvc-106da684-7414-44a7-97e1-f13b65834c36   1Gi        RWO            standard       <unset>                 3d2h
-```
 
 - `PetSet` - 3 PetSets are created for 3 types Solr nodes. The PetSets are named after the Solr instance with given suffix: `{Solr-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Solr database.
@@ -447,17 +449,17 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 KubeDB will create few Services to connect with the database. Let’s check the Services by following command,
 
 ```bash
-$ kubectl get svc -n demo -l 'app.kubernetes.io/instance=solr-cluster'
+kubectl get svc -n demo -l 'app.kubernetes.io/instance=solr-cluster'
+```
 NAME                TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 solr-cluster        ClusterIP   10.43.2.22   <none>        8983/TCP   3d2h
 solr-cluster-pods   ClusterIP   None         <none>        8983/TCP   3d2h
-```
 Here, we are going to use `solr-cluster` Service to connect with the database. Now, let’s port-forward the `es-cluster` Service to the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/solr-cluster 8983
-Forwarding from 127.0.0.1:8983 -> 8983
+kubectl port-forward -n demo svc/solr-cluster 8983
 ```
+Forwarding from 127.0.0.1:8983 -> 8983
 Now, our Solr cluster is accessible at `localhost:8983`.
 
 #### Export the Credentials
@@ -465,14 +467,14 @@ Now, our Solr cluster is accessible at `localhost:8983`.
 KubeDB also create some Secrets for the database. Let’s check which Secrets have been created by KubeDB for our `es-cluster`.
 
 ```bash
-$ kubectl get secret -n demo
+kubectl get secret -n demo
+```
 NAME                              TYPE                       DATA   AGE
 solr-cluster-auth                 kubernetes.io/basic-auth   2      10d
 solr-cluster-auth-config          Opaque                     1      10d
 solr-cluster-config               Opaque                     1      3d2h
 solr-cluster-zk-digest            kubernetes.io/basic-auth   2      10d
 solr-cluster-zk-digest-readonly   kubernetes.io/basic-auth   2      10d
-```
 Now, we can connect to the database with `solr-cluster-auth` which contains the admin level credentials to connect with the database.
 
 ### Accessing Database Through CLI
@@ -480,17 +482,21 @@ Now, we can connect to the database with `solr-cluster-auth` which contains the 
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo solr-cluster-auth -o jsonpath='{.data.username}' | base64 -d
-elastic
-$ kubectl get secret -n demo solr-cluster-auth -o jsonpath='{.data.password}' | base64 -d
-tS$k!2IBI.ASI7FJ
+kubectl get secret -n demo solr-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+elastic
+
+```bash
+kubectl get secret -n demo solr-cluster-auth -o jsonpath='{.data.password}' | base64 -d
+```
+tS$k!2IBI.ASI7FJ
 
 Now, let's check the health of our Solr cluster
 
-```bash
 # curl -XGET -k -u 'username:password' https://localhost:9200/_cluster/health?pretty"
-$ curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+```bash
+curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+```
 {
   "responseHeader":{
     "status":0,
@@ -536,14 +542,13 @@ $ curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admi
   }
 }
 
-```
-
 ## Insert Sample Data
 
 Now, we are going to insert some data into Solr.
 
 ```bash
-$ curl -XPOST -k -u "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=CREATE&name=book&numShards=2&replicationFactor=2&wt=xml"
+curl -XPOST -k -u "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=CREATE&name=book&numShards=2&replicationFactor=2&wt=xml"
+```
 <?xml version="1.0" encoding="UTF-8"?>
 <response>
 
@@ -581,11 +586,11 @@ $ curl -XPOST -k -u "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/c
     <str name="core">book_shard1_replica_n2</str>
   </lst>
 </lst>
-```
 Now, let’s verify that the index have been created successfully.
 
 ```bash
-$ curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=LIST"
+curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admin/collections?action=LIST"
+```
 {
   "responseHeader":{
     "status":0,
@@ -593,11 +598,11 @@ $ curl -XGET -k --user "admin:7eONFVgU9BS50eiB" "http://localhost:8983/solr/admi
   },
   "collections":["book","kubedb-system"]
 }
-```
 Also, let’s verify the data in the indexes:
 
 ```bash
-$ curl -X POST -u "admin:7eONFVgU9BS50eiB"  http://localhost:8983/solr/book/select -H 'Content-Type: application/json' -d '
+curl -X POST -u "admin:7eONFVgU9BS50eiB"  http://localhost:8983/solr/book/select -H 'Content-Type: application/json' -d '
+```
                            {
                              "query": "*:*",
                              "limit": 10,
@@ -624,20 +629,22 @@ $ curl -X POST -u "admin:7eONFVgU9BS50eiB"  http://localhost:8983/solr/book/sele
   }
 }
 
-```
-
 
 ## Cleaning Up
 
 To cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo solr solr-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo solr solr-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete Solr -n demo solr-cluster 
+```bash
+kubectl delete Solr -n demo solr-cluster 
+```
 
 # Delete namespace
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

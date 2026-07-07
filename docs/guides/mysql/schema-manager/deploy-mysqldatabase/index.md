@@ -32,9 +32,9 @@ This guide will show you how to create database with MySQL Schema Manager using 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/schema-manager/deploy-mysqldatabase/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/schema-manager/deploy-mysqldatabase/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -82,9 +82,9 @@ Here,
 Let’s save this yaml configuration into `mysql-server.yaml` Then create the above `MySQL` CR
 
 ```bash
-$ kubectl apply -f mysql-server.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f mysql-server.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 ### Deploy Vault Server
 
@@ -138,9 +138,9 @@ Here,
 Let’s save this yaml configuration into `vault.yaml` Then create the above `VaultServer` CR
 
 ```bash
-$ kubectl apply -f vault.yaml
-vaultserver.kubevault.com/vault created
+kubectl apply -f vault.yaml
 ```
+vaultserver.kubevault.com/vault created
 ### Create Separate Namespace For Schema Manager
 
 In this section, we are going to create a new `Namespace` and we will only allow this namespace for our `Schema Manager`. Let's deploy it using this following yaml,
@@ -156,9 +156,9 @@ metadata:
 Let’s save this yaml configuration into `namespace.yaml` Then create the above `Namespace`
 
 ```bash
-$ kubectl apply -f namespace.yaml
-namespace/demox created
+kubectl apply -f namespace.yaml
 ```
+namespace/demox created
 
 
 ### Deploy Schema Manager
@@ -202,17 +202,17 @@ Here,
 Let’s save this yaml configuration into `schema-manager.yaml` and apply it,
 
 ```bash
-$ kubectl apply -f schema-manager.yaml 
-mysqldatabase.schema.kubedb.com/schema-manager created
+kubectl apply -f schema-manager.yaml 
 ```
+mysqldatabase.schema.kubedb.com/schema-manager created
 
 Let's check the `STATUS` of `Schema Manager`,
 
 ```bash
-$ kubectl get mysqldatabase -A
+kubectl get mysqldatabase -A
+```
 NAMESPACE   NAME             DB_SERVER      DB_NAME     STATUS    AGE
 demox       schema-manager   mysql-server   demo_user   Current   27s
-```
 Here,
 
 > In `STATUS` section, `Current` means that the current `Secret` of `Schema Manager` is vaild, and it will automatically `Expired` after it reaches the limit of `defaultTTL` that we've defined in the above yaml. 
@@ -220,20 +220,23 @@ Here,
 Now, let's get the secret name from `schema-manager`, and get the login credentials for connecting to the database,
 
 ```bash
-$ kubectl get mysqldatabase schema-manager -n demox -o=jsonpath='{.status.authSecret.name}'
+kubectl get mysqldatabase schema-manager -n demox -o=jsonpath='{.status.authSecret.name}'
+```
 schema-manager-mysql-req-o2j0jk
 
-$ kubectl view-secret schema-manager-mysql-req-o2j0jk -n demox -a
+```bash
+kubectl view-secret schema-manager-mysql-req-o2j0jk -n demox -a
+```
 password=bCfsp77bWztyZwH-i4F6
 username=v-kubernetes-k8s.dc833e-txGUfwPa
-```
 
 ### Insert Sample Data
 
 Here, we are going to connect to the database with the login credentials and insert some sample data into it. 
 
 ```bash
-$ kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+```
 bash-4.4# mysql --user='v-kubernetes-k8s.dc833e-txGUfwPa' --password='bCfsp77bWztyZwH-i4F6'
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -273,27 +276,26 @@ mysql> SELECT * FROM random;
 
 mysql> exit
 Bye
-```
 
 
 Now, Let's check the `STATUS` of `Schema Manager` again,
 
 ```bash
-$ kubectl get mysqldatabase -A
+kubectl get mysqldatabase -A
+```
 NAMESPACE   NAME             DB_SERVER      DB_NAME     STATUS    AGE
 demox       schema-manager   mysql-server   demo_user   Expired   5m35s
-```
 
 Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because it's exceeded `defaultTTL: "5m"`, which means the current `Secret` of `Schema Manager` isn't vaild anymore. Now, if we try to connect and login with the credentials that we have acquired before from `schema-manager`, it won't work.
 
 ```bash
-$ kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+```
 bash-4.4# mysql --user='v-kubernetes-k8s.dc833e-txGUfwPa' --password='bCfsp77bWztyZwH-i4F6'
 ERROR 1045 (28000): Access denied for user 'v-kubernetes-k8s.dc833e-txGUfwPa'@'localhost' (using password: YES)
 
 mysql> exit
 Bye
-```
 > We can't connect to the database with the login credentials, which is `Expired`. We will not be able to access the database even though we're in the middle of a connected session. 
 
 ## Alter Database
@@ -301,7 +303,8 @@ Bye
 In this section, we are going to alter database by changing some characteristics of our database. For this demonstration, We have to logged in as a database admin.
 
 ```bash
-$ kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+```
 bash-4.4# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -333,7 +336,6 @@ mysql> SHOW CREATE DATABASE demo_user;
 
 mysql> exit
 bye
-```
 
 Let's, change the `spec.database.config.characterSet` to `big5`.
 
@@ -368,14 +370,15 @@ spec:
 Save this yaml configuration and apply it,
 
 ```bash
-$ kubectl apply -f schema-manager.yaml
-mysqldatabase.schema.kubedb.com/schema-manager configured
+kubectl apply -f schema-manager.yaml
 ```
+mysqldatabase.schema.kubedb.com/schema-manager configured
 
 Now, let's check the modified characteristics of our database.
 
 ```bash
-$ kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+kubectl exec -it mysql-server-0 -n demo -c mysql -- bash
+```
 bash-4.4# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -404,7 +407,6 @@ mysql> SHOW CREATE DATABASE demo_user;
 | demo_user | CREATE DATABASE `demo_user` /*!40100 DEFAULT CHARACTER SET big5 */ /*!80016 DEFAULT ENCRYPTION='N' */ |
 +-----------+-------------------------------------------------------------------------------------------------------+
 1 row in set (0.00 sec)
-```
 Here, we can see that the `spec.database.config.characterSet` is changed to `big5`. So, our database altering has been successful. 
 
 > Note: When the Schema Manager is deleted, the associated database and user will also be deleted.
@@ -414,8 +416,11 @@ Here, we can see that the `spec.database.config.characterSet` is changed to `big
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete ns demox 
-$ kubectl delete ns demo
+kubectl delete ns demox 
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 

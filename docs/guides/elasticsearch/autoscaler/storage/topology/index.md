@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Elas
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/guides/elasticsearch/autoscaler/storage/topology/yamls) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -46,11 +46,11 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  9h
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   9h
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -107,36 +107,38 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/topology/yamls/es-topology.yaml
-elasticsearch.kubedb.com/es-topology created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/topology/yamls/es-topology.yaml
 ```
+elasticsearch.kubedb.com/es-topology created
 
 Now, wait until `es-topology` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME          VERSION             STATUS         AGE
 es-topology   xpack-9.2.3   Provisioning   12s
 es-topology   xpack-9.2.3   Ready          1m50s
-```
 
 Let's check volume size from the data petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1Gi"
   }
 }
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                            STORAGECLASS          REASON   AGE
 pvc-1a22f743-2b03-487b-92db-e75ce14a3994   1Gi        RWO            Delete           Bound         demo/data-es-topology-ingest-0   topolvm-provisioner            2m8s
 pvc-82c60733-22a3-4dbb-bac0-2fcd386650dd   1Gi        RWO            Delete           Bound         demo/data-es-topology-data-0     topolvm-provisioner            2m7s
 pvc-a610cbb8-dece-4d2e-8870-b66a2f1fe458   1Gi        RWO            Delete           Bound         demo/data-es-topology-master-0   topolvm-provisioner            2m8s
 pvc-edb7f4f7-f8ba-4af9-a507-b707462ddc3c   1Gi        RWO            Delete           Bound         demo/data-es-topology-data-1     topolvm-provisioner            119s
-```
 
 You can see that the data PetSet has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -179,20 +181,23 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/topology/yamls/es-topology-storage-as.yaml 
-elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-storage-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/topology/yamls/es-topology-storage-as.yaml 
 ```
+elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-storage-as created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `elasticsearchautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get elasticsearchautoscaler -n demo
+kubectl get elasticsearchautoscaler -n demo
+```
 NAME                     AGE
 es-topology-storage-as   4m16s
 
-$ kubectl describe elasticsearchautoscaler -n demo es-topology-storage-as 
+```bash
+kubectl describe elasticsearchautoscaler -n demo es-topology-storage-as 
+```
 Name:         es-topology-storage-as
 Namespace:    demo
 Labels:       <none>
@@ -215,8 +220,6 @@ Spec:
         Usage Threshold:    60
 Events:                     <none>
 
-```
-
 So, the `elasticsearchautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up one of the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
@@ -224,7 +227,8 @@ Now, for this demo, we are going to manually fill up one of the persistent volum
 Let's exec into the data nodes and fill the database volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo es-topology-data-0 -- bash
+kubectl exec -it -n demo es-topology-data-0 -- bash
+```
 [root@es-topology-data-0 elasticsearch]# df -h /usr/share/elasticsearch/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/fb6d30c8-8bf7-4c19-884e-937f150f4763 1014M   40M  975M   4% /usr/share/elasticsearch/data
@@ -236,31 +240,30 @@ Filesystem                                         Size  Used Avail Use% Mounted
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/fb6d30c8-8bf7-4c19-884e-937f150f4763 1014M  690M  325M  69% /usr/share/elasticsearch/data
 
-```
-
 So, from the above output we can see that the storage usage is 69%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `elasticsearchopsrequest` in the demo namespace to see if any `elasticsearchopsrequest` object is created. After some time you'll see that an `elasticsearchopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get esops -n demo -w
+kubectl get esops -n demo -w
+```
 NAME                       TYPE              STATUS   AGE
 esops-es-topology-79zpaf   VolumeExpansion            0s
 esops-es-topology-79zpaf   VolumeExpansion   Progressing   0s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$ kubectl get esops -n demo
+kubectl get esops -n demo
+```
 NAME                       TYPE              STATUS   AGE
 esops-es-topology-79zpaf   VolumeExpansion   Successful    110s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe elasticsearchopsrequest -n demo esops-es-topology-79zpaf 
+kubectl describe elasticsearchopsrequest -n demo esops-es-topology-79zpaf 
+```
 Name:         esops-es-topology-79zpaf
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -334,32 +337,35 @@ Events:
   Normal  ReadyPetSets      88s    KubeDB Enterprise Operator  PetSet is recreated
   Normal  ResumeDatabase         88s    KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-topology
   Normal  Successful             88s    KubeDB Enterprise Operator  Successfully Updated Database
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1594884096"
   }
 }
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                        STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS          AGE
 data-es-topology-data-0     Bound    pvc-82c60733-22a3-4dbb-bac0-2fcd386650dd   2Gi        RWO            topolvm-provisioner   11m
 data-es-topology-data-1     Bound    pvc-edb7f4f7-f8ba-4af9-a507-b707462ddc3c   2Gi        RWO            topolvm-provisioner   11m
 data-es-topology-ingest-0   Bound    pvc-1a22f743-2b03-487b-92db-e75ce14a3994   1Gi        RWO            topolvm-provisioner   11m
 data-es-topology-master-0   Bound    pvc-a610cbb8-dece-4d2e-8870-b66a2f1fe458   1Gi        RWO            topolvm-provisioner   11m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                            STORAGECLASS          REASON   AGE
 pvc-1a22f743-2b03-487b-92db-e75ce14a3994   1Gi        RWO            Delete           Bound         demo/data-es-topology-ingest-0   topolvm-provisioner            10m
 pvc-82c60733-22a3-4dbb-bac0-2fcd386650dd   2Gi        RWO            Delete           Bound         demo/data-es-topology-data-0     topolvm-provisioner            10m
 pvc-a610cbb8-dece-4d2e-8870-b66a2f1fe458   1Gi        RWO            Delete           Bound         demo/data-es-topology-master-0   topolvm-provisioner            10m
 pvc-edb7f4f7-f8ba-4af9-a507-b707462ddc3c   2Gi        RWO            Delete           Bound         demo/data-es-topology-data-1     topolvm-provisioner            10m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the data nodes of this Elasticsearch topology cluster.
 
@@ -368,6 +374,9 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete elasticsearch -n demo es-topology
-$ kubectl delete elasticsearchautoscaler -n demo es-topology-storage-as
+kubectl delete elasticsearch -n demo es-topology
+```
+
+```bash
+kubectl delete elasticsearchautoscaler -n demo es-topology-storage-as
 ```

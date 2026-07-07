@@ -29,10 +29,10 @@ The KubeDB Recommendation Engine watches your databases and proactively generate
 - The **Recommendation Engine** and **Supervisor** CRDs must be installed (they ship with the KubeDB Supervisor component):
 
   ```bash
-  $ kubectl get crd recommendations.supervisor.appscode.com
+  kubectl get crd recommendations.supervisor.appscode.com
+  ```
   NAME                                      CREATED AT
   recommendations.supervisor.appscode.com   2026-06-30T05:18:01Z
-  ```
 
 - An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
 
@@ -90,9 +90,9 @@ The distributed sample (`distributed.yaml`) is equivalent, targeting `milvus-clu
 - `spec.version: "2.6.9"` — an older catalog version, so an update to `2.6.11` is recommended.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/recommendation/yamls/standalone.yaml
-milvus.kubedb.com/milvus-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/recommendation/yamls/standalone.yaml
 ```
+milvus.kubedb.com/milvus-standalone created
 
 Wait for the database to become `Ready`.
 
@@ -101,15 +101,16 @@ Wait for the database to become `Ready`.
 After the database is ready (and `rotateAfter` / certificate-renewal thresholds are reached), `Recommendation` objects appear in the namespace:
 
 ```bash
-$ kubectl get recommendation -n demo
+kubectl get recommendation -n demo
+```
 NAME                                                 STATUS    OUTDATED   AGE
 milvus-standalone-x-milvus-x-update-version-3rq4py   Pending   false      2m
-```
 
 Each `Recommendation` is a `supervisor.appscode.com` object that describes one operation and embeds the exact `MilvusOpsRequest` that resolves it. Here is the `UpdateVersion` recommendation generated because the running database is on `2.6.9` while `2.6.11` is available:
 
 ```bash
-$ kubectl get recommendation milvus-standalone-x-milvus-x-update-version-3rq4py -n demo -o yaml
+kubectl get recommendation milvus-standalone-x-milvus-x-update-version-3rq4py -n demo -o yaml
+```
 apiVersion: supervisor.appscode.com/v1alpha1
 kind: Recommendation
 metadata:
@@ -145,7 +146,6 @@ spec:
 status:
   approvalStatus: Pending
   phase: Pending
-```
 
 Key fields:
 
@@ -162,15 +162,21 @@ Similarly, once the auth credential exceeds `spec.authSecret.rotateAfter` (15m),
 Each `Recommendation` embeds the exact `MilvusOpsRequest` that resolves it (`spec.operation`). The Supervisor can apply it automatically within a maintenance window, or you can extract and apply it manually:
 
 ```bash
-$ kubectl get recommendation -n demo <name> -o jsonpath='{.spec.operation}' | kubectl apply -f -
+kubectl get recommendation -n demo <name> -o jsonpath='{.spec.operation}' | kubectl apply -f -
 ```
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete recommendation -n demo --all
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete recommendation -n demo --all
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

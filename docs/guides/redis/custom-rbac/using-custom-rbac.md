@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,14 +46,14 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
 ```bash
-$ kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
+kubectl get serviceaccount -n demo my-custom-serviceaccount -o yaml
 ```
 ```yaml
 apiVersion: v1
@@ -71,9 +71,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Redis instance named `quick-redis`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -99,15 +99,14 @@ This permission is required for Redis pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
-
+kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
 ```bash
-$ kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
+kubectl get rolebinding -n demo my-custom-rolebinding -o yaml
 ```
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -131,9 +130,9 @@ subjects:
 Now, create a Redis crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db.yaml
-redis.kubedb.com/quick-redis created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db.yaml
 ```
+redis.kubedb.com/quick-redis created
 
 Below is the YAML for the Redis crd we just created.
 
@@ -161,18 +160,18 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo quick-redis-0
+kubectl get pod -n demo quick-redis-0
+```
 NAME            READY   STATUS    RESTARTS   AGE
 quick-redis-0   1/1     Running   0          61s
-```
 
 Check if database is in Ready state
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME          VERSION   STATUS   AGE
 quick-redis   6.2.14     Ready    117s
-```
 
 ## Reusing Service Account
 
@@ -181,9 +180,9 @@ An existing service account can be reused in another Redis instance. No new acce
 Now, create Redis crd `minute-redis` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db-two.yaml
-redis.kubedb.com/quick-redis created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/custom-rbac/rd-custom-db-two.yaml
 ```
+redis.kubedb.com/quick-redis created
 
 Below is the YAML for the Redis crd we just created.
 
@@ -215,49 +214,63 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo minute-redis-0
+kubectl get pod -n demo minute-redis-0
+```
 NAME                READY     STATUS    RESTARTS   AGE
 minute-redis-0   1/1       Running   0          14m
-```
 
 Check if database is in Ready state
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME           VERSION   STATUS   AGE
 minute-redis   6.2.14     Ready    76s
 quick-redis    6.2.14     Ready    4m26s
-```
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/quick-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/quick-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/quick-redis patched
 
-$ kubectl delete -n demo rd/quick-redis
+```bash
+kubectl delete -n demo rd/quick-redis
+```
 redis.kubedb.com "quick-redis" deleted
 
-$ kubectl patch -n demo rd/minute-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo rd/minute-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/minute-redis patched
 
-$ kubectl delete -n demo rd/minute-redis
+```bash
+kubectl delete -n demo rd/minute-redis
+```
 redis.kubedb.com "minute-redis" deleted
 
-$ kubectl delete -n demo role my-custom-role
+```bash
+kubectl delete -n demo role my-custom-role
+```
 role.rbac.authorization.k8s.io "my-custom-role" deleted
 
-$ kubectl delete -n demo rolebinding my-custom-rolebinding
+```bash
+kubectl delete -n demo rolebinding my-custom-rolebinding
+```
 rolebinding.rbac.authorization.k8s.io "my-custom-rolebinding" deleted
 
-$ kubectl delete sa -n demo my-custom-serviceaccount
+```bash
+kubectl delete sa -n demo my-custom-serviceaccount
+```
 serviceaccount "my-custom-serviceaccount" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 

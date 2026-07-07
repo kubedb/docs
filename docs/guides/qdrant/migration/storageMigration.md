@@ -28,9 +28,9 @@ This guide will show you how to use `KubeDB` Ops Manager to migrate `StorageClas
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Qdrant Database
 
@@ -71,13 +71,14 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/migration/sample-qdrant.yaml
-qdrant.kubedb.com/sample-qdrant created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/migration/sample-qdrant.yaml
 ```
+qdrant.kubedb.com/sample-qdrant created
 Now, wait until sample-qdrant has status `Ready` and check the `StorageClass`,
 
 ```bash
-$ kubectl get qdrant,pvc -n demo
+kubectl get qdrant,pvc -n demo
+```
 NAME                    VERSION   STATUS   AGE
 sample-qdrant   1.17.0     Ready    101s
 
@@ -85,32 +86,38 @@ NAME                                             STATUS   VOLUME                
 persistentvolumeclaim/data-sample-qdrant-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   2Gi        RWO            standard       <unset>                 96s
 persistentvolumeclaim/data-sample-qdrant-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   2Gi        RWO            standard       <unset>                 90s
 persistentvolumeclaim/data-sample-qdrant-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   2Gi        RWO            standard       <unset>                 85s
-```
 
 The database is `Ready` and all the `PersistentVolumeClaim` uses `standard` StorageClass. Let's create a collection and insert some data.
 
-```bash
 # get the API key from the auth secret
-$ export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```bash
+export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```
 
 # port-forward the Qdrant service
-$ kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
+```bash
+kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
+```
 Forwarding from 127.0.0.1:6333 -> 6333
 
 # create a collection
-$ curl -X PUT 'http://localhost:6333/collections/demo_vectors' \
+```bash
+curl -X PUT 'http://localhost:6333/collections/demo_vectors' \
   -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
+```
     "vectors": { "size": 4, "distance": "Cosine" }
   }'
 {"result":true,"status":"ok","time":0.123}
 
 # insert points
-$ curl -X PUT 'http://localhost:6333/collections/demo_vectors/points' \
+```bash
+curl -X PUT 'http://localhost:6333/collections/demo_vectors/points' \
   -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
+```
     "points": [
       { "id": 1, "vector": [0.1, 0.2, 0.3, 0.4], "payload": { "label": "a" } },
       { "id": 2, "vector": [0.2, 0.3, 0.4, 0.5], "payload": { "label": "b" } }
@@ -119,10 +126,11 @@ $ curl -X PUT 'http://localhost:6333/collections/demo_vectors/points' \
 {"result":null,"status":"ok","time":0.045}
 
 # verify points count
-$ curl 'http://localhost:6333/collections/demo_vectors' \
+```bash
+curl 'http://localhost:6333/collections/demo_vectors' \
   -H "api-key: $API_KEY"
-{"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 ```
+{"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 
 ## Apply StorageMigration Ops-Request
 
@@ -154,50 +162,53 @@ Here,
 
 Let's create the `QdrantOpsRequest` CR we have shown above,
 
-``` bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/migration/storage-migration.yaml
-qdrantopsrequest.ops.kubedb.com/storage-migration created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/migration/storage-migration.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/storage-migration created
 ## Verify the StorageClass Migrated Successfully
 
 If everything goes well, `KubeDB` operator will migrate the `StorageClass` along with the data.
 
 Let's wait for `QdrantOpsRequest` to be `Successful`. Run the following command to watch QdrantOpsRequest CR,
 
-``` bash
-$ watch kubectl get qdrantopsrequest -n demo
-
+```bash
+watch kubectl get qdrantopsrequest -n demo
+```
 Every 2.0s: kubectl get qdrantopsrequest -n demo  
 
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   13m
-```
 
 We can see from the above output that the `QdrantOpsRequest` has succeeded. Let's verify the StorageClass.
 
-``` bash
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
 data-sample-qdrant-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   2Gi        RWO            longhorn-custom     <unset>                 21m
 data-sample-qdrant-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   2Gi        RWO            longhorn-custom     <unset>                 21m
 data-sample-qdrant-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   2Gi        RWO            longhorn-custom     <unset>                 21m
-```
 
 The `PersistentVolumeClaim` StorageClass has changed to `longhorn-custom`. Now, we will verify that the data remains intact after the `StorageMigration` operation.
 
-```bash
 # get the API key from the auth secret
-$ export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```bash
+export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```
 
 # port-forward the Qdrant service
-$ kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
+```bash
+kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
+```
 Forwarding from 127.0.0.1:6333 -> 6333
 
 # check the collection exists and data is intact
-$ curl 'http://localhost:6333/collections/demo_vectors' \
+```bash
+curl 'http://localhost:6333/collections/demo_vectors' \
   -H "api-key: $API_KEY"
-{"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 ```
+{"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 
 From the above output we can verify that data remains intact after the `StorageMigration` operation.
 
@@ -206,7 +217,13 @@ From the above output we can verify that data remains intact after the `StorageM
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete qdrantopsrequest -n demo storage-migration
-$ kubectl delete qdrant -n demo sample-qdrant
-$ kubectl delete ns demo
+kubectl delete qdrantopsrequest -n demo storage-migration
+```
+
+```bash
+kubectl delete qdrant -n demo sample-qdrant
+```
+
+```bash
+kubectl delete ns demo
 ```

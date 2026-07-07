@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/clustering/semi-sync/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/clustering/semi-sync/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -69,9 +69,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/semi-sync/yamls/semi-sync.yaml
-mysql.kubedb.com/semi-sync-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/clustering/semi-sync/yamls/semi-sync.yaml
 ```
+mysql.kubedb.com/semi-sync-mysql created
 
 Here,
 
@@ -86,7 +86,8 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes API. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for the PetSet with the name `<mysql-object-name>-pods`.
 
 ```bash
-$ kubectl dba describe my -n demo semi-sync-mysql
+kubectl dba describe my -n demo semi-sync-mysql
+```
 Name:               semi-sync-mysql
 Namespace:          demo
 CreationTimestamp:  Wed, 16 Nov 2022 11:45:53 +0600
@@ -233,40 +234,45 @@ Events:
   Normal  Successful     5m    MySQL operator  Successfully patched governing service
 g
 
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME       READY   AGE
 semi-sync-mysql   3/3     3m47s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-semi-sync-mysql-0   Bound    pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            standard       4m16s
 data-semi-sync-mysql-1   Bound    pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            standard       4m11s
 data-semi-sync-mysql-2   Bound    pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            standard       4m7s
 s
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
 pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            Delete           Bound    demo/data-semi-sync-mysql-0   standard                4m39s
 pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            Delete           Bound    demo/data-semi-sync-mysql-1   standard                4m35s
 pvc-94f1c312-50e3-41e1-94a8-a820be0abc08   1Gi        RWO            Delete           Bound    demo/data-semi-sync-mysql-2   standard                4m31s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME               TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 semi-sync-mysql           ClusterIP   10.96.121.252   <none>        3306/TCP                     10m
 semi-sync-mysql-pods      ClusterIP   None            <none>        3306/TCP,2380/TCP,2379/TCP   10m
 semi-sync-mysql-standby   ClusterIP   10.96.133.61    <none>        3306/TCP                     10m
 
-```
-
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully provisioned. Run the following command to see the modified `MySQL` object:
 
 ```bash
-$ kubectl get mysql -n demo 
+kubectl get mysql -n demo 
+```
 NAME              VERSION   STATUS   AGE
 semi-sync-mysql   8.4.8    Ready    16m
-```
 
 ```yaml
 $ kubectl get  my -n demo semi-sync-mysql -o yaml | kubectl neat
@@ -326,42 +332,49 @@ If you want to use an existing secret please specify that when creating the MySQ
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.password}' | base64 -d
-y~EC~984Et1Yfs~i
+```bash
+kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+y~EC~984Et1Yfs~i
 
 The operator creates a cluster according to the newly created `MySQL` object. This cluster has 3 members (one primary and two secondary).
 
 You can connect to any of these cluster members. In that case you just need to specify the host name of that member Pod (either PodIP or the fully-qualified-domain-name for that Pod using the governing service named `<mysql-object-name>-pods`) by `--host` flag.
 
-```bash
 # first list the mysql pods list
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=semi-sync-mysql
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=semi-sync-mysql
+```
 NAME                READY   STATUS    RESTARTS   AGE
 semi-sync-mysql-0   2/2     Running   0          21m
 semi-sync-mysql-1   2/2     Running   0          20m
 semi-sync-mysql-2   2/2     Running   0          20m
 
 # get the governing service
-$ kubectl get service semi-sync-mysql-pods -n demo
+```bash
+kubectl get service semi-sync-mysql-pods -n demo
+```
 NAME                   TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)                      AGE
 semi-sync-mysql-pods   ClusterIP   None         <none>        3306/TCP,2380/TCP,2379/TCP   21m
 
 # list the pods with PodIP
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=semi-sync-mysql -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.semi-sync-mysql-pods.{.metadata.namespace}{"\\n"}{end}'
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=semi-sync-mysql -o jsonpath='{range.items[*]}{.metadata.name} ........... {.status.podIP} ............ {.metadata.name}.semi-sync-mysql-pods.{.metadata.namespace}{"\\n"}{end}'
+```
 semi-sync-mysql-0 ........... 10.244.0.18 ............ semi-sync-mysql-0.semi-sync-mysql-pods.demo
 semi-sync-mysql-1 ........... 10.244.0.20 ............ semi-sync-mysql-1.semi-sync-mysql-pods.demo
 semi-sync-mysql-2 ........... 10.244.0.22 ............ semi-sync-mysql-2.semi-sync-mysql-pods.demo
-```
 
 Now you can connect to these database using the above info. Ignore the warning message. It is happening for using password in the command.
 
-```bash
 # connect to the 1st server
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "select 1;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "select 1;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
@@ -370,7 +383,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 
 # connect to the 2nd server
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "select 1;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "select 1;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
@@ -379,22 +394,23 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 
 # connect to the 3rd server
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "select 1;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "select 1;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---+
 | 1 |
 +---+
 | 1 |
 +---+
-```
 
 ## Check the Semi-sync cluster Status
 
 Now, you are ready to check newly created semi-sync. Connect and run the following commands from any of the hosts and you will get the same results.
 
 ```bash
-
-$ kubectl get pods -n demo --show-labels
+kubectl get pods -n demo --show-labels
+```
 NAME                READY   STATUS    RESTARTS   AGE    LABELS
 semi-sync-mysql-0   2/2     Running   0          171m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-0
 semi-sync-mysql-1   2/2     Running   0          170m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=standby,petset.kubernetes.io/pod-name=semi-sync-mysql-1
@@ -402,7 +418,9 @@ semi-sync-mysql-2   2/2     Running   0          169m   app.kubernetes.io/compon
 
 From the labels we can see that the `semi-sync-mysql-0` is running as primary and the rest are running as standby.Lets validate with the mysql semisync status
 
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +-----------------------------+-------+
 | Variable_name               | Value |
@@ -411,27 +429,27 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | Rpl_semi_sync_slave_status  | OFF   |
 +-----------------------------+-------+
 
-
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
-mysql: [Warning] Using a password on the command line interface can be insecure.
-+-----------------------------+-------+
-| Variable_name               | Value |
-+-----------------------------+-------+
-| Rpl_semi_sync_master_status | OFF   |
-| Rpl_semi_sync_slave_status  | ON    |
-+-----------------------------+-------+
-
-
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
-mysql: [Warning] Using a password on the command line interface can be insecure.
-+-----------------------------+-------+
-| Variable_name               | Value |
-+-----------------------------+-------+
-| Rpl_semi_sync_master_status | OFF   |
-| Rpl_semi_sync_slave_status  | ON    |
-+-----------------------------+-------+
-
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
 ```
+mysql: [Warning] Using a password on the command line interface can be insecure.
++-----------------------------+-------+
+| Variable_name               | Value |
++-----------------------------+-------+
+| Rpl_semi_sync_master_status | OFF   |
+| Rpl_semi_sync_slave_status  | ON    |
++-----------------------------+-------+
+
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```
+mysql: [Warning] Using a password on the command line interface can be insecure.
++-----------------------------+-------+
+| Variable_name               | Value |
++-----------------------------+-------+
+| Rpl_semi_sync_master_status | OFF   |
+| Rpl_semi_sync_slave_status  | ON    |
++-----------------------------+-------+
 
 ## Data Availability
 
@@ -439,33 +457,39 @@ In a MySQL semi-sync cluster, only the primary member can write not the secondar
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # create a database on primary
-$ kubectl exec -it -n demo semi-sync-mysql-0 -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "CREATE DATABASE playground;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "CREATE DATABASE playground;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # create a table
-$ kubectl exec -it -n demo semi-sync-mysql-0 -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
-
 # insert a row
-$  kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
+```bash
+ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 
 # read from primary
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 In the previous step we have inserted into the primary pod. In the next step we will read from secondary pods to determine whether the data has been successfully copied to the secondary pods.
-```bash
 # read from secondary-1
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
@@ -474,32 +498,35 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 
 # read from secondary-2
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 
 ## Write on Secondary Should Fail
 
 Only, primary member preserves the write permission. No secondary can write data.
 
-```bash
 # try to write on secondary-1
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
 
 # try to write on secondary-2
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i'  --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "INSERT INTO playground.equipment (type, quant, color) VALUES ('mango', 5, 'yellow');"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1290 (HY000) at line 1: The MySQL server is running with the --super-read-only option so it cannot execute this statement
 command terminated with exit code 1
-```
 
 ## Automatic Failover
 
@@ -507,17 +534,22 @@ To test automatic failover, we will force the primary Pod to restart. Since the 
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # delete the primary Pod semi-sync-mysql-0
-$ kubectl delete pod semi-sync-mysql-0 -n demo
+```bash
+kubectl delete pod semi-sync-mysql-0 -n demo
+```
 pod "semi-sync-mysql-0" deleted
 
 # check the new primary ID
-$ kubectl get pod -n demo --show-labels | grep primary
+```bash
+kubectl get pod -n demo --show-labels | grep primary
+```
 semi-sync-mysql-1   2/2     Running   0          3h9m   app.kubernetes.io/component=database,app.kubernetes.io/instance=semi-sync-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,controller-revision-hash=semi-sync-mysql-77775485f8,kubedb.com/role=primary,petset.kubernetes.io/pod-name=semi-sync-mysql-1
 
 # now check the cluster status
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +-----------------------------+-------+
 | Variable_name               | Value |
@@ -525,7 +557,10 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | Rpl_semi_sync_master_status | OFF   |
 | Rpl_semi_sync_slave_status  | ON    |
 +-----------------------------+-------+
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +-----------------------------+-------+
 | Variable_name               | Value |
@@ -534,7 +569,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | Rpl_semi_sync_slave_status  | OFF   |
 +-----------------------------+-------+
 
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "show  status like 'Rpl%_status';"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +-----------------------------+-------+
 | Variable_name               | Value |
@@ -542,20 +579,21 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | Rpl_semi_sync_master_status | OFF   |
 | Rpl_semi_sync_slave_status  | ON    |
 
-
 # read data from new primary semi-sync-mysql-1.semi-sync-mysql-pods.demo
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-1.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  1 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 Now Let's read the data from secondary pods to see if the data is consistant.
-```bash
 # read data from secondary-1 semi-sync-mysql-0.semi-sync-mysql-pods.demo
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-0.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
@@ -564,14 +602,15 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 
 # read data from secondary-2 semi-sync-mysql-2.semi-sync-mysql-pods.demo
-$ kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```bash
+kubectl exec -it -n demo semi-sync-mysql-0 -c mysql -- mysql -u root --password='y~EC~984Et1Yfs~i' --host=semi-sync-mysql-2.semi-sync-mysql-pods.demo -e "SELECT * FROM playground.equipment;"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 | id | type  | quant | color |
 +----+-------+-------+-------+
 |  7 | slide |     2 | blue  |
 +----+-------+-------+-------+
-```
 
 ## Cleaning up
 

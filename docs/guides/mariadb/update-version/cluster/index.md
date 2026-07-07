@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare MariaDB Cluster
 
@@ -69,17 +69,17 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/update-version/cluster/examples/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/update-version/cluster/examples/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo                                                                                                                                             
+kubectl get mariadb -n demo                                                                                                                                             
+```
 NAME             VERSION    STATUS     AGE
 sample-mariadb   11.8.5    Ready     3m15s
-```
 
 We are now ready to apply the `MariaDBOpsRequest` CR to update this database.
 
@@ -114,9 +114,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/update-version/cluster/examples/mdops-update.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/update-version/cluster/examples/mdops-update.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-update created
 
 #### Verify MariaDB version updated successfully 
 
@@ -125,26 +125,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME              TYPE            STATUS       AGE
 mdops-update      UpdateVersion   Successful    84s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `MariaDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'
+```
 12.1.2
 
-$ kubectl get petset -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 mariadb:12.1.2
 
-$ kubectl get pods -n demo sample-mariadb-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mariadb:12.1.2
+```bash
+kubectl get pods -n demo sample-mariadb-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+mariadb:12.1.2
 
 You can see from above, our `MariaDB` cluster database has been updated with the new version. So, the update process is successfully completed.
 
@@ -153,6 +157,9 @@ You can see from above, our `MariaDB` cluster database has been updated with the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo mdops-update
+kubectl delete mariadb -n demo sample-mariadb
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo mdops-update
 ```

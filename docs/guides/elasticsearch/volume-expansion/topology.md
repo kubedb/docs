@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a `Elasticsearch` topology using a supported versio
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -105,29 +105,38 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}docs/examples/elasticsearch/clustering/topology-es.yaml
-Elasticsearch.kubedb.com/es-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}docs/examples/elasticsearch/clustering/topology-es.yaml
 ```
+Elasticsearch.kubedb.com/es-cluster created
 
 Now, wait until `es-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo
+kubectl get es -n demo
+```
 NAME         VERSION        STATUS   AGE
 es-cluster   xpack-9.2.3   Ready    22h
-
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo es-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo es-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get petset -n demo es-cluster-master -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo es-cluster-master -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-11b48c6e-d996-45a7-8ba2-f8d71a655912   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-2   longhorn     <unset>                          22h
 pvc-1904104c-bbf2-4754-838a-8a647b2bd23e   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-2     longhorn     <unset>                          22h
@@ -138,7 +147,6 @@ pvc-ae5ccc43-d078-4816-a553-8a3cd1f674be   1Gi        RWO            Delete     
 pvc-b4225042-c69f-41df-99b2-1b3191057a85   1Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     longhorn     <unset>                          22h
 pvc-bd4b7d5a-8494-4ee2-a25c-697a6f23cb79   1Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   longhorn     <unset>                          22h
 pvc-c9057b3b-4412-467f-8ae5-f6414e0059c3   1Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   longhorn     <unset>                          22h
-```
 
 You can see the petsets have 1Gi storage, and the capacity of all the persistent volumes are also 1Gi.
 
@@ -182,9 +190,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/elasticsearch-volume-expansion-topology.yaml
-Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/elasticsearch-volume-expansion-topology.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-topology created
 
 #### Verify Elasticsearch Topology volume expanded successfully
 
@@ -193,16 +201,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                        TYPE              STATUS       AGE
 volume-expansion-topology   VolumeExpansion   Successful   44m
-
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to expand the volume of Elasticsearch.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo volume-expansion-topology
+kubectl describe Elasticsearchopsrequest -n demo volume-expansion-topology
+```
 Name:         volume-expansion-topology
 Namespace:    demo
 Labels:       <none>
@@ -698,19 +706,26 @@ Events:
   Normal   Successful                               31m   KubeDB Ops-manager Operator  Successfully Updated Database
   Normal   UpdatePetSets                            31m   KubeDB Ops-manager Operator  successfully reconciled the Elasticsearch resources
 
-```
-
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo es-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo es-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "5Gi"
-$ kubectl get petset -n demo es-cluster-master -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo es-cluster-master -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "5Gi"
-$ kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo es-cluster-ingest -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "4Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-37f7398d-0251-4d3c-a439-d289b8cec6d2   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-2   longhorn       <unset>                          111m
 pvc-3a5d2b3e-dd39-4468-a8da-5274992a6502   5Gi        RWO            Delete           Bound    demo/data-es-cluster-master-0   longhorn       <unset>                          111m
@@ -721,7 +736,6 @@ pvc-81d6c1d3-0aa6-4190-9ee0-dd4a8d62b6b3   4Gi        RWO            Delete     
 pvc-942c6dce-4701-4e1a-b6f9-bf7d4ab56a11   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-1     longhorn       <unset>                          111m
 pvc-b706647d-c9ba-4296-94aa-2f6ef2230b6e   4Gi        RWO            Delete           Bound    demo/data-es-cluster-ingest-1   longhorn       <unset>                          111m
 pvc-c274f913-5452-47e1-ab42-ba584bdae297   5Gi        RWO            Delete           Bound    demo/data-es-cluster-data-0     longhorn       <unset>                          111m
-```
 
 The above output verifies that we have successfully expanded the volume of the Elasticsearch.
 
@@ -745,9 +759,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/volume-expansion-topo-data.yaml
-Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-data-nodes created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/volume-expansion-topo-data.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/volume-expansion-data-nodes created
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:

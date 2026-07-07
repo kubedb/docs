@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -77,14 +77,15 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   54s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   84s
@@ -92,12 +93,11 @@ cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   84s
 .
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready          2m8s
 
-```
-
 Now, we can try to access cqlsh of one cassandra pod without providing ssl flag and verify configuration that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -107,7 +107,6 @@ Connected to Test Cluster at 127.0.0.1:9042
 [cqlsh 6.2.0 | Cassandra 5.0.3 | CQL spec 3.4.7 | Native protocol v5]
 Use HELP for help.
 admin@cqlsh> 
-```
 
 We can verify from the above output that TLS is disabled for this cluster.
 
@@ -118,20 +117,20 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=cassandra/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=cassandra/O=kubedb"
+```
 .....+................+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+...+...+......+......+........+......+....+..+.......+..+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...............+.............+..+.+.....+...+.......+.....+....+...+........+....+.........+.....+.+.....+....+...........+.+..+...+...+.+...+...........+....+...+..............+..........+.....+...+..........+......+.........+...+..+...........................+.........+....+...........+....+.....+..................+...+.+...+.....+.+..+....+........+.............+...+..+....+...........+.......+......+...........+.+..+.......+........+...+............+.+.....+.+.....+.........+......+.+........+.+.....+.+....................+...+.......+...+......+...........+..........+............+.....+.+.....+.+.....+.+.........+........+...+....+.....+.........+.........+...+.......+.....+.......+........+.......+.....................+.....+....+...+...+...............+.....+...+....+..+...............+....+..+..........+.....+.......+...+.........+.........+..+...+.+...+..+.+.....+...+...........................+....+.....+...+......+.+...+...+............+..+...................+............+..+......+.+.....+......+.......+........+....+........+......+.+...........+...+.+...+............+......+..+..........+..+.+..+............+....+.........+..+.+............+.....+.......+...+...........+.+........................+......+...+.....+...+.......+..+................+.........+...+......+......+...........+.............+..............+.+...........+.+..+.......+.....+.........+......+...+.......+...+...........+....+.....+...+...+......+.+..+......+.......+..+.......+...+........+.......+..+....+.........+......+..+....+...+...........+..........+...........+.+...............+...............+..+......+...................+..+...+.......+...+.....+...+...+.......+...+......+...+.....+.......+.....+...............+.........+......+.........+....+..+...+.+..+.........+...+...+.............+..+...+..........+.....+..........+.........+..+.+.....+....+.........+..+...+....+......+..+.........+......+.......+...+...+..+.......+..+.........+.+.....+......+...+......+..........+.....+...............+..................+.+............+........+....+...+........+.+.....+.........+....+........+...+....+...+..............+.+...+......+...+......+............+.........+...+..+.+..+......+......+......+...+.+..............+.+...+...+........+....+.....+............+...+.+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ........+....+.........+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+....+......+......+..+......+.+........+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*..+.....+..................+...+....+...........+...+...................+......+...............+...........+....+......+........+...+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls cassandra-ca \
+kubectl create secret tls cassandra-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/cassandra-ca created
 ```
+secret/cassandra-ca created
 
 Now, Let's create an `Issuer` using the `cassandra-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -149,9 +148,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-issuer.yaml
-issuer.cert-manager.io/cas-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-issuer.yaml
 ```
+issuer.cert-manager.io/cas-issuer created
 
 ### Create CassandraOpsRequest
 
@@ -193,24 +192,25 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-add-tls.yaml
-cassandraopsrequest.ops.kubedb.com/casops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-add-tls.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME             TYPE             STATUS       AGE
 casops-add-tls   ReconfigureTLS   Successful   3m34s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$  kubectl describe cassandraopsrequest -n demo casops-add-tls 
+ kubectl describe cassandraopsrequest -n demo casops-add-tls 
+```
 Name:         casops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -347,12 +347,12 @@ Events:
   Normal   RestartNodes                                                       43s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           43s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         43s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-add-tls
-```
 
 Now, Let's try to access cqlsh of a cassandra pod without and with ssl flag and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -361,7 +361,9 @@ Recommendation: use the credentials file to securely provide the password.
 Connection error: ('Unable to connect to any servers', {'127.0.0.1:9042': ConnectionShutdown('Connection to 127.0.0.1:9042 was closed')})
 command terminated with exit code 1
 
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6 --ssl
+```bash
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6 --ssl
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -371,7 +373,6 @@ Connected to Test Cluster at 127.0.0.1:9042
 [cqlsh 6.2.0 | Cassandra 5.0.3 | CQL spec 3.4.7 | Native protocol v5]
 Use HELP for help.
 admin@cqlsh> exit
-```
 
 We can see from the above output that, cqlsh is only accessable by using ssl flag which means that TLS is enabled.
 
@@ -380,13 +381,13 @@ We can see from the above output that, cqlsh is only accessable by using ssl fla
 Now we are going to rotate the certificate of this cluster. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep -E 'Valid from|Alias name'
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep -E 'Valid from|Alias name'
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 Alias name: ca
 Valid from: Tue Jul 29 10:40:48 GMT 2025 until: Wed Jul 29 10:40:48 GMT 2026
 Alias name: certificate
 Valid from: Tue Jul 29 10:45:45 GMT 2025 until: Mon Oct 27 10:45:45 GMT 2025
-```
 
 So, the certificate will expire on this time `Wed Jul 29 10:40:48 GMT 2026`.
 
@@ -417,25 +418,25 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/casops-rotate.yaml
-cassandraopsrequest.ops.kubedb.com/casops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/casops-rotate.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME            TYPE             STATUS       AGE
 casops-rotate   ReconfigureTLS   Successful   3m22s
-
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$kubectl describe cassandraopsrequest -n demo casops-rotate
+kubectl describe cassandraopsrequest -n demo casops-rotate
+```
 Name:         casops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -561,19 +562,17 @@ Events:
   Normal   RestartNodes                                                       36s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           36s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         36s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep -E 'Valid from|Alias name'
-
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep -E 'Valid from|Alias name'
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 Alias name: ca
 Valid from: Tue Jul 29 10:40:48 GMT 2025 until: Wed Jul 29 10:40:48 GMT 2026
 Alias name: certificate
 Valid from: Tue Jul 29 11:09:11 GMT 2025 until: Mon Oct 27 11:09:11 GMT 2025
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -584,21 +583,21 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=cassandra-updated/O=kubedb-updated"
+ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=cassandra-updated/O=kubedb-updated"
+```
 ....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+.....+..........+...+...+..+...+....+............+...........+....+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+..........+..+.......+...+.....+......+.......+...+..+....+.....+.............+..+.+.....+.......+..+.+...+....................+.........+...+..........+.......................+.....................+.+........+....+..+...+.......+.........+..+...+.+......+..+.............+........+......+......+.......+...........+.+.....+................+...+......+........+.......+...+........+...+....+.....+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .....+.....+....+.....+...+....+........+.+..+.......+........+...+.......+........+......+.+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...+........+.........+....+......+...+..+....+..+....+........+............+.+...+............+.........+.....+...+...+.........+.+...+..+.......+........+......................+.....+..........+...+..+......+.+.........+......+....................+.+...+.....+......+.+..............+...+.+..+....+.........+......+......+........+......+....+..+....+......+..+............+.+.................+...+....+...+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls cassandra-new-ca \
+kubectl create secret tls cassandra-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/cassandra-new-ca created
 ```
+secret/cassandra-new-ca created
 
 Now, Let's create a new `Issuer` using the `cassandra-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -616,9 +615,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-new-issuer.yaml
-issuer.cert-manager.io/cas-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-new-issuer.yaml
 ```
+issuer.cert-manager.io/cas-new-issuer created
 
 ### Create CassandraOpsRequest
 
@@ -650,24 +649,25 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-update-tls-issuer.yaml
-cassandrapsrequest.ops.kubedb.com/casops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/cassandra-update-tls-issuer.yaml
 ```
+cassandrapsrequest.ops.kubedb.com/casops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$ kubectl get cassandraopsrequests -n demo casops-update-issuer 
+kubectl get cassandraopsrequests -n demo casops-update-issuer 
+```
 NAME                   TYPE             STATUS       AGE
 casops-update-issuer   ReconfigureTLS   Successful   3m44s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$  kubectl describe cassandraopsrequest -n demo casops-update-issuer
+ kubectl describe cassandraopsrequest -n demo casops-update-issuer
+```
 Name:         casops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -796,16 +796,15 @@ Events:
   Normal   RestartNodes                                                       58s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           58s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         58s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-update-issuer
-```
 
 Now, Let's exec into a cassandra node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep 'Issuer'
+kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- keytool -list -v -keystore /opt/cassandra/ssl/keystore.jks -storepass 'Yd33L.bUW(EdUCaV' | grep 'Issuer'
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 Issuer: O=kubedb-updated, CN=cassandra-updated
 Issuer: O=kubedb-updated, CN=cassandra-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -840,24 +839,25 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/casops-remove.yaml
-cassandraopsrequest.ops.kubedb.com/casops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure-tls/casops-remove.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$  kubectl get cassandraopsrequest -n demo casops-remove
+ kubectl get cassandraopsrequest -n demo casops-remove
+```
 NAME            TYPE             STATUS       AGE
 casops-remove   ReconfigureTLS   Successful   4m12s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$  kubectl describe cassandraopsrequest -n demo casops-remove
+ kubectl describe cassandraopsrequest -n demo casops-remove
+```
 Name:         casops-remove
 Namespace:    demo
 Labels:       <none>
@@ -948,12 +948,12 @@ Events:
   Normal   RestartNodes                                                       3m37s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           3m37s  KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         3m37s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-remove
-```
 
 Now, Let's try to access cqlsh of one cassandra pod without providing ssl flag and verify configuration that the TLS is disabled.
 
 ```bash
-$  kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+ kubectl exec -it -n demo cassandra-prod-rack-r0-0 -- cqlsh -u admin -p MkyikyIvjFEzzgB6
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -963,8 +963,6 @@ Connected to Test Cluster at 127.0.0.1:9042
 [cqlsh 6.2.0 | Cassandra 5.0.3 | CQL spec 3.4.7 | Native protocol v5]
 Use HELP for help.
 admin@cqlsh> 
-
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

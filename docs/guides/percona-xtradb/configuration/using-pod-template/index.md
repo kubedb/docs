@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for PerconaXtraDB via [PodTemplat
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-pod-template/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -95,36 +95,37 @@ spec:
 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-pod-template/examples/md-misc-config.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-pod-template/examples/md-misc-config.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-pxc` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME           READY   STATUS    RESTARTS   AGE
 sample-pxc-0   2/2     Running   0          3m30s
 sample-pxc-1   2/2     Running   0          3m30s
 sample-pxc-2   2/2     Running   0          3m30s
-```
 
 Check the perconaxtradb CRD status if the database is ready
 
 ```bash
-$ kubectl get perconaxtradb --all-namespaces
+kubectl get perconaxtradb --all-namespaces
+```
 NAMESPACE   NAME         VERSION   STATUS   AGE
 demo        sample-pxc   8.4.3    Ready    4m8s
-```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -172,15 +173,17 @@ mysql> show variables like 'char%';
 
 mysql> quit;
 Bye
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-perconaxtradb.kubedb.com "sample-pxc" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo sample-pxc
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

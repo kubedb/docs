@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/singlestore](/docs/examples/singlestore) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -46,11 +46,11 @@ Here, we are going to deploy a `SingleStore` Cluster using a supported version b
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 #### Deploy SingleStore Cluster
 
@@ -115,9 +115,9 @@ spec:
 Let's create the `SingleStore` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/compute/sdb-cluster.yaml
-singlestore.kubedb.com/sdb-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/compute/sdb-cluster.yaml
 ```
+singlestore.kubedb.com/sdb-cluster created
 
 Now, wait until `sdb-sample` has status `Ready`. i.e,
 
@@ -212,16 +212,17 @@ Here,
 Let's create the `SinglestoreAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaler/compute/sdb-cluster-autoscaler.yaml
-singlestoreautoscaler.autoscaling.kubedb.com/sdb-cluster-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaler/compute/sdb-cluster-autoscaler.yaml
 ```
+singlestoreautoscaler.autoscaling.kubedb.com/sdb-cluster-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `singlestoreautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl describe singlestoreautoscaler -n demo sdb-cluster-autoscaler 
+kubectl describe singlestoreautoscaler -n demo sdb-cluster-autoscaler 
+```
 Name:         sdb-cluster-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -347,7 +348,6 @@ Status:
           Memory:  6Gi
     Vpa Name:      sdb-sample-aggregator
 Events:            <none>
-```
 So, the `singlestoreautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `singlestoreopsrequest` based on the recommendations, if the database pods resources are needed to scaled up or down.
@@ -355,24 +355,25 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `singlestoreopsrequest` in the demo namespace to see if any `singlestoreopsrequest` object is created. After some time you'll see that a `singlestoreopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get singlestoreopsrequest -n demo
+watch kubectl get singlestoreopsrequest -n demo
+```
 Every 2.0s: kubectl get singlestoreopsrequest -n demo
 NAME                                       TYPE              STATUS       AGE
 sdbops-sdb-sample-aggregator-c0u141     VerticalScaling    Progressing    10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                                       TYPE              STATUS       AGE
 sdbops-sdb-sample-aggregator-c0u141      VerticalScaling    Successful    3m2s
-```
 
 We can see from the above output that the `SinglestoreOpsRequest` has succeeded. If we describe the `SinglestoreOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe singlestoreopsrequest -n demo sdbops-sdb-sample-aggregator-c0u141 
+kubectl describe singlestoreopsrequest -n demo sdbops-sdb-sample-aggregator-c0u141 
+```
 Name:         sdbops-sdb-sample-aggregator-c0u141
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -484,7 +485,6 @@ Events:
   Normal   RestartPods                                                              24m   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal Starting
   Normal Successful
-```
 
 Now, we are going to verify from the Pod, and the singlestore yaml whether the resources of the topology database has updated to meet up the desired state, Let's check,
 

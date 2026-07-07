@@ -25,28 +25,28 @@ section_menu_id: guides
 
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
- ```bash
-  $ kubectl get storageclasses
+  ```bash
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 ## Find Available HazelcastVersion
 
 When you have installed KubeDB, it has created `HazelcastVersion` CR for all supported Hazelcast versions. Check it by using the `kubectl get hazelcastversions` command. You can also use `hzversion` shorthand instead of `hazelcastversions`.
 
 ```bash
-$ kubectl get hzversion
+kubectl get hzversion
+```
 NAME    VERSION   DB_IMAGE                               DEPRECATED   AGE
 5.5.2   5.5.2     hazelcast/hazelcast-enterprise:5.5.2                3m52s
 5.5.6   5.5.6     hazelcast/hazelcast-enterprise:5.5.6                3m52s
-```
 ## Create a Hazelcast server
 
 KubeDB implements a `Hazelcast` CRD to define the specification of a Hazelcast server.
@@ -81,9 +81,9 @@ spec:
 ```
 Let's create the Hazelcast CR that is shown above:
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-sample created
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -97,12 +97,9 @@ pp5rmyri3A2SskRi⏎
 ````
 Now, you can exec into the pod `hazelcast-quickstart-0` and run a REST api using `username` and `password`
 ```bash
-
-$ kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'0TdsoNJez9zjJddh' http://localhost:5701/hazelcast/rest/cluster
-
-{"members":[{"address":"[10.244.0.21]:5701","liteMember":false,"localMember":true,"uuid":"f6c9c447-7abd-4254-9a52-3457f1e85713","memberVersion":"5.5.2"},{"address":"[10.244.0.23]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎     
-
+kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'0TdsoNJez9zjJddh' http://localhost:5701/hazelcast/rest/cluster
 ```
+{"members":[{"address":"[10.244.0.21]:5701","liteMember":false,"localMember":true,"uuid":"f6c9c447-7abd-4254-9a52-3457f1e85713","memberVersion":"5.5.2"},{"address":"[10.244.0.23]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎     
 If you can access the map and retrieve values using the REST API, it means the secrets are working correctly.
 
 ## Create RotateAuth HazelcastOpsRequest
@@ -127,19 +124,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Hazelcast.
 
 Let's create the `HazelcastOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/hazelcast/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/hazelcast/rotate-auth/rotate-auth-generated.yaml
+ ```
  hazelcastopsrequest.ops.kubedb.com/hzops-rotate-auth-generated created
-```
 Let's wait for `HazelcastOpsrequest` to be `Successful`. Run the following command to watch `HazelcastOpsrequest` CRO
-```shell
- $ kubectl get Hazelcastopsrequest -n demo
+ ```bash
+ kubectl get Hazelcastopsrequest -n demo
+ ```
 NAME                          TYPE         STATUS       AGE
 hzops-rotate-auth-generated   RotateAuth   Successful   2m32s
-```
 If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Hazelcastopsrequest -n demo hzops-rotate-auth-generated 
+```bash
+kubectl describe Hazelcastopsrequest -n demo hzops-rotate-auth-generated 
+```
 Name:         hzops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -236,7 +234,6 @@ Events:
   Normal   RestartNodes                                                       3m3s   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           3m3s   KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hazelcast-quickstart
   Normal   Successful                                                         3m3s   KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hazelcast-quickstart for HazelcastOpsRequest: hzops-rotate-auth-generated
-```
 **Verify Auth is rotated**
 ````shell
 $ kubectl get hz -n demo hazelcast-quickstart -ojson | jq .spec.authSecret.name
@@ -248,21 +245,21 @@ CYIpaMGLwfHmvA!h
 ````
 Now, you can exec into the pod `hazelcast-quickstart-0` and run a REST api using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'CYIpaMGLwfHmvA!h' http://localhost:5701/hazelcast/rest/cluster
-{"members":[{"address":"[10.244.0.25]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"},{"address":"[10.244.0.24]:5701","liteMember":false,"localMember":true,"uuid":"dc476cf0-74cd-4c8b-987c-c0bec27fbd26","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎  
+kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'CYIpaMGLwfHmvA!h' http://localhost:5701/hazelcast/rest/cluster
 ```
+{"members":[{"address":"[10.244.0.25]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"},{"address":"[10.244.0.24]:5701","liteMember":false,"localMember":true,"uuid":"dc476cf0-74cd-4c8b-987c-c0bec27fbd26","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎  
 If you can access the map and retrieve values using the REST API, it means the secrets are working correctly.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: The `username` must be fixed as `admin`.
-```shell
-$ kubectl create secret generic hazelcast-quickstart-usergen-auth -n demo \
+```bash
+kubectl create secret generic hazelcast-quickstart-usergen-auth -n demo \
                                                --type=kubernetes.io/basic-auth \
                                                --from-literal=username=admin \
                                                --from-literal=password=test-password
-secret/hazelcast-quickstart-usergen-auth created
 ```
+secret/hazelcast-quickstart-usergen-auth created
 Now create a `HazelcastOpsRequest` with `RotateAuth` type. Below is the YAML of the `HazelcastOpsRequest` that we are going to create,
 ```shell
 apiVersion: ops.kubedb.com/v1alpha1
@@ -289,19 +286,20 @@ Here,
 
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/hazelcast/rotate-auth/rotate-auth-user-generated.yaml
-hazelcastopsrequest.ops.kubedb.com/hzops-rotate-auth-user-generated created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/hazelcast/rotate-auth/rotate-auth-user-generated.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hzops-rotate-auth-user-generated created
 Let's wait for `HazelcastOpsrequest` to be `Successful`. Run the following command to watch `HazelcastOpsrequest` CRO
-```shell
-$ kubectl get Hazelcastopsrequest -n demo
+```bash
+kubectl get Hazelcastopsrequest -n demo
+```
 NAME                               TYPE         STATUS       AGE
 hzops-rotate-auth-user-generated   RotateAuth   Successful   2m32s
-```
 If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Hazelcastopsrequest -n demo hzops-rotate-auth-user-generated
+```bash
+kubectl describe Hazelcastopsrequest -n demo hzops-rotate-auth-user-generated
+```
 Name:         hzops-rotate-auth-user-generated
 Namespace:    demo
 Labels:       <none>
@@ -401,7 +399,6 @@ Events:
   Normal   RestartNodes                                                       4m30s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           4m30s  KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hazelcast-quickstart
   Normal   Successful                                                         4m30s  KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hazelcast-quickstart for HazelcastOpsRequest: hzops-rotate-auth-user-generated
-```
 **Verify Auth is rotated**
 ````shell
 $ kubectl get hz -n demo hazelcast-quickstart -ojson | jq .spec.authSecret.name
@@ -414,28 +411,43 @@ test-password⏎
 Now, you can exec into the pod `hazelcast-quickstart-0` and
 run a REST api using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'test-password' http://localhost:5701/hazelcast/rest/cluster
-{"members":[{"address":"[10.244.0.26]:5701","liteMember":false,"localMember":true,"uuid":"dc476cf0-74cd-4c8b-987c-c0bec27fbd26","memberVersion":"5.5.2"},{"address":"[10.244.0.27]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎  
+kubectl exec -it -n demo hazelcast-quickstart-0 -c hazelcast -- curl -u admin:'test-password' http://localhost:5701/hazelcast/rest/cluster
 ```
+{"members":[{"address":"[10.244.0.26]:5701","liteMember":false,"localMember":true,"uuid":"dc476cf0-74cd-4c8b-987c-c0bec27fbd26","memberVersion":"5.5.2"},{"address":"[10.244.0.27]:5701","liteMember":false,"localMember":false,"uuid":"9490ac0d-6d0c-437d-898c-c6c6aa81402e","memberVersion":"5.5.2"}],"connectionCount":1,"allConnectionCount":2}⏎  
 If you can access the map and retrieve values using the REST API, it means the secrets are
 working correctly.
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo hazelcast-quickstart-usergen-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-CYIpaMGLwfHmvA!h⏎           
-$ kubectl get secret -n demo hazelcast-quickstart-usergen-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-admin⏎                           
+```bash
+kubectl get secret -n demo hazelcast-quickstart-usergen-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
 ```
+CYIpaMGLwfHmvA!h⏎           
+
+```bash
+kubectl get secret -n demo hazelcast-quickstart-usergen-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
+```
+admin⏎                           
 ## Cleaning up
 
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Hazelcastopsrequest hzops-rotate-auth-generated hzops-rotate-auth-user-generated -n demo
-$ kubectl delete secret -n demo hazelcast-quickstart-usergen-auth
-$ kubectl delete secret -n demo  hazelcast-quickstart-auth 
-$ kubectl delete hz -n demo hazelcast-quickstart
-$ kubectl delete ns demo
+```bash
+kubectl delete Hazelcastopsrequest hzops-rotate-auth-generated hzops-rotate-auth-user-generated -n demo
+```
+
+```bash
+kubectl delete secret -n demo hazelcast-quickstart-usergen-auth
+```
+
+```bash
+kubectl delete secret -n demo  hazelcast-quickstart-auth 
+```
+
+```bash
+kubectl delete hz -n demo hazelcast-quickstart
+```
+
+```bash
+kubectl delete ns demo
 ```

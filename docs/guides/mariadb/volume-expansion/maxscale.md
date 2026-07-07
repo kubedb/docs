@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of MaxScale
 
@@ -46,12 +46,12 @@ Here, we are going to deploy a  `MariaDB` cluster in replication mode using a su
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path             rancher.io/local-path   Delete          WaitForFirstConsumer   false                  46h
 standard               driver.standard.io      Delete          Immediate              true                   2m27s
 standard-static        driver.standard.io      Delete          Immediate              true                   2m24s
-```
 
 We can see from the output that `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
 
@@ -98,25 +98,28 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/volume-expansion/md-replication.yaml
-mariadb.kubedb.com/md-replication created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/volume-expansion/md-replication.yaml
 ```
+mariadb.kubedb.com/md-replication created
 
 Now, wait until `md-replication` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 md-replication   11.8.5   Ready    2m30s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "50Mi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      standard       <unset>                          3m48s
 pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      standard       <unset>                          3m48s
@@ -124,8 +127,6 @@ pvc-7609183e-f9a5-4177-b260-0d24796fb04c   1Gi        RWO            Delete     
 pvc-96449ed7-305e-4857-a2b6-6eda33c99207   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-2   standard       <unset>                          3m51s
 pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-0   standard       <unset>                          3m51s
 pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   50Mi       RWO            Delete           Bound    demo/data-md-replication-mx-1   standard       <unset>                          3m51s
-
-```
 
 You can see that `MaxScale` petset has 50Mi storage, and the capacity of the `MaxScale` persistent volumes are also 50Mi.
 
@@ -165,9 +166,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/volume-expansion/maxscale-volume-expansion.yaml
-mariadbopsrequest.ops.kubedb.com/maxscale-volume-expansion created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/volume-expansion/maxscale-volume-expansion.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/maxscale-volume-expansion created
 
 #### Verify MaxScale volume expanded successfully
 
@@ -176,15 +177,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 NAME                        TYPE              STATUS       AGE
 maxscale-volume-expansion   VolumeExpansion   Successful   3m
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo maxscale-volume-expansion
+kubectl describe mariadbopsrequest -n demo maxscale-volume-expansion
+```
 Name:         maxscale-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -271,15 +273,16 @@ Events:
   Normal   Successful                          14m   KubeDB Ops-manager Operator  Successfully resumed MariaDB database: demo/md-replication
   Normal   Successful                          14m   KubeDB Ops-manager Operator  Controller has Successfully expand the volume of MaxScale: demo/md-replication
 
-```
-
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo md-replication-mx -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "100Mi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-27e4f4b2-289b-44bb-97a2-729d9420f668   1Gi        RWO            Delete           Bound    demo/data-md-replication-2      standard       <unset>                          34m
 pvc-2df9a141-5d32-4c92-b0ec-a8043975c2ae   1Gi        RWO            Delete           Bound    demo/data-md-replication-1      standard       <unset>                          34m
@@ -288,8 +291,6 @@ pvc-96449ed7-305e-4857-a2b6-6eda33c99207   100Mi      RWO            Delete     
 pvc-c1424029-4a52-4ff4-9888-14d5e7b4fb61   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-0   standard       <unset>                          34m
 pvc-d12d301c-58bd-4c59-bd5a-d9167df2b53d   100Mi      RWO            Delete           Bound    demo/data-md-replication-mx-1   standard       <unset>                          34m
 
-```
-
 The above output verifies that we have successfully expanded the volume of the MariaDB database.
 
 ## Cleaning Up
@@ -297,7 +298,13 @@ The above output verifies that we have successfully expanded the volume of the M
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo md-replication
-$ kubectl delete mariadbopsrequest -n demo maxscale-volume-expansion
-$ kubectl delete ns demo
+kubectl delete mariadb -n demo md-replication
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo maxscale-volume-expansion
+```
+
+```bash
+kubectl delete ns demo
 ```

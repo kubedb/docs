@@ -29,12 +29,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, you can deploy one using this helm chart [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
 
@@ -48,17 +50,17 @@ We need to know the labels used to select `ServiceMonitor` by `Prometheus` Opera
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        16d
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
 Now, let's view the YAML of the available Prometheus server `prometheus-kube-prometheus-prometheus` in `monitoring` namespace.
 
 ```bash
-$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -oyaml
+kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -oyaml
 ```
 ```yaml
 apiVersion: monitoring.coreos.com/v1
@@ -183,9 +185,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -201,9 +203,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 Now, let's deploy an MSSQLServer with monitoring enabled. Below is the MSSQLServer object that we are going to create.
 
@@ -278,27 +280,27 @@ Here,
 Let's create the MSSQLServer object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/monitoring/mssql-monitoring.yaml
-mssqlserverql.kubedb.com/mssql-monitoring created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/monitoring/mssql-monitoring.yaml
 ```
+mssqlserverql.kubedb.com/mssql-monitoring created
 
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get ms -n demo mssql-monitoring
+kubectl get ms -n demo mssql-monitoring
+```
 NAME               VERSION     STATUS   AGE
 mssql-monitoring   2022-cu12   Ready    108m
-```
 
 KubeDB will create a separate stats service with name `{mssqlserver cr name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=mssql-monitoring"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=mssql-monitoring"
+```
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 mssql-monitoring         ClusterIP   10.96.225.130   <none>        1433/TCP   108m
 mssql-monitoring-pods    ClusterIP   None            <none>        1433/TCP   108m
 mssql-monitoring-stats   ClusterIP   10.96.147.93    <none>        9399/TCP   108m
-```
 
 Here, `mssql-monitoring-stats` service has been created for monitoring purpose.
 
@@ -306,7 +308,7 @@ Let's describe this stats service.
 
 
 ```bash
-$ kubectl describe svc -n demo mssql-monitoring-stats
+kubectl describe svc -n demo mssql-monitoring-stats
 ```
 ```yaml
 Name:              mssql-monitoring-stats
@@ -335,15 +337,15 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 KubeDB will also create a `ServiceMonitor` CR in `demo` namespace that select the endpoints of `mssql-monitoring-stats` service. Verify that the `ServiceMonitor` CR has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                     AGE
 mssql-monitoring-stats   110m
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of MSSQLServer CR.
 
 ```bash
-$ kubectl get servicemonitor -n demo mssql-monitoring-stats -o yaml
+kubectl get servicemonitor -n demo mssql-monitoring-stats -o yaml
 ```
 
 ```yaml
@@ -396,20 +398,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus-kube-prometheus-prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS         AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1                16d
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `mssql-monitoring-stats` service as one of the targets.
 

@@ -25,9 +25,9 @@ KubeDB supports providing a way to add/update users to PgBouncer in runtime simp
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -92,17 +92,17 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/sync-users/pgbouncer-sync.yaml
-pgbouncer.kubedb.com/pgbouncer-sync created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/sync-users/pgbouncer-sync.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer-sync created
 
 Now, wait until `pgbouncer-sync` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME             TYPE                  VERSION   STATUS   AGE
 pgbouncer-sync   kubedb.com/v1         1.18.0    Ready    41s
-```
 
 ### Sync Users
 
@@ -125,54 +125,60 @@ stringData:
 Now, create the secret by applying the yaml above.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/sync-users/secret.yaml
-secret/sync-secret created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/sync-users/secret.yaml
 ```
+secret/sync-secret created
 
 Now, after `20 seconds` you can exec into the pgbouncer pod and find if the new user is there,
 
 ```bash
-$ kubectl exec -it -n demo pgbouncer-sync-0 -- /bin/sh
+kubectl exec -it -n demo pgbouncer-sync-0 -- /bin/sh
+```
 /$ cat /var/run/pgbouncer/secret/userlist
 "postgres" "md5AESOmAkfj+zX8zXLm92d6Vup6a5yASiiGScoHNDTIgBwH8="
 "john" "md5AEScbLKDSMb+KVrILhh7XEmyQ=="
 "pgbouncer" "md5AESOmAkfj+zX8zXLm92d6Vup6a5yASiiGScoHNDTIgBwH8="
 /$ exit
 exit
-```
 We can see that the user is there in PgBouncer. So, now let's create this user and try to use this user through PgBouncer.
 Now, you can connect to this pgbouncer through [psql](https://www.postgresql.org/docs/current/app-psql.html). Before that we need to port-forward to the primary service of pgbouncer.
 
 ```bash
-$ kubectl port-forward svc/pgbouncer-sync -n demo 9999:5432
+kubectl port-forward svc/pgbouncer-sync -n demo 9999:5432
+```
 Forwarding from 127.0.0.1:9999 -> 5432
 Forwarding from [::1]:9999 -> 5432
-```
 We will use the root Postgres user to create the user, so let's get the password for the root user, so that we can use it.
 ```bash
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
-qEeuU6cu5aH!O9CI⏎ 
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+qEeuU6cu5aH!O9CI⏎ 
 We can use this password now,
 ```bash
-$ export PGPASSWORD='qEeuU6cu5aH!O9CI'
-$ psql --host=localhost --port=9999 --username=postgres postgres
+export PGPASSWORD='qEeuU6cu5aH!O9CI'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=postgres postgres
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 Type "help" for help.
 
 postgres=# CREATE USER john WITH PASSWORD '12345';
 CREATE ROLE
 postgres=# exit
-```
 Now, let's use this john user.
 ```bash
-$ export PGPASSWORD='12345'
-$ psql --host=localhost --port=9999 --username=john postgres
+export PGPASSWORD='12345'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=john postgres
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 Type "help" for help.
 
 postgres=> exit
-```
 So, we can successfully verify that the user is registered in PgBouncer and also we can use it.
 
 ## Cleaning up

@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/guides/elasticsearch/autoscaler/compute/combined/yamls) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -81,22 +81,21 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/combined/yamls/es-combined.yaml 
-elasticsearch.kubedb.com/es-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/combined/yamls/es-combined.yaml 
 ```
+elasticsearch.kubedb.com/es-combined created
 
 Now, wait until `es-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME          VERSION       STATUS         AGE
 es-combined   xpack-9.2.3   Provisioning   4s
 es-combined   xpack-9.2.3   Provisioning   7s
 ....
 ....
 es-combined   xpack-9.2.3   Ready          60s
-
-```
 
 Let's check the Pod containers resources,
 
@@ -182,20 +181,23 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/combined/yamls/es-auto-scaler.yaml
-elasticsearchautoscaler.autoscaling.kubedb.com/es-combined-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/combined/yamls/es-auto-scaler.yaml
 ```
+elasticsearchautoscaler.autoscaling.kubedb.com/es-combined-as created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `elasticsearchautoscaler` resource is created successfully,
 
 ```bash
-$kubectl get elasticsearchautoscaler -n demo
+kubectl get elasticsearchautoscaler -n demo
+```
 NAME             AGE
 es-combined-as   14s
 
-$ kubectl describe elasticsearchautoscaler -n demo  es-combined-as
+```bash
+kubectl describe elasticsearchautoscaler -n demo  es-combined-as
+```
 Name:         es-combined-as
 Namespace:    demo
 Labels:       <none>
@@ -335,7 +337,6 @@ Status:
           Memory:  3Gi
     Vpa Name:      es-combined
 Events:            <none>
-```
 
 So, the `elasticsearchautoscaler` resource is created successfully.
 
@@ -344,23 +345,24 @@ you can see in the `Status.VPAs.Recommendation section`, that recommendation has
 Let's watch the `elasticsearchopsrequest` in the demo namespace to see if any `elasticsearchopsrequest` object is created. After some time you'll see that an `elasticsearchopsrequest` will be created based on the recommendation.
 
 ```bash
-$  kubectl get elasticsearchopsrequest -n demo
+ kubectl get elasticsearchopsrequest -n demo
+```
 NAME                       TYPE              STATUS       AGE
 esops-es-combined-ujb5hy   VerticalScaling   Progessing   1m
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$  kubectl get elasticsearchopsrequest -n demo
+ kubectl get elasticsearchopsrequest -n demo
+```
 NAME                       TYPE              STATUS       AGE
 esops-es-combined-ujb5hy   VerticalScaling   Successful   1m
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe elasticsearchopsrequest -n demo esops-es-combined-ujb5hy
+kubectl describe elasticsearchopsrequest -n demo esops-es-combined-ujb5hy
+```
 Name:         esops-es-combined-ujb5hy
 Namespace:    demo
 Labels:       <none>
@@ -475,7 +477,6 @@ Events:
   Normal  UpdateElasticsearchCR  4m7s   KubeDB Ops-manager Operator  successfully updated Elasticsearch CR
   Normal  ResumeDatabase         4m7s   KubeDB Ops-manager Operator  Resuming Elasticsearch demo/es-combined
   Normal  Successful             4m7s   KubeDB Ops-manager Operator  Successfully Updated Database
-```
 
 Now, we are going to verify from the Pod, and the Elasticsearch YAML whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
@@ -512,7 +513,13 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete es -n demo es-combined 
-$ kubectl delete elasticsearchautoscaler -n demo es-combined-as
-$ kubectl delete ns demo
+kubectl delete es -n demo es-combined 
+```
+
+```bash
+kubectl delete elasticsearchautoscaler -n demo es-combined-as
+```
+
+```bash
+kubectl delete ns demo
 ```

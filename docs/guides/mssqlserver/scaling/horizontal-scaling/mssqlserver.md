@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops Manager to increase/decrease th
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver/scaling/horizontal-scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -51,11 +51,11 @@ At first, we are going to deploy a Cluster server with 2 replicas. Then, we are 
 When you have installed `KubeDB`, it has created `MSSQLServerVersion` CR for all supported `MSSQLServer` versions. Let's check the supported MSSQLServer versions,
 
 ```bash
-$ kubectl get mssqlserverversion
+kubectl get mssqlserverversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                176m
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                176m
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a MSSQLServer Cluster using `MSSQLServer` `2025-cu0`.
 
@@ -74,9 +74,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -92,9 +92,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 In this section, we are going to deploy a MSSQLServer Cluster with 2 replicas. Then, in the next section we will scale up the cluster using horizontal scaling. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
@@ -149,9 +149,9 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/mssql-ag-cluster.yaml
-mssqlserver.kubedb.com/mssql-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/mssql-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssql-ag-cluster created
 
 **Wait for the cluster to be ready:**
 
@@ -159,7 +159,8 @@ mssqlserver.kubedb.com/mssql-ag-cluster created
 Now, watch `MSSQLServer` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch kubectl get ms,petset,pods -n demo
+watch kubectl get ms,petset,pods -n demo
+```
 Every 2.0s: kubectl get ms,petset,pods -n demo   
 
 NAME                                      VERSION     STATUS   AGE
@@ -172,20 +173,22 @@ NAME                     READY   STATUS    RESTARTS   AGE
 pod/mssql-ag-cluster-0   2/2     Running   0          2m11s
 pod/mssql-ag-cluster-1   2/2     Running   0          2m6s
 
-```
-
 Let's verify that the PetSet's pods have created the availability group cluster successfully,
 
 ```bash
-$ kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
-sa
-$ kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
-123KKxgOXuOkP206
+kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
 ```
+sa
+
+```bash
+kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+123KKxgOXuOkP206
 
 Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
-$ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> select name from sys.databases
 2> go
@@ -223,8 +226,6 @@ agdb2
 
 (2 rows affected)
 
-```
-
 
 So, we can see that our cluster has 2 replicas. Now, we are ready to apply the horizontal scale to this MSSQLServer cluster.
 
@@ -259,9 +260,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/msops-hscale-up.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-hscale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/msops-hscale-up.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-hscale-up created
 
 **Verify Scale-Up Succeeded:**
 
@@ -270,13 +271,12 @@ If everything goes well, `KubeDB` Ops Manager will scale up the PetSet's `Pod`. 
 First, we will wait for `MSSQLServerOpsRequest` to be successful. Run the following command to watch `MSSQLServerOpsRequest` cr,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo msops-hscale-up
+watch kubectl get mssqlserveropsrequest -n demo msops-hscale-up
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo msops-hscale-up                 
 
 NAME              TYPE                STATUS       AGE
 msops-hscale-up   HorizontalScaling   Successful   76s
-
-```
 
 You can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest`, we will see that the `MSSQLServer` cluster is scaled up.
 
@@ -420,7 +420,8 @@ Events:
 Now, we are going to verify whether the number of replicas has increased to meet up the desired state. So let's check the new pods coordinator container's logs to see if this is joined in the cluster as new replica.
 
 ```bash
-$ kubectl logs -f -n demo mssql-ag-cluster-2 -c mssql-coordinator
+kubectl logs -f -n demo mssql-ag-cluster-2 -c mssql-coordinator
+```
 raft2024/10/24 15:09:55 INFO: 3 switched to configuration voters=(1 2 3)
 raft2024/10/24 15:09:55 INFO: 3 switched to configuration voters=(1 2 3)
 raft2024/10/24 15:09:55 INFO: 3 switched to configuration voters=(1 2 3)
@@ -444,12 +445,12 @@ I1024 15:10:18.127336       1 ag.go:79] Joining  Availability Group...
 I1024 15:10:24.638144       1 on_leader_change.go:94] Successfully patched label of demo/mssql-ag-cluster-2 to secondary
 I1024 15:10:24.650611       1 health.go:50] Sequence Number updated. new sequenceNumber = 4294967322, previous sequenceNumber = 0
 I1024 15:10:24.650632       1 health.go:51] 1:1A (4294967322)
-```
 
 
 Now, connect to the database, check updated configurations of the availability group cluster. 
 ```bash
-$ kubectl exec -it -n demo mssql-ag-cluster-2 -c mssql -- bash
+kubectl exec -it -n demo mssql-ag-cluster-2 -c mssql -- bash
+```
 mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> SELECT name FROM sys.availability_groups
 2> go
@@ -476,7 +477,6 @@ agdb1
 agdb2                                                                                                                           
 
 (2 rows affected)
-```
 
 #### Scale Down
 
@@ -503,9 +503,9 @@ spec:
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/msops-hscale-down.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-hscale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/horizontal-scaling/msops-hscale-down.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-hscale-down created
 
 **Verify Scale-down Succeeded:**
 
@@ -514,17 +514,18 @@ If everything goes well, `KubeDB` Ops Manager will scale down the PetSet's `Pod`
 Now, we will wait for `MSSQLServerOpsRequest` to be successful. Run the following command to watch `MSSQLServerOpsRequest` cr,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo msops-hscale-down
+watch kubectl get mssqlserveropsrequest -n demo msops-hscale-down
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo msops-hscale-down
 
 NAME                TYPE                STATUS       AGE
 msops-hscale-down   HorizontalScaling   Successful   98s
-```
 
 You can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest`, we shall see that the `MSSQLServer` cluster is scaled down.
 
 ```bash
-$ kubectl describe  mssqlserveropsrequest -n demo msops-hscale-down
+kubectl describe  mssqlserveropsrequest -n demo msops-hscale-down
+```
 Name:         msops-hscale-down
 Namespace:    demo
 Labels:       <none>
@@ -659,12 +660,12 @@ Events:
   Normal   Starting                                                                    44s   KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssql-ag-cluster
   Normal   Successful                                                                  44s   KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssql-ag-cluster for MSSQLServerOpsRequest: msops-hscale-down
   Normal   UpdateDatabase                                                              44s   KubeDB Ops-manager Operator  Successfully updated MSSQLServer
-```
 
 Now, we are going to verify whether the number of replicas has decreased to meet up the desired state, Let's check, the mssqlserver status if it's ready then the scale-down is successful.
 
 ```bash
-$ kubectl get ms,petset,pods -n demo
+kubectl get ms,petset,pods -n demo
+```
 NAME                                      VERSION     STATUS   AGE
 mssqlserver.kubedb.com/mssql-ag-cluster   2022-cu12   Ready    39m
 
@@ -674,12 +675,12 @@ petset.apps.k8s.appscode.com/mssql-ag-cluster   38m
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/mssql-ag-cluster-0   2/2     Running   0          38m
 pod/mssql-ag-cluster-1   2/2     Running   0          38m
-```
 
 
 Now, connect to the database, check updated configurations of the availability group cluster.
 ```bash
-$ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> SELECT name FROM sys.availability_groups
 2> go
@@ -696,7 +697,6 @@ mssql-ag-cluster-0
 mssql-ag-cluster-1                                                                                                                                                                                                                                              
 
 (2 rows affected)
-```
 
 You can see above that our `MSSQLServer` cluster now has a total of 2 replicas. It verifies that we have successfully scaled down.
 

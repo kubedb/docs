@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,18 +64,21 @@ spec:
 Let's create the `Postgres` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/ha-postgres.yaml
-postgres.kubedb.com/ha-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/ha-postgres.yaml
 ```
+postgres.kubedb.com/ha-postgres created
 
 Now, wait until `ha-postgres` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pg -n demo
+kubectl get pg -n demo
+```
 NAME          VERSION   STATUS   AGE
 ha-postgres   18.3     Ready    87s
 
-$ kubectl dba describe postgres ha-postgres -n demo
+```bash
+kubectl dba describe postgres ha-postgres -n demo
+```
 Name:               ha-postgres
 Namespace:          demo
 CreationTimestamp:  Mon, 19 Aug 2024 13:38:28 +0600
@@ -206,19 +209,23 @@ Events:
   Normal  Successful  2m    KubeDB Operator  Successfully created Service
   Normal  Successful  2m    KubeDB Operator  Successfully created Postgres
   Normal  Successful  49s   KubeDB Operator  Successfully patched Postgres
-```
 
 Now, we can connect to this database through `psql` and verify that the TLS is disabled.
 
 
 ```bash
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 postgres
 
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+```bash
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 U6(h_pYrekLZ2OOd
 
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+```bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres
 Password for user postgres: 
@@ -232,9 +239,6 @@ postgres=# SELECT name, setting  FROM pg_settings  WHERE name IN ('ssl');
  ssl  | off
 (1 row)
 
-
-```
-
 We can verify from the above output that TLS is disabled for this database.
 
 ### Create Issuer/ ClusterIssuer
@@ -244,23 +248,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls postgres-ca \
+kubectl create secret tls postgres-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/postgres-ca created
 ```
+secret/postgres-ca created
 
 Now, Let's create an `Issuer` using the `postgres-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -278,15 +282,15 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/pg-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/pg-issuer created
 
 ```bash
-$ kubectl get issuer -n demo
+kubectl get issuer -n demo
+```
 NAME        READY   AGE
 pg-issuer   True    11s
-```
 Issuer is ready(true).
 
 ### Create PostgresOpsRequest
@@ -329,25 +333,26 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/add-tls.yaml
-postgresopsrequest.ops.kubedb.com/add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/add-tls.yaml
 ```
+postgresopsrequest.ops.kubedb.com/add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgops -n demo add-tls 
+kubectl get pgops -n demo add-tls 
+```
 NAME      TYPE             STATUS       AGE
 add-tls   ReconfigureTLS   Successful   5m23s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. 
 
 Now, Let's exec into a database primary pods to see if certificates are added there.
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ ls -R /tls
 tls:
@@ -364,11 +369,10 @@ ca.crt   tls.crt  tls.key
 
 tls/certs/server:
 ca.crt      server.crt  server.key
-
-```
 All the certs are added. Now lets connect with the postgres using client certs
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres -d "sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt sslcert=/tls/certs/client/client.crt sslkey=/tls/certs/client/client.key"
 psql (18.3)
@@ -376,7 +380,6 @@ SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, co
 Type "help" for help.
 
 postgres=# 
-```
 We can see our connection is now `SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)`
 
 Lets check whether ssl is on.
@@ -443,32 +446,32 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/rotate-tls.yaml
-postgresopsrequest.ops.kubedb.com/rotate-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/rotate-tls.yaml
 ```
+postgresopsrequest.ops.kubedb.com/rotate-tls created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgops -n demo 
+kubectl get pgops -n demo 
+```
 NAME         TYPE             STATUS       AGE
 rotate-tls   ReconfigureTLS   Successful   3m10s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. And we can check that the tls.crt has been updated.
 ```bash
-$  kubectl get secrets -n demo ha-postgres-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -dates
-
-notBefore=Aug 21 05:40:49 2024 GMT
-notAfter=Nov 19 05:40:49 2024 GMT
-
-$ kubectl get secrets -n demo ha-postgres-server-cert -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -dates
-
-notBefore=Aug 21 05:40:49 2024 GMT
-notAfter=Nov 19 05:40:49 2024 GMT
+ kubectl get secrets -n demo ha-postgres-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -dates
 ```
+notBefore=Aug 21 05:40:49 2024 GMT
+notAfter=Nov 19 05:40:49 2024 GMT
+
+```bash
+kubectl get secrets -n demo ha-postgres-server-cert -o jsonpath='{.data.tls\.crt}' | base64 -d | openssl x509 -noout -dates
+```
+notBefore=Aug 21 05:40:49 2024 GMT
+notAfter=Nov 19 05:40:49 2024 GMT
 
 
 As we can see from the above output, the certificate has been rotated successfully.
@@ -480,23 +483,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls postgres-new-ca \
+kubectl create secret tls postgres-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/postgres-new-ca created
 ```
+secret/postgres-new-ca created
 
 Now, Let's create a new `Issuer` using the `postgres-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -514,9 +517,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/pg-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/pg-new-issuer created
 
 ### Create PostgresOpsRequest
 
@@ -548,35 +551,38 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/change-issuer.yaml
-postgresopsrequest.ops.kubedb.com/change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/change-issuer.yaml
 ```
+postgresopsrequest.ops.kubedb.com/change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgops -n demo change-issuer
+kubectl get pgops -n demo change-issuer
+```
 NAME            TYPE             STATUS       AGE
 change-issuer   ReconfigureTLS   Successful   3m54s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded.
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl get secrets -n demo ha-postgres-client-cert -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
-
+kubectl get secrets -n demo ha-postgres-client-cert -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
+```
 subject=CN = ca-updated, O = kubedb-updated
 
-$ kubectl get secrets -n demo ha-postgres-server-cert -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
-
+```bash
+kubectl get secrets -n demo ha-postgres-server-cert -o jsonpath='{.data.ca\.crt}' | base64 -d | openssl x509 -noout -subject
+```
 subject=CN = ca-updated, O = kubedb-updated
 
 # other way to check this is
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+```bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ cat /tls/certs/server/ca.crt 
 -----BEGIN CERTIFICATE-----
@@ -599,7 +605,6 @@ sOhjQoxh3hMrHh1IDDsa5S+r1jyWSr6lkCkf5dAeIx/CVZgJUnnou68sVkNL5P3g
 5sXwCzQQnRA+lw6nQFC3mbbNWP+klOqf27eFz6ve1VmPAKyMAGazQhKMqQS8gIzA
 aLcixLL6zhgM40K56RE7b14=
 -----END CERTIFICATE-----
-```
 Now you can check any certificate decoding website.
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
@@ -642,30 +647,31 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/remove-tls.yaml
-postgresopsrequest.ops.kubedb.com/remove-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure-tls/remove-tls.yaml
 ```
+postgresopsrequest.ops.kubedb.com/remove-tls created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CRO,
 
 ```bash
-$ kubectl get pgops -n demo remove-tls 
+kubectl get pgops -n demo remove-tls 
+```
 NAME         TYPE             STATUS       AGE
 remove-tls   ReconfigureTLS   Successful   4m
-
-```
 
 Now first verify if we can connect without using certs.
 
 ```bash
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 postgres
 
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
-U6(h_pYrekLZ2OOd
+```bash
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+U6(h_pYrekLZ2OOd
 
 ```bash
 kubectl exec -it -n demo ha-postgres-0 -- bash

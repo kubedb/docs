@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,22 +73,23 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
-mongodb.kubedb.com/mg-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
 ```
+mongodb.kubedb.com/mg-replicaset created
 
 Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME            VERSION    STATUS    AGE
 mg-replicaset   4.4.26      Ready     3m46s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -99,7 +100,6 @@ $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resou
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has the default resources which is assigned by KubeDB operator.
 
@@ -150,9 +150,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset created
 
 #### Verify MongoDB Replicaset resources updated successfully 
 
@@ -161,16 +161,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
 mops-vscale-replicaset   VerticalScaling   Successful   3m56s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
+kubectl describe mongodbopsrequest -n demo mops-vscale-replicaset
+```
 Name:         mops-vscale-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -280,12 +281,11 @@ Events:
   Normal  ResumeDatabase             10s   KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful                 10s   KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 
-```
-
 Now, we are going to verify from one of the Pod yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -296,7 +296,6 @@ $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resou
     "memory": "1288490188800m"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the MongoDB replicaset database.
 

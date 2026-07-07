@@ -28,9 +28,9 @@ This guide will show you how to use `KubeDB` operator to set up a `ProxySQL` ser
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare MariaDB Backend 
 
@@ -60,22 +60,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/mariadb-galera.yaml
-mariadb.kubedb.com/mariadb-galera created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/mariadb-galera.yaml
 ```
+mariadb.kubedb.com/mariadb-galera created
 
 Let's wait for the MariaDB to be Ready. 
 
 ```bash
-$ kubectl get md -n demo 
+kubectl get md -n demo 
+```
 NAME             VERSION   STATUS   AGE
 mariadb-galera   11.6.2   Ready    4m20s
-```
 
 Let's first create a user in the backend mariadb server and a database to test the proxy traffic.
 
 ```bash
-$ kubectl exec -it -n demo mariadb-galera-0 -- bash
+kubectl exec -it -n demo mariadb-galera-0 -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@mariadb-galera-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -108,7 +109,6 @@ Query OK, 0 rows affected (0.033 sec)
 
 MariaDB [test]> exit
 Bye
-```
 
 Now we are ready to deploy and test our ProxySQL server. 
 
@@ -134,23 +134,24 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/sample-proxysql.yaml
-proxysql.kubedb.com/mariadb-proxy created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mariadb-galera/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/mariadb-proxy created
 
 Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MariaDB server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
-$ kubectl get prx -n demo
+kubectl get prx -n demo
+```
 NAME            VERSION        STATUS   AGE
 mariadb-proxy   3.0.1-debian   Ready    96s
-```
 
 Let's check the pods and associated kubernetes objects
 ```bash
-$ kubectl get petset,pods,svc,secrets -n demo
+kubectl get petset,pods,svc,secrets -n demo
+```
 NAME                                          AGE
 petset.apps.k8s.appscode.com/mariadb-proxy    108s
 
@@ -167,13 +168,13 @@ NAME                                 TYPE                       DATA   AGE
 secret/mariadb-proxy-auth            kubernetes.io/basic-auth   2      110s
 secret/mariadb-proxy-configuration   Opaque                     1      109s
 secret/mariadb-proxy-monitor         kubernetes.io/basic-auth   2      110s
-```
 
 ### Check Internal Configuration
 Lets exec into the ProxySQL server pod and get into the admin panel. 
 
 ```bash
-$ kubectl exec -it -n demo mariadb-proxy-0 -- bash
+kubectl exec -it -n demo mariadb-proxy-0 -- bash
+```
 proxysql@mariadb-proxy-0:/$  mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 48
@@ -184,7 +185,6 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 ProxySQLAdmin > 
-```
 
 Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the yaml. The KubeDB operator will do that for us. 
 
@@ -281,13 +281,13 @@ deployment.apps/ubuntu created
 Lets exec into the pod and install mariadb-galera-client. 
 
 ```bash
-$ kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+```
 root@ubuntu-bb47d8d6c-7wndq:/# apt update
 ... ... ..
 root@ubuntu-bb47d8d6c-7wndq:/# apt install mysql-client -y
 Reading package lists... Done
 ... .. ...
-```
 
 Now let's try to connect with the ProxySQL server through the `mariadb-proxy` service as the `test` user. 
 

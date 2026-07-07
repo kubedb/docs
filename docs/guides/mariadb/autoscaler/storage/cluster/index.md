@@ -37,20 +37,20 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Maria
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -85,30 +85,32 @@ spec:
 Let's create the `MariaDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5    Ready    3m46s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   topolvm-provisioner            57s
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   topolvm-provisioner            58s
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   topolvm-provisioner            57s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -150,20 +152,23 @@ Here,
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/mdas-storage.yaml
-mariadbautoscaler.autoscaling.kubedb.com/md-as-st created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/autoscaler/storage/cluster/examples/mdas-storage.yaml
 ```
+mariadbautoscaler.autoscaling.kubedb.com/md-as-st created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `mariadbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mariadbautoscaler -n demo
+kubectl get mariadbautoscaler -n demo
+```
 NAME           AGE
 md-as-st   33s
 
-$ kubectl describe mariadbautoscaler md-as-st -n demo
+```bash
+kubectl describe mariadbautoscaler md-as-st -n demo
+```
 Name:         md-as-st
 Namespace:    demo
 Labels:       <none>
@@ -185,7 +190,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
-```
 
 So, the `mariadbautoscaler` resource is created successfully.
 
@@ -194,7 +198,8 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the database pod and fill the database volume(`var/lib/mysql`) using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ df -h /var/lib/mysql
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  357M  658M  36% /var/lib/mysql
@@ -205,30 +210,30 @@ root@sample-mariadb-0:/ dd if=/dev/zero of=/var/lib/mysql/file.img bs=500M count
 root@sample-mariadb-0:/ df -h /var/lib/mysql
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  857M  158M  85% /var/lib/mysql
-```
 
 So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 20%.
 
 Let's watch the `mariadbopsrequest` in the demo namespace to see if any `mariadbopsrequest` object is created. After some time you'll see that a `mariadbopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 NAME                         TYPE              STATUS        AGE
 mops-sample-mariadb-xojkua   VolumeExpansion   Progressing   15s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 mops-sample-mariadb-xojkua   VolumeExpansion   Successful   97s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo mops-sample-mariadb-xojkua
+kubectl describe mariadbopsrequest -n demo mops-sample-mariadb-xojkua
+```
 Name:         mops-sample-mariadb-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -291,19 +296,21 @@ Events:
   Normal  Starting    103s   KubeDB Enterprise Operator  Resuming MariaDB database: demo/sample-mariadb
   Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed MariaDB database: demo/sample-mariadb
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MariaDB: demo/sample-mariadb
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   topolvm-provisioner            23m
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   topolvm-provisioner            24m
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   topolvm-provisioner            23m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the MariaDB replicaset database.
 

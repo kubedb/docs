@@ -25,12 +25,14 @@ section_menu_id: guides
 - Prometheus resources will be deployed in the `monitoring` namespace; the database will be in the `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - A running [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance is required. If you don't have one, deploy it following [these docs](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -45,17 +47,17 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` CR.
 Let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION              DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v3.11.3-distroless   1         1       True         True        10m
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in the **Before You Begin** section.
 
 Now, let's view the YAML of the available Prometheus server in `monitoring` namespace.
 
 ```bash
-$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
+kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
 ```
 
 ```yaml
@@ -117,29 +119,29 @@ Here,
 Let's create the Neo4j object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/monitoring/coreos-prom-neo4j.yaml
-neo4j.kubedb.com/coreos-prom-neo4j created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/monitoring/coreos-prom-neo4j.yaml
 ```
+neo4j.kubedb.com/coreos-prom-neo4j created
 
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get neo4j -n demo coreos-prom-neo4j
+kubectl get neo4j -n demo coreos-prom-neo4j
+```
 NAME                VERSION      STATUS   AGE
 coreos-prom-neo4j   2025.12.1    Ready    3m
-```
 
 KubeDB will create a separate stats service with the name `{Neo4j CR name}-stats` for monitoring purposes.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-neo4j"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-neo4j"
+```
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
 coreos-prom-neo4j         ClusterIP   10.43.124.250   <none>        6362/TCP,7687/TCP,7474/TCP                              3m55s
 coreos-prom-neo4j-0       ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   3m55s
 coreos-prom-neo4j-1       ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   3m55s
 coreos-prom-neo4j-2       ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   3m55s
 coreos-prom-neo4j-stats   ClusterIP   10.43.214.74    <none>        2004/TCP                                                3m55s
-```
 
 Here, `coreos-prom-neo4j-stats` service has been created for monitoring purposes. It exposes metrics on port `2004`.
 
@@ -148,15 +150,15 @@ Here, `coreos-prom-neo4j-stats` service has been created for monitoring purposes
 KubeDB will also create a `ServiceMonitor` CR in the `demo` namespace that selects the endpoints of `coreos-prom-neo4j-stats` service. Verify that the `ServiceMonitor` has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                      AGE
 coreos-prom-neo4j-stats   6m8s
-```
 
 Let's verify the `ServiceMonitor` YAML.
 
 ```bash
-$ kubectl get servicemonitor -n demo coreos-prom-neo4j-stats -o yaml
+kubectl get servicemonitor -n demo coreos-prom-neo4j-stats -o yaml
 ```
 
 ```yaml
@@ -204,20 +206,20 @@ The `ServiceMonitor` selects the `coreos-prom-neo4j-stats` service by matching i
 Let's find out the Prometheus pod for our Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l app.kubernetes.io/name=prometheus
+```
 NAME                                                     READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-kube-prometheus-prometheus-0       2/2     Running   0          15m
-```
 
 The Prometheus server is listening on port `9090`. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access the Prometheus dashboard.
 
 Run the following command in a separate terminal to forward port 9090:
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, open [http://localhost:9090](http://localhost:9090) in your browser. Navigate to **Status → Targets** and you should see the `coreos-prom-neo4j-stats` endpoint listed as an active scrape target.
 

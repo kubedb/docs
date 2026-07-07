@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Qdrant. This tutorial will sh
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/configuration](/docs/examples/qdrant/configuration) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -68,9 +68,9 @@ type: Opaque
 Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/configuration-secret.yaml
-secret/qdrant-configuration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/configuration-secret.yaml
 ```
+secret/qdrant-configuration created
 
 Verify the Secret has the configuration file:
 
@@ -92,9 +92,9 @@ type: Opaque
 Now, create the `Qdrant` CR specifying `spec.configuration.secretName` field:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/configuration/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Below is the YAML for the `Qdrant` CR we just created:
 
@@ -122,29 +122,29 @@ spec:
 Now, wait a few minutes. KubeDB operator will create the necessary PVC, PetSet, services, and secrets. Let's check the status:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME            VERSION   STATUS   AGE
 qdrant-sample   1.17.0    Ready    68s
-```
 
 Check that all pods are running:
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME              READY   STATUS    RESTARTS   AGE
 qdrant-sample-0   1/1     Running   0          61s
 qdrant-sample-1   1/1     Running   0          57s
 qdrant-sample-2   1/1     Running   0          42s
-```
 
 Now, let's verify that the custom configuration has been applied by checking the config file inside the pod:
 
 ```bash
-$ kubectl exec -n demo qdrant-sample-0 -- cat /qdrant/config/config.yaml
+kubectl exec -n demo qdrant-sample-0 -- cat /qdrant/config/config.yaml
+```
 log_level: DEBUG
 service:
   max_request_size_mb: 64
-```
 
 The output confirms the database is running with our custom `log_level` and `max_request_size_mb` values.
 

@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -54,9 +54,9 @@ shared_buffers=256MB
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
-secret/pg-configuration created
+kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 ```
+secret/pg-configuration created
 
 Verify the Secret has the configuration file.
 
@@ -80,9 +80,9 @@ metadata:
 Now, create Postgres crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
-postgres.kubedb.com/custom-postgres created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
 ```
+postgres.kubedb.com/custom-postgres created
 
 Below is the YAML for the Postgres crd we just created.
 
@@ -110,15 +110,16 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo custom-postgres-0
+kubectl get pod -n demo custom-postgres-0
+```
 NAME                READY     STATUS    RESTARTS   AGE
 custom-postgres-0   1/1       Running   0          14m
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo custom-postgres-0
+kubectl logs -f -n demo custom-postgres-0
+```
 I0705 12:05:51.697190       1 logs.go:19] FLAG: --alsologtostderr="false"
 I0705 12:05:51.717485       1 logs.go:19] FLAG: --enable-analytics="true"
 I0705 12:05:51.717543       1 logs.go:19] FLAG: --help="false"
@@ -145,14 +146,14 @@ LOG:  database system was shut down at 2018-07-05 12:07:51 UTC
 LOG:  MultiXact member wraparound protections are now enabled
 LOG:  database system is ready to accept connections
 LOG:  autovacuum launcher started
-```
 
 Once we see `LOG:  database system is ready to accept connections` in the log, the database is ready.
 
 Now, we will check if the database has started with the custom configuration we have provided. We will `exec` into the pod and use [SHOW](https://www.postgresql.org/docs/9.6/static/sql-show.html) query to check the run-time parameters.
 
-```bash
- $ kubectl exec -it -n demo custom-postgres-0 sh
+ ```bash
+ kubectl exec -it -n demo custom-postgres-0 sh
+ ```
  / #
  ## login as user "postgres". no authentication required from inside the pod because it is using trust authentication local connection.
 / # psql -U postgres
@@ -176,8 +177,6 @@ postgres=# SHOW shared_buffers;
 ## log out from database
 postgres=# \q
 / #
-
-```
 
 You can also connect to this database from pgAdmin and use following SQL query to check these configuration.
 

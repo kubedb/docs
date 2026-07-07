@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: The yaml files used in this tutorial are stored in [docs/guides/postgres/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Remote Replica
@@ -96,10 +96,10 @@ metadata:
 type: kubernetes.io/basic-auth
 ```
 
-```bash 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-singapore-auth.yaml
-secret/pg-singapore-auth created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-singapore-auth.yaml
 ```
+secret/pg-singapore-auth created
 
 ## Deploy PostgreSQL with TLS/SSL configuration
 ```yaml
@@ -148,22 +148,25 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-singapore.yaml
-postgres.kubedb.com/pg-singapore created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-singapore.yaml
 ```
+postgres.kubedb.com/pg-singapore created
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created
 
 ```bash
-$ kubectl get pg -n demo
+kubectl get pg -n demo
+```
 NAME              VERSION   STATUS   AGE
 pg-singapore      18.3      Ready    22h
-```
 
 # Exposing to outside world
 For now we will expose our postgresql with ingress with to outside world
 ```bash
-$ helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
-$ helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx  \
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+```
+
+```bash
+helm upgrade -i ingress-nginx ingress-nginx/ingress-nginx  \
                                       --namespace demo --create-namespace \
                                       --set tcp.5432="demo/pg-singapore:5432"
 ```
@@ -191,19 +194,22 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingres.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingres.yaml
+```
 ingress.networking.k8s.io/pg-singapore created
-$ kubectl get ingress -n demo
+
+```bash
+kubectl get ingress -n demo
+```
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
 pg-singapore      nginx   pg-singapore.something.org      172.104.37.147   80      22h
-```
 
 # Prepare for Remote Replica
 We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and necessary secrets to connect with source server
 ```bash
-$ kubectl dba remote-config postgres -n demo pg-singapore -uremote -ppass -d 172.104.37.147 -y
-home/mehedi/go/src/kubedb.dev/yamls/postgres/pg-singapore-remote-config.yaml
+kubectl dba remote-config postgres -n demo pg-singapore -uremote -ppass -d 172.104.37.147 -y
 ```
+home/mehedi/go/src/kubedb.dev/yamls/postgres/pg-singapore-remote-config.yaml
 
 #  Create  Remote Replica
 We have prepared another cluster in london region for replicating across cluster. follow the installation instruction [above](/docs/README.md).
@@ -212,11 +218,11 @@ We have prepared another cluster in london region for replicating across cluster
 
 We will apply the generated config from kubeDB plugin to create the source refs and secrets for it
 ```bash
-$ kubectl apply -f  /home/mehedi/go/src/kubedb.dev/yamls/pg-singapore-remote-config.yaml
+kubectl apply -f  /home/mehedi/go/src/kubedb.dev/yamls/pg-singapore-remote-config.yaml
+```
 secret/pg-singapore-remote-replica-auth created
 secret/pg-singapore-client-cert-remote created
 appbinding.appcatalog.appscode.com/pg-singapore created
-```
 
 ### Create remote replica auth
 We will need to use the same auth secrets for remote replicas as well since operations like clone also replicated the auth-secrets from source server
@@ -272,18 +278,18 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-london.yaml
-postgres.kubedb.com/pg-london created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-london.yaml
 ```
+postgres.kubedb.com/pg-london created
 
 Now we will be able to see kubedb will provision a Remote Replica from the source postgres instance. Lets checkout out the petSet , pvc , pv and services associated with it
 .
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `PostgreSQL` object:
 ```bash
-$ kubectl get pg -n demo 
+kubectl get pg -n demo 
+```
 NAME           VERSION   STATUS   AGE
 pg-london      18.3      Ready    7m17s
-```
 
 ##  Validate Remote Replica
 
@@ -292,7 +298,8 @@ At this point we want to validate the replication, we can see `pg-london-0` is c
 ### Validate from source
 
 ```bash
-$ kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "select * from pg_stat_replication";
+kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "select * from pg_stat_replication";
+```
   pid   | usesysid | usename  | application_name | client_addr | client_hostname | client_port |         backend_start         | backend_xmin |   state   | sent_lsn  | write_lsn | flush_lsn | replay_lsn |    write_lag    |    flush_lag    |   replay_lag    | sync_priority | sync_state |          reply_time           
 --------+----------+----------+------------------+-------------+-----------------+-------------+-------------------------------+--------------+-----------+-----------+-----------+-----------+------------+-----------------+-----------------+-----------------+---------------+------------+-------------------------------
     121 |       10 | postgres | pg-singapore-1   | 10.2.1.13   |                 |       37990 | 2023-10-12 06:53:50.402925+00 |              | streaming | 0/89758A8 | 0/89758A8 | 0/89758A8 | 0/89758A8  | 00:00:00.000745 | 00:00:00.00484  | 00:00:00.004848 |             1 | quorum     | 2023-10-13 05:43:53.817575+00
@@ -302,7 +309,9 @@ $ kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "select * from 
 
 ### Validate from remote replica
 
-$ kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from pg_stat_wal_receiver";
+```bash
+kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from pg_stat_wal_receiver";
+```
  pid  |  status   | receive_start_lsn | receive_start_tli | written_lsn | flushed_lsn | received_tli |      last_msg_send_time       |     last_msg_receipt_time     | latest_end_lsn |        latest_end_time        | slot_name |  sender_host   | sender_port |                                                                                                                                                                                                               conninfo                                                                                                                                                                                                               
 ------+-----------+-------------------+-------------------+-------------+-------------+--------------+-------------------------------+-------------------------------+----------------+-------------------------------+-----------+----------------+-------------+--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
  4813 | streaming | 0/8000000         |                 1 | 0/8DC01E0   | 0/8DC01E0   |            1 | 2023-10-13 05:54:33.812544+00 | 2023-10-13 05:54:33.893159+00 | 0/8DC01E0      | 2023-10-13 05:54:33.812544+pplication_name=walreceiver sslmode=verify-full sslcompression=0 sslcert=/tls/certs/remote/client.crt sslkey=/tls/certs/remote/client.key sslrootcert=/tls/certs/remote/ca.crt sslsni=1 ssl_min_protocol_version=TLSv1.2 gssencmode=prefer krbsrvname=postgres target_session_attrs=any
@@ -310,10 +319,14 @@ $ kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from pg_
 ## Validation data replication
 lets create a a database and insert some data
 
-$ kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "create database hi";
+```bash
+kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "create database hi";
+```
 CREATE DATABASE
 
-$ kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "create table tab_1 ( a int); insert into tab_1 values(generate_series(1,5))";
+```bash
+kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "create table tab_1 ( a int); insert into tab_1 values(generate_series(1,5))";
+```
 CREATE TABLE
 INSERT 0 5
 
@@ -330,7 +343,9 @@ kubectl exec -it -n demo pg-singapore-0 -c postgres -- psql -c "select * from ta
 
 ### Validate data on remote replica
 
-$ kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from tab_1";
+```bash
+kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from tab_1";
+```
  a 
 ---
  1
@@ -339,8 +354,6 @@ $ kubectl exec -it -n demo pg-london-0 -c postgres -- psql -c "select * from tab
  4
  5
 (5 rows)
-
-```
 
 ## Promote Remote Replica
 

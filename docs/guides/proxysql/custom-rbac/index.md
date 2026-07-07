@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/custom-rbac/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/custom-rbac/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,14 +46,14 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo prx-custom-sa
-serviceaccount/prx-custom-sa created
+kubectl create serviceaccount -n demo prx-custom-sa
 ```
+serviceaccount/prx-custom-sa created
 
 It should create a service account.
 
 ```bash
-$ kubectl get serviceaccount -n demo prx-custom-sa -oyaml
+kubectl get serviceaccount -n demo prx-custom-sa -oyaml
 ```
 ```yaml
 apiVersion: v1
@@ -72,9 +72,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the ProxySQL instance named `proxy-server`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/custom-rbac/yamls/prx-custom-role.yaml
-role.rbac.authorization.k8s.io/prx-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/custom-rbac/yamls/prx-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/prx-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -100,15 +100,14 @@ This permission is required for ProxySQL pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding prx-custom-rb --role=prx-custom-role --serviceaccount=demo:prx-custom-sa --namespace=demo
-rolebinding.rbac.authorization.k8s.io/prx-custom-rb created
-
+kubectl create rolebinding prx-custom-rb --role=prx-custom-role --serviceaccount=demo:prx-custom-sa --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/prx-custom-rb created
 
 It should bind `prx-custom-role` and `prx-custom-sa` successfully.
 
 ```bash
-$ kubectl get rolebinding -n demo prx-custom-rb -o yaml
+kubectl get rolebinding -n demo prx-custom-rb -o yaml
 ```
 ```yaml
 apiVersion: rbac.authorization.k8s.io/v1
@@ -133,9 +132,9 @@ subjects:
 Now, create a ProxySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `prx-custom-sa`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/custom-rbac/yamls/my-custom-db.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/custom-rbac/yamls/my-custom-db.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 Below is the YAML for the ProxySQL crd we just created.
 
@@ -165,19 +164,18 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo proxy-server-0
+kubectl get pod -n demo proxy-server-0
+```
 NAME            READY   STATUS    RESTARTS   AGE
 proxy-server-0   1/1     Running   0          2m44s
-```
 
 Check the pod's log to see if the proxy server is ready
 
 ```bash
-$ kubectl logs -f -n demo proxy-server-0
+kubectl logs -f -n demo proxy-server-0
+```
 ...
 2022-12-07 04:42:04 [INFO] Cluster: detected a new checksum for mysql_users from peer proxy-server-0.proxy-server-pods.demo:6032, version 2, epoch 1670388124, checksum 0xE6BB9970689336DB . Not syncing yet ...
 2022-12-07 04:42:04 [INFO] Cluster: checksum for mysql_users from peer proxy-server-0.proxy-server-pods.demo:6032 matches with local checksum 0xE6BB9970689336DB , we won't sync.
-
-```
 
 Once we see the local checksum matched in the log, the proxysql server is ready.

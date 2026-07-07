@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for MySQL. This tutorial will sho
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-  
-  $ kubectl get ns demo
+
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/mysql/configuration/config-file/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -66,9 +68,9 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 Now, create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo my-configuration --from-file=./my-config.cnf
-configmap/my-configuration created
+kubectl create secret generic -n demo my-configuration --from-file=./my-config.cnf
 ```
+configmap/my-configuration created
 
 Verify the secret has the configuration file.
 
@@ -91,9 +93,9 @@ type: Opaque
 Now, create MySQL crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/mysql-custom.yaml
-mysql.kubedb.com/custom-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/mysql-custom.yaml
 ```
+mysql.kubedb.com/custom-mysql created
 
 Below is the YAML for the MySQL crd we just created.
 
@@ -121,15 +123,16 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME             READY     STATUS    RESTARTS   AGE
 custom-mysql-0   1/1       Running   0          44s
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo custom-mysql-0
+kubectl logs -f -n demo custom-mysql-0
+```
 2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.4.8-1debian10 started.
 2022-06-28 13:22:10+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
 ....
@@ -153,7 +156,6 @@ $ kubectl logs -f -n demo custom-mysql-0
 2022-06-28T13:22:26.076407Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.8'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
 
 ....
-```
 
 Once we see `[Note] /usr/sbin/mysqld: ready for connections.` in the log, the database is ready.
 
@@ -161,19 +163,22 @@ Now, we will check if the database has started with the custom configuration we 
 
 First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
 
-```bash
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/phpmyadmin.yaml
+ ```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/config-file/yamls/phpmyadmin.yaml
+ ```
 deployment.extensions/myadmin created
 service/myadmin created
-```
 
 Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
 ```bash
-$ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+```
 30942
 
-$ kubectl get node -o json | jq '.items[].status.addresses[].address'
+```bash
+kubectl get node -o json | jq '.items[].status.addresses[].address'
+```
 "172.18.0.3"
 "kind-control-plane"
 "172.18.0.4"
@@ -183,21 +188,24 @@ $ kubectl get node -o json | jq '.items[].status.addresses[].address'
 
 # expected url will be:
 url: http://172.18.0.4:30942
-```
 
 Now, let's connect to the database from the phpMyAdmin dashboard using the database pod IP and MySQL user password.
 
 ```bash
-$ kubectl get pods custom-mysql-0 -n demo -o yaml | grep IP
+kubectl get pods custom-mysql-0 -n demo -o yaml | grep IP
+```
   hostIP: 10.0.2.15
   podIP: 172.17.0.6
 
-$ kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.password}' | base64 -d
-MLO5_fPVKcqPiEu9
+```bash
+kubectl get secrets -n demo custom-mysql-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+MLO5_fPVKcqPiEu9
 
 Once, you have connected to the database with phpMyAdmin go to **Variables** tab and search for `max_connections` and `read_buffer_size`. Here are some screenshot showing those configured variables.
 ![max_connections](/docs/images/mysql/max_connection.png)

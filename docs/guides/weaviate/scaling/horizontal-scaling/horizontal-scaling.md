@@ -29,9 +29,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to scale the number
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/scaling/horizontal-scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/scaling/horizontal-scaling) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,16 +62,18 @@ spec:
 Let's create the `Weaviate` CR and wait for it to become `Ready`:
 
 ```bash
-$ kubectl get weaviate -n demo
+kubectl get weaviate -n demo
+```
 NAME              TYPE                  VERSION   STATUS   AGE
 weaviate-sample   kubedb.com/v1alpha2   1.33.1    Ready    5m
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```
 NAME                READY   STATUS    RESTARTS   AGE
 weaviate-sample-0   1/1     Running   0          5m
 weaviate-sample-1   1/1     Running   0          5m
 weaviate-sample-2   1/1     Running   0          5m
-```
 
 ## Scale Up
 
@@ -97,18 +99,21 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/horizontal-scaling/scale-up.yaml
-weaviateopsrequest.ops.kubedb.com/weaviate-scale-up created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/horizontal-scaling/scale-up.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/weaviate-scale-up created
 
 The Ops Manager adds the new nodes, waits for them to join and sync the schema, and rebalances the shard replicas.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo weaviate-scale-up
+kubectl get weaviateopsrequest -n demo weaviate-scale-up
+```
 NAME                TYPE                STATUS       AGE
 weaviate-scale-up   HorizontalScaling   Successful   3m
 
-$ kubectl get weaviateopsrequest -n demo weaviate-scale-up -o yaml
+```bash
+kubectl get weaviateopsrequest -n demo weaviate-scale-up -o yaml
+```
 ...
 status:
   conditions:
@@ -144,12 +149,12 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 Verify the new node count:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```
 NAME                READY   STATUS    RESTARTS   AGE
 weaviate-sample-0   1/1     Running   0          3m51s
 weaviate-sample-1   1/1     Running   0          3m11s
@@ -157,9 +162,10 @@ weaviate-sample-2   1/1     Running   0          2m31s
 weaviate-sample-3   1/1     Running   0          56s
 weaviate-sample-4   1/1     Running   0          44s
 
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.replicas}'
-5
+```bash
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.replicas}'
 ```
+5
 
 ## Scale Down
 
@@ -182,18 +188,21 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/horizontal-scaling/scale-down.yaml
-weaviateopsrequest.ops.kubedb.com/weaviate-scale-down created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/horizontal-scaling/scale-down.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/weaviate-scale-down created
 
 The Ops Manager moves the shards off the nodes that are going away before removing them.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo weaviate-scale-down
+kubectl get weaviateopsrequest -n demo weaviate-scale-down
+```
 NAME                  TYPE                STATUS       AGE
 weaviate-scale-down   HorizontalScaling   Successful   3m
 
-$ kubectl get weaviateopsrequest -n demo weaviate-scale-down -o yaml
+```bash
+kubectl get weaviateopsrequest -n demo weaviate-scale-down -o yaml
+```
 ...
 status:
   conditions:
@@ -233,19 +242,20 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 Verify the node count again:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```
 NAME                READY   STATUS    RESTARTS   AGE
 weaviate-sample-0   1/1     Running   0          7m27s
 weaviate-sample-1   1/1     Running   0          6m47s
 
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.replicas}'
-2
+```bash
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.replicas}'
 ```
+2
 
 The cluster has been scaled horizontally — first up to `5` nodes, then back down to `2`.
 
@@ -260,7 +270,13 @@ The cluster has been scaled horizontally — first up to `5` nodes, then back do
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo weaviate-scale-up weaviate-scale-down
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo weaviate-scale-up weaviate-scale-down
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

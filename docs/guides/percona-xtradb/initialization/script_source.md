@@ -25,13 +25,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/percona-xtradb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/percona-xtradb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ At first, we will create a ConfigMap from an `init.sql` file. Then, we will prov
 Let's create a ConfigMap with the initialization script:
 
 ```bash
-$ kubectl create configmap -n demo pxc-init-script \
+kubectl create configmap -n demo pxc-init-script \
 --from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/percona-xtradb-init-scripts/master/init.sql)"
-configmap/pxc-init-script created
 ```
+configmap/pxc-init-script created
 
 ## Create PerconaXtraDB with Script Source
 
@@ -88,22 +90,23 @@ VolumeSource provided in `init.script` will be mounted in the Pod and will be ex
 Now, let's create the PerconaXtraDB CRD using the YAML shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/initialization/yamls/script-pxc.yaml
-perconaxtradb.kubedb.com/script-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/initialization/yamls/script-pxc.yaml
 ```
+perconaxtradb.kubedb.com/script-pxc created
 
 Now, wait until PerconaXtraDB goes in `Ready` state. Verify that the cluster is in `Ready` state using the following command:
 
 ```bash
-$ kubectl get perconaxtradb -n demo script-pxc
+kubectl get perconaxtradb -n demo script-pxc
+```
 NAME         VERSION   STATUS   AGE
 script-pxc   8.4.3     Ready    3m
-```
 
 You can use `kubectl dba describe` command to view which resources have been created by KubeDB for this PerconaXtraDB object:
 
 ```bash
-$ kubectl dba describe perconaxtradb -n demo script-pxc
+kubectl dba describe perconaxtradb -n demo script-pxc
+```
 Name:         script-pxc
 Namespace:    demo
 Labels:       <none>
@@ -260,7 +263,6 @@ Events:
   Normal  Successful    17m   KubeDB Operator  Successfully created PerconaXtraDB
   Normal  Successful    17m   KubeDB Operator  Successfully created appbinding
   Normal  PhaseChanged  15m   KubeDB Operator  Phase changed from Provisioning to Ready.
-```
 
 ## Verify Initialization
 
@@ -276,21 +278,22 @@ Now let's connect to our PerconaXtraDB cluster to verify that the database has b
 - Username: Run the following command to get the *username*:
 
   ```bash
-  $ kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.username}' | base64 -d
-  root
+  kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  root
 
 - Password: Run the following command to get the *password*:
 
   ```bash
-  $ kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.password}' | base64 -d
-    nsTqGdVwR!~DA(t
+  kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+    nsTqGdVwR!~DA(t
 
 Now, connect to the PerconaXtraDB cluster and run the following query to confirm initialization:
 
 ```bash
-$ kubectl exec -it -n demo script-pxc-0 -- mysql -u root --password='nsTqGdVwR!~DA(ta' -e "SHOW TABLES FROM mysql;"
+kubectl exec -it -n demo script-pxc-0 -- mysql -u root --password='nsTqGdVwR!~DA(ta' -e "SHOW TABLES FROM mysql;"
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +------------------------------------------------------+
@@ -340,8 +343,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | wsrep_streaming_log                                  |
 +------------------------------------------------------+
 
-```
-
 We can see the TABLE `kubedb_table` in `mysql` database which was created through initialization.
 
 ## Cleaning up
@@ -349,11 +350,19 @@ We can see the TABLE `kubedb_table` in `mysql` database which was created throug
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pxc/script-pxc -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pxc/script-pxc
+kubectl patch -n demo pxc/script-pxc -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo configmap/pxc-init-script
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo pxc/script-pxc
+```
+
+```bash
+kubectl delete -n demo configmap/pxc-init-script
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

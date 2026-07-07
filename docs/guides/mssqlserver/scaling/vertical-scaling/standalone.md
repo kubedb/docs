@@ -33,9 +33,9 @@ This guide will show you how to use `kubeDB-Ops-Manager` to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver/scaling/vertical-scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -48,11 +48,11 @@ Here, we are going to deploy a `MSSQLServer` instance using a supported version 
 When you have installed `KubeDB`, it has created `MSSQLServerVersion` CR for all supported `MSSQLServer` versions. Let's check the supported MSSQLServer versions,
 
 ```bash
-$ kubectl get mssqlserverversion
+kubectl get mssqlserverversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                3d21h
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                3d21h
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a mssqlserver using non-deprecated `MSSQLServer` version `2025-cu0`.
 
@@ -70,9 +70,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -129,9 +129,9 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mssql-standalone.yaml
-mssqlserver.kubedb.com/mssql-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mssql-standalone.yaml
 ```
+mssqlserver.kubedb.com/mssql-standalone created
 
 
 **Check mssqlserver Ready to Scale:**
@@ -144,7 +144,8 @@ Now, watch `MSSQLServer` is going to be in `Running` state and also watch `PetSe
 
 
 ```bash
-$ watch kubectl get ms,petset,pods -n demo
+watch kubectl get ms,petset,pods -n demo
+```
 Every 2.0s: kubectl get ms,petset,pods -n demo                    
 
 NAME                                      VERSION     STATUS   AGE
@@ -155,12 +156,12 @@ petset.apps.k8s.appscode.com/mssql-standalone   3m33s
 
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/mssql-standalone-0   1/1     Running   0          3m33s
-```
 
 Let's check the `mssql-standalone-0` pod's `mssql` container's resources, `mssql` container is the first container So it's index will be 0.
 
 ```bash
-$ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "4Gi"
@@ -170,7 +171,6 @@ $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].r
     "memory": "4Gi"
   }
 }
-```
 
 Now, We are ready to apply a vertical scale on this mssqlserver database.
 
@@ -211,9 +211,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mops-vscale-standalone.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-vscale-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mops-vscale-standalone.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/mops-vscale-standalone created
 
 **Verify MSSQLServer resources updated successfully:**
 
@@ -222,17 +222,18 @@ If everything goes well, `KubeDB-Ops-Manager` will update the resources of the P
 First, we will wait for `MSSQLServerOpsRequest` to be successful. Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo mops-vscale-standalone
+watch kubectl get mssqlserveropsrequest -n demo mops-vscale-standalone
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo mops-vscale-standalone
 
 NAME                     TYPE              STATUS       AGE
 mops-vscale-standalone   VerticalScaling   Successful   3m22s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest`, we will see that the mssqlserver resources are updated.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo mops-vscale-standalone
+kubectl describe mssqlserveropsrequest -n demo mops-vscale-standalone
+```
 Name:         mops-vscale-standalone
 Namespace:    demo
 Labels:       <none>
@@ -321,12 +322,12 @@ Events:
   Normal   RestartPods                                                           2m43s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                              2m43s  KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssql-standalone
   Normal   Successful                                                            2m43s  KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssql-standalone for MSSQLServerOpsRequest: mops-vscale-standalone
-```
 
 Now, we are going to verify whether the resources of the mssqlserver instance has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "5Gi"
@@ -336,7 +337,6 @@ $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].r
     "memory": "5Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the MSSQLServer.
 

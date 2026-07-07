@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -55,9 +55,9 @@ Here, `maxclients` is set to `500`, whereas the default value is `10000`.
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo rd-custom-config --from-file=./valkey.conf
-secret/rd-custom-config created
+kubectl create secret generic -n demo rd-custom-config --from-file=./valkey.conf
 ```
+secret/rd-custom-config created
 
 In this section, we are going to create a Redis object specifying `spec.configuration.secretName` field to apply this custom configuration. Below is the YAML of the `Redis` CR that we are going to create,
 
@@ -84,36 +84,38 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/sample-redis-config.yaml
-redis.kubedb.com/sample-redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/sample-redis-config.yaml
 ```
+redis.kubedb.com/sample-redis created
 
 Now, wait until `sample-redis` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME            VERSION           STATUS    AGE
 sample-redis    valkey-8.1.1      Ready     23s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a Valkey instance,
 ```bash
-$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.username}' | base64 -d
+```
 default
 
-$ kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.password}' | base64 -d
-0PI1tYTyzp;YaXOh
+```bash
+kubectl get secrets -n demo sample-redis-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+0PI1tYTyzp;YaXOh
 
 Now let's connect to a Valkey instance and run a Valkey internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+```
 maxclients
 500
-```
 
 As we can see from the configuration of running Valkey, the value of `maxclients` has been set to `500`.
 
@@ -131,9 +133,9 @@ maxclients 2000
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./valkey.conf
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./valkey.conf
 ```
+secret/new-custom-config created
 
 #### Create RedisOpsRequest
 
@@ -164,9 +166,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-reconfigure.yaml
-redisopsrequest.ops.kubedb.com/rdops-reconfigure created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-reconfigure.yaml
 ```
+redisopsrequest.ops.kubedb.com/rdops-reconfigure created
 
 #### Verify the new configuration is working
 
@@ -175,16 +177,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 rdops-reconfigure             Reconfigure   Successful   1m
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe redisopsrequest -n demo rdops-reconfigure
+kubectl describe redisopsrequest -n demo rdops-reconfigure
+```
 Name:         rdops-reconfigure
 Namespace:    demo
 Labels:       <none>
@@ -246,16 +249,14 @@ Events:
   Normal  ResumeDatabase  88s   KubeDB Ops-manager Operator  Resuming Redis demo/sample-redis
   Normal  ResumeDatabase  88s   KubeDB Ops-manager Operator  Successfully resumed Redis demo/sample-redis
   Normal  Successful      88s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
-```
 
 Now let's connect to a Valkey instance and run a Valkey internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+```
 maxclients
 2000
-
-```
 
 As we can see from the configuration of running Valkey, the value of `maxclients` has been changed from `500` to `2000`. So the reconfiguration of the database is successful.
 
@@ -293,9 +294,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-apply-reconfig.yaml
-redisopsrequest.ops.kubedb.com/rdops-apply-reconfig created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure/rdops-apply-reconfig.yaml
 ```
+redisopsrequest.ops.kubedb.com/rdops-apply-reconfig created
 
 #### Verify the new configuration is working
 
@@ -304,16 +305,17 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
 rdops-apply-reconfig              Reconfigure   Successful   38s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe redisopsrequest -n demo rdops-apply-reconfig
+kubectl describe redisopsrequest -n demo rdops-apply-reconfig
+```
 Name:         rdops-apply-reconfig
 Namespace:    demo
 Labels:       <none>
@@ -374,15 +376,14 @@ Events:
   Normal  ResumeDatabase  14s   KubeDB Ops-manager Operator  Resuming Redis demo/sample-redis
   Normal  ResumeDatabase  14s   KubeDB Ops-manager Operator  Successfully resumed Redis demo/sample-redis
   Normal  Successful      14s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
-```
 
 Now let's connect to a Valkey instance and run a Valkey internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+kubectl exec -n demo  sample-redis-0  -- valkey-cli config get maxclients
+```
 maxclients
 3000
-```
 
 As we can see from the configuration of running Valkey, the value of `maxclients` has been changed from `2000` to `3000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

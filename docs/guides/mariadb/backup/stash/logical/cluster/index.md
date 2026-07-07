@@ -35,9 +35,9 @@ You have to be familiar with following custom resources:
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created it yet.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare MariaDB
 
@@ -67,15 +67,16 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-``` bash
-$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+```bash
+kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 This MariaDB object will create the necessary PetSet, Secret, Service etc for the database. You can easily view all the resources created by MariaDB object using [ketall](https://github.com/corneliusweig/ketall) `kubectl` plugin as below,
 
 ```bash
-$ kubectl get-all -n demo -l app.kubernetes.io/instance=sample-mariadb
+kubectl get-all -n demo -l app.kubernetes.io/instance=sample-mariadb
+```
 NAME                                                  NAMESPACE  AGE
 endpoints/sample-mariadb                              demo       28m  
 endpoints/sample-mariadb-pods                         demo       28m  
@@ -91,22 +92,22 @@ petset.apps/sample-mariadb                       demo       28m
 poddisruptionbudget.policy/sample-mariadb             demo       28m  
 rolebinding.rbac.authorization.k8s.io/sample-mariadb  demo       28m  
 role.rbac.authorization.k8s.io/sample-mariadb         demo       28m
-```
 
 Now, wait for 3 database pods to go into `Running` state,
 
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=sample-mariadb
+kubectl get pod -n demo -l app.kubernetes.io/instance=sample-mariadb
+```
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   1/1     Running   0          2m7s
 sample-mariadb-1   1/1     Running   0          101s
 sample-mariadb-2   1/1     Running   0          81s
-```
 
 Once the database pod is in `Running` state, verify that all 3 nodes joined the cluster.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
@@ -126,7 +127,6 @@ MariaDB [(none)]> show status like 'wsrep_cluster_size';
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 From the above log, we can see that 3 nodes are ready to accept connections.
 
@@ -137,7 +137,8 @@ Now, we are going to exec into the database pod and create some sample data. The
 Here, we are going to use the root user (`MYSQL_ROOT_USERNAME`) credential `MYSQL_ROOT_PASSWORD` to insert the sample data. Now, let's exec into one of the pods and insert some sample data,
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
@@ -196,7 +197,6 @@ MariaDB [(none)]>  select * from company.employees;
 
 MariaDB [(none)]> exit
 Bye
-```
 
 We have successfully deployed a MariaDB database and inserted some sample data into it. In the subsequent sections, we are going to backup these data using Stash.
 
@@ -209,10 +209,10 @@ In this section, we are going to prepare the necessary resources (i.e. database 
 When you install the Stash, it automatically installs all the official database addons. Verify that it has installed the MariaDB addons using the following command.
 
 ```bash
-$ kubectl get tasks.stash.appscode.com | grep mariadb
+kubectl get tasks.stash.appscode.com | grep mariadb
+```
 mariadb-backup-11.8.5    35s
 mariadb-restore-11.8.5   35s
-```
 
 ### Ensure AppBinding
 
@@ -223,10 +223,10 @@ Stash expect your database Secret to have `username` and `password` keys. If you
 You don't need to worry about appbindings if you are using KubeDB. It creates an appbinding containing the necessary informations when you deploy the database. Let's ensure the appbinding create by `KubeDB` operator.
 
 ```bash
-$ kubectl get appbinding -n demo 
+kubectl get appbinding -n demo 
+```
 NAME             TYPE                 VERSION   AGE
 sample-mariadb   kubedb.com/mariadb   11.8.5      62m
-```
 
 We have a appbinding named same as database name `sample-mariadb`. We will use this later for connecting into this database.
 
@@ -239,15 +239,24 @@ We are going to store our backed up data into a GCS bucket. So, we need to creat
 At first, let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create Repository:**
 
@@ -270,9 +279,9 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/repository.yaml
-repository.stash.appscode.com/gcs-repo created
+kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/repository.yaml
 ```
+repository.stash.appscode.com/gcs-repo created
 
 Now, we are ready to backup our database into our desired backend.
 
@@ -313,19 +322,19 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/backupconfiguration.yaml
-backupconfiguration.stash.appscode.com/sample-mariadb-backup created
+kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/backupconfiguration.yaml
 ```
+backupconfiguration.stash.appscode.com/sample-mariadb-backup created
 
 ### Verify Backup Setup Successful
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
 sample-mariadb-backup   mariadb-backup-11.8.5   */5 * * * *            Ready      11s
-```
 
 #### Verify CronJob
 
@@ -334,10 +343,10 @@ Stash will create a CronJob with the schedule specified in `spec.schedule` field
 Verify that the CronJob has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                 SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 stash-backup-sample-mariadb-backup   */5 * * * *   False     0        15s             17s
-```
 
 #### Wait for BackupSession
 
@@ -346,12 +355,12 @@ The `sample-mariadb-backup` CronJob will trigger a backup on each scheduled slot
 Now, wait for a schedule to appear. Run the following command to watch for a `BackupSession` object,
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                               INVOKER-TYPE          INVOKER-NAME            PHASE     AGE
 sample-mariadb-backup-1606994706   BackupConfiguration   sample-mariadb-backup   Running   24s
 sample-mariadb-backup-1606994706   BackupConfiguration   sample-mariadb-backup   Running   75s
 sample-mariadb-backup-1606994706   BackupConfiguration   sample-mariadb-backup   Succeeded   103s
-```
 
 Here, the phase `Succeeded` means that the backup process has been completed successfully.
 
@@ -360,10 +369,10 @@ Here, the phase `Succeeded` means that the backup process has been completed suc
 Now, we are going to verify whether the backed up data is present in the backend or not. Once a backup is completed, Stash will update the respective `Repository` object to reflect the backup completion. Check that the repository `gcs-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-repo
+kubectl get repository -n demo gcs-repo
+```
 NAME       INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo   true        1.327 MiB   1                60s                      8m
-```
 
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/mariadb/sample-mariadb` directory as specified by `.spec.backend.gcs.prefix` field of the `Repository` object.
 <figure align="center">
@@ -388,38 +397,39 @@ At first, let's stop taking any further backup of the database so that no backup
 
 Let's pause the `sample-mariadb-backup` BackupConfiguration,
 ```bash
-$ kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": true}}'
-backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
+kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": true}}'
 ```
+backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
 Or you can use Stash `kubectl` plugin to  pause the BackupConfiguration,
 ```bash
-$ kubectl stash pause backup -n demo --backupconfig=sample-mariadb-backup
+kubectl stash pause backup -n demo --backupconfig=sample-mariadb-backup
+```
 BackupConfiguration demo/sample-mariadb-backup has been paused successfully.
-````
 Verify that the `BackupConfiguration` has been paused,
 
 ```bash
-$ kubectl get backupconfiguration -n demo sample-mariadb-backup
+kubectl get backupconfiguration -n demo sample-mariadb-backup
+```
 NAME                   TASK                    SCHEDULE      PAUSED   PHASE   AGE
 sample-mariadb-backup  mariadb-backup-11.8.5   */5 * * * *   true     Ready   26m
-```
 
 Notice the `PAUSED` column. Value `true` for this field means that the `BackupConfiguration` has been paused.
 
 Stash will also suspend the respective CronJob.
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                 SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 stash-backup-sample-mariadb-backup   */5 * * * *   True      0        2m59s           20m
-```
 
 #### Simulate Disaster
 
 Now, let's simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `company` database we had created earlier.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
@@ -458,7 +468,6 @@ MariaDB [(none)]> show databases;
 
 MariaDB [(none)]> exit
 Bye
-```
 
 #### Create RestoreSession
 
@@ -493,18 +502,18 @@ Here,
 Let's create the `RestoreSession` object object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/restoresession.yaml
-restoresession.stash.appscode.com/sample-mariadb-restore created
+kubectl apply -f https://github.com/logical/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/logical/cluster/examples/restoresession.yaml
 ```
+restoresession.stash.appscode.com/sample-mariadb-restore created
 
 Once, you have created the `RestoreSession` object, Stash will create a restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ kubectl get restoresession -n demo -w
+kubectl get restoresession -n demo -w
+```
 NAME                     REPOSITORY   PHASE     AGE
 sample-mariadb-restore   gcs-repo     Running   15s
 sample-mariadb-restore   gcs-repo     Succeeded   18s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -513,7 +522,8 @@ The `Succeeded` phase means that the restore process has been completed successf
 Now, let's exec into the database pod and verify whether data actual data was restored or not,
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+kubectl exec -it -n demo sample-mariadb-0 -c mariadb -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 341
@@ -556,7 +566,6 @@ MariaDB [(none)]> select * from company.employees;
 
 MariaDB [(none)]> exit
 Bye
-```
 
 Hence, we can see from the above output that the deleted data has been restored successfully from the backup.
 
@@ -564,30 +573,30 @@ Hence, we can see from the above output that the deleted data has been restored 
 
 Since our data has been restored successfully we can now resume our usual backup process. Resume the `BackupConfiguration` using following command,
 ```bash
-$ kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": false}}'
-backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
+kubectl patch backupconfiguration -n demo sample-mariadb-backup --type="merge" --patch='{"spec": {"paused": false}}'
 ```
+backupconfiguration.stash.appscode.com/sample-mariadb-backup patched
 Or you can use the Stash `kubectl` plugin to resume the `BackupConfiguration`,
 
 ```bash
-$ kubectl stash resume -n demo --backupconfig=sample-mariadb-backup
-BackupConfiguration demo/sample-mariadb-backup has been resumed successfully.
+kubectl stash resume -n demo --backupconfig=sample-mariadb-backup
 ```
+BackupConfiguration demo/sample-mariadb-backup has been resumed successfully.
 
 Verify that the `BackupConfiguration` has been resumed,
 ```bash
-$ kubectl get backupconfiguration -n demo sample-mariadb-backup
+kubectl get backupconfiguration -n demo sample-mariadb-backup
+```
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE   AGE
 sample-mariadb-backup   mariadb-backup-11.8.5   */5 * * * *   false    Ready   29m
-```
 
 Here,  `false` in the `PAUSED` column means the backup has been resume successfully. The CronJob also should be resumed now.
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                 SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 stash-backup-sample-mariadb-backup   */5 * * * *   False     0        2m59s           29m
-```
 
 Here, `False` in the `SUSPEND` column means the CronJob is no longer suspended and will trigger in the next schedule.
 

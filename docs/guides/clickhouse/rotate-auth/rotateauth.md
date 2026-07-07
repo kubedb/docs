@@ -29,9 +29,9 @@ This tutorial will show you how to use KubeDB to rotate authentication credentia
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,27 +60,29 @@ spec:
 Let's create the `ClickHouse` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/clickhouse-cluster.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/clickhouse-cluster.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get clickhouse -n demo -w
+kubectl get clickhouse -n demo -w
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 clickhouse   kubedb.com/v1alpha2   25.7.1    Ready    25h
-
-```
 
 We can verify from the above output that authentication is enabled for this cluster. By default, KubeDB operator create default credentials for the ClickHouse cluster. The default credentials are stored in a secret named `<clickhouse-name>-auth` in the same namespace as the ClickHouse cluster. You can find the secret by running the following command:
 
 ```bash
-$ kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\username}' | base64 -d
-admin                                                                     
-$ kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\password}' | base64 -d
-St9402lDFuk9LgDo
+kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\username}' | base64 -d
 ```
+admin                                                                     
+
+```bash
+kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+St9402lDFuk9LgDo
 
 ### Create RotateAuth ClickHouseOpsRequest
 
@@ -110,23 +112,23 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/chops-rotate-auth-generated.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-rotate-auth-generated created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/chops-rotate-auth-generated.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-rotate-auth-generated created
 
 Let's wait for `ClickHouseOpsRequest` to be `Successful`.  Run the following command to watch `ClickHouseOpsRequest` CRO,
 
 ```bash
-$ kubectl get clickhouseopsrequest -n demo 
+kubectl get clickhouseopsrequest -n demo 
+```
 NAME                          TYPE         STATUS       AGE
 chops-rotate-auth-generated   RotateAuth   Successful   5m59s
-
-```
 
 We can see from the above output that the `ClickHouseOpsRequest` has succeeded. If we describe the `ClickHouseOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe  chops -n demo chops-rotate-auth-generated 
+kubectl describe  chops -n demo chops-rotate-auth-generated 
+```
 Name:         chops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -215,23 +217,28 @@ Events:
   Normal   Starting                                               6m31s  KubeDB Ops-manager Operator  Resuming ClickHouse database: demo/clickhouse
   Normal   Successful                                             6m31s  KubeDB Ops-manager Operator  Successfully resumed ClickHouse database: demo/clickhouse for ClickHouseOpsRequest: chops-rotate-auth-generated
 
-```
-
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get ch -n demo clickhouse -ojson | jq .spec.authSecret.name
-"clickhouse-auth"
-$ kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\username}' | base64 -d
-admin⏎                              
-$ kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\password}' | base64 -d
-sG0OKmIim3ZkfhpE⏎             
+kubectl get ch -n demo clickhouse -ojson | jq .spec.authSecret.name
 ```
+"clickhouse-auth"
+
+```bash
+kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\username}' | base64 -d
+```
+admin⏎                              
+
+```bash
+kubectl get secrets -n demo clickhouse-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+sG0OKmIim3ZkfhpE⏎             
 Now, you can exec into the pod `clickhouse-0` and connect to database using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```
 clickhouse@clickhouse-0:/$ clickhouse-client -uadmin --password="sG0OKmIim3ZkfhpE"
 ClickHouse client version 25.7.1.3997 (official build).
 Connecting to localhost:9000 as user admin.
@@ -261,28 +268,27 @@ clickhouse-0.clickhouse-pods.demo.svc.cluster.local :) exit
 Bye.
 clickhouse@clickhouse-0:/$ exit
 exit
-
-
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo clickhouse-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
-w5MKkyQ1PMOOC7BO⏎                                                                                
-$ kubectl get secret -n demo clickhouse-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
-admin⏎                       
+kubectl get secret -n demo clickhouse-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
 ```
+w5MKkyQ1PMOOC7BO⏎                                                                                
+
+```bash
+kubectl get secret -n demo clickhouse-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
+```
+admin⏎                       
 Let's confirm that the previous credentials no longer work.
-```shell
-$ kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```bash
+kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```
 clickhouse@clickhouse-0:/$ clickhouse-client -uadmin --password="w5MKkyQ1PMOOC7BO"
 ClickHouse client version 25.7.1.3997 (official build).
 Connecting to localhost:9000 as user admin.
 Code: 516. DB::Exception: Received from localhost:9000. DB::Exception: admin: Authentication failed: password is incorrect, or there is no user with such name.. (AUTHENTICATION_FAILED)
 
 clickhouse@clickhouse-0:/$ 
-
-```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
 #### 2. Using user created credentials
@@ -290,12 +296,12 @@ The above output shows that the password has been changed successfully. The prev
 At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom `username` and `password`. Below is the command to create a secret with `kubernetes.io/basic-auth` type,
 
 ```bash
-$ kubectl create secret generic clickhouse-user-auth -n demo \
+kubectl create secret generic clickhouse-user-auth -n demo \
           --type=kubernetes.io/basic-auth \
           --from-literal=username=clickhouse \
           --from-literal=password=clickhouse-secret
-secret/clickhouse-user-auth created
 ```
+secret/clickhouse-user-auth created
 
 Now create a ClickHouse Ops Request with `RotateAuth` type. Below is the YAML of the `ClickHouseOpsRequest` that we are going to create,
 
@@ -326,22 +332,23 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/chops-rotate-auth-user.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-rotate-auth-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/rotate-auth/chops-rotate-auth-user.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-rotate-auth-user created
 
 Let's wait for `ClickHouseOpsRequest` to be `Successful`.  Run the following command to watch `ClickHouseOpsRequest` CRO,
 
 ```bash
-$ kubectl get clickhouseopsrequest -n demo chops-rotate-auth-user 
+kubectl get clickhouseopsrequest -n demo chops-rotate-auth-user 
+```
 NAME                     TYPE         STATUS       AGE
 chops-rotate-auth-user   RotateAuth   Successful    4m43s
-```
 
 We can see from the above output that the `ClickHouseOpsRequest` has succeeded. If we describe the `ClickHouseOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$kubectl describe clickhouseopsrequest -n demo chops-rotate-auth-user 
+kubectl describe clickhouseopsrequest -n demo chops-rotate-auth-user 
+```
 Name:         chops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -433,23 +440,28 @@ Events:
   Normal   Starting                                               85s   KubeDB Ops-manager Operator  Resuming ClickHouse database: demo/clickhouse
   Normal   Successful                                             85s   KubeDB Ops-manager Operator  Successfully resumed ClickHouse database: demo/clickhouse for ClickHouseOpsRequest: chops-rotate-auth-user
 
-```
-
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$  kubectl get ch -n demo clickhouse -ojson | jq .spec.authSecret.name
-"clickhouse-user-auth"
-$ kubectl get secret -n demo clickhouse-user-auth -o=jsonpath='{.data.username}' | base64 -d
-clickhouse⏎      
-$ kubectl get secret -n demo clickhouse-user-auth -o=jsonpath='{.data.password}' | base64 -d
-clickhouse-secret⏎              
+ kubectl get ch -n demo clickhouse -ojson | jq .spec.authSecret.name
 ```
+"clickhouse-user-auth"
+
+```bash
+kubectl get secret -n demo clickhouse-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+clickhouse⏎      
+
+```bash
+kubectl get secret -n demo clickhouse-user-auth -o=jsonpath='{.data.password}' | base64 -d
+```
+clickhouse-secret⏎              
 Now, you can exec into the pod `clickhouse-0` and connect to database using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```
 clickhouse@clickhouse-0:/$ clickhouse-client -uclickhouse --password="clickhouse-secret"
 ClickHouse client version 25.7.1.3997 (official build).
 Connecting to localhost:9000 as user clickhouse.
@@ -474,27 +486,27 @@ Query id: 2807f810-8375-47b7-80fe-0ebe3df028ad
    └────────────────────┘
 
 5 rows in set. Elapsed: 0.001 sec. 
-
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo clickhouse-user-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
-admin⏎                                                                                                      
-$  kubectl get secret -n demo clickhouse-user-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
-sG0OKmIim3ZkfhpE⏎                                    
+kubectl get secret -n demo clickhouse-user-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
 ```
+admin⏎                                                                                                      
+
+```bash
+ kubectl get secret -n demo clickhouse-user-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
+```
+sG0OKmIim3ZkfhpE⏎                                    
 Let's confirm that the previous credentials no longer work.
-```shell
-$  kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```bash
+ kubectl exec -it -n demo clickhouse-0 -c clickhouse -- bash
+```
 clickhouse@clickhouse-0:/$ clickhouse-client -uadmin --password="sG0OKmIim3ZkfhpE"
 ClickHouse client version 25.7.1.3997 (official build).
 Connecting to localhost:9000 as user admin.
 Code: 516. DB::Exception: Received from localhost:9000. DB::Exception: admin: Authentication failed: password is incorrect, or there is no user with such name.. (AUTHENTICATION_FAILED)
 
 clickhouse@clickhouse-0:/$ 
-
-```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
 ## Cleaning up
@@ -502,10 +514,19 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete clickhouseopsrequests -n demo chops-rotate-auth-generated chops-rotate-auth-user
-$ kubectl delete clickhouse -n demo clickhouse
-$ kubectl delete secret -n demo clickhouse-user-auth
-$ kubectl delete ns demo
+kubectl delete clickhouseopsrequests -n demo chops-rotate-auth-generated chops-rotate-auth-user
+```
+
+```bash
+kubectl delete clickhouse -n demo clickhouse
+```
+
+```bash
+kubectl delete secret -n demo clickhouse-user-auth
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

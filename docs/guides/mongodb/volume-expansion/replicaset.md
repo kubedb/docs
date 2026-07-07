@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -85,30 +85,32 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mg-replicaset.yaml
-mongodb.kubedb.com/mg-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mg-replicaset.yaml
 ```
+mongodb.kubedb.com/mg-replicaset created
 
 Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME            VERSION    STATUS    AGE
 mg-replicaset   4.4.26      Ready     10m
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo                                                                                          
+```bash
+kubectl get pv -n demo                                                                                          
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
 pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   longhorn                10m
 pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   longhorn                9m45s
 pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   1Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   longhorn                10m
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -146,9 +148,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mops-volume-exp-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-volume-exp-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mops-volume-exp-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-volume-exp-replicaset created
 
 #### Verify MongoDB replicaset volume expanded successfully 
 
@@ -157,15 +159,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 mops-volume-exp-replicaset   VolumeExpansion   Successful   83s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-volume-exp-replicaset   
+kubectl describe mongodbopsrequest -n demo mops-volume-exp-replicaset   
+```
 Name:         mops-volume-exp-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -220,20 +223,21 @@ Events:
   Normal  ResumeDatabase   3m11s  KubeDB Ops-manager operator  Resuming MongoDB
   Normal  ResumeDatabase   3m11s  KubeDB Ops-manager operator  Successfully Resumed mongodb
   Normal  Successful       3m11s  KubeDB Ops-manager operator  Successfully Scaled Database  
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-replicaset -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo                                                                                          
+```bash
+kubectl get pv -n demo                                                                                          
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
 pvc-2067c63d-f982-4b66-a008-5e9c3ff6218a   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-0   longhorn                19m
 pvc-9db1aeb0-f1af-4555-93a3-0ca754327751   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-2   longhorn                18m
 pvc-d38f42a8-50d4-4fa9-82ba-69fc7a464ff4   2Gi        RWO            Delete           Bound    demo/datadir-mg-replicaset-1   longhorn                19m
-```
 
 The above output verifies that we have successfully expanded the volume of the MongoDB database.
 

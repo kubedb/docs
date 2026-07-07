@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,13 +47,12 @@ Here, we are going to deploy a `Cassandra` topology using a supported version by
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d22h
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   6s
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   3s
-
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -101,30 +100,31 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/volume-expansion/cassandra.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/volume-expansion/cassandra.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   4s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   37s
 ..
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready          2m3s
 
-```
-
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+```
 "1Gi"
 
-
-$  kubectl get pv -n demo
+```bash
+ kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-623e4d80-f508-4bb1-a4cb-4ebdbcbd8495   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 longhorn       <unset>                          82s
 pvc-76b5a0a7-d234-426c-a4cc-ec740d6456ba   1Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 longhorn       <unset>                          64s
@@ -132,7 +132,6 @@ pvc-84588238-9fea-4ac3-9cfa-f7b04640697c   1Gi        RWO            Delete     
 pvc-849d404c-d078-4802-a28f-6834d8c81998   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             longhorn       <unset>                          64s
 pvc-85a6902d-a596-45db-94f9-1ce355600323   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   longhorn       <unset>                          64s
 pvc-88d6586e-b502-481d-91fc-dd6381d9b1c0   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-0   longhorn       <unset>                          82s
-```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -172,9 +171,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/volume-expansion/cassandra-volume-expansion-opsreq.yaml
-cassandraopsrequest.ops.kubedb.com/cas-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/volume-expansion/cassandra-volume-expansion-opsreq.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/cas-volume-expansion created
 
 #### Verify Cassandra Topology volume expanded successfully
 
@@ -183,15 +182,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                   TYPE              STATUS       AGE
 cas-volume-expansion   VolumeExpansion   Successful   5m49s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to expand the volume of cassandra.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo cas-volume-expansion
+kubectl describe cassandraopsrequest -n demo cas-volume-expansion
+```
 Name:         cas-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -331,16 +331,17 @@ Events:
   Normal   Successful                              5m11s  KubeDB Ops-manager Operator  Successfully paused Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cas-volume-expansion
   Warning  get pet set; ConditionStatus:True       5m6s   KubeDB Ops-manager Operator  get pet set; ConditionStatus:True
   Normal   ReadyPetSets                            5m6s   KubeDB Ops-manager Operator  PetSet is recreated
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+```
 "2Gi"
 
-
-$  kubectl get pv -n demo 
+```bash
+ kubectl get pv -n demo 
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                              STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-7efa007f-5fb2-4e64-aea0-233ec456703f   1Gi        RWO            Delete           Bound    demo/main-config-volume-cassandra-prod-rack-r0-1   longhorn       <unset>                          11m
 pvc-88f8ec55-ae5b-48dd-9b3a-0dc113cdaa43   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-1                 longhorn       <unset>                          11m
@@ -348,7 +349,6 @@ pvc-c455344e-0f17-42d2-8fd9-062fa2f1b0a1   1Gi        RWO            Delete     
 pvc-d19d62ac-b37b-406e-a7d6-a10f4f74d929   2Gi        RWO            Delete           Bound    demo/data-cassandra-prod-rack-r0-0                 longhorn       <unset>                          11m
 pvc-df152a7a-12ea-4690-b64e-ccb2decce8cd   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-1             longhorn       <unset>                          11m
 pvc-f8420d54-05f8-4ea2-b70c-11a3737e04e4   1Gi        RWO            Delete           Bound    demo/nodetool-cassandra-prod-rack-r0-0             longhorn       <unset>                          11m
-```
 
 The above output verifies that we have successfully expanded the data related volume of the Cassandra.
 

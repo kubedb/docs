@@ -25,15 +25,15 @@ section_menu_id: guides
 - Install [`cert-manager`](https://cert-manager.io/docs/installation/) in your cluster. KubeDB uses cert-manager to issue the Oracle certificates.
 
 ```bash
-$ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
 ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo`.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/tls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/tls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,18 +44,20 @@ namespace/demo created
 KubeDB needs a cert-manager `Issuer` (or `ClusterIssuer`) to sign the Oracle certificates. First, generate a CA and create a TLS secret from it,
 
 ```bash
-$ openssl req -x509 -nodes -days 3650 \
+openssl req -x509 -nodes -days 3650 \
   -newkey rsa:2048 \
   -keyout ca.key \
   -out ca.crt \
   -subj "/CN=oracle-ca"
+```
 
-$ kubectl create secret tls oracle-ca \
+```bash
+kubectl create secret tls oracle-ca \
   --cert=ca.crt \
   --key=ca.key \
   -n demo
-secret/oracle-ca created
 ```
+secret/oracle-ca created
 
 Now create an `Issuer` that uses this CA secret,
 
@@ -71,13 +73,15 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f issuer.yaml
+kubectl apply -f issuer.yaml
+```
 issuer.cert-manager.io/oracle-ca-issuer created
 
-$ kubectl get issuer -n demo
+```bash
+kubectl get issuer -n demo
+```
 NAME               READY   AGE
 oracle-ca-issuer   True    10s
-```
 
 > If the Issuer is not present (or not `Ready`), the Oracle database will stay in the `Provisioning` phase.
 
@@ -129,9 +133,9 @@ For a **DataGuard** cluster, set `mode: DataGuard` and `replicas: 3` (see `datag
 Let's create the `Oracle` CR,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/tls/standalone-tls.yaml
-oracle.kubedb.com/standalone-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/tls/standalone-tls.yaml
 ```
+oracle.kubedb.com/standalone-tls created
 
 Wait until the database is `Ready` and the pod prints the `DATABASE IS READY TO USE!!!` banner.
 
@@ -140,31 +144,31 @@ Wait until the database is `Ready` and the pod prints the `DATABASE IS READY TO 
 Once the database is ready, KubeDB has created the cert-manager `Certificate`s and the Oracle auto-login wallet. Let's check the generated certificate and wallet secrets,
 
 ```bash
-$ kubectl get secret -n demo | grep standalone-tls
+kubectl get secret -n demo | grep standalone-tls
+```
 standalone-tls-auth                    kubernetes.io/basic-auth   2      16m
 standalone-tls-client-cert             kubernetes.io/tls          4      16m
 standalone-tls-metrics-exporter-cert   kubernetes.io/tls          4      16m
 standalone-tls-server-cert             kubernetes.io/tls          3      16m
 standalone-tls-tls-wallet              Opaque                     5      16m
-```
 
 Here, `standalone-tls-server-cert`, `standalone-tls-client-cert`, and `standalone-tls-metrics-exporter-cert` are the cert-manager issued certificates, and `standalone-tls-tls-wallet` is the Oracle auto-login wallet (built from those certificates) that clients use to connect over TCPS. The underlying cert-manager `Certificate` objects are all `Ready`,
 
 ```bash
-$ kubectl get certificate -n demo | grep standalone-tls
+kubectl get certificate -n demo | grep standalone-tls
+```
 standalone-tls-client-cert             True    standalone-tls-client-cert             16m
 standalone-tls-metrics-exporter-cert   True    standalone-tls-metrics-exporter-cert   16m
 standalone-tls-server-cert             True    standalone-tls-server-cert             16m
-```
 
 The TCPS listener is exposed on port `2484` of the database services (the plaintext listener remains on `1521`),
 
 ```bash
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=standalone-tls
+kubectl get svc -n demo -l app.kubernetes.io/instance=standalone-tls
+```
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)             AGE
 standalone-tls        ClusterIP   10.43.67.172   <none>        1521/TCP,2484/TCP   16m
 standalone-tls-pods   ClusterIP   None           <none>        1521/TCP,2484/TCP   16m
-```
 
 ## Connect over TCPS
 
@@ -200,7 +204,7 @@ spec:
 Exec into the pod,
 
 ```bash
-$ kubectl exec -it -n demo oracle-client-pod -- bash
+kubectl exec -it -n demo oracle-client-pod -- bash
 ```
 
 Configure `sqlnet.ora` to point at the mounted wallet,
@@ -251,24 +255,23 @@ sqlplus sys/'<your-sys-password>'@ORCL as sysdba
 `tnsping ORCL` resolves the `TCPS` address and reaches the listener on port `2484`,
 
 ```bash
-$ tnsping ORCL
-
+tnsping ORCL
+```
 TNS Ping Utility for Linux: Version 21.0.0.0.0 - Production
 ...
 Attempting to contact (DESCRIPTION = (ADDRESS = (PROTOCOL = TCPS)(HOST = standalone-tls.demo.svc.cluster.local)(PORT = 2484)) (CONNECT_DATA = (SERVER = DEDICATED) (SERVICE_NAME = ORCL)))
 OK (10 msec)
-```
 
 Finally, connect with `sqlplus` and confirm the session protocol is `tcps`,
 
 ```bash
-$ sqlplus -s sys/'<your-sys-password>'@ORCL as sysdba
+sqlplus -s sys/'<your-sys-password>'@ORCL as sysdba
+```
 SQL> SELECT SYS_CONTEXT('USERENV','NETWORK_PROTOCOL') AS PROTOCOL FROM DUAL;
 
 PROTOCOL
 --------------------------------------------------------------------------------
 tcps
-```
 
 The session protocol reported as `tcps` confirms that the connection is TLS/SSL encrypted.
 

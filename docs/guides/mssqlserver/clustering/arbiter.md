@@ -45,9 +45,9 @@ Here we will show how to use KubeDB to provision a SQL Server even-sized Availab
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 
 
@@ -65,9 +65,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -83,9 +83,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 
 Now, Let's apply the following YAML for a Two-Node Cluster (with Arbiter):
@@ -186,15 +186,18 @@ KubeDB operator has created a new Secret called `ms-even-cluster-auth` *(format:
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `ms-even-cluster-auth` secret holds username and password
 
 ```bash
-$ kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
-AgciggjkiIaSkDs1
+```bash
+kubectl get secret -n demo ms-even-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+AgciggjkiIaSkDs1
 We can exec into the pod `ms-even-cluster-0` using the following command:
 ```bash
-$ kubectl exec -it -n demo ms-even-cluster-0 -c mssql -- bash
+kubectl exec -it -n demo ms-even-cluster-0 -c mssql -- bash
+```
 mssql@ms-even-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
 1> select name from sys.databases
 2> go
@@ -232,20 +235,19 @@ agdb2
 
 (2 rows affected)
 
-```
-
 See the pod roles:
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=ms-even-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+kubectl get pods -n demo --selector=app.kubernetes.io/instance=ms-even-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+```
 ms-even-cluster-0	primary
 ms-even-cluster-1	secondary
 ms-even-cluster-arbiter-0	arbiter
-```
 
 From the output above, we can see that ms-even-cluster-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
 
 ```bash
-$ kubectl exec -it ms-even-cluster-0 -c mssql -n demo -- bash
+kubectl exec -it ms-even-cluster-0 -c mssql -n demo -- bash
+```
 mssql@ms-even-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
@@ -272,14 +274,14 @@ ID    NAME                             AGE
 
 (2 rows affected)
 1> 
-```
 Now, Let's verify that the data inserted into the primary node has been replicated to the secondary node.
 
 ### Access the inserted data from secondaries
 Access the secondary node (Node 2) to verify that the data is present.
 
 ```bash
-$ kubectl exec -it ms-even-cluster-1 -c mssql -n demo -- bash
+kubectl exec -it ms-even-cluster-1 -c mssql -n demo -- bash
+```
 mssql@ms-even-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "AgciggjkiIaSkDs1" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
@@ -301,7 +303,6 @@ ID    NAME                             AGE
 
 (2 rows affected)
 1> 
-```
 
 
 ## Why do we need arbiter node?

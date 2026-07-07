@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to update the major ver
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/majorversion/group-replication/yamls](/docs/guides/mysql/update-version/majorversion/group-replication/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a group replication using supported that `MySQL
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let’s check the supported `MySQL` versions,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -65,7 +66,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 The version above that does not show `DEPRECATED` true is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` group replication that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
 
@@ -74,7 +74,8 @@ The version above that does not show `DEPRECATED` true is supported by `KubeDB` 
 Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.4.8`,
 
 ```bash
-$ kubectl get mysqlversion 8.4.8 -o yaml
+kubectl get mysqlversion 8.4.8 -o yaml
+```
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -143,7 +144,6 @@ spec:
       standalone:
       - < 8.4.8
   version: 8.4.8
-```
 
 The above `spec.updateConstraints` of `8.4.8` is showing that for both group replication and standalone, updating below version of `8.4.8` is not possible (denylist) and updating is allowed within the range `>= 8.4.8, <= 9.1.0` (allowlist). Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `9.1.0`.
 
@@ -176,9 +176,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/group_replication.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/group_replication.yaml
 ```
+mysql.kubedb.com/my-group created
 
 **Wait for the cluster to be ready:**
 
@@ -186,49 +186,59 @@ mysql.kubedb.com/my-group created
 Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-group
-
+watch -n 3 kubectl get my -n demo my-group
+```
 NAME       VERSION      STATUS    AGE
 my-group   8.4.8    Running   5m52s
 
-$ watch -n 3 kubectl get petset -n demo my-group
-
+```bash
+watch -n 3 kubectl get petset -n demo my-group
+```
 NAME       READY   AGE
 my-group   3/3     7m12s
 
-$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
-
+```bash
+watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+```
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   0          11m
 my-group-1   2/2     Running   0          9m53s
 my-group-2   2/2     Running   0          6m48s
-```
 
 Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
-$ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
+```
 8.4.8
 
-$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+```bash
+kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+```
 "kubedb/mysql:8.4.8"
 
-$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:8.4.8"
-"kubedb/mysql:8.4.8"
-"kubedb/mysql:8.4.8"
+```bash
+kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
 ```
+"kubedb/mysql:8.4.8"
+"kubedb/mysql:8.4.8"
+"kubedb/mysql:8.4.8"
 
 Let's also verify that the PetSet’s pods have joined into a group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```
 7gUARa&Jkg.ypJE8
 
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```bash
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE |
@@ -237,8 +247,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       |
 | group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+
-
-```
 
 We are ready to apply updating on this `MySQL` group replication.
 
@@ -273,9 +281,9 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/upgrade_major_version_group.yaml
-mysqlopsrequest.ops.kubedb.com/my-update-major-group created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/upgrade_major_version_group.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-update-major-group created
 
 > Note: During the upgradation of the major version of MySQL group replication, a new PetSet is created by the `KubeDB` Ops Manager and the old one is deleted. The name of the newly created PetSet is formed as follows: `<mysql-name>-<suffix>`.
 Here, `<suffix>` is a positive integer number and starts with 1. It's determined as follows:
@@ -290,16 +298,16 @@ If everything goes well, `KubeDB` Ops Manager will create a new `PetSet` named `
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```bash
-$ watch -n 3 kubectl get myops -n demo my-update-major-group
-
+watch -n 3 kubectl get myops -n demo my-update-major-group
+```
 NAME                    TYPE            STATUS       AGE
 my-update-major-group   UpdateVersion   Successful   5m26s
-```
 
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is updated with new images and the `PetSet` is created with a new image.
 
 ```bash
-$ kubectl describe myops -n demo my-update-major-group
+kubectl describe myops -n demo my-update-major-group
+```
 Name:         my-update-major-group
 Namespace:    demo
 Labels:       <none>
@@ -361,33 +369,41 @@ Events:
   Normal  Starting    84s    KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
   Normal  Successful  84s    KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
   Normal  Successful  84s    KubeDB Enterprise Operator  Controller has Successfully updated the version of MySQL : demo/my-group
-```
 
 Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
+```
 9.1.0
 
-$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+```bash
+kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+```
 "kubedb/mysql:9.1.0"
 
-$ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
-"kubedb/mysql:9.1.0"
+```bash
+kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
 ```
+"kubedb/mysql:9.1.0"
+"kubedb/mysql:9.1.0"
+"kubedb/mysql:9.1.0"
 
 Let's also check the PetSet pods have joined the `MySQL` group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```
 7gUARa&Jkg.ypJE8
 
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```bash
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
@@ -396,8 +412,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0          | XCom                       |
 | group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.1.0          | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-
-```
 
 You can see above that our `MySQL` group replication now has updated members. It verifies that we have successfully updated our cluster.
 

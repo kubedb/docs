@@ -58,24 +58,24 @@ spec:
 Wait until MongoDB reports `Ready`. The time depends on image pull speed.
 
 ```bash
-$ kubectl get mongodb,pods -n demo
+kubectl get mongodb,pods -n demo
+```
 NAME                                     VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-ra-recommendation   8.0.10    Ready    10m
 
 NAME                        READY   STATUS    RESTARTS   AGE
 pod/mg-ra-recommendation-0   1/1     Running   0          10m
-```
 
 ## A rotate-auth Recommendation appears
 
 With `rotateAfter: 1h`, the recommendation engine creates a rotation Recommendation roughly **40 minutes** after the auth secret was created (two-thirds of the lifespan). Once it appears, you will see something like:
 
 ```bash
-$ kubectl get recommendation -n demo
+kubectl get recommendation -n demo
+```
 NAME                                                          STATUS      OUTDATED   AGE
 mg-ra-recommendation-x-mongodb-x-rotate-auth-<HASH>            <STATUS>    false      <AGE>
 mg-ra-recommendation-x-mongodb-x-update-version-<HASH>         Pending     false      <AGE>
-```
 
 The Recommendation name follows the pattern `<DB-name>-x-<DB-type>-x-<recommendation-type>-<random-suffix>`. Let's look at the full manifest:
 
@@ -159,17 +159,17 @@ What this manifest tells you:
 After auto-approval, an `MongoDBOpsRequest` is created and reaches `Successful`:
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 NAME                                              TYPE         STATUS       AGE
 mg-ra-recommendation-<TIMESTAMP>-rotate-auth-auto  RotateAuth   Successful   <AGE>
-```
 
 `RotateAuth` rotates the auth secret with negligible downtime — the database keeps accepting connections throughout the rolling restart.
 
 You can re-check the Recommendation status as JSON:
 
 ```bash
-$ kubectl get recommendation <ROTATE-AUTH-NAME> \
+kubectl get recommendation <ROTATE-AUTH-NAME> \
      -n demo -o json | jq '.status'
 ```
 
@@ -180,13 +180,13 @@ You will see `phase: Succeeded` and `reason: SuccessfullyExecutedOperation`.
 If you need to skip a rotation (for example because you're about to change auth strategy), reject it:
 
 ```bash
-$ kubectl patch recommendation <ROTATE-AUTH-NAME> \
+kubectl patch recommendation <ROTATE-AUTH-NAME> \
      -n demo \
      --type merge \
      --subresource='status' \
      -p '{"status":{"approvalStatus":"Rejected"}}'
-recommendation.supervisor.appscode.com/<ROTATE-AUTH-NAME> patched
 ```
+recommendation.supervisor.appscode.com/<ROTATE-AUTH-NAME> patched
 
 ## Automating execution with a maintenance window
 

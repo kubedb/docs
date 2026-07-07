@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -59,9 +59,9 @@ Here, `max_pool` is set to `60`, whereas the default value is `numberof replicas
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pp-custom-config --from-file=./pgpool.conf
-secret/pp-custom-config created
+kubectl create secret generic -n demo pp-custom-config --from-file=./pgpool.conf
 ```
+secret/pp-custom-config created
 
 In this section, we are going to create a Pgpool object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Pgpool` CR that we are going to create,
 
@@ -85,24 +85,25 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/pp-custom-config.yaml
-pgpool.kubedb.com/pp-custom created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/pp-custom-config.yaml
 ```
+pgpool.kubedb.com/pp-custom created
 
 Now, wait until `pp-custom` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
 NAME        TYPE                  VERSION   STATUS   AGE
 pp-custom   kubedb.com/v1alpha2   4.5.0     Ready    112s
-```
 
 Now, we will check if the pgpool has started with the custom configuration we have provided.
 
 Now, you can exec into the pgpool pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash
+kubectl exec -it -n demo pp-custom-0 -- bash
+```
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -141,7 +142,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `max_pool` has been set to `60`.
 
@@ -159,9 +159,9 @@ max_pool=50
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./pgpool.conf
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./pgpool.conf
 ```
+secret/new-custom-config created
 
 #### Create PgpoolOpsRequest
 
@@ -194,9 +194,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure created
 
 #### Verify the new configuration is working 
 
@@ -205,16 +205,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                TYPE          STATUS       AGE
 ppops-reconfigure   Reconfigure   Successful   63s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-reconfigure
+kubectl describe pgpoolopsrequest -n demo ppops-reconfigure
+```
 Name:         ppops-reconfigure
 Namespace:    demo
 Labels:       <none>
@@ -306,12 +307,12 @@ Events:
   Normal   RestartPods                                                    51s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                       51s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-custom
   Normal   Successful                                                     51s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-custom for PgpoolOpsRequest: ppops-reconfigure
-```
 
 Now let's exec into the pgpool pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash
+kubectl exec -it -n demo pp-custom-0 -- bash
+```
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -350,7 +351,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `max_pool` has been changed from `60` to `50`. So the reconfiguration of the pgpool is successful.
 
@@ -390,9 +390,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-apply.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-apply.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-apply created
 
 #### Verify the new configuration is working 
 
@@ -401,17 +401,18 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                      TYPE          STATUS       AGE
 ppops-reconfigure         Reconfigure   Successful   9m15s
 ppops-reconfigure-apply   Reconfigure   Successful   53s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-reconfigure-apply
+kubectl describe pgpoolopsrequest -n demo ppops-reconfigure-apply
+```
 Name:         ppops-reconfigure-apply
 Namespace:    demo
 Labels:       <none>
@@ -503,12 +504,12 @@ Events:
   Normal   RestartPods                                                    28s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                       28s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-custom
   Normal   Successful                                                     28s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-custom for PgpoolOpsRequest: ppops-reconfigure-apply
-```
 
 Now let's exec into the pgpool pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash
+kubectl exec -it -n demo pp-custom-0 -- bash
+```
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 memory_cache_enabled = 'off'
 num_init_children = 5
@@ -547,7 +548,6 @@ client_idle_limit = 0
 failover_on_backend_error = 'off'
 pp-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `max_pool` has been changed from `50` to `75`. So the reconfiguration of the pgpool using the `applyConfig` field is successful.
 
@@ -585,9 +585,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-remove.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-remove.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-remove created
 
 #### Verify if the configuration is removed
 
@@ -596,19 +596,20 @@ If everything goes well, `KubeDB` Ops-manager operator will remove the custom co
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 kubectl get pgpoolopsrequest -n demo
 NAME                       TYPE          STATUS       AGE
 ppops-reconfigure          Reconfigure   Successful   71m
 ppops-reconfigure-apply    Reconfigure   Successful   63m
 ppops-reconfigure-remove   Reconfigure   Successful   57s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-reconfigure-remove
+kubectl describe pgpoolopsrequest -n demo ppops-reconfigure-remove
+```
 Name:         ppops-reconfigure-remove
 Namespace:    demo
 Labels:       <none>
@@ -699,12 +700,12 @@ Events:
   Normal   RestartPods                                                    25s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                       25s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-custom
   Normal   Successful                                                     25s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-custom for PgpoolOpsRequest: ppops-reconfigure-remove
-```
 
 Now let's exec into the pgpool pod and check the configuration.
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-0 -- bash 
+kubectl exec -it -n demo pp-custom-0 -- bash 
+```
 pp-custom-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -743,7 +744,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `max_pool` has been changed from `75` to `15` which is the default configuration `number of repicas * 15`. So the reconfiguration of the pgpool using the `removeCustomConfig` field is successful.
 

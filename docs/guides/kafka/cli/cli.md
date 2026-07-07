@@ -23,16 +23,16 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Kafka object as specified in `kafka.yaml`.
 
 ```bash
-$ kubectl create -f kafka.yaml
-kafka.kubedb.com/kafka created
+kubectl create -f kafka.yaml
 ```
+kafka.kubedb.com/kafka created
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f kafka.yaml --namespace=kube-system
-kafka.kubedb.com/kafka created
+kubectl create -f kafka.yaml --namespace=kube-system
 ```
+kafka.kubedb.com/kafka created
 
 `kubectl create` command also considers `stdin` as input.
 
@@ -45,18 +45,18 @@ cat kafka.yaml | kubectl create -f -
 `kubectl get` command allows users to list or find any KubeDB object. To list all Kafka objects in `default` namespace, run the following command:
 
 ```bash
-$ kubectl get kafka
+kubectl get kafka
+```
 NAME    TYPE                  VERSION   STATUS   AGE
 kafka   kubedb.com/v1alpha2   3.9.0     Ready    36m
-```
 
 You can also use short-form (`kf`) for kafka CR.
 
 ```bash
-$ kubectl get kf
+kubectl get kf
+```
 NAME    TYPE                  VERSION   STATUS   AGE
 kafka   kubedb.com/v1alpha2   3.9.0     Ready    36m
-```
 
 To get YAML of an object, use `--output=yaml` or `-oyaml` flag. Use `-n` flag for referring namespace.
 
@@ -172,7 +172,8 @@ status:
 To get JSON of an object, use `--output=json` or `-ojson` flag.
 
 ```bash
-$ kubectl get kf kafka -n demo -ojson
+kubectl get kf kafka -n demo -ojson
+```
 {
     "apiVersion": "kubedb.com/v1alpha2",
     "kind": "Kafka",
@@ -324,12 +325,12 @@ $ kubectl get kf kafka -n demo -ojson
         "phase": "Ready"
     }
 }
-```
 
 To list all KubeDB objects managed by KubeDB including secrets, use following command:
 
 ```bash
-$ kubectl get all,secret -A -l app.kubernetes.io/managed-by=kubedb.com -owide
+kubectl get all,secret -A -l app.kubernetes.io/managed-by=kubedb.com -owide
+```
 NAMESPACE   NAME                     READY   STATUS    RESTARTS      AGE   IP            NODE                 NOMINATED NODE   READINESS GATES
 demo        pod/kafka-broker-0       1/1     Running   0             45m   10.244.0.49   kind-control-plane   <none>           <none>
 demo        pod/kafka-broker-1       1/1     Running   0             45m   10.244.0.53   kind-control-plane   <none>           <none>
@@ -356,14 +357,14 @@ demo        secret/kafka-client-cert         kubernetes.io/tls          3      4
 demo        secret/kafka-controller-config   Opaque                     3      45m
 demo        secret/kafka-keystore-cred       Opaque                     3      46m
 demo        secret/kafka-server-cert         kubernetes.io/tls          5      46m
-```
 
 Flag `--output=wide` or `-owide` is used to print additional information. List command supports short names for each object types. You can use it like `kubectl get <short-name>`.
 
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```bash
-$ kubectl get pods -n demo --show-labels
+kubectl get pods -n demo --show-labels
+```
 NAME                 READY   STATUS    RESTARTS      AGE   LABELS
 kafka-broker-0       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,petset.kubernetes.io/pod-name=kafka-broker-0
 kafka-broker-1       1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-broker-5f568d57c9,kubedb.com/role=broker,petset.kubernetes.io/pod-name=kafka-broker-1
@@ -371,21 +372,21 @@ kafka-broker-2       1/1     Running   0             47m   app.kubernetes.io/com
 kafka-controller-0   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-0
 kafka-controller-1   1/1     Running   0             47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-1
 kafka-controller-2   1/1     Running   3 (47m ago)   47m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com,controller-revision-hash=kafka-controller-96ddd885f,kubedb.com/role=controller,petset.kubernetes.io/pod-name=kafka-controller-2
-```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get services -n demo --selector='app.kubernetes.io/name=kafkas.kubedb.com' --show-labels
+kubectl get services -n demo --selector='app.kubernetes.io/name=kafkas.kubedb.com' --show-labels
+```
 NAME               TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)              AGE   LABELS
 kafka-broker       ClusterIP   None         <none>        9092/TCP,29092/TCP   49m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com
 kafka-controller   ClusterIP   None         <none>        9093/TCP             49m   app.kubernetes.io/component=database,app.kubernetes.io/instance=kafka,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=kafkas.kubedb.com
-```
 
 To print only object name, run the following command:
 
 ```bash
-$ kubectl get all -o name -n demo
+kubectl get all -o name -n demo
+```
 pod/kafka-broker-0
 pod/kafka-broker-1
 pod/kafka-broker-2
@@ -397,14 +398,14 @@ service/kafka-controller
 petset.apps/kafka-broker
 petset.apps/kafka-controller
 appbinding.appcatalog.appscode.com/kafka
-```
 
 ### How to Describe Objects
 
 `kubectl describe` command allows users to describe any KubeDB object. The following command will describe Kafka instance `kafka` with relevant information.
 
 ```bash
-$ kubectl describe -n demo kf kafka
+kubectl describe -n demo kf kafka
+```
 Name:         kafka
 Namespace:    demo
 Labels:       <none>
@@ -617,7 +618,6 @@ Events:
   Warning  Failed      50m   KubeDB Ops-manager Operator  Fail to be ready database: "kafka". Reason: services "kafka-broker" not found
   Normal   Successful  50m   KubeDB Ops-manager Operator  Successfully created Kafka server certificates
   Normal   Successful  50m   KubeDB Ops-manager Operator  Successfully created Kafka client-certificates
-```
 
 `kubectl describe` command provides following basic information about a database.
 
@@ -635,19 +635,19 @@ To hide events on KubeDB object, use flag `--show-events=false`
 To describe all Kafka objects in `default` namespace, use following command
 
 ```bash
-$ kubectl describe kf
+kubectl describe kf
 ```
 
 To describe all Kafka objects from every namespace, provide `--all-namespaces` flag.
 
 ```bash
-$ kubectl describe kf --all-namespaces
+kubectl describe kf --all-namespaces
 ```
 
 You can also describe KubeDb objects with matching labels. The following command will describe all Kafka objects with specified labels from every namespace.
 
 ```bash
-$ kubectl describe kf --all-namespaces --selector='app.kubernetes.io/component=database'
+kubectl describe kf --all-namespaces --selector='app.kubernetes.io/component=database'
 ```
 
 To learn about various options of `describe` command, please visit [here](/docs/reference/cli/kubectl-dba_describe.md).
@@ -679,16 +679,16 @@ Kafka:
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Kafka instance `kafka` in demo namespace
 
 ```bash
-$ kubectl delete kf kafka -n demo
-kafka.kubedb.com "kafka" deleted
+kubectl delete kf kafka -n demo
 ```
+kafka.kubedb.com "kafka" deleted
 
 You can also use YAML files to delete objects. The following command will delete an Kafka using the type and name specified in `kafka.yaml`.
 
 ```bash
-$ kubectl delete -f kafka.yaml
-kafka.kubedb.com "kafka" deleted
+kubectl delete -f kafka.yaml
 ```
+kafka.kubedb.com "kafka" deleted
 
 `kubectl delete` command also takes input from `stdin`.
 
@@ -699,20 +699,25 @@ cat kafka.yaml | kubectl delete -f -
 To delete database with matching labels, use `--selector` flag. The following command will delete kafka with label `app.kubernetes.io/instance=kafka`.
 
 ```bash
-$ kubectl delete kf -l app.kubernetes.io/instance=kafka
+kubectl delete kf -l app.kubernetes.io/instance=kafka
 ```
 
 ## Using Kubectl
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```bash
 # List objects
-$ kubectl get kafka
-$ kubectl get kafka.kubedb.com
+```bash
+kubectl get kafka
+```
+
+```bash
+kubectl get kafka.kubedb.com
+```
 
 # Delete objects
-$ kubectl delete kafka <name>
+```bash
+kubectl delete kafka <name>
 ```
 
 ## Next Steps

@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Druid via [PodTemplate](/docs
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/druid/configuration/podtemplating/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -67,19 +67,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -105,9 +111,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 ## CRD Configuration
 
@@ -160,33 +166,34 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that `druid-cluster` is in `Ready` state.
 ```bash
-$ kubectl get druid -n demo
+kubectl get druid -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    6m5s
-```
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=druid-cluster
+kubectl get pods -n demo -l app.kubernetes.io/instance=druid-cluster
+```
 NAME                             READY   STATUS    RESTARTS   AGE
 druid-cluster-brokers-0          1/1     Running   0          7m2s
 druid-cluster-coordinators-0     1/1     Running   0          7m9s
 druid-cluster-historicals-0      1/1     Running   0          7m7s
 druid-cluster-middlemanagers-0   1/1     Running   0          7m5s
 druid-cluster-routers-0          1/1     Running   0          7m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -198,7 +205,9 @@ $ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.conta
   }
 }
 
-$ kubectl get pod -n demo druid-cluster-brokers-0 -o json | jq '.spec.containers[].resources'
+```bash
+kubectl get pod -n demo druid-cluster-brokers-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -209,7 +218,6 @@ $ kubectl get pod -n demo druid-cluster-brokers-0 -o json | jq '.spec.containers
     "memory": "2Gi"
   }
 }
-```
 
 Here we can see the containers of the both `coordinators` and `brokers` have the resources we have specified in the manifest.
 
@@ -218,31 +226,32 @@ Here we can see the containers of the both `coordinators` and `brokers` have the
 Here in this example we will use [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) to schedule our druid pod to a specific node. Applying nodeSelector to the Pod involves several steps. We first need to assign a label to some node that will be later used by the `nodeSelector` . Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
-$ kubectl get nodes --show-labels
+kubectl get nodes --show-labels
+```
 NAME                            STATUS   ROLES    AGE   VERSION   LABELS
 lke212553-307295-339173d10000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5541798e0000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5b53c5520000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
-```
 As you see, we have three nodes in the cluster: lke212553-307295-339173d10000, lke212553-307295-5541798e0000, and lke212553-307295-5b53c5520000.
 
 Next, select a node to which you want to add a label. For example, let’s say we want to add a new label with the key `disktype` and value ssd to the `lke212553-307295-5541798e0000` node, which is a node with the SSD storage. To do so, run:
 ```bash
-$ kubectl label nodes lke212553-307295-5541798e0000 disktype=ssd
-node/lke212553-307295-5541798e0000 labeled
+kubectl label nodes lke212553-307295-5541798e0000 disktype=ssd
 ```
+node/lke212553-307295-5541798e0000 labeled
 As you noticed, the command above follows the format `kubectl label nodes <node-name> <label-key>=<label-value>` .
 Finally, let’s verify that the new label was added by running:
-```bash
- $ kubectl get nodes --show-labels                                                                                                                                                                  
+ ```bash
+ kubectl get nodes --show-labels                                                                                                                                                                  
+ ```
 NAME                            STATUS   ROLES    AGE   VERSION   LABELS
 lke212553-307295-339173d10000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5541798e0000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,disktype=ssd,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5b53c5520000   Ready    <none>   41m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
-```
 As you see, the lke212553-307295-5541798e0000 now has a new label disktype=ssd. To see all labels attached to the node, you can also run:
 ```bash
-$ kubectl describe node "lke212553-307295-5541798e0000"
+kubectl describe node "lke212553-307295-5541798e0000"
+```
 Name:               lke212553-307295-5541798e0000
 Roles:              <none>
 Labels:             beta.kubernetes.io/arch=amd64
@@ -258,7 +267,6 @@ Labels:             beta.kubernetes.io/arch=amd64
                     node.kubernetes.io/instance-type=g6-dedicated-4
                     topology.kubernetes.io/region=ap-south
                     topology.linode.com/region=ap-south
-```
 Along with the `disktype=ssd` label we’ve just added, you can see other labels such as `beta.kubernetes.io/arch` or `kubernetes.io/hostname`. These are all default labels attached to Kubernetes nodes.
 
 Now let's create a druid with this new label as nodeSelector. Below is the yaml we are going to apply:
@@ -286,22 +294,22 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-node-selector.yaml
-druid.kubedb.com/druid-node-selector created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-node-selector.yaml
 ```
+druid.kubedb.com/druid-node-selector created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that the `druid-node-selector` instance is in `Ready` state.
 
 ```bash
-$ kubectl get druid -n demo
+kubectl get druid -n demo
+```
 NAME                  TYPE                  VERSION   STATUS   AGE
 druid-node-selector   kubedb.com/v1alpha2   36.0.0    Ready    54m
-```
 You can verify that by running `kubectl get pods -n demo druid-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo druid-node-selector-coordinators-0 -o wide
+kubectl get pods -n demo druid-node-selector-coordinators-0 -o wide
+```
 NAME                                    READY   STATUS    RESTARTS   AGE     IP            NODE                         NOMINATED NODE   READINESS GATES
 druid-node-selector-coordinators-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
-```
 We can successfully verify that our pod was scheduled to our desired node.
 
 ## Using Taints and Tolerations
@@ -309,28 +317,33 @@ We can successfully verify that our pod was scheduled to our desired node.
 Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our druid pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
-$ kubectl get nodes --show-labels
+kubectl get nodes --show-labels
+```
 NAME                            STATUS   ROLES    AGE   VERSION   LABELS
 lke212553-307295-339173d10000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-339173d10000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=618158120a299c6fd37f00d01d355ca18794c467,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5541798e0000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5541798e0000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=75cfe3dbbb0380f1727efc53f5192897485e95d5,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
 lke212553-307295-5b53c5520000   Ready    <none>   36m   v1.30.3   beta.kubernetes.io/arch=amd64,beta.kubernetes.io/instance-type=g6-dedicated-4,beta.kubernetes.io/os=linux,failure-domain.beta.kubernetes.io/region=ap-south,kubernetes.io/arch=amd64,kubernetes.io/hostname=lke212553-307295-5b53c5520000,kubernetes.io/os=linux,lke.linode.com/pool-id=307295,node.k8s.linode.com/host-uuid=792bac078d7ce0e548163b9423416d7d8c88b08f,node.kubernetes.io/instance-type=g6-dedicated-4,topology.kubernetes.io/region=ap-south,topology.linode.com/region=ap-south
-```
 As you see, we have three nodes in the cluster: lke212553-307295-339173d10000, lke212553-307295-5541798e0000, and lke212553-307295-5b53c5520000.
 
 Next, we are going to taint these nodes.
 ```bash
-$ kubectl taint nodes lke212553-307295-339173d10000 key1=node1:NoSchedule
+kubectl taint nodes lke212553-307295-339173d10000 key1=node1:NoSchedule
+```
 node/lke212553-307295-339173d10000 tainted
 
-$ kubectl taint nodes lke212553-307295-5541798e0000 key1=node2:NoSchedule
+```bash
+kubectl taint nodes lke212553-307295-5541798e0000 key1=node2:NoSchedule
+```
 node/lke212553-307295-5541798e0000 tainted
 
-$ kubectl taint nodes lke212553-307295-5b53c5520000 key1=node3:NoSchedule
-node/lke212553-307295-5b53c5520000 tainted
+```bash
+kubectl taint nodes lke212553-307295-5b53c5520000 key1=node3:NoSchedule
 ```
+node/lke212553-307295-5b53c5520000 tainted
 Let's see our tainted nodes here,
 ```bash
-$ kubectl get nodes -o json | jq -r '.items[] | select(.spec.taints != null) | .metadata.name, .spec.taints'
+kubectl get nodes -o json | jq -r '.items[] | select(.spec.taints != null) | .metadata.name, .spec.taints'
+```
 lke212553-307295-339173d10000
 [
   {
@@ -355,7 +368,6 @@ lke212553-307295-5b53c5520000
     "value": "node3"
   }
 ]
-```
 We can see that our taints were successfully assigned. Now let's try to create a druid without proper tolerations. Here is the yaml of druid we are going to create.
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -375,24 +387,25 @@ spec:
   deletionPolicy: Delete
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-without-tolerations.yaml
-druid.kubedb.com/druid-without-tolerations created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-without-tolerations.yaml
 ```
+druid.kubedb.com/druid-without-tolerations created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `druid-without-tolerations-0` has been created and running.
 
 Check that the petset's pod is running or not,
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=druid-without-tolerations
+kubectl get pods -n demo -l app.kubernetes.io/instance=druid-without-tolerations
+```
 NAME                                          READY   STATUS    RESTARTS   AGE
 druid-without-tolerations-brokers-0           0/1     Pending   0          3m35s
 druid-without-tolerations-coordinators-0      0/1     Pending   0          3m35s
 druid-without-tolerations-historicals-0       0/1     Pending   0          3m35s
 druid-without-tolerations-middlemanager-0     0/1     Pending   0          3m35s
 druid-without-tolerations-routers-0           0/1     Pending   0          3m35s
-```
 Here we can see that the pod is not running. So let's describe the pod,
 ```bash
-$ kubectl describe pods -n demo druid-without-tolerations-coordinators-0 
+kubectl describe pods -n demo druid-without-tolerations-coordinators-0 
+```
 Name:             druid-without-tolerations-coordinators-0
 Namespace:        demo
 Priority:         0
@@ -504,7 +517,6 @@ Events:
   Warning  FailedScheduling   5m20s                 default-scheduler   0/3 nodes are available: 1 node(s) had untolerated taint {key1: node1}, 1 node(s) had untolerated taint {key1: node2}, 1 node(s) had untolerated taint {key1: node3}. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
   Warning  FailedScheduling   11s                   default-scheduler   0/3 nodes are available: 1 node(s) had untolerated taint {key1: node1}, 1 node(s) had untolerated taint {key1: node2}, 1 node(s) had untolerated taint {key1: node3}. preemption: 0/3 nodes are available: 3 Preemption is not helpful for scheduling.
   Normal   NotTriggerScaleUp  13s (x31 over 5m15s)  cluster-autoscaler  pod didn't trigger scale-up:
-```
 Here we can see that the pod has no tolerations for the tainted nodes and because of that the pod is not able to scheduled.
 
 So, let's add proper tolerations and create another druid. Here is the yaml we are going to apply,
@@ -570,29 +582,28 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-with-tolerations.yaml
-druid.kubedb.com/druid-with-tolerations created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/podtemplating/yamls/druid-with-tolerations.yaml
 ```
+druid.kubedb.com/druid-with-tolerations created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `druid-with-tolerations-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ $ kubectl get pods -n demo -l app.kubernetes.io/instance=druid-cluster
-
+kubectl get pods -n demo -l app.kubernetes.io/instance=druid-cluster
+```
 NAME                                      READY   STATUS    RESTARTS   AGE
 druid-with-tolerations-brokers-0          1/1     Running   0          164m
 druid-with-tolerations-coordinators-0     1/1     Running   0          164m
 druid-with-tolerations-historicals-0      1/1     Running   0          164m
 druid-with-tolerations-middlemanagers-0   1/1     Running   0          164m
 druid-with-tolerations-routers-0          1/1     Running   0          164m
-```
 As we see the pod is running, you can verify that by running `kubectl get pods -n demo druid-with-tolerations-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo druid-with-tolerations-coordinators-0 -o wide
+kubectl get pods -n demo druid-with-tolerations-coordinators-0 -o wide
+```
 NAME                                       READY   STATUS    RESTARTS   AGE     IP         NODE                            NOMINATED NODE   READINESS GATES
 druid-with-tolerations-coordinators-0      1/1     Running   0          3m49s   10.2.0.8   lke212553-307295-339173d10000   <none>           <none>
-```
 We can successfully verify that our pod was scheduled to the node which it has tolerations.
 
 ## Cleaning up

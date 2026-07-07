@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Now, we are going to deploy a  `MariaDB` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `MariaDBOpsRequest` to reconfigure its configuration.
 
@@ -57,9 +57,9 @@ Here, `max_connections` is set to `200`, whereas the default value is `151`. Lik
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
-secret/md-configuration created
+kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
 ```
+secret/md-configuration created
 
 In this section, we are going to create a MariaDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MariaDB` CR that we are going to create,
 
@@ -88,34 +88,37 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/sample-mariadb-config.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/sample-mariadb-config.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo 
+kubectl get mariadb -n demo 
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5    Ready    71s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mariadb instance,
 
 ```bash
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+```
 root
 
-$ kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
-nrKuxni0wDSMrgwy
+```bash
+kubectl get secrets -n demo sample-mariadb-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 ```
+nrKuxni0wDSMrgwy
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -145,7 +148,6 @@ MariaDB [(none)]> show variables like 'read_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 
 As we can see from the configuration of ready mariadb, the value of `max_connections` has been set to `200` and `read_buffer_size` has been set to `1048576`.
 
@@ -165,9 +167,9 @@ read_buffer_size = 122880
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-md-configuration --from-file=./new-md-config.cnf
-secret/new-md-configuration created
+kubectl create secret generic -n demo new-md-configuration --from-file=./new-md-config.cnf
 ```
+secret/new-md-configuration created
 
 #### Create MariaDBOpsRequest
 
@@ -197,9 +199,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/reconfigure-using-secret.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/reconfigure-using-secret.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-config created
 
 #### Verify the new configuration is working
 
@@ -208,15 +210,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configura
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest --all-namespaces
+kubectl get mariadbopsrequest --all-namespaces
+```
 NAMESPACE   NAME                       TYPE          STATUS       AGE
 demo        mdops-reconfigure-config   Reconfigure   Successful   3m8s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo mdops-reconfigure-config
+kubectl describe mariadbopsrequest -n demo mdops-reconfigure-config
+```
 Name:         mdops-reconfigure-config
 Namespace:    demo
 Labels:       <none>
@@ -264,12 +267,11 @@ Status:
   Observed Generation:     3
   Phase:                   Successful
 
-```
-
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -299,7 +301,6 @@ MariaDB [(none)]> show variables like 'read_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
@@ -338,7 +339,8 @@ Here,
 Before applying this yaml we are going to check the existing value of our new field,
 
 ```bash
-$ kubectl exec -it sample-mariadb-0 -n demo -c mariadb -- bash
+kubectl exec -it sample-mariadb-0 -n demo -c mariadb -- bash
+```
 root@sample-mariadb-0:/# mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -358,15 +360,14 @@ MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 Here, we can see the default value for `innodb_log_buffer_size` is `16777216`. 
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/mdops-reconfigure-apply-config.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/mdops-reconfigure-apply-config.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-apply-config created
 
 
 #### Verify the new configuration is working
@@ -376,15 +377,16 @@ If everything goes well, `KubeDB`  operator will update the `configuration.secre
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest mdops-reconfigure-apply-config -n demo
+kubectl get mariadbopsrequest mdops-reconfigure-apply-config -n demo
+```
 NAME                             TYPE          STATUS       AGE
 mdops-reconfigure-apply-config   Reconfigure   Successful   4m59s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo mdops-reconfigure-apply-config
+kubectl describe mariadbopsrequest -n demo mdops-reconfigure-apply-config
+```
 Name:         mdops-reconfigure-apply-config
 Namespace:    demo
 Labels:       <none>
@@ -443,12 +445,12 @@ Status:
     Type:                  Successful
   Observed Generation:     3
   Phase:                   Successful
-```
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -487,7 +489,6 @@ MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 
 As we can see from above the configuration has been changed, the value of `max_connections` has been changed from `250` to `230` and the `read_buffer_size` has been changed `122880` to `1064960` also, `innodb_log_buffer_size` has been changed from `16777216` to `17408000`. So the reconfiguration of the `sample-mariadb` database is successful.
 
@@ -523,9 +524,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/reconfigure-remove.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure/cluster/examples/reconfigure-remove.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
 
 #### Verify the new configuration is working
 
@@ -534,15 +535,16 @@ If everything goes well, `KubeDB`  operator will update the `configuration.secre
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest --all-namespaces
+kubectl get mariadbopsrequest --all-namespaces
+```
 NAMESPACE   NAME                       TYPE          STATUS       AGE
 demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
-```
 
 Now let's connect to a mariadb instance and run a mariadb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -581,7 +583,6 @@ MariaDB [(none)]> show variables like 'innodb_log_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 
 As we can see from the configuration has changed to its default value. So removal of existing custom configuration using `MariaDBOpsRequest` is successful.
 
@@ -590,7 +591,13 @@ As we can see from the configuration has changed to its default value. So remova
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo mdops-reconfigure-config mdops-reconfigure-apply-config mdops-reconfigure-remove
-$ kubectl delete ns demo
+kubectl delete mariadb -n demo sample-mariadb
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo mdops-reconfigure-config mdops-reconfigure-apply-config mdops-reconfigure-remove
+```
+
+```bash
+kubectl delete ns demo
 ```

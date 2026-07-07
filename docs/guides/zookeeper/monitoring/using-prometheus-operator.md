@@ -27,12 +27,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy the prometheus operator helm chart. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 
 
@@ -45,10 +47,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        22h
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -203,28 +205,28 @@ Here,
 Let's create the ZooKeeper object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/prom-zk.yaml
-zookeeper.kubedb.com/zookeeper created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/prom-zk.yaml
 ```
+zookeeper.kubedb.com/zookeeper created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get zk -n demo zookeeper
+kubectl get zk -n demo zookeeper
+```
 NAME              VERSION    STATUS    AGE
 zookeeper         3.9.1      Ready     34s
-```
 
 KubeDB will create a separate stats service with name `{ZooKeeper crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=zookeeper"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=zookeeper"
+```
 NAME                     TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 zookeeper                ClusterIP   10.43.121.151   <none>        2181/TCP                     26s
 zookeeper-admin-server   ClusterIP   10.43.28.44     <none>        8080/TCP                     26s
 zookeeper-pods           ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP   26s
 zookeeper-stats          ClusterIP   10.43.19.32     <none>        7000/TCP                     26s
-```
 
 Here, `zookeeper-stats` service has been created for monitoring purpose.
 
@@ -258,10 +260,10 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this informatio
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `zookeeper-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                    AGE
 zookeeper-stats         2m40s
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of ZooKeeper crd.
 
@@ -316,20 +318,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1          22h
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-kube-prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `zookeeper-stats` service as one of the targets.
 

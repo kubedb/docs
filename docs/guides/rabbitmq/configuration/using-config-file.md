@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for RabbitMQ. This tutorial will 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/rabbitmq](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,23 +44,24 @@ At first, you have to create a secret with your configuration file contents as t
 At first, create `rabbitmq.conf` file containing required configuration settings.
 
 ```bash
-$ cat rabbitmq.conf
+cat rabbitmq.conf
+```
 vm_memory_high_watermark.absolute = 4GB
 heartbeat = 100
 collect_statistics = coarse
-```
 
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo rm-configuration --from-file=./rabbitmq.conf
-secret/rm-configuration created
+kubectl create secret generic -n demo rm-configuration --from-file=./rabbitmq.conf
 ```
+secret/rm-configuration created
 
 Verify the secret has the configuration file.
 
 ```bash
-$  kubectl get secret -n demo rm-configuration -o yaml
+ kubectl get secret -n demo rm-configuration -o yaml
+```
 apiVersion: v1
 data:
   rabbitmq.conf: bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg==
@@ -73,11 +74,12 @@ metadata:
   uid: 80f5324a-9a65-4801-b136-21d2fa001b12
 type: Opaque
 
-$ echo bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg== | base64 -d
+```bash
+echo bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg== | base64 -d
+```
 vm_memory_high_watermark.absolute = 4GB
 heartbeat = 100
 collect_statistics = coarse
-```
 
 Now, create rabbitmq crd specifying `spec.configuration.secretName` field.
 
@@ -104,26 +106,27 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/configuration/rabbitmq-config-file.yaml
-rabbitmq.kubedb.com/rm-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/configuration/rabbitmq-config-file.yaml
 ```
+rabbitmq.kubedb.com/rm-custom-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `rm-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo rm-custom-config-0
+kubectl get pod -n demo rm-custom-config-0
+```
 NAME                 READY   STATUS    RESTARTS   AGE
 rm-custom-config-0   1/1     Running   0          35s
-```
 
 Now, we will check if the pgpool has started with the custom configuration we have provided.
 
 Now, you can exec into the pgpool pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo rm-custom-config-0 -- bash
+kubectl exec -it -n demo rm-custom-config-0 -- bash
+```
 rm-custom-config-0:/$ cat /config/rabbitmq.conf
 log.console.level= info
 stomp.default_user= $(RABBITMQ_DEFAULT_USER)
@@ -150,7 +153,6 @@ queue_master_locator= min-masters
 cluster_formation.k8s.address_type= hostname
 rm-custom-config-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running rabbitmq, the value of `collect_statistics`, `heartbeat` and `vm_memory_high_watermark.absolute` has been set to our desired value successfully.
 

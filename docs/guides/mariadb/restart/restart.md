@@ -24,10 +24,10 @@ KubeDB supports restarting the MariaDB database via a `MariaDBOpsRequest`. Resta
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
+  ```bash
+  kubectl create ns demo
+  ```
   namespace/demo created
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/MariaDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -57,9 +57,9 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/MariaDB.yaml
-MariaDB.kubedb.com/mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/MariaDB.yaml
 ```
+MariaDB.kubedb.com/mariadb created
 
 ## Apply Restart opsRequest
 
@@ -89,19 +89,21 @@ Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/ops.yaml
-MariaDBopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/restart/ops.yaml
 ```
+MariaDBopsrequest.ops.kubedb.com/restart created
 
 In `MariaDB`, all pods act as primary, so the Ops-manager operator will restart the pods one by one in sequence.
 
-```shell
-$ kubectl get mariaops -n demo restart 
+```bash
+kubectl get mariaops -n demo restart 
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   3m25s
 
-
-$ kubectl get mariaops -n demo restart -oyaml
+```bash
+kubectl get mariaops -n demo restart -oyaml
+```
 kubectl get mariaops -n demo restart -oyaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MariaDBOpsRequest
@@ -173,8 +175,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 
 
 ## Cleaning up

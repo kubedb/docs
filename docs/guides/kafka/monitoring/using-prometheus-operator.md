@@ -27,12 +27,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy the prometheus operator helm chart. Alternatively, you can use `--create-namespace` flag while deploying prometheus. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 
 
@@ -45,17 +47,18 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.42.0   1         1       True         True        2d23h
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
 Now, let's view the YAML of the available Prometheus server `prometheus` in `monitoring` namespace.
 
 ```bash
-$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
+kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
@@ -145,7 +148,6 @@ status:
     updatedReplicas: 1
   unavailableReplicas: 0
   updatedReplicas: 1
-```
 
 Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of Kafka crd.
 
@@ -197,33 +199,34 @@ Here,
 Let's create the kafka object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monitoring.yaml
-kafkas.kubedb.com/kafka created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monitoring.yaml
 ```
+kafkas.kubedb.com/kafka created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get kf -n demo kafka
+kubectl get kf -n demo kafka
+```
 NAME    TYPE                  VERSION   STATUS   AGE
 kafka   kubedb.com/v1alpha2   3.9.0     Ready    2m24s
-```
 
 KubeDB will create a separate stats service with name `{Kafka crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=kafka"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=kafka"
+```
 NAME          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
 kafka-pods    ClusterIP   None            <none>        9092/TCP,9093/TCP,29092/TCP   3m22s
 kafka-stats   ClusterIP   10.96.235.251   <none>        9091/TCP                      3m19s
-```
 
 Here, `kafka-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
 ```bash
-$ kubectl describe svc -n demo kafka-stats
+kubectl describe svc -n demo kafka-stats
+```
 Name:              kafka-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
@@ -243,17 +246,16 @@ TargetPort:        metrics/TCP
 Endpoints:         10.244.0.117:56790,10.244.0.119:56790,10.244.0.121:56790
 Session Affinity:  None
 Events:            <none>
-```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this information to target its endpoints.
 
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `kafka-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME          AGE
 kafka-stats   4m49s
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Kafka crd.
 
@@ -309,20 +311,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS        AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   8 (4h27m ago)   3d
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-kube-prometheus-prometheus` service which is pointing to the prometheus pod,
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `kafka-stats` service as one of the targets.
 

@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Prepare Backend
 
@@ -51,13 +51,19 @@ We are going to store our backed up data into a GCS bucket. We have to create a 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -86,9 +92,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 **Create RetentionPolicy:**
 
@@ -117,9 +123,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 **Create Secret:**
 
@@ -128,11 +134,14 @@ We also need to create a secret with a `Restic` password for backup data encrypt
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 ## Auto-backup with default configurations
 
@@ -192,9 +201,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mysql-default-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mysql-default-backup-blueprint created
 
 Now, we are ready to backup our `MySQL` databases using few annotations.
 
@@ -233,24 +242,24 @@ Here,
 Let's create the `MySQL` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MySQL in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                      PHASE   PAUSED   AGE
 appbinding-sample-mysql   Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mysql  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mysql  -o yaml
 ```
 
 ```yaml
@@ -315,11 +324,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                                 INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
 appbinding-sample-mysql-frequent-backup-1724236500   BackupConfiguration   appbinding-sample-mysql    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -328,18 +336,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `default-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo default-blueprint
+kubectl get repository -n demo default-blueprint
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 default-blueprint          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+```
 NAME                                                                 REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 default-blueprint-appbinding-sampleysql-frequent-backup-1724236500   default-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubedb.com/db-version: <db-version>`
@@ -353,7 +361,7 @@ default-blueprint-appbinding-sampleysql-frequent-backup-1724236500   default-blu
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo default-blueprint-appbinding-sampleysql-frequent-backup-1724236500 -oyaml
+kubectl get snapshots -n demo default-blueprint-appbinding-sampleysql-frequent-backup-1724236500 -oyaml
 ```
 
 ```yaml
@@ -490,9 +498,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mysql-customize-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mysql-customize-backup-blueprint created
 
 Now, we are ready to backup our `MySQL` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
@@ -533,24 +541,24 @@ Notice the `metadata.annotations` field, where we have defined the annotations r
 Let's create the `MySQL` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql-2.yaml
-mysql.kubedb.com/sample-mysql-2 created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/auto-backup/examples/sample-mysql-2.yaml
 ```
+mysql.kubedb.com/sample-mysql-2 created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MySQL in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                        PHASE   PAUSED   AGE
 appbinding-sample-mysql-2   Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mysql-2  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mysql-2  -o yaml
 ```
 
 ```yaml
@@ -617,11 +625,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                                   INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
 appbinding-sample-mysql-2-frequent-backup-1725007200   BackupConfiguration   appbinding-sample-mysql-2    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -630,18 +637,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `customize-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo customize-blueprint
+kubectl get repository -n demo customize-blueprint
+```
 NAME                         INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 customize-blueprint          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+```
 NAME                                                               REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 customize-blueprint-appbinding-sql-2-frequent-backup-1725007200    customize-blueprint   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubedb.com/db-version: <db-version>`
@@ -655,7 +662,7 @@ customize-blueprint-appbinding-sql-2-frequent-backup-1725007200    customize-blu
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725007200 -oyaml
+kubectl get snapshots -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725007200 -oyaml
 ```
 
 ```yaml

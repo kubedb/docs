@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/vertical-scaling/standalone/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/standalone/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a standalone using supported `MySQL` version. T
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let's check the supported MySQL versions,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -65,7 +66,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a standalone using non-deprecated `MySQL`  version `9.6.0`.
 
@@ -95,9 +95,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/standalone/yamls/standalone.yaml
-mysql.kubedb.com/my-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/standalone/yamls/standalone.yaml
 ```
+mysql.kubedb.com/my-standalone created
 
 **Check Standalone Ready to Scale:**
 
@@ -105,31 +105,35 @@ mysql.kubedb.com/my-standalone created
 Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-standalone
+watch -n 3 kubectl get my -n demo my-standalone
+```
 Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode: Wed Jul  1 17:48:14 2020
 
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   2m58s
 
-$ watch -n 3 kubectl get petset -n demo my-standalone
+```bash
+watch -n 3 kubectl get petset -n demo my-standalone
+```
 Every 3.0s: kubectl get petset -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020
 
 NAME            READY   AGE
 my-standalone   1/1     3m36s
 
-$ watch -n 3 kubectl get pod -n demo my-standalone-0
+```bash
+watch -n 3 kubectl get pod -n demo my-standalone-0
+```
 Every 3.0s: kubectl get pod -n demo my-standalone-0              suaas-appscode: Wed Jul  1 17:50:18 2020
 
 NAME              READY   STATUS    RESTARTS   AGE
 my-standalone-0   1/1     Running   0          5m1s
-```
 
 Let's check the above Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resources'
-{}
+kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resources'
 ```
+{}
 
 You can see the Pod has empty resources that mean the scheduler will choose a random node to place the container of the Pod on by default
 
@@ -173,9 +177,9 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/standalone/yamls/my-scale-standalone.yaml
-mysqlopsrequest.ops.kubedb.com/my-scale-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/standalone/yamls/my-scale-standalone.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-scale-standalone created
 
 **Verify MySQL Standalone resources updated successfully:**
 
@@ -184,17 +188,18 @@ If everything goes well, `KubeDB` Ops Manager will update the resources of the P
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```bash
-$ watch -n 3 kubectl get myops -n demo my-scale-standalone
+watch -n 3 kubectl get myops -n demo my-scale-standalone
+```
 Every 3.0s: kubectl get myops -n demo my-sc...  suaas-appscode: Wed Aug 12 17:21:42 2020
 
 NAME                  TYPE              STATUS       AGE
 my-scale-standalone   VerticalScaling   Successful   2m15s
-```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the standalone resources are updated.
 
 ```bash
-$ kubectl describe myops -n demo my-scale-standalone
+kubectl describe myops -n demo my-scale-standalone
+```
 Name:         my-scale-standalone
 Namespace:    demo
 Labels:       <none>
@@ -268,12 +273,11 @@ Events:
   Normal  Successful  14s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-standalone
   Normal  Successful  14s   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-standalone
 
-```
-
 Now, we are going to verify whether the resources of the standalone has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "700m",
@@ -284,7 +288,6 @@ $ kubectl get pod -n demo my-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "1200Mi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the standalone.
 

@@ -30,9 +30,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,9 +64,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created 
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created 
 
 After applying the above yaml wait for the MySQL to be Ready.
 
@@ -81,12 +81,12 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=proxysql/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=proxysql/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
@@ -114,9 +114,9 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/issuer.yaml
-issuer.cert-manager.io/proxy-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/issuer.yaml
 ```
+issuer.cert-manager.io/proxy-issuer created
 
 ### Deploy ProxySQL Cluster with TLS/SSL configuration
 
@@ -163,23 +163,25 @@ You can find more details from [here](/docs/guides/proxysql/concepts/proxysql/in
 Let’s create the `ProxySQL` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/tls/configure/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 **Wait for the database to be ready:**
 
 Now, wait for `ProxySQL` going on `Ready` state and also wait for `PetSet` and its pod to be created and going to `Running` state,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-server
+kubectl get proxysql -n demo proxy-server
+```
 NAME             VERSION       STATUS   AGE
 proxy-server   3.0.1-debian    Ready    5m48s
 
-$ kubectl get petset -n demo proxy-server
+```bash
+kubectl get petset -n demo proxy-server
+```
 NAME             READY   AGE
 proxy-server     3/3     7m5s
-```
 
 **Verify tls-secrets created successfully:**
 
@@ -190,14 +192,14 @@ All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name form
 Let's check the tls-secrets have created,
 
 ```bash
-$ kubectl get secrets -n demo | grep proxy-server
+kubectl get secrets -n demo | grep proxy-server
+```
 proxy-server-auth                    kubernetes.io/basic-auth              2      7m54s
 proxy-server-configuration           Opaque                                1      7m54s
 proxy-server-monitor                 kubernetes.io/basic-auth              2      7m54s
 proxy-server-token-4w4mb             kubernetes.io/service-account-token   3      7m54s
 proxy-server-server-cert             kubernetes.io/tls                     3      7m53s 
 proxy-server-client-cert             kubernetes.io/tls                     3      7m53s 
-```
 
 **Verify ProxySQL Cluster configured with TLS/SSL:**
 
@@ -206,8 +208,8 @@ Now, we are going to connect to the proxysql server for verifying the proxysql s
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash
-
+kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-0:/ ls /var/lib/frontend/client
 ca.crt  tls.crt  tls.key
 root@proxy-server-0:/ ls /var/lib/frontend/server
@@ -232,7 +234,6 @@ ProxySQLAdmin [(none)]> show variables like '%have_ssl%';
 
 ProxySQLAdmin [(none)]> quit;
 Bye
-```
 
 The above output shows that the proxy server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/var/lib/frontend/client/` and `/var/lib/frontend/server/` directory for client and server respectively.
 
@@ -243,7 +244,8 @@ Now, you can create an user that will be used to connect to the server with a se
 First, lets create the user in the backend mysql server.
 
 ```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash 
+kubectl exec -it -n demo mysql-server-0 -- bash 
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -267,7 +269,6 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql> flush privileges;
 Query OK, 0 rows affected (0.00 sec)
-```
 
 As we deployed the ProxySQL with `.spec.syncUsers` turned true, the user will automatically be fetched into the proxysql server. 
 
@@ -298,7 +299,8 @@ Query OK, 0 rows affected (0.008 sec)
 Let's connect to the proxysql server with a secure connection,
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash
+kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-0:/ mysql -utest -ppass -h127.0.0.1 -P6033                                                                                                   
 ERROR 1045 (28000): ProxySQL Error: Access denied for user 'test' (using password: YES). SSL is required
 
@@ -334,7 +336,6 @@ TCP port:		6033
 Uptime:			2 hours 30 min 27 sec
 
 Threads: 1  Questions: 12  Slow queries: 12
-```
 
 In the above output section we can see there is cipher in user at the SSL field. Which means the connection is TLS secured. 
 
@@ -343,8 +344,17 @@ In the above output section we can see there is cipher in user at the SSL field.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete  proxysql -n demo  proxy-server
-$ kubectl delete mysql -n demo mysql-server
-$ kubectl delete issuer -n demo --all
-$ kubectl delete ns demo
+kubectl delete  proxysql -n demo  proxy-server
+```
+
+```bash
+kubectl delete mysql -n demo mysql-server
+```
+
+```bash
+kubectl delete issuer -n demo --all
+```
+
+```bash
+kubectl delete ns demo
 ```

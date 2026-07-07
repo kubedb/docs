@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -66,17 +66,17 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/update-version/ignite.yaml
-ignite.kubedb.com/ignite-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/update-version/ignite.yaml
 ```
+ignite.kubedb.com/ignite-quickstart created
 
 Now, wait until `ignite-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ignite -n demo
+kubectl get ignite -n demo
+```
 NAME                VERSION    STATUS    AGE
 ignite-quickstart   2.16.0     Ready     109s
-```
 
 We are now ready to apply the `IgniteOpsRequest` CR to update this database.
 
@@ -114,9 +114,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/update-version/ig-version-upgrade-ops.yaml
-igniteopsrequest.ops.kubedb.com/upgrade-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/update-version/ig-version-upgrade-ops.yaml
 ```
+igniteopsrequest.ops.kubedb.com/upgrade-topology created
 
 #### Verify Ignite version updated successfully
 
@@ -125,16 +125,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `IgniteOpsRequest` to be `Successful`. Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                TYPE            STATUS       AGE
 upgrade-topology    UpdateVersion   Successful   84s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo upgrade-topology
+kubectl describe igniteopsrequest -n demo upgrade-topology
+```
 Name:         upgrade-topology
 Namespace:    demo
 Labels:       <none>
@@ -234,20 +235,23 @@ Events:
   Normal   RestartPods                                                    7m25s  KubeDB Ops-manager Operator  Successfully Restarted Ignite nodes
   Normal   Starting                                                       7m25s  KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite-quickstart
   Normal   Successful                                                     7m25s  KubeDB Ops-manager Operator  Successfully updated Ignite version
-```
 
 Now, we are going to verify whether the `Ignite` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get ignite -n demo ignite-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get ignite -n demo ignite-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+```
 2.17.0
 
-$ kubectl get petset -n demo ignite-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo ignite-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/ignite:2.17.0
 
-$ kubectl get pods -n demo ignite-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/ignite:2.17.0
+```bash
+kubectl get pods -n demo ignite-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/ignite:2.17.0
 
 You can see from above, our `Ignite` cluster has been updated with the new version. So, the updateVersion process is successfully completed.
 

@@ -48,12 +48,12 @@ spec:
 ## List available versions and check for deprecated ones
 
 ```bash
-$ kubectl get neo4jversions
+kubectl get neo4jversions
+```
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
 2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
 2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
 2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
-```
 
 If the `DEPRECATED` column shows `true` for a version you are currently using, upgrade to a supported version via [UpdateVersion](/docs/guides/neo4j/update-version/versionupgrading/).
 

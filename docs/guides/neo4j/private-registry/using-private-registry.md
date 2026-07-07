@@ -21,9 +21,9 @@ KubeDB supports using private Docker registries. This tutorial will show you how
 > Prerequisites: A running Kubernetes cluster with KubeDB installed. See the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) if you need to set up your environment.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Private Docker Registry
 
@@ -32,23 +32,23 @@ namespace/demo created
 - Push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For Neo4j, push the `DB_IMAGE` of the following Neo4jVersions, where `deprecated` is not true.
 
   ```bash
-  $ kubectl get neo4jversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
+  kubectl get neo4jversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,DEPRECATED:.spec.deprecated
+  ```
   NAME      VERSION   DB_IMAGE                       DEPRECATED
   2025.12.1 2025.12.1 kubedb/neo4j:2025.12.1         <none>
-  ```
 
 ## Create ImagePullSecret
 
 Run the following command to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 ## Install KubeDB Operator
 
@@ -70,9 +70,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f pvt-neo4jversion.yaml
-neo4jversion.catalog.kubedb.com/2025.12.1 created
+kubectl apply -f pvt-neo4jversion.yaml
 ```
+neo4jversion.catalog.kubedb.com/2025.12.1 created
 
 ## Deploy Neo4j from Private Registry
 
@@ -101,17 +101,17 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/private-registry/pvt-reg-neo4j.yaml
-neo4j.kubedb.com/pvt-reg-neo4j created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/private-registry/pvt-reg-neo4j.yaml
 ```
+neo4j.kubedb.com/pvt-reg-neo4j created
 
 Check that the Neo4j is in Running state:
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-neo4j"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-neo4j"
+```
 NAME               READY   STATUS    RESTARTS   AGE
 pvt-reg-neo4j-0    1/1     Running   0          3m
-```
 
 ## Cleaning up
 

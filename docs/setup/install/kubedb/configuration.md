@@ -58,7 +58,7 @@ global:
 Save these values to a file (e.g. `values.yaml`) and pass it to `helm install` / `helm upgrade`:
 
 ```bash
-$ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -69,7 +69,7 @@ $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
 Or override individual engines inline with `--set`:
 
 ```bash
-$ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -99,7 +99,7 @@ Set `enabled: true` to create the policies. The `flavor` field selects which API
 Enable it inline with `--set`:
 
 ```bash
-$ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -125,21 +125,20 @@ Within the cluster, the following paths must stay open. When `global.networkPoli
 To check if KubeDB operator pods have started, run the following command:
 
 ```bash
-$ watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
-
+watch kubectl get pods --all-namespaces -l "app.kubernetes.io/instance=kubedb"
+```
 NAME                                            READY   STATUS    RESTARTS   AGE
 kubedb-kubedb-autoscaler-b5dd47dc5-bxnrq        1/1     Running   0          48s
 kubedb-kubedb-ops-manager-6f766b86c6-h9m66      1/1     Running   0          48s
 kubedb-kubedb-provisioner-6fd44d5784-d8v9c      1/1     Running   0          48s
 kubedb-kubedb-webhook-server-6cf469bdf4-72wvz   1/1     Running   0          48s
-```
 
 Once the operator pod is running, you can cancel the above command by typing `Ctrl+C`.
 
 Now, to confirm CRD groups have been registered by the operator, run the following command:
 
 ```bash
-$ kubectl get crd -l app.kubernetes.io/name=kubedb
+kubectl get crd -l app.kubernetes.io/name=kubedb
 ```
 
 Now, you are ready to [create your first database](/docs/guides/README.md) using KubeDB.

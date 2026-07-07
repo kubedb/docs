@@ -136,11 +136,11 @@ This secret contains a `username` key and a `password` key which contains the us
 Example:
 
 ```bash
-$ kubectl create secret generic proxysql-cluster-auth -n demo \
+kubectl create secret generic proxysql-cluster-auth -n demo \
 --from-literal=username=cluster \
 --from-literal=password=6q8u2jMOWOOZXk
-secret "proxysql-cluster-auth" created
 ```
+secret "proxysql-cluster-auth" created
 
 ```yaml
 apiVersion: v1
@@ -181,7 +181,8 @@ Checkout this [link](/docs/guides/proxysql/concepts/declarative-configuration/in
 `.spec.configuration.secretName` is another field to pass the bootstrap configuration for the proxysql. If you want to pass the configuration through a secret you can just mention the secret name under this field in `spec.configuration.secretName` field. The secret should look something like the following 
 
 ```bash
-$ kubectl view-secret -n demo my-config-secret -a  
+kubectl view-secret -n demo my-config-secret -a  
+```
 AdminVariables.cnf=admin_variables=
 {
     checksum_mysql_query_rules: true
@@ -229,7 +230,6 @@ MySQLVariables.cnf=mysql_variables=
     max_connections=1024
     default_schema="information_schema"
 }
-```
 
 The secret should contain keys none other than `AdminVariables.cnf`, `MySQLVariables.cnf`, `MySQLUsers.cnf`, `MySQLVariables.cnf` . The key names define the contents of the values itself. Important info to add is that the value provided with the keys will be patched to the `proxysql.cnf` file exactly as it is. So be careful with the format when you are going to bootstrap proxysql in this way. 
 

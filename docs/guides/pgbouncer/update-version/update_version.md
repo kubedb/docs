@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -76,17 +76,17 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/update-version/pb-update.yaml
-pgbouncer.kubedb.com/pb-update created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/update-version/pb-update.yaml
 ```
+pgbouncer.kubedb.com/pb-update created
 
 Now, wait until `pb-update` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
  NAME        TYPE                  VERSION   STATUS   AGE
  pb-update   kubedb.com/v1         1.18.0    Ready    26s
-```
 
 We are now ready to apply the `PgBouncerOpsRequest` CR to update this PgBouncer.
 
@@ -122,9 +122,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/update-version/pbops-update.yaml
-pgbounceropsrequest.ops.kubedb.com/pgbouncer-version-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/update-version/pbops-update.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pgbouncer-version-update created
 
 #### Verify PgBouncer version updated successfully :
 
@@ -133,16 +133,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                      TYPE                STATUS       AGE
 pgbouncer-version-update  UpdateVersion       Successful   93s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to update the PgBouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pgbouncer-version-update
+kubectl describe pgbounceropsrequest -n demo pgbouncer-version-update
+```
 Name:         pgbouncer-version-update
 Namespace:    demo
 Labels:       <none>
@@ -248,20 +249,23 @@ Events:
   Normal   Starting                                                              53s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-update
   Normal   Successful                                                            53s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-update
   Normal   Successful                                                            53s   KubeDB Ops-manager Operator  Controller has Successfully updated the version of PgBouncer database: demo/pb-update
-```
 
 Now, we are going to verify whether the `PgBouncer` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get pb -n demo pb-update -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
+kubectl get pb -n demo pb-update -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
+```
 1.23.1
 
-$ kubectl get petset -n demo pb-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+```bash
+kubectl get petset -n demo pb-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+```
 ghcr.io/kubedb/pgbouncer:1.23.1@sha256:9829a24c60938ab709fe9e039fecd9f0019354edf4e74bfd9e62bb2203e945ee
 
-$ kubectl get pods -n demo pb-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-ghcr.io/kubedb/pgbouncer:1.23.1@sha256:9829a24c60938ab709fe9e039fecd9f0019354edf4e74bfd9e62bb2203e945ee
+```bash
+kubectl get pods -n demo pb-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
 ```
+ghcr.io/kubedb/pgbouncer:1.23.1@sha256:9829a24c60938ab709fe9e039fecd9f0019354edf4e74bfd9e62bb2203e945ee
 
 You can see from above, our `PgBouncer` has been updated with the new version. So, the update process is successfully completed.
 

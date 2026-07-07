@@ -27,10 +27,10 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
+  ```bash
+  kubectl create ns demo
+  ```
 namespace/demo created
-```
 
 ## Prepare Initialization Scripts
 
@@ -43,10 +43,10 @@ At first, we will create a ConfigMap from `init.sql` file. Then, we will provide
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo md-init-script \
+kubectl create configmap -n demo md-init-script \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/mysql-init-scripts/raw/master/init.sql)"
-configmap/md-init-script created
 ```
+configmap/md-init-script created
 
 ## Create a MariaDB database with Init-Script
 
@@ -75,9 +75,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/initialization/using-script/example/demo-1.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/initialization/using-script/example/demo-1.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
@@ -123,9 +123,10 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 Now, we will connect to this database and check the data inserted by the initlization script.
 
-```bash
 # Connecting to the database
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 40
@@ -154,15 +155,16 @@ MariaDB [mysql]> select * from  kubedb_table;
 MariaDB [mysql]> quit;
 Bye
 
-```
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mariadb/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -53,13 +53,19 @@ We are going to store our backup data into a `GCS` bucket. We have to create a `
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -88,9 +94,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -121,9 +127,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 **Create Secret:**
 
@@ -132,8 +138,11 @@ We also need to create a secret with a `Restic` password for backup data encrypt
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -196,9 +205,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mariadb-default-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mariadb-default-backup-blueprint created
 
 Now, we are ready to backup our `MariaDB` databases using few annotations.
 
@@ -238,24 +247,24 @@ Here,
 Let's create the `MariaDB` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MariaDB in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                         PHASE   PAUSED   AGE
 appbinding-sample-mariadb   Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mariadb  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mariadb  -o yaml
 ```
 
 ```yaml
@@ -362,10 +371,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                    INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
 appbinding-sample-mariadb-frequent-backup-1726637655    BackupConfiguration   appbinding-sample-mariadb   Succeeded   2m11s      3m15s
-```
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
 **Verify Backup:**
@@ -373,18 +382,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-mariadb-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo default-blueprint
+kubectl get repository -n demo default-blueprint
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 default-blueprint   true        3                1.559 KiB   Ready   80s                      7m32s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=default-blueprint
+kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=default-blueprint
+```
 NAME                                                              REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 default-blueprint-appbinding-samiadb-frequent-backup-1726637655   default-blueprint   frequent-backup   2024-09-18T05:34:18Z   Delete            Succeeded   7m39s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -397,7 +406,7 @@ default-blueprint-appbinding-samiadb-frequent-backup-1726637655   default-bluepr
 If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo default-blueprint-appbinding-samgres-frequent-backup-1725533628 -oyaml
+kubectl get snapshot.storage.kubestash.com -n demo default-blueprint-appbinding-samgres-frequent-backup-1725533628 -oyaml
 ```
 
 ```yaml
@@ -544,9 +553,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mariadb-customize-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/customize-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mariadb-customize-backup-blueprint created
 
 Now, we are ready to backup our `MariaDB` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
@@ -588,24 +597,24 @@ Notice the `metadata.annotations` field, where we have defined the annotations r
 Let's create the `MariaDB` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/sample-mariadb-2.yaml
-mariadb.kubedb.com/sample-mariadb-2 created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/auto-backup/examples/sample-mariadb-2.yaml
 ```
+mariadb.kubedb.com/sample-mariadb-2 created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MariaDB in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                           PHASE   PAUSED      AGE
 appbinding-sample-mariadb-2    Ready               2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mariadb-2  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mariadb-2  -o yaml
 ```
 
 ```yaml
@@ -714,10 +723,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                      INVOKER-TYPE          INVOKER-NAME                   PHASE       DURATION   AGE
 appbinding-sample-mariadb-2-frequent-backup-1726640601    BackupConfiguration   appbinding-sample-mariadb-2   Succeeded   2m6s       10m
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
@@ -726,18 +735,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `customize-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo customize-blueprint
+kubectl get repository -n demo customize-blueprint
+```
 NAME                         INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 customize-blueprint          true        2                1.021 MiB   Ready   4m29s                    11ms
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=customize-blueprint
+kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=customize-blueprint
+```
 NAME                                                              REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 customize-blueprint-appbinding-sdb-2-frequent-backup-1726640601   customize-blueprint   frequent-backup   2024-09-18T06:23:24Z   Delete            Succeeded   12m
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubedb.com/db-version: <db-version>`
@@ -751,7 +760,7 @@ customize-blueprint-appbinding-sdb-2-frequent-backup-1726640601   customize-blue
 If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725597000 -oyaml
+kubectl get snapshot.storage.kubestash.com -n demo customize-blueprint-appbinding-sql-2-frequent-backup-1725597000 -oyaml
 ```
 
 ```yaml

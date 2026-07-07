@@ -26,13 +26,15 @@ In Druid cluster, there are six nodes available coordinators, overlords, brokers
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/configuration/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -41,10 +43,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Druid CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -57,19 +59,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -95,9 +103,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 ## Use Custom Configuration
 
@@ -133,9 +141,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/config-secret.yaml
-secret/config-secret created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/config-secret.yaml
 ```
+secret/config-secret created
 
 > To provide custom configuration for other nodes add values for the following `key` under `stringData`:
 >   - Use `common.runtime.properties` for common configurations
@@ -169,21 +177,21 @@ spec:
 Now, create the Druid object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/druid-with-config.yaml
-druid.kubedb.com/druid-with-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/configuration/config-file/yamls/druid-with-config.yaml
 ```
+druid.kubedb.com/druid-with-config created
 
 Now, wait for the Druid to become ready:
 
 ```bash
-$ kubectl get dr -n demo -w
+kubectl get dr -n demo -w
+```
 NAME                TYPE                  VERSION   STATUS         AGE
 druid-with-config   kubedb.com/v1alpha2   36.0.0     Provisioning   5s
 druid-with-config   kubedb.com/v1alpha2   36.0.0    Provisioning   7s
 .
 .
 druid-with-config   kubedb.com/v1alpha2   36.0.0     Ready          2m
-```
 
 ## Verify Configuration
 
@@ -192,10 +200,10 @@ Lets exec into one of the druid middleManagers pod that we have created and chec
 Exec into the Druid middleManagers:
 
 ```bash
-$ kubectl exec -it -n demo druid-with-config-middleManagers-0 -- bash
+kubectl exec -it -n demo druid-with-config-middleManagers-0 -- bash
+```
 Defaulted container "druid" out of: druid, init-druid (init)
 bash-5.1$   
-```
 
 Now, execute the following commands to see the configurations:
 ```bash
@@ -209,10 +217,10 @@ Now, lets exec into one of the druid historicals pod that we have created and ch
 Exec into the Druid historicals:
 
 ```bash
-$ kubectl exec -it -n demo druid-with-config-historicals-0 -- bash
+kubectl exec -it -n demo druid-with-config-historicals-0 -- bash
+```
 Defaulted container "druid" out of: druid, init-druid (init)
 bash-5.1$   
-```
 
 Now, execute the following commands to see the metadata storage directory:
 ```bash
@@ -228,10 +236,10 @@ You can also see the configuration changes from the druid ui. For that, follow t
 First port-forward the port `8888` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/druid-with-config-routers 8888
+kubectl port-forward -n demo svc/druid-with-config-routers 8888
+```
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
-```
 
 
 Now hit the `http://localhost:8888` from any browser, and you will be prompted to provide the credential of the druid database. By following the steps discussed below, you can get the credential generated by the KubeDB operator for your Druid database.
@@ -241,16 +249,16 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-with-config-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo druid-with-config-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-with-config-auth -o jsonpath='{.data.password}' | base64 -d
-  LzJtVRX5E8MorFaf
+  kubectl get secret -n demo druid-with-config-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  LzJtVRX5E8MorFaf
 
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
@@ -266,11 +274,15 @@ You can see that there are 5 task slots reflecting with our provided custom conf
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete dr -n demo druid-with-config 
+kubectl delete dr -n demo druid-with-config 
+```
 
-$ kubectl delete secret -n demo config-secret 
+```bash
+kubectl delete secret -n demo config-secret 
+```
 
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

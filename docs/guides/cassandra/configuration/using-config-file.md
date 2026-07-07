@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Cassandra. This tutorial will
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,22 +46,23 @@ At first, you have to create a secret with your configuration file contents as t
 At first, create `cassandra.yaml` file containing required configuration settings.
 
 ```bash
-$ cat cassandra.yaml
+cat cassandra.yaml
+```
 read_request_timeout: 6000ms
 write_request_timeout: 2500ms
-```
 
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo cas-configuration --from-file=./cassandra.yaml
-secret/cas-configuration created
+kubectl create secret generic -n demo cas-configuration --from-file=./cassandra.yaml
 ```
+secret/cas-configuration created
 
 Verify the secret has the configuration file.
 
 ```bash
-$  kubectl get secret -n demo cas-configuration -o yaml
+ kubectl get secret -n demo cas-configuration -o yaml
+```
 apiVersion: v1
 data:
   cassandra.yaml: cmVhZF9yZXF1ZXN0X3RpbWVvdXQ6IDYwMDBtcwp3cml0ZV9yZXF1ZXN0X3RpbWVvdXQ6IDI1MDBtcwo=
@@ -74,10 +75,11 @@ metadata:
   uid: 135c819c-fba6-4800-9ae0-fac35312fab2
 type: Opaque
 
-$  echo  cmVhZF9yZXF1ZXN0X3RpbWVvdXQ6IDYwMDBtcwp3cml0ZV9yZXF1ZXN0X3RpbWVvdXQ6IDI1MDBtcwo= | base64 -d
+```bash
+ echo  cmVhZF9yZXF1ZXN0X3RpbWVvdXQ6IDYwMDBtcwp3cml0ZV9yZXF1ZXN0X3RpbWVvdXQ6IDI1MDBtcwo= | base64 -d
+```
 read_request_timeout: 6000ms
 write_request_timeout: 2500ms
-```
 
 Now, create cassandra crd specifying `spec.configuration.secretName` field.
 
@@ -107,26 +109,27 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/configuration/cassandra-config-file.yaml
-cassandra.kubedb.com/cas-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/configuration/cassandra-config-file.yaml
 ```
+cassandra.kubedb.com/cas-custom-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `cas-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod  -n demo cas-custom-config-rack-r0-0 
+kubectl get pod  -n demo cas-custom-config-rack-r0-0 
+```
 NAME                          READY   STATUS    RESTARTS   AGE
 cas-custom-config-rack-r0-0   1/1     Running   0          36s
-```
 
 Now, we will check if the cassandra has started with the custom configuration we have provided.
 
 Now, you can exec into the cassandra pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo cas-custom-config-rack-r0-0 -- bash
+kubectl exec -it -n demo cas-custom-config-rack-r0-0 -- bash
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 [cassandra@cas-custom-config-rack-r0-0 /]$ cat /etc/cassandra/cassandra.yaml | grep request_timeout
 read_request_timeout: 6000ms
@@ -137,7 +140,6 @@ truncate_request_timeout: 60000ms
 request_timeout: 10000ms
 [cassandra@cas-custom-config-rack-r0-0 /]$ exit
 exit
-```
 
 As we can see from the configuration of running cassandra, the value of `read_request_timeout` and `write_request_timeout` has been set to our desired value successfully.
 

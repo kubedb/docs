@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Kafka ConnectCluster. This tuto
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -84,9 +84,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/connectcluster-issuer.yaml
-issuer.cert-manager.io/connectcluster-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/connectcluster-issuer.yaml
 ```
+issuer.cert-manager.io/connectcluster-ca-issuer created
 
 ## TLS/SSL encryption in Kafka Topology Cluster
 
@@ -124,15 +124,15 @@ Here,
 ### Deploy Kafka ConnectCluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/connectcluster-tls.yaml
-connectcluster.kafka.kubedb.com/connectcluster-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/connectcluster-tls.yaml
 ```
+connectcluster.kafka.kubedb.com/connectcluster-tls created
 
 Now, wait until `connectcluster-tls created` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get connectcluster -n demo
-
+watch kubectl get connectcluster -n demo
+```
 Every 2.0s: kubectl get connectcluster -n demo                                                                                                                 aadee: Fri Sep  6 14:59:32 2024
 
 NAME                 TYPE                        VERSION   STATUS         AGE
@@ -141,13 +141,12 @@ connectcluster-tls   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   34s
 .
 .
 connectcluster-tls   kafka.kubedb.com/v1alpha1   3.9.0     Ready          2m
-```
 
 ### Verify TLS/SSL in Kafka ConnectCluster
 
 ```bash
-$ kubectl describe secret -n demo connectcluster-tls-client-connect-cert 
-
+kubectl describe secret -n demo connectcluster-tls-client-connect-cert 
+```
 Name:         connectcluster-tls-client-connect-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=kafka
@@ -172,15 +171,14 @@ Data
 ca.crt:   1184 bytes
 tls.crt:  1566 bytes
 tls.key:  1704 bytes
-```
 
 Now, Let's exec into a ConnectCluster pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it connectcluster-tls-0 -n demo -- bash
+kubectl exec -it connectcluster-tls-0 -n demo -- bash
+```
 kafka@connectcluster-tls-0:~$ curl -u "$CONNECT_CLUSTER_USER:$CONNECT_CLUSTER_PASSWORD" http://localhost:8083
 curl: (1) Received HTTP/0.9 when not allowed
-```
 
 From the above output, we can see that we are unable to connect to the Kafka cluster using the HTTP protocol.
 

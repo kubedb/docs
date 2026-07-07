@@ -39,9 +39,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mariadb/backup/kubestash/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -83,32 +83,34 @@ spec:
 Create the above `MariaDB` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 KubeDB will deploy a `MariaDB` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get md -n demo sample-mariadb
+kubectl get md -n demo sample-mariadb
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/sample-mariadb   11.1.3    Ready    5m4s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo 
+kubectl get secret -n demo 
+```
 NAME                          TYPE                       DATA   AGE
 sample-mariadb-auth           kubernetes.io/basic-auth   2      5m49s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mariadb
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mariadb
+```
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
 sample-mariadb            ClusterIP   10.128.7.155   <none>        3306/TCP                     6m28s
 sample-mariadb-pods       ClusterIP   None           <none>        3306/TCP                     6m28s     
-```
 
 Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mariadb/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
@@ -118,15 +120,15 @@ Here, we have to use service `sample-mariadb` and secret `sample-mariadb-auth` t
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME                       TYPE                  VERSION   AGE
 sample-mariadb             kubedb.com/mariadb    11.1.3    7m56s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-mariadb -o yaml
+kubectl get appbindings -n demo sample-mariadb -o yaml
 ```
 
 ```yaml
@@ -198,18 +200,18 @@ Here,
 Now, we are going to exec into one of the database pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mariadb" 
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mariadb" 
+```
 NAME                READY   STATUS    RESTARTS   AGE
 sample-mariadb-0    2/2     Running   0          10m
 sample-mariadb-1    2/2     Running   0          10m
 sample-mariadb-2    2/2     Running   0          10m
-```
 
 Now, let’s exec into the pod and create a table,
 
 ```bash
-$ kubectl exec -it -n demo  mariadb-0 -- bash
-
+kubectl exec -it -n demo  mariadb-0 -- bash
+```
 bash-4.4$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 
 MariaDB> create database hello;
@@ -242,8 +244,6 @@ MariaDB [hello]> select count(*) from demo_table;
 |       10 |
 +----------+
 
-```
-
 Now, we are ready to backup the database.
 
 ### Prepare Backend
@@ -255,13 +255,19 @@ We are going to store our backup data into a `GCS` bucket. We have to create a `
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -290,9 +296,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -323,9 +329,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -338,8 +344,11 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -391,28 +400,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-mariadb-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                     PHASE   PAUSED   AGE
 sample-mariadb-backup    Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                  INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mariadb-repo      true        1                1.096 KiB   Ready   3m3s                     3m13s
-
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/mariadb` directory.
 
@@ -423,20 +431,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                             SCHEDULE     TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-mariadb-backup-frequent-backup   */5 * * * *   <none>     False     0        <none>          4m23s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                INVOKER-TYPE          INVOKER-NAME              PHASE       DURATION   AGE
 sample-mariadb-backup-frequent-backup-1725449400    BackupConfiguration   sample-mariadb-backup     Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backup data has been stored in the backend.
 
@@ -445,18 +453,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-mariadb-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-mariadb-repo
+kubectl get repository -n demo gcs-mariadb-repo
+```
 NAME                       INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mariadb-repo           true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mariadb-repo
+kubectl get snapshot.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mariadb-repo
+```
 NAME                                                                  REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774       gcs-mariadb-repo    frequent-backup   2024-09-17T10:43:04Z   Delete            Succeeded   41m
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -469,7 +477,7 @@ gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774       gcs-mariad
 If we check the YAML of the `Snapshot`, we can find the information about the backup components of the Database.
 
 ```bash
-$ kubectl get snapshot.storage.kubestash.com -n demo gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774 -oyaml
+kubectl get snapshot.storage.kubestash.com -n demo gcs-mariadb-repo-sample-mariadb-ckup-frequent-backup-1726569774 -oyaml
 ```
 
 ```yaml
@@ -584,17 +592,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restored-mariadb.yaml
-mariadb.kubedb.com/restored-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restored-mariadb.yaml
 ```
+mariadb.kubedb.com/restored-mariadb created
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.
 
 ```bash
-$ kubectl get mariadb -n demo restored-mariadb
+kubectl get mariadb -n demo restored-mariadb
+```
 NAME                VERSION   STATUS         AGE
 restored-mariadb    11.1.3    Provisioning   110s
-```
 
 #### Create RestoreSession:
 
@@ -635,17 +643,17 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-mariadb-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-mariadb-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 NAME                      REPOSITORY          FAILURE-POLICY   PHASE       DURATION   AGE
 sample-mariadb-restore   gcs-mariadb-repo                    Succeeded   7s         116s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -656,25 +664,26 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into **`Ready`** state by the following command,
 
 ```bash
-$ kubectl get mariadb -n demo restored-mariadb
+kubectl get mariadb -n demo restored-mariadb
+```
 NAME                VERSION   STATUS   AGE
 restored-mariadb    11.1.3    Ready    6m
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mariadb"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mariadb"
+```
 NAME                            READY   STATUS      RESTARTS   AGE
 restored-mariadb-0              2/2     Running     0          7m
 restored-mariadb-1              2/2     Running     0          7m
 restored-mariadb-2              2/2     Running     0          7m
-```
 
 Now, lets exec one of the `Pod` and verify restored data.
 
 ```bash
-$ kubectl exec -it -n demo restored-mariadb-0 -- bash
+kubectl exec -it -n demo restored-mariadb-0 -- bash
+```
 mysql@restored-mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 
 MariaDB> use hello;
@@ -685,8 +694,6 @@ MariaDB [hello]> select count(*) from demo_table;
 +----------+
 |       10 |
 +----------+
-
-```
 
 So, from the above output, we can see the `hello` database we had created in the original database `sample-mariadb` has been restored in the `restored-mariadb` database.
 

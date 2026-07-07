@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mssqlserver/backup/auto-backup/examples](/docs/guides/mssqlserver/backup/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -54,13 +54,19 @@ We are going to store our backed up data into a `GCS` bucket. We have to create 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -89,9 +95,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -122,9 +128,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Prepare Issuer/ClusterIssuer
 
@@ -139,15 +145,15 @@ By following the below steps, we are going to create our desired issuer,
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
 ```
 
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
@@ -165,9 +171,9 @@ spec:
 Let’s create the `Issuer` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
 
 ## Auto-backup with default configurations
 
@@ -228,9 +234,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/default-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mssqlserver-default-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/default-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mssqlserver-default-backup-blueprint created
 
 Now, we are ready to backup our `Microsoft SQL Server` databases using few annotations.
 
@@ -283,24 +289,24 @@ Here,
 Let's create the `MSSQLServer` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/sample-mssqlserver.yaml
-mssqlserver.kubedb.com/sample-mssqlserver created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/sample-mssqlserver.yaml
 ```
+mssqlserver.kubedb.com/sample-mssqlserver created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MSSQLServer in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                            PHASE   PAUSED   AGE
 appbinding-sample-mssqlserver   Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mssqlserver  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mssqlserver  -o yaml
 ```
 
 ```yaml
@@ -411,10 +417,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                       INVOKER-TYPE          INVOKER-NAME                    PHASE       DURATION   AGE
 appbinding-sample-mssqlserver-frequent-backup-1727329837   BackupConfiguration   appbinding-sample-mssqlserver   Succeeded   23s        6m40s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -423,18 +429,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `default-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo default-blueprint
+kubectl get repository -n demo default-blueprint
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 default-blueprint   true        1                1.559 KiB   Ready   80s                      7m32s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+```
 NAME                                                              REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 default-blueprint-appbinding-samrver-frequent-backup-1727329837   default-blueprint   frequent-backup   2024-09-05T10:53:59Z   Delete            Succeeded   7m48s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -447,7 +453,7 @@ default-blueprint-appbinding-samrver-frequent-backup-1727329837   default-bluepr
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo default-blueprint-appbinding-samrver-frequent-backup-1727329837  -oyaml
+kubectl get snapshots -n demo default-blueprint-appbinding-samrver-frequent-backup-1727329837  -oyaml
 ```
 
 ```yaml
@@ -590,9 +596,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/mssqlserver-customize-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/customize-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/mssqlserver-customize-backup-blueprint created
 
 Now, we are ready to backup our `Microsoft SQL Server` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
@@ -653,24 +659,24 @@ Notice the `metadata.annotations` field, where we have defined the annotations r
 Let's create the `MSSQLServer` object  we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/sample-mssqlserver-2.yaml
-mssqlserver.kubedb.com/sample-mssqlserver-2 created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/auto-backup/examples/sample-mssqlserver-2.yaml
 ```
+mssqlserver.kubedb.com/sample-mssqlserver-2 created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our MSSQLServer in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                              PHASE   PAUSED      AGE
 appbinding-sample-mssqlserver-2   Ready               2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-mssqlserver-2  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-mssqlserver-2  -o yaml
 ```
 
 ```yaml
@@ -787,10 +793,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                         INVOKER-TYPE          INVOKER-NAME                      PHASE       DURATION   AGE
 appbinding-sample-mssqlserver-2-frequent-backup-1727333656   BackupConfiguration   appbinding-sample-mssqlserver-2   Succeeded   1m18s      2m48s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -799,18 +805,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `customize-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo customize-blueprint
+kubectl get repository -n demo customize-blueprint
+```
 NAME                         INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 customize-blueprint          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+```
 NAME                                                              REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 customize-blueprint-appbinding-ser-2-frequent-backup-1727333656   customize-blueprint   frequent-backup   2024-09-26T06:54:26Z   Delete            Succeeded   4m52s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubedb.com/db-version: <db-version>`
@@ -824,7 +830,7 @@ customize-blueprint-appbinding-ser-2-frequent-backup-1727333656   customize-blue
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo customize-blueprint-appbinding-ser-2-frequent-backup-1727333656  -oyaml
+kubectl get snapshots -n demo customize-blueprint-appbinding-ser-2-frequent-backup-1727333656  -oyaml
 ```
 
 ```yaml

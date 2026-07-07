@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Solr via [PodTemplate](/docs/
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/configuration/podtemplating/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/Solr/configuration/podtemplating/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -136,62 +136,65 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/configuration/sl-custom-podtemplate.yaml
-Solr.kubedb.com/solr-misc-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/configuration/sl-custom-podtemplate.yaml
 ```
+Solr.kubedb.com/solr-misc-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sdb-misc-config-aggregator-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-misc-config
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-misc-config
+```
 NAME                             READY   STATUS    RESTARTS   AGE
 solr-misc-config-coordinator-0   1/1     Running   0          3m30s
 solr-misc-config-data-0          1/1     Running   0          3m35s
 solr-misc-config-overseer-0      1/1     Running   0          3m33s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl get pod -n demo solr-misc-config-coordinator-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  }
-}
-
-$ kubectl get pod -n demo solr-misc-config-data-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  }
-}
-
-$ kubectl get pod -n demo solr-misc-config-overseer-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "900m",
-    "memory": "2560Mi"
-  }
-}
-
+kubectl get pod -n demo solr-misc-config-coordinator-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo solr-misc-config-data-0 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo solr-misc-config-overseer-0 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "900m",
+    "memory": "2560Mi"
+  }
+}
 
 
 ## Using Node Selector
@@ -199,7 +202,8 @@ $ kubectl get pod -n demo solr-misc-config-overseer-0 -o json | jq '.spec.contai
 Here in this example we will use [node selector](https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/) to schedule our Solr pod to a specific node. Applying nodeSelector to the Pod involves several steps. We first need to assign a label to some node that will be later used by the `nodeSelector` . Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
-$ kubectl get nodes
+kubectl get nodes
+```
 NAME                                    STATUS   ROLES    AGE    VERSION
 gke-pritam-default-pool-c682fe6e-59x3   Ready    <none>   110m   v1.30.5-gke.1443001
 gke-pritam-default-pool-c682fe6e-rbtx   Ready    <none>   110m   v1.30.5-gke.1443001
@@ -210,21 +214,21 @@ gke-pritam-default-pool-cc96ce9b-vbpc   Ready    <none>   110m   v1.30.5-gke.144
 gke-pritam-default-pool-dadbf4db-5fv5   Ready    <none>   110m   v1.30.5-gke.1443001
 gke-pritam-default-pool-dadbf4db-5vkv   Ready    <none>   110m   v1.30.5-gke.1443001
 gke-pritam-default-pool-dadbf4db-p039   Ready    <none>   110m   v1.30.5-gke.1443001
-```
 As you see, we have nine nodes in the cluster.
 
 Let’s say we want pods to schedule to nodes with key `topology.gke.io/zone` and value `us-central1-b`
 ```bash
-$ kubectl get nodes -n demo -l topology.gke.io/zone=us-central1-b
+kubectl get nodes -n demo -l topology.gke.io/zone=us-central1-b
+```
 NAME                                    STATUS   ROLES    AGE    VERSION
 gke-pritam-default-pool-c682fe6e-59x3   Ready    <none>   118m   v1.30.5-gke.1443001
 gke-pritam-default-pool-c682fe6e-rbtx   Ready    <none>   118m   v1.30.5-gke.1443001
 gke-pritam-default-pool-c682fe6e-spdb   Ready    <none>   118m   v1.30.5-gke.1443001
-```
 
 As you see, the gke-pritam-default-pool-c682fe6e-59x3 now has a new label topology.gke.io/zone=us-central1-b. To see all labels attached to the node, you can also run:
 ```bash
-$ kubectl describe nodes gke-pritam-default-pool-c682fe6e-59x3
+kubectl describe nodes gke-pritam-default-pool-c682fe6e-59x3
+```
 Name:               gke-pritam-default-pool-c682fe6e-59x3
 Roles:              <none>
 Labels:             beta.kubernetes.io/arch=amd64
@@ -252,7 +256,6 @@ Labels:             beta.kubernetes.io/arch=amd64
                     topology.gke.io/zone=us-central1-b
                     topology.kubernetes.io/region=us-central1
                     topology.kubernetes.io/zone=us-central1-b
-```
 
 Now let's create a Solr with this new label as nodeSelector. Below is the yaml we are going to apply:
 ```yaml
@@ -280,26 +283,26 @@ spec:
 
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/configuration/sl-custom-nodeselector.yaml
-solr.kubedb.com/solr-node-selector created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/configuration/sl-custom-nodeselector.yaml
 ```
+solr.kubedb.com/solr-node-selector created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `sdb-node-selector-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-custom-nodeselector
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-custom-nodeselector
+```
 NAME                         READY   STATUS    RESTARTS   AGE
 solr-custom-nodeselector-0   1/1     Running   0          3m18s
 solr-custom-nodeselector-1   1/1     Running   0          2m54s
-```
 As we see the pod is running, you can verify that by running `kubectl get pods -n demo sdb-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-custom-nodeselector -owide
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-custom-nodeselector -owide
+```
 NAME                         READY   STATUS    RESTARTS   AGE     IP          NODE                                    NOMINATED NODE   READINESS GATES
 solr-custom-nodeselector-0   1/1     Running   0          3m52s   10.12.7.7   gke-pritam-default-pool-c682fe6e-spdb   <none>           <none>
 solr-custom-nodeselector-1   1/1     Running   0          3m28s   10.12.8.9   gke-pritam-default-pool-c682fe6e-59x3   <none>           <none>
-```
 We can successfully verify that our pod was scheduled to our desired node.
 
 ## Using Taints and Tolerations
@@ -307,7 +310,8 @@ We can successfully verify that our pod was scheduled to our desired node.
 Here in this example we will use [Taints and Tolerations](https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/) to schedule our Solr pod to a specific node and also prevent from scheduling to nodes. Applying taints and tolerations to the Pod involves several steps. Let’s find what nodes exist in your cluster. To get the name of these nodes, you can run:
 
 ```bash
-$ kubectl get nodes
+kubectl get nodes
+```
 NAME                                    STATUS   ROLES    AGE    VERSION
 gke-pritam-default-pool-c682fe6e-59x3   Ready    <none>   123m   v1.30.5-gke.1443001
 gke-pritam-default-pool-c682fe6e-rbtx   Ready    <none>   123m   v1.30.5-gke.1443001
@@ -318,33 +322,57 @@ gke-pritam-default-pool-cc96ce9b-vbpc   Ready    <none>   123m   v1.30.5-gke.144
 gke-pritam-default-pool-dadbf4db-5fv5   Ready    <none>   123m   v1.30.5-gke.1443001
 gke-pritam-default-pool-dadbf4db-5vkv   Ready    <none>   123m   v1.30.5-gke.1443001
 gke-pritam-default-pool-dadbf4db-p039   Ready    <none>   123m   v1.30.5-gke.1443001
-```
 As you see, we have nine nodes in the cluster
 
 Next, we are going to taint these nodes.
 ```bash
-$ kubectl taint nodes gke-pritam-default-pool-c682fe6e-59x3 key1=node1:NoSchedule
-node/gke-pritam-default-pool-c682fe6e-59x3 tainted
-$ kubectl taint nodes gke-pritam-default-pool-c682fe6e-rbtx key1=node2:NoSchedule
-node/gke-pritam-default-pool-c682fe6e-rbtx tainted
-$ kubectl taint nodes gke-pritam-default-pool-c682fe6e-spdb key1=node3:NoSchedule
-node/gke-pritam-default-pool-c682fe6e-spdb tainted
-$ kubectl taint nodes gke-pritam-default-pool-cc96ce9b-049h key1=node4:NoSchedule
-node/gke-pritam-default-pool-cc96ce9b-049h tainted
-$ kubectl taint nodes gke-pritam-default-pool-cc96ce9b-b8p8 key1=node5:NoSchedule
-node/gke-pritam-default-pool-cc96ce9b-b8p8 tainted
-$ kubectl taint nodes gke-pritam-default-pool-cc96ce9b-vbpc key1=node6:NoSchedule
-node/gke-pritam-default-pool-cc96ce9b-vbpc tainted
-$ kubectl taint nodes gke-pritam-default-pool-dadbf4db-5fv5 key1=node7:NoSchedule
-node/gke-pritam-default-pool-dadbf4db-5fv5 tainted
-$ kubectl taint nodes gke-pritam-default-pool-dadbf4db-5vkv key1=node8:NoSchedule
-node/gke-pritam-default-pool-dadbf4db-5vkv tainted
-$ kubectl taint nodes gke-pritam-default-pool-dadbf4db-p039 key1=node9:NoSchedule
-node/gke-pritam-default-pool-dadbf4db-p039 tainted
+kubectl taint nodes gke-pritam-default-pool-c682fe6e-59x3 key1=node1:NoSchedule
 ```
+node/gke-pritam-default-pool-c682fe6e-59x3 tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-c682fe6e-rbtx key1=node2:NoSchedule
+```
+node/gke-pritam-default-pool-c682fe6e-rbtx tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-c682fe6e-spdb key1=node3:NoSchedule
+```
+node/gke-pritam-default-pool-c682fe6e-spdb tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-cc96ce9b-049h key1=node4:NoSchedule
+```
+node/gke-pritam-default-pool-cc96ce9b-049h tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-cc96ce9b-b8p8 key1=node5:NoSchedule
+```
+node/gke-pritam-default-pool-cc96ce9b-b8p8 tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-cc96ce9b-vbpc key1=node6:NoSchedule
+```
+node/gke-pritam-default-pool-cc96ce9b-vbpc tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-dadbf4db-5fv5 key1=node7:NoSchedule
+```
+node/gke-pritam-default-pool-dadbf4db-5fv5 tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-dadbf4db-5vkv key1=node8:NoSchedule
+```
+node/gke-pritam-default-pool-dadbf4db-5vkv tainted
+
+```bash
+kubectl taint nodes gke-pritam-default-pool-dadbf4db-p039 key1=node9:NoSchedule
+```
+node/gke-pritam-default-pool-dadbf4db-p039 tainted
 Let's see our tainted nodes here,
 ```bash
-$ kubectl get nodes -o json | jq -r '.items[] | select(.spec.taints != null) | .metadata.name, .spec.taints'
+kubectl get nodes -o json | jq -r '.items[] | select(.spec.taints != null) | .metadata.name, .spec.taints'
+```
 gke-pritam-default-pool-c682fe6e-59x3
 [
   {
@@ -417,7 +445,6 @@ gke-pritam-default-pool-dadbf4db-p039
     "value": "node9"
   }
 ]
-```
 We can see that our taints were successfully assigned. Now let's try to create a Solr without proper tolerations. Here is the yaml of Solr we are going to createc
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -439,20 +466,21 @@ spec:
         storage: 1Gi
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/configuration/solr-without-tolerations.yaml
-solr.kubedb.com/solr-without-tolerations created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/configuration/solr-without-tolerations.yaml
 ```
+solr.kubedb.com/solr-without-tolerations created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `sdb-without-tolerations-0` has been created and running.
 
 Check that the petset's pod is running or not,
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-without-toleration
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-without-toleration
+```
 NAME                        READY   STATUS    RESTARTS   AGE
 solr-without-toleration-0   0/1     Pending   0          64s
-```
 Here we can see that the pod is not running. So let's describe the pod,
 ```bash
-$ kubectl describe pod -n demo solr-without-toleration-0
+kubectl describe pod -n demo solr-without-toleration-0
+```
 Name:             solr-without-toleration-0
 Namespace:        demo
 Priority:         0
@@ -594,7 +622,6 @@ Events:
   ----     ------             ----                 ----                -------
   Normal   NotTriggerScaleUp  106s                 cluster-autoscaler  pod didn't trigger scale-up:
   Warning  FailedScheduling   104s (x2 over 106s)  default-scheduler   0/9 nodes are available: 1 node(s) had untolerated taint {key1: node1}, 1 node(s) had untolerated taint {key1: node2}, 1 node(s) had untolerated taint {key1: node3}, 1 node(s) had untolerated taint {key1: node4}, 1 node(s) had untolerated taint {key1: node5}, 1 node(s) had untolerated taint {key1: node6}, 1 node(s) had untolerated taint {key1: node7}, 1 node(s) had untolerated taint {key1: node8}, 1 node(s) had untolerated taint {key1: node9}. preemption: 0/9 nodes are available: 9 Preemption is not helpful for scheduling.
-```
 Here we can see that the pod has no tolerations for the tainted nodes and because of that the pod is not able to scheduled.
 
 So, let's add proper tolerations and create another Solr. Here is the yaml we are going to apply,
@@ -630,26 +657,26 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Solr/configuration/solr-with-tolerations.yaml
-solr.kubedb.com/solr-with-tolerations created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Solr/configuration/solr-with-tolerations.yaml
 ```
+solr.kubedb.com/solr-with-tolerations created
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `sdb-with-tolerations-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-with-toleration
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-with-toleration
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 solr-with-toleration-0   1/1     Running   0          2m12s
 solr-with-toleration-1   1/1     Running   0          80s
-```
 As we see the pod is running, you can verify that by running `kubectl get pods -n demo sdb-with-tolerations-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pod -n demo -l app.kubernetes.io/instance=solr-with-toleration -owide
+kubectl get pod -n demo -l app.kubernetes.io/instance=solr-with-toleration -owide
+```
 NAME                     READY   STATUS    RESTARTS   AGE     IP          NODE                                    NOMINATED NODE   READINESS GATES
 solr-with-toleration-0   1/1     Running   0          2m37s   10.12.3.7   gke-pritam-default-pool-dadbf4db-5fv5   <none>           <none>
 solr-with-toleration-1   1/1     Running   0          105s    10.12.5.5   gke-pritam-default-pool-dadbf4db-5vkv   <none>           <none>
-```
 We can successfully verify that our pod was scheduled to the node which it has tolerations.
 
 ## Cleaning up

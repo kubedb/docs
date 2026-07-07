@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the cl
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Horizontal Scaling on Cluster
 
@@ -70,26 +70,29 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-pxc       8.4.3    Ready    2m36s
-```
 
 Let's check the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
-3
-$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
-3
+kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
 ```
+3
+
+```bash
+kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
+```
+3
 
 We can see from both command that the database has 3 replicas in the cluster.
 
@@ -97,25 +100,26 @@ Also, we can verify the replicas of the replicaset from an internal perconaxtrad
 
 First we need to get the username and password to connect to a perconaxtradb instance,
 ```bash
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
-nrKuxni0wDSMrgwy
+```bash
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+nrKuxni0wDSMrgwy
 
 Now let's connect to a perconaxtradb instance and run a perconaxtradb internal command to check the number of replicas,
 
 ```bash
-$  kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
 | wsrep_cluster_size | 3     |
 +--------------------+-------+
-
-```
 
 We can see from the above output that the cluster has 3 nodes.
 
@@ -152,9 +156,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/pxops-upscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/pxops-upscale.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-up created
 
 #### Verify Cluster replicas scaled up successfully 
 
@@ -163,32 +167,35 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get perconaxtradbopsrequest -n demo
+watch kubectl get perconaxtradbopsrequest -n demo
+```
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
 pxops-scale-horizontal-up     HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
-5
-$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
-5
+kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas'
 ```
+5
+
+```bash
+kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
+```
+5
 
 Now let's connect to a perconaxtradb instance and run a perconaxtradb internal command to check the number of replicas,
 
 ```bash
-$ $  kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
 | wsrep_cluster_size | 5     |
 +--------------------+-------+
-```
 
 From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled up the replicas of the PerconaXtraDB replicaset.
 
@@ -223,9 +230,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/pxops-downscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/horizontal-scaling/cluster/example/pxops-downscale.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-scale-horizontal-down created
 
 #### Verify Cluster replicas scaled down successfully 
 
@@ -234,31 +241,34 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get perconaxtradbopsrequest -n demo
+watch kubectl get perconaxtradbopsrequest -n demo
+```
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
 pxops-scale-horizontal-down   HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the PerconaXtraDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas' 
-3
-$ kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
-3
+kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.replicas' 
 ```
+3
+
+```bash
+kubectl get petset -n demo sample-pxc -o json | jq '.spec.replicas'
+```
+3
 
 Now let's connect to a perconaxtradb instance and run a perconaxtradb internal command to check the number of replicas,
 ```bash
-$ $  kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ mysql -uroot -p$MYSQL_ROOT_PASSWORD -e "show status like 'wsrep_cluster_size';"
 +--------------------+-------+
 | Variable_name      | Value |
 +--------------------+-------+
 | wsrep_cluster_size | 3     |
 +--------------------+-------+
-```
 
 From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the PerconaXtraDB replicaset.
 
@@ -267,6 +277,9 @@ From all the above outputs we can see that the replicas of the cluster is `3`. T
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo  pxops-scale-horizontal-up pxops-scale-horizontal-down
+kubectl delete perconaxtradb -n demo sample-pxc
+```
+
+```bash
+kubectl delete perconaxtradbopsrequest -n demo  pxops-scale-horizontal-up pxops-scale-horizontal-down
 ```

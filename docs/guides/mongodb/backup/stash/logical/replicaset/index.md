@@ -34,9 +34,9 @@ You have to be familiar with following custom resources:
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Backup MongoDB ReplicaSet using Stash
 
@@ -74,33 +74,35 @@ spec:
 Create the above `MongoDB` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/mongodb-replicaset.yaml
-mongodb.kubedb.com/sample-mgo-rs created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/mongodb-replicaset.yaml
 ```
+mongodb.kubedb.com/sample-mgo-rs created
 
 KubeDB will deploy a MongoDB database according to the above specification. It will also create the necessary secrets and services to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get mg -n demo sample-mgo-rs
+kubectl get mg -n demo sample-mgo-rs
+```
 NAME            VERSION     STATUS  AGE
 sample-mgo-rs   4.4.26       Ready   1m
-```
 
 The database is `Running`. Verify that KubeDB has created a Secret and a Service for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
+kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
+```
 NAME                 TYPE     DATA   AGE
 sample-mgo-rs-auth   Opaque   2      117s
 sample-mgo-rs-cert   Opaque   4      116s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mgo-rs
+```
 NAME                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 sample-mgo-rs       ClusterIP   10.107.13.16   <none>        27017/TCP   2m14s
 sample-mgo-rs-gvr   ClusterIP   None           <none>        27017/TCP   2m14s
-```
 
 KubeDB creates an [AppBinding](/docs/guides/mongodb/concepts/appbinding.md) crd that holds the necessary information to connect with the database.
 
@@ -109,15 +111,15 @@ KubeDB creates an [AppBinding](/docs/guides/mongodb/concepts/appbinding.md) crd 
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME            AGE
 sample-mgo-rs   58s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-mgo-rs -o yaml
+kubectl get appbindings -n demo sample-mgo-rs -o yaml
 ```
 
 ```yaml
@@ -188,22 +190,26 @@ Stash uses the `AppBinding` crd to connect with the target database. It requires
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database pod using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mgo-rs"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mgo-rs"
+```
 NAME              READY   STATUS    RESTARTS   AGE
 sample-mgo-rs-0   1/1     Running   0          16m
 sample-mgo-rs-1   1/1     Running   0          15m
 sample-mgo-rs-2   1/1     Running   0          15m
-```
 
 Now, let's exec into the pod and create a table,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.username}' | base64 -d)
+export USER=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.username}' | base64 -d)
+```
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.password}' | base64 -d)
+```bash
+export PASSWORD=$(kubectl get secrets -n demo sample-mgo-rs-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
-
+```bash
+kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
+```
 rs0:PRIMARY> rs.isMaster().primary
 sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
 
@@ -237,7 +243,6 @@ rs0:PRIMARY> db.movie.find().pretty()
 
 rs0:PRIMARY> exit
 bye
-```
 
 Now, we are ready to backup this sample database.
 
@@ -250,15 +255,24 @@ We are going to store our backed up data into a GCS bucket. At first, we need to
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create Repository:**
 
@@ -281,9 +295,9 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/repository-replicaset.yaml
-repository.stash.appscode.com/gcs-repo-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/repository-replicaset.yaml
 ```
+repository.stash.appscode.com/gcs-repo-replicaset created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -324,19 +338,19 @@ Here,
 Let's create the `BackupConfiguration` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/backupconfiguration-replicaset.yaml
-backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/backupconfiguration-replicaset.yaml
 ```
+backupconfiguration.stash.appscode.com/sample-mgo-rs-backup created
 
 **Verify Backup Setup Successful:**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                    TASK                    SCHEDULE      PAUSED   PHASE      AGE
 sample-mgo-rs-backup    mongodb-backup-4.4.6    */5 * * * *            Ready      11s
-```
 
 **Verify CronJob:**
 
@@ -345,10 +359,10 @@ Stash will create a CronJob with the schedule specified in `spec.schedule` field
 Verify that the CronJob has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                   SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 sample-mgo-rs-backup   */5 * * * *   False     0        <none>          62s
-```
 
 **Wait for BackupSession:**
 
@@ -357,11 +371,11 @@ The `sample-mgo-rs-backup` CronJob will trigger a backup on each schedule by cre
 Wait for the next schedule. Run the following command to watch `BackupSession` crd,
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                              INVOKER-TYPE          INVOKER-NAME           PHASE       AGE
 sample-mgo-rs-backup-1563540308   BackupConfiguration   sample-mgo-rs-backup   Running     5m19s
 sample-mgo-rs-backup-1563540308   BackupConfiguration   sample-mgo-rs-backup   Succeeded   5m45s
-```
 
 We can see above that the backup session has succeeded. Now, we are going to verify that the backed up data has been stored in the backend.
 
@@ -370,10 +384,10 @@ We can see above that the backup session has succeeded. Now, we are going to ver
 Once a backup is complete, Stash will update the respective `Repository` crd to reflect the backup. Check that the repository `gcs-repo-replicaset` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-repo-replicaset
+kubectl get repository -n demo gcs-repo-replicaset
+```
 NAME                  INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo-replicaset   true        3.844 KiB   2                14s                      10m
-```
 
 Now, if we navigate to the GCS bucket, we are going to see backed up data has been stored in `demo/mongodb/sample-mgo-rs` directory as specified by `spec.backend.gcs.prefix` field of Repository crd.
 
@@ -388,22 +402,22 @@ At first, let's stop taking any further backup of the old database so that no ba
 
 Let's pause the `sample-mgo-rs-backup` BackupConfiguration,
 ```bash
-$ kubectl patch backupconfiguration -n demo sample-mgo-rs-backup --type="merge" --patch='{"spec": {"paused": true}}'
-backupconfiguration.stash.appscode.com/sample-mgo-rs-backup patched
+kubectl patch backupconfiguration -n demo sample-mgo-rs-backup --type="merge" --patch='{"spec": {"paused": true}}'
 ```
+backupconfiguration.stash.appscode.com/sample-mgo-rs-backup patched
 Or you can use the Stash `kubectl` plugin to pause the `BackupConfiguration`,
 ```bash
-$ kubectl stash pause backup -n demo --backupconfig=sample-mgo-rs-backup
-BackupConfiguration demo/sample-mgo-rs-backup has been paused successfu
+kubectl stash pause backup -n demo --backupconfig=sample-mgo-rs-backup
 ```
+BackupConfiguration demo/sample-mgo-rs-backup has been paused successfu
 
 Now, wait for a moment. Stash will pause the BackupConfiguration. Verify that the BackupConfiguration  has been paused,
 
 ```bash
-$ kubectl get backupconfiguration -n demo sample-mgo-rs-backup
+kubectl get backupconfiguration -n demo sample-mgo-rs-backup
+```
 NAME                  TASK                      SCHEDULE      PAUSED   PHASE   AGE
 sample-mgo-rs-backup  mongodb-backup-4.4.6      */5 * * * *   true     Ready   26m
-```
 
 Notice the `PAUSED` column. Value `true` for this field means that the BackupConfiguration has been paused.
 
@@ -411,8 +425,8 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```bash
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
-
+kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
+```
 rs0:PRIMARY> rs.isMaster().primary
 sample-mgo-rs-0.sample-mgo-rs-gvr.demo.svc.cluster.local:27017
 
@@ -429,7 +443,6 @@ local   0.000GB
 
 rs0:PRIMARY> exit
 bye
-```
 #### Create RestoreSession:
 
 Now, we need to create a `RestoreSession` crd pointing to the AppBinding of `sample-mgo-rs` database.
@@ -461,20 +474,20 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/estoresession-replicaset.yaml
-restoresession.stash.appscode.com/sample-mgo-rs-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/estoresession-replicaset.yaml
 ```
+restoresession.stash.appscode.com/sample-mgo-rs-restore created
 
 Once, you have created the `RestoreSession` crd, Stash will create a job to restore. We can watch the `RestoreSession` phase to check if the restore process is succeeded or not.
 
 Run the following command to watch `RestoreSession` phase,
 
 ```bash
-$ kubectl get restoresession -n demo sample-mgo-rs-restore -w
+kubectl get restoresession -n demo sample-mgo-rs-restore -w
+```
 NAME                    REPOSITORY-NAME        PHASE       AGE
 sample-mgo-rs-restore   gcs-repo-replicaset    Running     5s
 sample-mgo-rs-restore   gcs-repo-replicaset    Succeeded   43s
-```
 
 So, we can see from the output of the above command that the restore process succeeded.
 
@@ -487,8 +500,8 @@ In this section, we are going to verify that the desired data has been restored 
 Lets, exec into the database pod and list available tables,
 
 ```bash
-$ kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
-
+kubectl exec -it -n demo sample-mgo-rs-0 -- mongosh admin -u $USER -p $PASSWORD
+```
 rs0:PRIMARY> rs.isMaster().primary
 restored-mgo-rs-0.restored-mgo-rs-gvr.demo.svc.cluster.local:27017
 
@@ -520,7 +533,6 @@ rs0:PRIMARY> db.movie.find().pretty()
 
 rs0:PRIMARY> exit
 bye
-```
 
 So, from the above output, we can see the database `newdb` that we had created earlier is restored.
 
@@ -587,21 +599,23 @@ spec:
 This time, we have to provide the Stash Addon information in `spec.task` section of `BackupConfiguration` object as it does not present in the `AppBinding` object that we are creating manually.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/standalone-backup.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/examples/standalone-backup.yaml
+```
 appbinding.appcatalog.appscode.com/sample-mgo-rs-custom created
 repository.stash.appscode.com/gcs-repo-custom created
 backupconfiguration.stash.appscode.com/sample-mgo-rs-backup2 created
 
-
-$ kubectl get backupsession -n demo
+```bash
+kubectl get backupsession -n demo
+```
 NAME                               BACKUPCONFIGURATION    PHASE       AGE
 sample-mgo-rs-backup2-1563541509   sample-mgo-rs-backup   Succeeded   35s
 
-
-$ kubectl get repository -n demo gcs-repo-custom
+```bash
+kubectl get repository -n demo gcs-repo-custom
+```
 NAME              INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo-custom   true        1.640 KiB   1                1m                       5m
-```
 
 ### Restore to a standalone database
 
@@ -653,30 +667,40 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estored-standalone.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estored-standalone.yaml
+```
 mongodb.kubedb.com/restored-mongodb created
 
-$ kubectl get mg -n demo restored-mongodb
+```bash
+kubectl get mg -n demo restored-mongodb
+```
 NAME               VERSION        STATUS         AGE
 restored-mongodb   4.4.26         Provisioning   56s
 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estoresession-standalone.yaml
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/logical/replicaset/rexamples/estoresession-standalone.yaml
+```
 restoresession.stash.appscode.com/sample-mongodb-restore created
 
-$ kubectl get mg -n demo restored-mongodb
+```bash
+kubectl get mg -n demo restored-mongodb
+```
 NAME               VERSION       STATUS    AGE
 restored-mongodb   4.4.26         Ready   2m
-```
 
 Now, exec into the database pod and list available tables,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
+export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
+```
 
-$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
+```bash
+export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -it -n demo restored-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
-
+```bash
+kubectl exec -it -n demo restored-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
+```
 > show dbs
 admin   0.000GB
 config  0.000GB
@@ -705,7 +729,6 @@ switched to db newdb
 
 > exit
 bye
-```
 
 So, from the above output, we can see the database `newdb` that we had created in the original database `sample-mgo-rs` is restored in the restored database `restored-mongodb`.
 

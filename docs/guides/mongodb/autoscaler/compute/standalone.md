@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -77,22 +77,23 @@ spec:
 Let's create the `MongoDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-standalone.yaml
-mongodb.kubedb.com/mg-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-standalone.yaml
 ```
+mongodb.kubedb.com/mg-standalone created
 
 Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME            VERSION    STATUS    AGE
 mg-standalone   4.4.26      Ready     2m53s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -103,11 +104,11 @@ $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the MongoDB resources,
 ```bash
-$ kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
+kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -118,7 +119,6 @@ $ kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the mongodb.
 
@@ -194,20 +194,23 @@ It has two fields inside it.
 Let's create the `MongoDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-as-standalone.yaml
-mongodbautoscaler.autoscaling.kubedb.com/mg-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-as-standalone.yaml
 ```
+mongodbautoscaler.autoscaling.kubedb.com/mg-as created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `mongodbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mongodbautoscaler -n demo
+kubectl get mongodbautoscaler -n demo
+```
 NAME    AGE
 mg-as   102s
 
-$ kubectl describe mongodbautoscaler mg-as -n demo
+```bash
+kubectl describe mongodbautoscaler mg-as -n demo
+```
 Name:         mg-as
 Namespace:    demo
 Labels:       <none>
@@ -334,8 +337,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      mg-standalone
 Events:            <none>
-
-```
 So, the `mongodbautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `mongodbopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
@@ -343,25 +344,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `mongodbopsrequest` in the demo namespace to see if any `mongodbopsrequest` object is created. After some time you'll see that a `mongodbopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                        TYPE              STATUS       AGE
 mops-mg-standalone-57huq2   VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                        TYPE              STATUS       AGE
 mops-mg-standalone-57huq2   VerticalScaling   Successful   68s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-mg-standalone-57huq2
+kubectl describe mongodbopsrequest -n demo mops-mg-standalone-57huq2
+```
 Name:         mops-mg-standalone-57huq2
 Namespace:    demo
 Labels:       <none>
@@ -470,12 +472,12 @@ Events:
   Normal  ResumeDatabase             2m15s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-standalone
   Normal  ResumeDatabase             2m15s  KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-standalone
   Normal  Successful                 2m15s  KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
-```
 
 Now, we are going to verify from the Pod, and the MongoDB yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -487,7 +489,9 @@ $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resou
   }
 }
 
-$ kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
+```bash
+kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mongodb") | .resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -498,7 +502,6 @@ $ kubectl get mongodb -n demo mg-standalone -o json | jq '.spec.podTemplate.spec
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto scaled the resources of the MongoDB standalone database.

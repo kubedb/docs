@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -85,21 +85,21 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/update-version/solr.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/update-version/solr.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w                                                                                                                                           
+kubectl get kf -n demo -w                                                                                                                                           
+```
 NAME         TYPE            VERSION   STATUS         AGE
 Solr-prod   kubedb.com/v1   3.5.2     Provisioning   0s
 Solr-prod   kubedb.com/v1   3.5.2     Provisioning   55s
 .
 .
 Solr-prod   kubedb.com/v1   3.5.2     Ready          119s
-```
 
 We are now ready to apply the `SolrOpsRequest` CR to update.
 
@@ -136,9 +136,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/update-version/update-version-ops.yaml
-solropsrequest.ops.kubedb.com/solr-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/update-version/update-version-ops.yaml
 ```
+solropsrequest.ops.kubedb.com/solr-update-version created
 
 #### Verify Solr version updated successfully
 
@@ -147,15 +147,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get Solropsrequest -n demo
+kubectl get Solropsrequest -n demo
+```
 NAME                   TYPE            STATUS        AGE
 solr-update-version    UpdateVersion   Successful    2m6s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl get slops -n demo solr-update-version  -oyaml
+kubectl get slops -n demo solr-update-version  -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SolrOpsRequest
 metadata:
@@ -239,17 +240,15 @@ status:
   observedGeneration: 1
   phase: Successful
                                                               61s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/Solr-prod for SolrOpsRequest: Solr-update-version
-```
 
 Now, we are going to verify whether the `Solr` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get sl -n demo solr-cluster -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get sl -n demo solr-cluster -o=jsonpath='{.spec.version}{"\n"}'
+```
 9.6.1
 ~/y/s/ops (main|✚23…) $ kubectl get petset -n demo Solr-cluster-data -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ghcr.io/appscode-images/daily/solr:9.6.1_20241024@sha256:0996340eff1e59bcac49eb8f96c28f0a3efb061f0e91b2053bfb7dade860c0e4
-
-```
 
 You can see from above, our `Solr` has been updated with the new version. So, the updateVersion process is successfully completed.
 

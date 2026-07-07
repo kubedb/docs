@@ -50,31 +50,30 @@ to 45 seconds. But that is a bit rare though.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d20h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available Microsoft SQL Server Versions
 
 When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
-$ kubectl get msversion
+kubectl get msversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                9m38s
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                9m38s
 2022-cu16   2022      mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04                9m38s
 2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                9m38s
-
-```
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/ag-cluster/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -94,9 +93,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -112,9 +111,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Step 1: Create a High-Availability MSSQLServer Cluster
 
@@ -170,14 +169,16 @@ spec:
 
 Now, create the namespace and apply the manifest:
 
-```shell
 # Create the namespace if it doesn't exist
-$ kubectl create ns demo
+```bash
+kubectl create ns demo
+```
 
 # Apply the manifest to deploy the cluster
-$ kubectl apply -f mssqlserver-ag-cluster.yaml
-mssqlserver.kubedb.com/mssqlserver-ag-cluster created
+```bash
+kubectl apply -f mssqlserver-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 You can monitor the status until all pods are ready:
 ```shell
@@ -185,8 +186,9 @@ watch kubectl get ms,petset,pods -n demo
 ```
 See the database is ready.
 
-```shell
-$ kubectl get ms,petset,pods -n demo
+```bash
+kubectl get ms,petset,pods -n demo
+```
 NAME                                            VERSION     STATUS   AGE
 mssqlserver.kubedb.com/mssqlserver-ag-cluster   2022-cu16   Ready    11m
 
@@ -198,34 +200,40 @@ pod/mssqlserver-ag-cluster-0   2/2     Running   0          10m
 pod/mssqlserver-ag-cluster-1   2/2     Running   0          8m47s
 pod/mssqlserver-ag-cluster-2   2/2     Running   0          8m40s
 
-```
-
 Inspect who is primary and who is secondary.
 
-```shell
 # you can inspect who is primary
 # and who is secondary like below
-
-$ kubectl get pods -n demo --show-labels | grep role
+```bash
+kubectl get pods -n demo --show-labels | grep role
+```
 mssqlserver-ag-cluster-0   2/2     Running   0          12m   app.kubernetes.io/component=database,app.kubernetes.io/instance=mssqlserver-ag-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mssqlservers.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=mssqlserver-ag-cluster-5c944b9596,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=mssqlserver-ag-cluster-0
 mssqlserver-ag-cluster-1   2/2     Running   0          11m   app.kubernetes.io/component=database,app.kubernetes.io/instance=mssqlserver-ag-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mssqlservers.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=mssqlserver-ag-cluster-5c944b9596,kubedb.com/role=secondary,statefulset.kubernetes.io/pod-name=mssqlserver-ag-cluster-1
 mssqlserver-ag-cluster-2   2/2     Running   0          10m   app.kubernetes.io/component=database,app.kubernetes.io/instance=mssqlserver-ag-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mssqlservers.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=mssqlserver-ag-cluster-5c944b9596,kubedb.com/role=secondary,statefulset.kubernetes.io/pod-name=mssqlserver-ag-cluster-2
-
-```
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=secondary` are the secondaries.
 
 
 Let's create a table in the primary.
 
-```shell
 # find the primary pod
-$ kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```bash
+kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```
 mssqlserver-ag-cluster-0
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+
+```bash
+kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa⏎   
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+
+```bash
+kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 tZQpzrowQQ20xbCf⏎         
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No
 1> select name from sys.databases
 2> go
@@ -265,12 +273,11 @@ id          name                                                                
 
 (2 rows affected)
 
-```
-
 Verify the table creation in secondary's.
 
-```shell
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-1 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-1 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No
 1> select name from sys.databases
 2> go
@@ -295,8 +302,6 @@ id          name                                                                
           2 Bob                                                                                                  2025-07-31 05:51:06.847
 
 (2 rows affected)
-
-```
 ### Step 2: Simulating a Failover
 
 Before simulating failover, let's discuss how we handle these failover scenarios in KubeDB-managed 
@@ -323,10 +328,10 @@ mssqlserver-ag-cluster-2 secondary
 
 Let's delete the current primary and see how the role change happens almost immediately.
 
-```shell
-$ kubectl delete pods -n demo mssqlserver-ag-cluster-0 
-pod "mssqlserver-ag-cluster-0" deleted
+```bash
+kubectl delete pods -n demo mssqlserver-ag-cluster-0 
 ```
+pod "mssqlserver-ag-cluster-0" deleted
 ```shell
 mssqlserver-ag-cluster-0 
 mssqlserver-ag-cluster-1 secondary
@@ -344,8 +349,9 @@ You see almost immediately the failover happened. Here's what happened internall
 
 Now we know how failover is done, let's check if the new primary `mssqlserver-ag-cluster-2` is working.
 
-```shell
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-2 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-2 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No
 1> use agdb1
 2> go
@@ -369,8 +375,6 @@ data1
 
 (2 rows affected)
 
-```
-
 
 You will see the deleted pod (`mssqlserver-ag-cluster-0`) is brought back by the kubedb operator and it is
 now assigned to `secondary role`.
@@ -384,8 +388,9 @@ mssqlserver-ag-cluster-2 primary
 
 Let's check if the secondary(`mssqlserver-ag-cluster-0`) got the updated data from new primary `mssqlserver-ag-cluster-2`.
 
-```shell
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No
 1> use agdb1
 2> go
@@ -403,14 +408,12 @@ data1
 Msg 3906, Level 16, State 2, Server mssqlserver-ag-cluster-1, Line 1
 Failed to update database "agdb1" because the database is read-only.
 
-```
-
 #### Case 2: Delete the current primary and one secondary
-```shell
-$ kubectl delete pods -n demo mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```bash
+kubectl delete pods -n demo mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```
 pod "mssqlserver-ag-cluster-1" deleted
 pod "mssqlserver-ag-cluster-2" deleted
-```
 Again we can see the failover happened pretty quickly.
 ```shell
 mssqlserver-ag-cluster-0 secondary
@@ -428,8 +431,9 @@ mssqlserver-ag-cluster-2 secondary
 
 Let's validate the cluster state from new primary(`mssqlserver-ag-cluster-0`).
 
-```shell
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No
 1> use agdb1
 2> go
@@ -438,18 +442,15 @@ Changed database context to 'agdb1'.
 1> CREATE TABLE data2 (id INT PRIMARY KEY, name NVARCHAR(100), created_at DATETIME DEFAULT GETDATE());
 2> go
 
-```
-
 #### Case3: Delete any of the replica's
 
 Let's delete both of the secondary's.
 
-```shell
-$ kubectl delete pods -n demo mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```bash
+kubectl delete pods -n demo mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```
 pod "mssqlserver-ag-cluster-1" deleted
 pod "mssqlserver-ag-cluster-2" deleted
-
-```
 ```shell
 mssqlserver-ag-cluster-0 primary
 mssqlserver-ag-cluster-1 
@@ -465,8 +466,9 @@ mssqlserver-ag-cluster-2 secondary
 
 ```
 Let's verify cluster state.
-```shell
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No 
 1> use agdb1
 2> go
@@ -482,19 +484,16 @@ C4FADE0D-BC82-4D16-95E2-50AA6BE5BD8F BBCC64C9-E0E3-5985-6F01-884248E3DDC6       
 
 (3 rows affected)
 
-```
-
 #### Case 4: Delete both primary and all replicas
 
 Let's delete all the pods.
 
-```shell
-$ kubectl delete pods -n demo mssqlserver-ag-cluster-0 mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```bash
+kubectl delete pods -n demo mssqlserver-ag-cluster-0 mssqlserver-ag-cluster-1 mssqlserver-ag-cluster-2
+```
 pod "mssqlserver-ag-cluster-0" deleted
 pod "mssqlserver-ag-cluster-1" deleted
 pod "mssqlserver-ag-cluster-2" deleted
-
-```
 ```shell
 mssqlserver-ag-cluster-0 
 mssqlserver-ag-cluster-1
@@ -510,8 +509,9 @@ mssqlserver-ag-cluster-2 secondary
 ```
 Let's verify the cluster state now.
 
-```shell
-$  kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```bash
+ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "tZQpzrowQQ20xbCf" -No 
 1> use agdb1
 2> go
@@ -524,8 +524,6 @@ C4FADE0D-BC82-4D16-95E2-50AA6BE5BD8F BBCC64C9-E0E3-5985-6F01-884248E3DDC6       
 2F227F4D-29CA-4273-B223-1A54EEB71EFF BBCC64C9-E0E3-5985-6F01-884248E3DDC6        0    2 SECONDARY                                                                 NULL NULL                                                                       1 CONNECTED                                                               NULL NULL                                                                              2 HEALTHY                                                                           NULL NULL                              NULL                          NULL                                        NULL
 
 (3 rows affected)
-
-```
 
 > **We make sure the pod with highest lsn for all databases (you can think lsn as the highest data point
 available in the databases) always run as primary, so if a case occur where the pod with highest lsn is being 
@@ -568,10 +566,13 @@ It depends on your `StorageClass`. If your storageclass supports online volume e
 
 ## CleanUp
 
-```shell
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
+```bash
+kubectl delete ms -n demo mssqlserver-ag-cluster
+```
+
 # Or, delete the demo
-$ kubectl delete ns demo
+```bash
+kubectl delete ns demo
 ```
 
 

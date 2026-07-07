@@ -26,9 +26,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -54,23 +54,26 @@ I*7SQB7)6~Kni8*X⏎
 Here, we will connect to PgBouncer server from local-machine through port-forwarding.
 We will connect to `pgbouncer-server` pod from local-machine using port-frowarding and it must be running in separate terminal.
 ```bash
-$ kubectl port-forward svc/pgbouncer-server -n demo 9999:5432
+kubectl port-forward svc/pgbouncer-server -n demo 9999:5432
+```
 Forwarding from 127.0.0.1:9999 -> 5432
 Forwarding from [::1]:9999 -> 5432
-
-```
 Now, you can exec into the pod pgbouncer-server` and connect to database using `username` and `password`
-```shell
-$ kubectl exec -it -n demo pgbouncer-server-0 -- /bin/sh
+```bash
+kubectl exec -it -n demo pgbouncer-server-0 -- /bin/sh
+```
 / $ cat /var/run/pgbouncer/secret/userlist
 "pgbouncer" "md5f24d95a2a5c1ed1debe8c3e6f19ac7ec"
 "postgres" "md5095f5936c7d03fbc4998320d3bf993c4"
 / $ exit
-```
 First, you have to have `PostgreSQL` to run these commands.
-```shell
-$ export PGPASSWORD='I*7SQB7)6~Kni8*X'
-$ psql --host=localhost --port=9999 --username=pgbouncer -d pgbouncer
+```bash
+export PGPASSWORD='I*7SQB7)6~Kni8*X'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=pgbouncer -d pgbouncer
+```
 psql (16.9 (Ubuntu 16.9-0ubuntu0.24.04.1), server 1.18.0/bouncer)
 WARNING: psql major version 16, server major version 1.18.
          Some psql features might not work.
@@ -81,8 +84,6 @@ pgbouncer=# show databases;
  pgbouncer |                         | 5432 | pgbouncer | pgbouncer  |         2 |             0 |            0 | statement |               1 |                   0 |      0 |        0
  postgres  | quick-postgres.demo.svc | 5432 | postgres  |            |        20 |             1 |            5 |           |               1 |                   1 |      0 |        0
 (2 rows)
-
-```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth PgBouncerOpsRequest
@@ -109,19 +110,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on PgBouncer.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
-```shell
- $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauth.yaml
+ ```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauth.yaml
+ ```
  pgbounceropsrequest.ops.kubedb.com/pbops-rotate-auth-generated created
-```
 Let's wait for `PgBouncerOpsrequest` to be `Successful`. Run the following command to watch `PgBouncerOpsrequest` CRO
-```shell
- $ kubectl get PgBouncerOpsRequest -n demo
+ ```bash
+ kubectl get PgBouncerOpsRequest -n demo
+ ```
 NAME                          TYPE         STATUS       AGE
 pbops-rotate-auth-generated   RotateAuth   Successful   4m34s
-```
 If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$   kubectl describe PgBounceropsrequest -n demo pbops-rotate-auth-generated
+```bash
+  kubectl describe PgBounceropsrequest -n demo pbops-rotate-auth-generated
+```
 Name:         pbops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -218,37 +220,45 @@ Events:
   Warning  check pod ready; ConditionStatus:True; PodName:pgbouncer-server-0            4m37s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pgbouncer-server-0
   Warning  check pg bouncer running; ConditionStatus:True; PodName:pgbouncer-server-0   4m37s  KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:True; PodName:pgbouncer-server-0
   Normal   Successful                                                                   4m32s  KubeDB Ops-manager Operator  Restart performed successfully in PgBouncer: demo/pgbouncer-server for PgBouncerOpsRequest: pbops-rotate-auth-generated
-```
 
 **Verify Auth is rotated**
-```shell
-$ kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
-"pgbouncer-server-auth"
-$ kubectl get secret -n demo pgbouncer-server-auth -o=jsonpath='{.data.username}' | base64 -d
-pgbouncer⏎      
-$ kubectl get secrets -n demo pgbouncer-server-auth -o jsonpath='{.data.\password}' | base64 -d
-Hc5nXhC403rvDGPf⏎                                                        
+```bash
+kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
 ```
+"pgbouncer-server-auth"
+
+```bash
+kubectl get secret -n demo pgbouncer-server-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+pgbouncer⏎      
+
+```bash
+kubectl get secrets -n demo pgbouncer-server-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+Hc5nXhC403rvDGPf⏎                                                        
 Also, there will be two more new keys in the secret that stores the previous credentials. The key is `authData.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo pgbouncer-server-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-pgbouncer⏎        
-$ kubectl get secret -n demo pgbouncer-server-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-I*7SQB7)6~Kni8*X⏎                                                   
+```bash
+kubectl get secret -n demo pgbouncer-server-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+pgbouncer⏎        
+
+```bash
+kubectl get secret -n demo pgbouncer-server-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+I*7SQB7)6~Kni8*X⏎                                                   
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
-```shell
-$  kubectl create secret generic quick-pb-user-auth -n demo \
+```bash
+ kubectl create secret generic quick-pb-user-auth -n demo \
         --type=kubernetes.io/basic-auth \
         --from-literal=username=user \
         --from-literal=password=PgBouncer2
-secret/quick-pb-user-auth created
 ```
+secret/quick-pb-user-auth created
 Now create a `PgBouncerOpsRequest` with `RotateAuth` type. Below is the YAML of the `PgBouncerOpsRequest` that we are going to create,
 
 ```shell
@@ -276,21 +286,22 @@ Here,
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauthuser.yaml
-pgbounceropsrequest.ops.kubedb.com/pbops-rotate-auth-user created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/rotateauth/rotateauthuser.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pbops-rotate-auth-user created
 Let’s wait for `PgBouncerOpsRequest` to be Successful. Run the following command to watch `PgBouncerOpsRequest` CRO:
 
-```shell
-$ kubectl get PgBouncerOpsRequest -n demo
+```bash
+kubectl get PgBouncerOpsRequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 pbops-rotate-auth-generated   RotateAuth   Successful   20m
 pbops-rotate-auth-user        RotateAuth   Successful   6m16s
-```
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$  kubectl describe PgBounceropsrequest -n demo pbops-rotate-auth-user
+```bash
+ kubectl describe PgBounceropsrequest -n demo pbops-rotate-auth-user
+```
 Name:         pbops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -388,24 +399,31 @@ Events:
   Warning  check pod ready; ConditionStatus:True; PodName:pgbouncer-server-0            6m23s  KubeDB Ops-manager Operator  check pod ready; ConditionStatus:True; PodName:pgbouncer-server-0
   Warning  check pg bouncer running; ConditionStatus:True; PodName:pgbouncer-server-0   6m23s  KubeDB Ops-manager Operator  check pg bouncer running; ConditionStatus:True; PodName:pgbouncer-server-0
   Normal   Successful                                                                   6m18s  KubeDB Ops-manager Operator  Restart performed successfully in PgBouncer: demo/pgbouncer-server for PgBouncerOpsRequest: pbops-rotate-auth-user
-  
-```
 **Verify auth is rotate**
-```shell
-$  kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
+```bash
+ kubectl get PgBouncer -n demo pgbouncer-server -ojson | jq .spec.authsecret.name
+```
 "quick-pb-user-auth"
-$ kubectl get secrets -n demo quick-pb-user-auth -o jsonpath='{.data.\username}' | base64 -d
+
+```bash
+kubectl get secrets -n demo quick-pb-user-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 user⏎                                                                                       
-$ kubectl get secrets -n demo quick-pb-user-auth -o jsonpath='{.data.\password}' | base64 -d
+
+```bash
+kubectl get secrets -n demo quick-pb-user-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 PgBouncer2⏎                                                                                                                  
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$  kubectl get secret -n demo quick-pb-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-pgbouncer⏎                                                                                                                                      
-$ kubectl get secret -n demo quick-pb-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-Hc5nXhC403rvDGPf⏎                                
+```bash
+ kubectl get secret -n demo quick-pb-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+pgbouncer⏎                                                                                                                                      
+
+```bash
+kubectl get secret -n demo quick-pb-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+Hc5nXhC403rvDGPf⏎                                
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -414,14 +432,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete PgBounceropsrequest pbops-rotate-auth-generated pbops-rotate-auth-user -n demo
-PgBounceropsrequest.ops.kubedb.com "pbops-rotate-auth-generated" "pbops-rotate-auth-user" deleted
-$ kubectl delete secret -n demoquick-pb-user-auth
-secret "quick-pb-user-auth" deleted
-$ kubectl delete secret -n demo   pgbouncer-server-auth
-secret "pgbouncer-server-auth " deleted
+```bash
+kubectl delete PgBounceropsrequest pbops-rotate-auth-generated pbops-rotate-auth-user -n demo
 ```
+PgBounceropsrequest.ops.kubedb.com "pbops-rotate-auth-generated" "pbops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demoquick-pb-user-auth
+```
+secret "quick-pb-user-auth" deleted
+
+```bash
+kubectl delete secret -n demo   pgbouncer-server-auth
+```
+secret "pgbouncer-server-auth " deleted
 
 
 ## Next Steps

@@ -33,11 +33,17 @@ This guide will show you how to deploy a Milvus database with TLS/SSL enabled fr
 KubeDB uses cert-manager to issue the Milvus certificates. First create a self-signed CA secret, then an `Issuer` (or `ClusterIssuer`) backed by it.
 
 ```bash
-$ openssl genrsa -out ca.key 2048
-$ openssl req -x509 -new -nodes -key ca.key -subj "/CN=milvus-ca/O=kubedb" -days 3650 -out ca.crt
-$ kubectl create secret tls milvus-ca --cert=ca.crt --key=ca.key -n demo
-secret/milvus-ca created
+openssl genrsa -out ca.key 2048
 ```
+
+```bash
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=milvus-ca/O=kubedb" -days 3650 -out ca.crt
+```
+
+```bash
+kubectl create secret tls milvus-ca --cert=ca.crt --key=ca.key -n demo
+```
+secret/milvus-ca created
 
 `issuer.yaml`
 
@@ -53,13 +59,15 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/issuer.yaml
+```
 issuer.cert-manager.io/milvus-issuer created
 
-$ kubectl get issuer -n demo
+```bash
+kubectl get issuer -n demo
+```
 NAME            READY   AGE
 milvus-issuer   True    5s
-```
 
 > A `ClusterIssuer` works the same way; a sample `cluster-issuer.yaml` (backed by secret `milvus-cluster-ca`) is included in the `yamls` folder. With a `ClusterIssuer`, set `spec.tls.issuerRef.kind: ClusterIssuer`.
 
@@ -103,9 +111,9 @@ spec:
 - `spec.tls.internal.mode: TLS` encrypts inter-component traffic.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/standalone.yaml
-milvus.kubedb.com/milvus-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/standalone.yaml
 ```
+milvus.kubedb.com/milvus-standalone created
 
 Wait until it is `Ready`.
 
@@ -116,45 +124,45 @@ Wait until it is `Ready`.
 KubeDB requests the `server` and `client` certificates and stores them in secrets:
 
 ```bash
-$ kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
+kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
+```
 milvus-standalone-client-cert   kubernetes.io/tls   4   91s
 milvus-standalone-server-cert   kubernetes.io/tls   3   91s
-```
 
 ### TLS Files Mounted in the Pod
 
 The certificates and CA are mounted at `/milvus/tls`:
 
 ```bash
-$ kubectl exec -n demo milvus-standalone-0 -c milvus -- ls -l /milvus/tls
+kubectl exec -n demo milvus-standalone-0 -c milvus -- ls -l /milvus/tls
+```
 ca.pem
 client.key
 client.pem
 server.key
 server.pem
-```
 
 ### Rendered Configuration
 
 The rendered `milvus.yaml` wires the certificates into Milvus:
 
 ```bash
-$ kubectl get secret <config-secret> -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A4 internaltls
+kubectl get secret <config-secret> -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A4 internaltls
+```
 internaltls:
     caPemPath: /milvus/tls/ca.pem
     serverKeyPath: /milvus/tls/server.key
     serverPemPath: /milvus/tls/server.pem
     sni: milvus-standalone
-```
 
 ### AppBinding Scheme
 
 Because TLS is enabled, the AppBinding connection scheme is `https`:
 
 ```bash
-$ kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
-https
+kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 ```
+https
 
 ## TLS-Secured Distributed Milvus
 
@@ -197,28 +205,41 @@ spec:
 After it becomes `Ready`, the certificate secrets exist, the certificates are mounted into every role's pods, and the AppBinding scheme is `https`:
 
 ```bash
-$ kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
+kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
+```
 milvus-cluster-client-cert   kubernetes.io/tls   4   4m
 milvus-cluster-server-cert   kubernetes.io/tls   3   4m
 
-$ kubectl exec -n demo milvus-cluster-mixcoord-0 -c milvus -- ls /milvus/tls
+```bash
+kubectl exec -n demo milvus-cluster-mixcoord-0 -c milvus -- ls /milvus/tls
+```
 ca.pem
 client.key
 client.pem
 server.key
 server.pem
 
-$ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
-https
+```bash
+kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 ```
+https
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete issuer -n demo milvus-issuer
-$ kubectl delete secret -n demo milvus-ca
-$ kubectl delete ns demo
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete issuer -n demo milvus-issuer
+```
+
+```bash
+kubectl delete secret -n demo milvus-ca
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

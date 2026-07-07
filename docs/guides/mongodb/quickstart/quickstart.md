@@ -29,18 +29,17 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  2m5s
-
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -49,7 +48,8 @@ This tutorial will show you how to use KubeDB to run a MongoDB database.
 When you have installed KubeDB, it has created `MongoDBVersion` crd for all supported MongoDB versions. Check it out.
 
 ```bash
-$ kubectl get mongodbversions
+kubectl get mongodbversions
+```
 NAME             VERSION   DISTRIBUTION   DB_IMAGE                                            DEPRECATED   AGE
 4.4.26           4.4.26    Official       ghcr.io/appscode-images/mongo:4.4.26                             13d
 5.0.31           5.0.31    Official       ghcr.io/appscode-images/mongo:5.0.31                             13d
@@ -65,8 +65,6 @@ percona-7.0.18   7.0.18    Percona        docker.io/percona/percona-server-mongo
 percona-7.0.28   7.0.28    Percona        docker.io/percona/percona-server-mongodb:7.0.28                  13d
 percona-8.0.17   8.0.17    Percona        docker.io/percona/percona-server-mongodb:8.0.17                  13d
 percona-8.0.8    8.0.8     Percona        docker.io/percona/percona-server-mongodb:8.0.8                   13d
-
-```
 
 ## Create a MongoDB database
 
@@ -97,9 +95,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/replicaset-v1.yaml
-mongodb.kubedb.com/mgo-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/replicaset-v1.yaml
 ```
+mongodb.kubedb.com/mgo-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -124,9 +122,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
-mongodb.kubedb.com/mgo-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
 ```
+mongodb.kubedb.com/mgo-quickstart created
 
 Here,
 
@@ -142,7 +140,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
-$ kubectl dba describe mg -n demo mgo-quickstart
+kubectl dba describe mg -n demo mgo-quickstart
+```
 Name:               mgo-quickstart
 Namespace:          demo
 CreationTimestamp:  Mon, 13 Jun 2022 18:01:55 +0600
@@ -249,31 +248,35 @@ Events:
   Normal  Successful  3m    KubeDB Operator  Successfully created governing service
   Normal  Successful  3m    KubeDB Operator  Successfully created Primary Service
   Normal  Successful  3m    KubeDB Operator  Successfully created appbinding
-```
 
 ```bash
-$ kubectl get petset -n demo
+kubectl get petset -n demo
+```
 NAME             READY   AGE
 mgo-quickstart   3/3     3m36s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mgo-quickstart-0   Bound    pvc-18c3c456-c9a9-40b2-bec8-4302cc0aeccc   1Gi        RWO            standard       3m56s
 datadir-mgo-quickstart-1   Bound    pvc-7ac4c470-8fa7-47a9-b118-2ac20f01186d   1Gi        RWO            standard       104s
 datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186-927d-855db35d0014   1Gi        RWO            standard       77s
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
 pvc-18c3c456-c9a9-40b2-bec8-4302cc0aeccc   1Gi        RWO            Delete           Bound    demo/datadir-mgo-quickstart-0   standard                4m8s
 pvc-2e6dfb71-056b-4186-927d-855db35d0014   1Gi        RWO            Delete           Bound    demo/datadir-mgo-quickstart-2   standard                90s
 pvc-7ac4c470-8fa7-47a9-b118-2ac20f01186d   1Gi        RWO            Delete           Bound    demo/datadir-mgo-quickstart-1   standard                117s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 mgo-quickstart        ClusterIP   10.96.20.114   <none>        27017/TCP   4m25s
 mgo-quickstart-pods   ClusterIP   None           <none>        27017/TCP   4m25s
-
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -370,14 +373,18 @@ If you want to use custom or existing secret please specify that when creating t
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mgo-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
 CaM8v9LmmSGB~&hj
 
-$ kubectl exec -it mgo-quickstart-0 -n demo sh
-
+```bash
+kubectl exec -it mgo-quickstart-0 -n demo sh
+```
 > mongosh admin
 
 rs1:PRIMARY> db.auth("root","CaM8v9LmmSGB~&hj")
@@ -423,7 +430,6 @@ rs1:PRIMARY> db.movies.find()
 
 > exit
 bye
-```
 
 # Database DeletionPolicy
 This field is used to regulate the deletion process of the related resources when mongodb object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
@@ -433,9 +439,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete mg mgo-quickstart -n demo
-Error from server (BadRequest): admission webhook "mongodbwebhook.validators.kubedb.com" denied the request: mongodb "demo/mgo-quickstart" can't be terminated. To delete, change spec.deletionPolicy
+kubectl delete mg mgo-quickstart -n demo
 ```
+Error from server (BadRequest): admission webhook "mongodbwebhook.validators.kubedb.com" denied the request: mongodb "demo/mgo-quickstart" can't be terminated. To delete, change spec.deletionPolicy
 
 ## Halt Database
 
@@ -446,23 +452,24 @@ You can also keep the mongodb object and halt the database to resume it again la
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-mongodb.kubedb.com/mgo-quickstart patched
+kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-quickstart patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":true}}' --type="merge"
-mongodb.kubedb.com/mgo-quickstart patched
+kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":true}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-quickstart patched
 
 After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mongodb.kubedb.com/mgo-quickstart   4.4.26     Halted   12m
 
@@ -475,7 +482,6 @@ NAME                                             STATUS   VOLUME                
 persistentvolumeclaim/datadir-mgo-quickstart-0   Bound    pvc-18c3c456-c9a9-40b2-bec8-4302cc0aeccc   1Gi        RWO            standard       12m
 persistentvolumeclaim/datadir-mgo-quickstart-1   Bound    pvc-7ac4c470-8fa7-47a9-b118-2ac20f01186d   1Gi        RWO            standard       9m57s
 persistentvolumeclaim/datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186-927d-855db35d0014   1Gi        RWO            standard       9m30s
-```
 
 
 ## Resume Halted Database
@@ -483,23 +489,23 @@ persistentvolumeclaim/datadir-mgo-quickstart-2   Bound    pvc-2e6dfb71-056b-4186
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":false}}' --type="merge"
-mongodb.kubedb.com/mgo-quickstart patched
+kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"halted":false}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-quickstart patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME             VERSION   STATUS   AGE
 mgo-quickstart   4.4.26     Ready    13m
-```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
 
 ```bash
-$ kubectl exec -it mgo-quickstart-0 -n demo bash
-
+kubectl exec -it mgo-quickstart-0 -n demo bash
+```
 mongodb@mgo-quickstart-0:/$ mongosh admin -u root -p 'CaM8v9LmmSGB~&hj'
 rs1:SECONDARY> use mydb
 switched to db mydb
@@ -509,8 +515,6 @@ WARNING: slaveOk() is deprecated and may be removed in the next major release. P
 
 rs1:SECONDARY> db.movies.find()
 { "_id" : ObjectId("62a72949198bad2c983d6611"), "top gun" : "maverick" }
-
-```
 
 
 ## Cleaning up
@@ -523,29 +527,40 @@ If you want to delete the existing database along with the volumes used, but wan
 When the DeletionPolicy is set to Delete and the mongodb object is deleted, the KubeDB operator will delete the PetSet and its pods along with PVCs but leaves the secret and database backup data(snapshots) intact.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
+kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
+```
 kubectl delete -n demo mg/mgo-quickstart
 
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+```bash
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-swg6h   kubernetes.io/service-account-token   3      27m
 secret/mgo-quickstart-auth   Opaque                                2      27m
 secret/mgo-quickstart-key    Opaque                                1      27m
 
-$ kubectl delete ns demo
+```bash
+kubectl delete ns demo
 ```
 
 ### WipeOut
 But if you want to cleanup each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo mg/mgo-quickstart
+kubectl patch -n demo mg/mgo-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+```bash
+kubectl delete -n demo mg/mgo-quickstart
+```
+
+```bash
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME              TYPE              DATA   AGE
 
-$ kubectl delete ns demo
+```bash
+kubectl delete ns demo
 ```
 
 ## Tips for Testing

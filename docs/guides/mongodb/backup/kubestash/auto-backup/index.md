@@ -37,9 +37,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created yet.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Backup Blueprint
 
@@ -54,13 +54,19 @@ We are going to store our backed up data into a S3 bucket. At first, we need to 
 Let's create a secret called `s3-secret` with access credentials to our desired S3 bucket,
 
 ```bash
-$ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
-$ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
-$ kubectl create secret generic -n demo s3-secret \
+echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
+```
+
+```bash
+echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
+```
+
+```bash
+kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_ACCESS_KEY_ID \
     --from-file=./AWS_SECRET_ACCESS_KEY
-secret/s3-secret created
 ```
+secret/s3-secret created
 
 ### Create BackupStorage:
 
@@ -90,9 +96,9 @@ spec:
 Let's create the `BackupStorage` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 We also need to create an secret for encrypt data and retention policy for `BackupBlueprint` to create `BackupConfiguration`
 
 ### Create Encryption Secret:
@@ -100,10 +106,10 @@ We also need to create an secret for encrypt data and retention policy for `Back
 EncryptionSecret refers to the Secret containing the encryption key which will be used to encode/decode the backed up data. Let's create a secret called `encry-secret`
 
 ```bash
-$ kubectl create secret generic encry-secret -n demo \
+kubectl create secret generic encry-secret -n demo \
     --from-literal=RESTIC_PASSWORD='123' -n demo
-secret/encry-secret created
 ```
+secret/encry-secret created
 
 ### Create Retention Policy:
 
@@ -127,9 +133,9 @@ spec:
 Let's create the RetentionPolicy we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/backup-rp created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mongodb/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/backup-rp created
 
 Now we can create `BackupBlueprint`. Below is the YAML of `BackupBlueprint` object that we are going to use in this tutorial,
 

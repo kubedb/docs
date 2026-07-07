@@ -37,20 +37,20 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Rabbi
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -100,30 +100,32 @@ spec:
 Let's create the `RabbitMQ` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/rabbitmq/autoscaler/storage/cluster/examples/sample-rabbitmq.yaml
-rabbitmq.kubedb.com/rabbitmq-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/rabbitmq/autoscaler/storage/cluster/examples/sample-rabbitmq.yaml
 ```
+rabbitmq.kubedb.com/rabbitmq-autoscale created
 
 Now, wait until `rabbitmq-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rabbitmq -n demo
+kubectl get rabbitmq -n demo
+```
 NAME                 VERSION   STATUS   AGE
 rabbitmq-autoscale   4.2.4    Ready    3m46s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo rabbitmq-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo rabbitmq-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-sample-rabbitmq-2   topolvm-provisioner            57s
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-sample-rabbitmq-0   topolvm-provisioner            58s
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-sample-rabbitmq-1   topolvm-provisioner            57s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -165,20 +167,23 @@ Here,
 Let's create the `rabbitmqAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/rabbitmq/autoscaler/storage/cluster/examples/rm-storage-autoscale-ops.yaml
-rabbitmqautoscaler.autoscaling.kubedb.com/rabbitmq-storage-autosclaer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/rabbitmq/autoscaler/storage/cluster/examples/rm-storage-autoscale-ops.yaml
 ```
+rabbitmqautoscaler.autoscaling.kubedb.com/rabbitmq-storage-autosclaer created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `rabbitmqautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get rabbitmqautoscaler -n demo
+kubectl get rabbitmqautoscaler -n demo
+```
 NAME                          AGE
 rabbitmq-storage-autosclaer   33s
 
-$ kubectl describe rabbitmqautoscaler rabbitmq-storage-autoscaler -n demo
+```bash
+kubectl describe rabbitmqautoscaler rabbitmq-storage-autoscaler -n demo
+```
 Name:         rabbitmq-storage-autosclaer
 Namespace:    demo
 Labels:       <none>
@@ -200,7 +205,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
-```
 
 So, the `rabbitmqautoscaler` resource is created successfully.
 
@@ -215,7 +219,8 @@ kubectl run perf-test --image=pivotalrabbitmq/perf-test -- --uri "amqp://admin:p
 You can check the log for this pod which shows publish and consume rates of messages in RabbitMQ.
 
 ```bash
-$ kubectl logs pod/perf-test -f
+kubectl logs pod/perf-test -f
+```
 id: test-104606-706, starting consumer #0
 id: test-104606-706, starting consumer #0, channel #0
 id: test-104606-706, starting producer #0
@@ -230,28 +235,28 @@ id: test-104606-706, time 7.000 s, sent: 38117 msg/s, received: 30759 msg/s, min
 id: test-104606-706, time 8.000 s, sent: 35088 msg/s, received: 31676 msg/s, min/median/75th/95th/99th consumer latency: 1578860/1799719/1915632/1985467/2024141 µs
 id: test-104606-706, time 9.000 s, sent: 29706 msg/s, received: 31375 msg/s, min/median/75th/95th/99th consumer latency: 1516415/1743385/1877037/1972570/1988962 µs
 id: test-104606-706, time 10.000 s, sent: 15903 msg/s, received: 26711 msg/s, min/median/75th/95th/99th consumer latency: 1569546/1884700/1992762/2096417/2136613 µs
-```
 
 Let's watch the `rabbitmqopsrequest` in the demo namespace to see if any `rabbitmqopsrequest` object is created. After some time you'll see that a `rabbitmqopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 NAME                              TYPE              STATUS        AGE
 rmops-rabbitmq-autoscale-xojkua   VolumeExpansion   Progressing   15s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 rmops-rabbitmq-autoscale-xojkua   VolumeExpansion   Successful   97s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-rabbitmq-autoscale-xojkua
+kubectl describe rabbitmqopsrequest -n demo rmops-rabbitmq-autoscale-xojkua
+```
 Name:         rmops-rabbitmq-autoscaleq-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -314,19 +319,21 @@ Events:
   Normal  Starting    103s   KubeDB Enterprise Operator  Resuming rabbitmq database: demo/rabbitmq-autoscale
   Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed rabbitmq database: demo/rabbitmq-autoscale
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of rabbitmq: demo/rabbitmq-autoscale
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo rabbitmq-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo rabbitmq-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-rabbitmq-autoscale-2   topolvm-provisioner            23m
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-srabbitmq-autoscale-0   topolvm-provisioner            24m
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-rabbitmq-autoscale-1   topolvm-provisioner            23m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the rabbitmq cluster.
 

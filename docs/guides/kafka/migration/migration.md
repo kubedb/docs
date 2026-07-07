@@ -32,9 +32,9 @@ Suppose you are running kafka cluster on-prem or on any other cloud provider and
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -86,9 +86,9 @@ stringData:
 Create the secret using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/source-kafka-auth.yaml
-secret/source-kafka-auth created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/source-kafka-auth.yaml
 ```
+secret/source-kafka-auth created
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -116,21 +116,21 @@ spec:
 Create the Kafka cluster using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/source-kafka.yaml
-kafka.kubedb.com/source-kafka created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/source-kafka.yaml
 ```
+kafka.kubedb.com/source-kafka created
 
 Now, wait until `source-kafka` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kafka -n demo -w
+kubectl get kafka -n demo -w
+```
 NAME           VERSION   STATUS         AGE
 source-kafka   3.9.0     Provisioning   1s
 source-kafka   3.9.0     Provisioning   111s
 .
 .
 source-kafka   3.9.0     Ready          2m
-```
 
 ### Step 2:  Create Producer and Consumer
 
@@ -143,26 +143,26 @@ Exec into one of the broker pods:
 **Terminal 1:**
 
 ```bash
-$ kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+```
 kafka@source-kafka-0:~$ kafka-topics.sh --create --topic foo --partitions 3 --replication-factor 2 --bootstrap-server localhost:9092 --command-config config/clientauth.properties
 Created topic foo.
 kafka@source-kafka-0:~$ kafka-console-producer.sh --topic foo --bootstrap-server localhost:9092 --producer.config config/clientauth.properties
 > Hello, World!
 > Welcome to KubeDB Kafka!
 > Starting Migration
-```
 
 Now, create another terminal and exec into one of the broker pods to consume the messages:
 
 **Terminal 2:**
 
 ```bash
-$ kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+```
 kafka@source-kafka-0:~$ kafka-console-consumer.sh --topic foo --group foo-consumer --from-beginning --bootstrap-server localhost:9092 --consumer.config config/clientauth.properties
  Hello, World!
  Welcome to KubeDB Kafka!
  Starting Migration
-```
 
 Don't close the `Terminal 2`. This terminal acts like a consumer application for the source Kafka cluster.
 
@@ -219,7 +219,8 @@ Create another terminal and exec into one of the broker pods to consume the mess
 **Terminal 3:**
 
 ```bash
-$ kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+kubectl exec -it source-kafka-0 -n demo -- /bin/bash
+```
 kafka@source-kafka-0:~$ kafka-console-consumer.sh --topic bar --group bar-consumer --from-beginning --bootstrap-server localhost:9092 --consumer.config config/clientauth.properties
 {"timestamp": 1727759815, "value": 42}
 {"timestamp": 1727759818, "value": 43}
@@ -239,7 +240,6 @@ kafka@source-kafka-0:~$ kafka-console-consumer.sh --topic bar --group bar-consum
 {"timestamp": 1727759858, "value": 14}
 .
 .
-```
 
 So, we have one producer and two consumers running in the source Kafka cluster.
 
@@ -265,9 +265,9 @@ stringData:
 Create the secret using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/target-kafka-auth.yaml
-secret/target-kafka-auth created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/target-kafka-auth.yaml
 ```
+secret/target-kafka-auth created
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -315,21 +315,21 @@ spec:
 Create the Kafka cluster using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/target-kafka.yaml
-kafka.kubedb.com/target-kafka created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/target-kafka.yaml
 ```
+kafka.kubedb.com/target-kafka created
 
 Now, wait until `source-kafka` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kafka -n demo target-kafka -w
+kubectl get kafka -n demo target-kafka -w
+```
 NAME           VERSION   STATUS         AGE
 target-kafka   3.9.0     Provisioning   1s
 target-kafka   3.9.0     Provisioning   111s
 .
 .
 target-kafka   3.9.0     Ready          2m
-```
 
 Now, create a `ConnectCluster` with monitoring enabled to migrate from the source Kafka cluster to the target Kafka cluster using `mirror-maker-2`.
 
@@ -349,9 +349,9 @@ stringData:
 Create the secret using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-connect-auth.yaml
-secret/mirror-connect-auth created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-connect-auth.yaml
 ```
+secret/mirror-connect-auth created
 
 ```yaml
 apiVersion: kafka.kubedb.com/v1alpha1
@@ -383,21 +383,21 @@ spec:
 Create the `ConnectCluster` using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-connect.yaml
-connectcluster.kafka.kubedb.com/mirror-connect created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-connect.yaml
 ```
+connectcluster.kafka.kubedb.com/mirror-connect created
 
 Now, wait until `mirror-connect` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get connectcluster -n demo -w
+kubectl get connectcluster -n demo -w
+```
 NAME                VERSION   STATUS         AGE
 mirror-connect      3.9.0     Provisioning   1s
 mirror-connect      3.9.0     Provisioning   111s
 .
 .
 mirror-connect      3.9.0     Ready          90s
-```
 
 ### Step 4: Create MirrorSource Connector
 
@@ -460,10 +460,10 @@ here,
 Create the `MirrorSource` connector using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-source.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-source.yaml
+```
 secret/mirror-source-config created
 connector.kafka.kubedb.com/mirror-source-connector created
-```
 
 ### Step 5: Create MirrorCheckpoint
 
@@ -522,10 +522,10 @@ here,
 Create the `MirrorCheckpoint` connector using the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-checkpoint.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-checkpoint.yaml
+```
 secret/mirror-checkpoint-config created
 connector.kafka.kubedb.com/mirror-checkpoint-connector created
-```
 
 ### Step 6: Create MirrorHeartbeat
 
@@ -573,10 +573,10 @@ here,
 - Properties with prefix `target.cluster` are the target Kafka cluster's authentication information.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-heartbeat.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/migration/mirror-heartbeat.yaml
+```
 secret/mirror-hearbeat-config created
 connector.kafka.kubedb.com/mirror-hearbeat-connector created
-```
 
 Check the status of the connectors:
 
@@ -649,16 +649,19 @@ yamlApplicationConfig:
 Now, install Kafbat using the following command:
 
 ```bash
-$ helm repo add kafbat-ui https://kafbat.github.io/helm-charts
-$ helm install kafbat-ui kafbat-ui/kafka-ui -n demo -f values.yaml
+helm repo add kafbat-ui https://kafbat.github.io/helm-charts
+```
+
+```bash
+helm install kafbat-ui kafbat-ui/kafka-ui -n demo -f values.yaml
 ```
 
 Now, port-forward the Kafbat service to access the UI:
 ```bash
-$ kubectl port-forward svc/kafbat-ui-kafka-ui 8080:80 -n demo
+kubectl port-forward svc/kafbat-ui-kafka-ui 8080:80 -n demo
+```
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
-```
 
 Now, open your browser and navigate to `http://localhost:8080` to view the Kafbat UI.
 
@@ -692,11 +695,11 @@ Also, monitor the migration process using prometheus and grafana.
 To check the metrics port-forward the prometheus service:
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-operated 9090:9090 -n demo
+kubectl port-forward -n monitoring svc/prometheus-operated 9090:9090 -n demo
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 Handling connection for 9090
-```
 
 Now, open your browser and navigate to `http://localhost:9090/graph` to view the Prometheus UI. You can add queries to the query box like the following:
 There are two main metrics to notice:
@@ -830,11 +833,23 @@ Below are some tips and tricks to make the migration process smoother:
 To clean up the Kubernetes resources created by this tutorial, you can run:
 
 ```bash
-$ kubectl delete connector mirror-source-connector, mirror-checkpoint-connector, mirror-heartbeat-connector -n demo
-$ kubectl delete secret mirror-source-config mirror-checkpoint-config mirror-heartbeat-config -n demo
-$ kubectl delete connectcluster mirror-connect -n demo
-$ kubectl delete kafka source-kafka target-kafka -n demo
-$ kubectl delete ns demo
+kubectl delete connector mirror-source-connector, mirror-checkpoint-connector, mirror-heartbeat-connector -n demo
+```
+
+```bash
+kubectl delete secret mirror-source-config mirror-checkpoint-config mirror-heartbeat-config -n demo
+```
+
+```bash
+kubectl delete connectcluster mirror-connect -n demo
+```
+
+```bash
+kubectl delete kafka source-kafka target-kafka -n demo
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

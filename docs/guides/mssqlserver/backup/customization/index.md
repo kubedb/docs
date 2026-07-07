@@ -227,12 +227,12 @@ Here,
 You can also restore a specific snapshot. At first, list the available snapshot as bellow,
 
 ```bash
-$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mssqlserver-repo
+kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-mssqlserver-repo
+```
 NAME                                                              REPOSITORY             SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1727355681   gcs-mssqlserver-repo   frequent-backup   2024-09-26T13:01:22Z   Delete            Succeeded   5m8s
 gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1727355730   gcs-mssqlserver-repo   frequent-backup   2024-09-26T13:02:10Z   Delete            Succeeded   4m20s
 gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1727355900   gcs-mssqlserver-repo   frequent-backup   2024-09-26T13:05:00Z   Delete            Succeeded   90s
-```
 
 The below example shows how you can pass a specific snapshot name in `.dataSource` section.
 

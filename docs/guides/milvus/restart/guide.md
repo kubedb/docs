@@ -55,20 +55,21 @@ Here,
 - `spec.apply: Always` applies the restart regardless of the database's current readiness.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls/restart-standalone.yaml
-milvusopsrequest.ops.kubedb.com/restart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls/restart-standalone.yaml
 ```
+milvusopsrequest.ops.kubedb.com/restart created
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest restart -n demo
+kubectl get milvusopsrequest restart -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   57s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest restart -n demo
+kubectl describe milvusopsrequest restart -n demo
+```
 ...
 Status:
   Conditions:
@@ -94,15 +95,14 @@ Events:
   Warning  check pod running; ConditionStatus:True; PodName:milvus-standalone-0
   Normal   RestartNodes   Successfully Restarted Milvus nodes
   Normal   Successful     Successfully resumed Milvus database: demo/milvus-standalone for MilvusOpsRequest: restart
-```
 
 The pod has been evicted and recreated:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-standalone
+kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-standalone
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 milvus-standalone-0   1/1     Running   0          14s
-```
 
 ## Restart Distributed Milvus
 
@@ -125,18 +125,21 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls/restart-distributed.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls/restart-distributed.yaml
+```
 milvusopsrequest.ops.kubedb.com/restart created
 
-$ kubectl get milvusopsrequest restart -n demo
+```bash
+kubectl get milvusopsrequest restart -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   2m8s
-```
 
 The describe output shows each role's pod being evicted and checked in turn:
 
 ```bash
-$ kubectl describe milvusopsrequest restart -n demo
+kubectl describe milvusopsrequest restart -n demo
+```
 ...
 Status:
   Conditions:
@@ -151,26 +154,31 @@ Status:
     Type:     EvictPod--milvus-cluster-datanode-0
     ... (querynode, streamingnode, proxy follow)
   Phase:      Successful
-```
 
 All role pods have been recreated:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-cluster
+kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-cluster
+```
 NAME                             READY   STATUS    RESTARTS   AGE
 milvus-cluster-datanode-0        1/1     Running   0          105s
 milvus-cluster-mixcoord-0        1/1     Running   0          114s
 milvus-cluster-proxy-0           1/1     Running   0          13s
 milvus-cluster-querynode-0       1/1     Running   0          65s
 milvus-cluster-streamingnode-0   1/1     Running   0          25s
-```
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo restart
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo restart
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/ZooKeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,11 +47,11 @@ Here, we are going to deploy a `ZooKeeper` standalone using a supported version 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)     driver.standard.io      Delete          Immediate              true                   93s
 standard-static        driver.standard.io      Delete          Immediate              true                   90s
-```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -84,30 +84,32 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/volume-expansion/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/volume-expansion/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME            VERSION    STATUS    AGE
 zk-quickstart   3.9.1      Ready     5m56s
-```
 
 Let's check volume size from PetSet, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-3551d7c0-0df6-4f94-b1e0-21834319ecab   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   standard       <unset>                          92s
 pvc-b5882e9e-3c61-4609-b5ba-0eb9f32edbbc   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   standard       <unset>                          58s
 pvc-dccf2b12-d695-4792-8e4b-de4342e7fed4   1Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   standard       <unset>                          74s
-```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
@@ -148,9 +150,9 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/volume-expansion/zkops-volume-exp-offline.yaml
-zookeeperopsrequest.ops.kubedb.com/zk-offline-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/volume-expansion/zkops-volume-exp-offline.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zk-offline-volume-expansion created
 
 #### Verify ZooKeeper Standalone volume expanded successfully
 
@@ -159,15 +161,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`. Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ kubectl get zookeeperopsrequest -n demo
+kubectl get zookeeperopsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 zk-offline-volume-expansion   VolumeExpansion   Successful   75s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zk-offline-volume-expansion
+kubectl describe zookeeperopsrequest -n demo zk-offline-volume-expansion
+```
 Name:         zk-offline-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -359,20 +362,21 @@ Events:
   Normal   ReadyPetSets                             76s    KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                 76s    KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                               76s    KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: zk-offline-volume-expansion
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo zk-quickstart -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-1b112414-6162-4e75-99c9-3e62cb4efb4a   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-1   standard       <unset>                          16m
 pvc-3159b881-1954-4008-8594-599bee9fd11e   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-0   standard       <unset>                          17m
 pvc-43ba80bd-9029-413e-b89c-1f373fd0cd3d   2Gi        RWO            Delete           Bound    demo/zk-quickstart-data-zk-quickstart-2   standard       <unset>                          16m
-```
 
 The above output verifies that we have successfully expanded the volume of the ZooKeeper standalone database.
 

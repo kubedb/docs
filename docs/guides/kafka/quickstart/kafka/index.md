@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/kafka/quickstart/kafka/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Kafka CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -58,7 +60,8 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
-$ kubectl get kfversion
+kubectl get kfversion
+```
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                7d19h
 3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                7d19h
@@ -66,8 +69,6 @@ NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                7d19h
 3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                7d19h
 4.0.0   4.0.0     ghcr.io/appscode-images/kafka:4.0.0                      7d19h
-
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
 
@@ -102,9 +103,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1.yaml
-kafka.kubedb.com/kafka-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1.yaml
 ```
+kafka.kubedb.com/kafka-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -127,9 +128,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1alpha2.yaml
-kafka.kubedb.com/kafka-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1alpha2.yaml
 ```
+kafka.kubedb.com/kafka-quickstart created
 
 Here,
 
@@ -144,7 +145,8 @@ Here,
 The Kafka's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the Kafka.
 
 ```bash
-$ kubectl get kafka -n demo -w
+kubectl get kafka -n demo -w
+```
 NAME               TYPE                  VERSION   STATUS   AGE
 kafka-quickstart   kubedb.com/v1alpha2   3.9.0     Provisioning   2s
 kafka-quickstart   kubedb.com/v1alpha2   3.9.0     Provisioning   4s
@@ -152,12 +154,11 @@ kafka-quickstart   kubedb.com/v1alpha2   3.9.0     Provisioning   4s
 .
 kafka-quickstart   kubedb.com/v1alpha2   3.9.0     Ready          112s
 
-```
-
 Describe the kafka object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe kafka -n demo kafka-quickstart
+kubectl describe kafka -n demo kafka-quickstart
+```
 Name:         kafka-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -288,14 +289,13 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-```
-
 ### KubeDB Operator Generated Resources
 
 On deployment of a Kafka CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=kafka-quickstart'
+kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=kafka-quickstart'
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/kafka-quickstart-0   1/1     Running   0          8m50s
 pod/kafka-quickstart-1   1/1     Running   0          8m48s
@@ -313,7 +313,6 @@ appbinding.appcatalog.appscode.com/kafka-quickstart   kubedb.com/kafka   3.9.0  
 NAME                                 TYPE                       DATA   AGE
 secret/kafka-quickstart-auth         kubernetes.io/basic-auth   2      8m52s
 secret/kafka-quickstart-config       Opaque                     2      8m52s
-```
 
 - `PetSet` - a PetSet named after the Kafka instance. In topology mode, the operator creates 3 petSets with name `{Kafka-Name}-{Sufix}`.
 - `Services` -  For a combined Kafka instance only one service is created with name `{Kafka-name}-{pods}`. For topology mode, two services are created.
@@ -330,12 +329,12 @@ secret/kafka-quickstart-config       Opaque                     2      8m52s
 We will use `kafka console producer` and `kafka console consumer` for creating kafka topic, publishing messages to kafka brokers and then consume those messages as well. Exec into one of the kafka brokers in interactive mode first, then navigate to `HOME` directory which is at path `/opt/kafka`
 
 ```bash
-$ kubectl exec -it -n demo  kafka-quickstart-0 -- bash
+kubectl exec -it -n demo  kafka-quickstart-0 -- bash
+```
 root@kafka-quickstart-0:/# cd $HOME
 root@kafka-quickstart-0:~# pwd
 /opt/kafka
 root@kafka-quickstart-0:~# 
-```
 
 You will find a file named `clientauth.properties` in the config directory. This file is generated by the operator which contains necessary authentication/authorization configurations that are required during publishing or subscribing messages to a kafka topic.
 
@@ -415,15 +414,19 @@ Notice that, messages are coming to the consumer as you continue sending message
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo kafka kafka-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo kafka kafka-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 kafka.kubedb.com/kafka-quickstart patched
 
-$ kubectl delete kf kafka-quickstart  -n demo
+```bash
+kubectl delete kf kafka-quickstart  -n demo
+```
 kafka.kubedb.com "kafka-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

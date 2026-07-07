@@ -29,12 +29,14 @@ This tutorial will show you how to monitor ZooKeeper database using builtin [Pro
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/zookeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -75,33 +77,34 @@ Here,
 Let's create the ZooKeeper crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/builtin-prom-zk.yaml
-zookeeper.kubedb.com/zookeeper-builtin-prom created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/builtin-prom-zk.yaml
 ```
+zookeeper.kubedb.com/zookeeper-builtin-prom created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get zk -n demo 
+kubectl get zk -n demo 
+```
 NAME                     VERSION   STATUS    AGE
 zookeeper-builtin-prom   3.9.1     Ready     129m
-```
 
 KubeDB will create a separate stats service with name `{ZooKeeper crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=zookeeper-builtin-prom"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=zookeeper-builtin-prom"
+```
 NAME                                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 zookeeper-builtin-prom                ClusterIP   10.43.115.171   <none>        2181/TCP                     129m
 zookeeper-builtin-prom-admin-server   ClusterIP   10.43.55.7      <none>        8080/TCP                     129m
 zookeeper-builtin-prom-pods           ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP   129m
 zookeeper-builtin-prom-stats          ClusterIP   10.43.211.84    <none>        7000/TCP                     129m
-```
 
 Here, `zookeeper-builtin-prom-stats` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n demo zookeeper-builtin-prom-stats
+kubectl describe svc -n demo zookeeper-builtin-prom-stats
+```
 Name:              zookeeper-builtin-prom-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
@@ -124,7 +127,6 @@ TargetPort:        metrics/TCP
 Endpoints:         10.42.0.124:7000,10.42.0.126:7000,10.42.0.128:7000
 Session Affinity:  None
 Events:            <none>
-```
 
 You can see that the service contains following annotations.
 
@@ -288,20 +290,20 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/prom-config.yaml
-configmap/prometheus-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/prom-config.yaml
 ```
+configmap/prometheus-config created
 
 **Create RBAC:**
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+```
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
-```
 
 >YAML for the RBAC resources created above can be found [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/rbac.yaml).
 
@@ -312,9 +314,9 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 Let's deploy the Prometheus server.
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
-deployment.apps/prometheus created
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 ```
+deployment.apps/prometheus created
 
 ### Verify Monitoring Metrics
 
@@ -323,18 +325,18 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+kubectl get pod -n monitoring -l=app=prometheus
+```
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-d64b668fb-vg746    1/1     Running   0          28s
-```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-7bd56c6865-8dlpv` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-d64b668fb-vg746 9090
+kubectl port-forward -n monitoring prometheus-d64b668fb-vg746 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `zookeeper-builtin-prom-stats` service as one of the targets.
 

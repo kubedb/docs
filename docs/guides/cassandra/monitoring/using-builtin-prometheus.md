@@ -29,12 +29,14 @@ This tutorial will show you how to monitor Cassandra cluster using builtin [Prom
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -90,32 +92,33 @@ Here,
 Let's create the Cassandra crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/cassandra-builtin-prom.yaml
-cassandra.kubedb.com/cassandra-builtin-prom created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/cassandra-builtin-prom.yaml
 ```
+cassandra.kubedb.com/cassandra-builtin-prom created
 
 Now, wait for the cluster to go into `Ready` state.
 
 ```bash
-$ kubectl get cas -n demo 
+kubectl get cas -n demo 
+```
 NAME                     TYPE                  VERSION   STATUS   AGE
 cassandra-builtin-prom   kubedb.com/v1alpha2   5.0.3     Ready    2m45s
-```
 
 KubeDB will create a separate stats service with name `{Cassandra crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=cassandra-builtin-prom"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=cassandra-builtin-prom"
+```
 NAME                                  TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                               AGE
 cassandra-builtin-prom                ClusterIP   10.96.144.17    <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   3m1s
 cassandra-builtin-prom-rack-r0-pods   ClusterIP   None            <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   3m1s
 cassandra-builtin-prom-stats          ClusterIP   10.96.195.225   <none>        56790/TCP                             3m1s
-```
 
 Here, `cassandra-builtin-prom-stats` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$  kubectl describe svc -n demo cassandra-builtin-prom-stats
+ kubectl describe svc -n demo cassandra-builtin-prom-stats
+```
 Name:                     cassandra-builtin-prom-stats
 Namespace:                demo
 Labels:                   app.kubernetes.io/component=database
@@ -139,7 +142,6 @@ Endpoints:                10.244.0.29:8080,10.244.0.33:8080
 Session Affinity:         None
 Internal Traffic Policy:  Cluster
 Events:                   <none>
-```
 
 You can see that the service contains following annotations.
 
@@ -304,20 +306,20 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/builtin-prometheus/prom-config.yaml
-configmap/prometheus-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/builtin-prometheus/prom-config.yaml
 ```
+configmap/prometheus-config created
 
 **Create RBAC:**
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+```
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
-```
 
 >YAML for the RBAC resources created above can be found [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/rbac.yaml).
 
@@ -328,9 +330,9 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 Let's deploy the Prometheus server.
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
-deployment.apps/prometheus created
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 ```
+deployment.apps/prometheus created
 
 ### Verify Monitoring Metrics
 
@@ -339,18 +341,18 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+kubectl get pod -n monitoring -l=app=prometheus
+```
 NAME                          READY   STATUS    RESTARTS   AGE
 prometheus-547c78fc57-mg6st   1/1     Running   0          48s
-```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-7bd56c6865-8dlpv` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-547c78fc57-mg6st 9090
+kubectl port-forward -n monitoring prometheus-547c78fc57-mg6st 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `cassandra-builtin-prom-stats` service as one of the targets.
 

@@ -25,20 +25,20 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 - You must have a `StorageClass` that supports volume expansion (i.e. its provisioner sets `allowVolumeExpansion: true`). This tutorial uses `longhorn`.
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  12d
 longhorn               driver.longhorn.io      Delete          Immediate              true                   12d
-```
 
 > **Note:** `local-path` has `ALLOWVOLUMEEXPANSION: false`, so it cannot be used for volume expansion. Use a storage class such as `longhorn` that supports it.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo`.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/volume-expansion](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/volume-expansion) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -79,10 +79,10 @@ Let's create the `Oracle` CR and wait until it is `Ready`.
 Once ready, let's check the size of the PersistentVolumeClaim used by the database,
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=oracle-sa-sample
+kubectl get pvc -n demo -l app.kubernetes.io/instance=oracle-sa-sample
+```
 NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-oracle-sa-sample-0   Bound    pvc-7c115ba3-ed65-4437-992c-aa8b789b0019   10Gi       RWO            longhorn       8m37s
-```
 
 ## Expand Volume
 
@@ -117,22 +117,23 @@ Here,
 Let's create the `OracleOpsRequest`,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/volume-expansion/standalone-volume-expention.yaml
-oracleopsrequest.ops.kubedb.com/standalone-volume-expention created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/volume-expansion/standalone-volume-expention.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-volume-expention created
 
 ### Verify the volume expanded
 
 Let's wait for the `OracleOpsRequest` to become `Successful`,
 
 ```bash
-$ kubectl get oracleopsrequest -n demo standalone-volume-expention
+kubectl get oracleopsrequest -n demo standalone-volume-expention
+```
 NAME                          TYPE              STATUS       AGE
 standalone-volume-expention   VolumeExpansion   Successful   61s
-```
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo standalone-volume-expention
+kubectl describe oracleopsrequest -n demo standalone-volume-expention
+```
 Name:         standalone-volume-expention
 Namespace:    demo
 ...
@@ -159,21 +160,20 @@ Status:
     Status:                True
     Type:                  Successful
   Phase:                   Successful
-```
 
 The operator has updated the `Oracle` spec and the PetSet `volumeClaimTemplate` to `12Gi`,
 
 ```bash
-$ kubectl get oracle -n demo oracle-sa-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
-12Gi
+kubectl get oracle -n demo oracle-sa-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
 ```
+12Gi
 
 The capacity reported by the `PersistentVolumeClaim` changes once the **storage provisioner** finishes resizing the underlying volume. While the resize is in progress, the PVC carries a `Resizing` condition and the requested size (`spec.resources.requests.storage`) updates ahead of the reported capacity (`status.capacity.storage`),
 
 ```bash
-$ kubectl get pvc data-oracle-sa-sample-0 -n demo -o jsonpath='req={.spec.resources.requests.storage} cap={.status.capacity.storage} cond={.status.conditions[*].type}'
-req=12Gi cap=10Gi cond=Resizing
+kubectl get pvc data-oracle-sa-sample-0 -n demo -o jsonpath='req={.spec.resources.requests.storage} cap={.status.capacity.storage} cond={.status.conditions[*].type}'
 ```
+req=12Gi cap=10Gi cond=Resizing
 
 > **Note (test environment):** On the single-node longhorn dev cluster used to capture this guide, the `OracleOpsRequest` reached the `Successful` phase and both the `Oracle` spec and the PetSet `volumeClaimTemplate` were updated to `12Gi`, but the longhorn volume remained in the `Resizing` state and the PVC capacity had not yet been reflected as `12Gi` at the time of writing. Volume expansion depends on the CSI driver fully completing the resize; on a production-grade storage class the PVC capacity updates to the new size once resizing completes. Always confirm the final size with `kubectl get pvc -n demo data-oracle-sa-sample-0 -o jsonpath='{.status.capacity.storage}'`.
 

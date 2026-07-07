@@ -28,7 +28,8 @@ cluster).
 ## Check Resources Before Scaling
 
 ```bash
-$ kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | select(.name=="hanadb") | .resources'
+kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | select(.name=="hanadb") | .resources'
+```
 {
   "limits": {
     "cpu": "4",
@@ -39,7 +40,6 @@ $ kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | se
     "memory": "8Gi"
   }
 }
-```
 
 ## Create a VerticalScaling HanaDBOpsRequest
 
@@ -67,9 +67,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/scaling/system-replication-vertical-scaling.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/scaling/system-replication-vertical-scaling.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-vscale created
 
 Here,
 
@@ -80,13 +80,14 @@ Here,
 ## Verify the Scaling
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-vscale
+kubectl get hdbops -n demo hdbops-vscale
+```
 NAME            TYPE              STATUS       AGE
 hdbops-vscale   VerticalScaling   Successful   4m22s
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-vscale
+kubectl describe hdbops -n demo hdbops-vscale
+```
 ...
 Status:
   Conditions:
@@ -107,16 +108,18 @@ Status:
     Status:   True
     Type:     Successful
   Phase:      Successful
-```
 
 Confirm the new resources are in effect on the PetSet and pods:
 
 ```bash
-$ kubectl get petset -n demo hanadb-cluster \
+kubectl get petset -n demo hanadb-cluster \
   -o jsonpath='{range .spec.template.spec.containers[?(@.name=="hanadb")]}{.name}{": "}{.resources}{"\n"}{end}'
+```
 hanadb: {"limits":{"cpu":"4","memory":"14Gi"},"requests":{"cpu":"2100m","memory":"8448Mi"}}
 
-$ kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | select(.name=="hanadb") | .resources'
+```bash
+kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | select(.name=="hanadb") | .resources'
+```
 {
   "limits": {
     "cpu": "4",
@@ -127,14 +130,19 @@ $ kubectl get pod -n demo hanadb-cluster-0 -o json | jq '.spec.containers[] | se
     "memory": "8448Mi"
   }
 }
-```
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-vscale
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-vscale
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

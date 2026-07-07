@@ -27,9 +27,9 @@ Now,
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mssqlserver/pitr/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Continuous Archiving
@@ -45,13 +45,19 @@ We are going to store our backed up data into a `GCS` bucket. We have to create 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -79,9 +85,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 **Create RetentionPolicy:**
 
@@ -109,20 +115,23 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 **Create Encryption Secret**
 
 Let’s create a secret called encrypt-secret with the `Restic` password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 **Create MSSQLServerArchiver CR:**
 
@@ -182,9 +191,9 @@ spec:
 Let’s create the above `MSSQLServerArchiver`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/sample-mssqlserverarchiver.yaml
-mssqlserverarchiver.archiver.kubedb.com/sample-mssqlserverarchiver created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/sample-mssqlserverarchiver.yaml
 ```
+mssqlserverarchiver.archiver.kubedb.com/sample-mssqlserverarchiver created
 
 Here,
 - The `databases` field within `spec.fullBackup.task.params` specifies the target databases for the archive. If no database list is provided, the archiver will target all non-system databases by default.
@@ -205,15 +214,15 @@ By following the below steps, we are going to create our desired issuer,
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
 ```
 
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 
 Now, we are going to create an `Issuer` CR using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
@@ -231,9 +240,9 @@ spec:
 Let’s create the `Issuer` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
 
 **Create MSSQLServer CR:**
 
@@ -292,20 +301,20 @@ Here,
 Create the above `MSSQLServer` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/sample-mssqlserver-ag.yaml
-mssqlserver.kubedb.com/sample-mssqlserver-ag created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/pitr/examples/sample-mssqlserver-ag.yaml
 ```
+mssqlserver.kubedb.com/sample-mssqlserver-ag created
 
 Let’s check the pods which are related to the backup,
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                                                          READY   STATUS    RESTARTS   AGE
 sample-mssqlserver-ag-0                                       2/2     Running   0          6m18s
 sample-mssqlserver-ag-1                                       2/2     Running   0          6m12s
 sample-mssqlserver-ag-archiver-full-backup-1728973299-7gmh5   1/1     Running   0          41s
 sample-mssqlserver-ag-sidekick                                1/1     Running   0          17s
-```
 
 Here,
 - Pod `sample-mssqlserver-ag-archiver-full-backup-1728973299-7gmh5` is responsible for application backup. i.e (target databases and manifest)
@@ -319,41 +328,46 @@ If everything goes well, kubedb provisioner will create a `BackupConfiguration` 
 Let’s verify the Phase of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                             PHASE   PAUSED   AGE
 sample-mssqlserver-ag-archiver   Ready            7m49s
-```
 
 ***Verify BackupSession:***
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo 
+kubectl get backupsession -n demo 
+```
 NAME                                                    INVOKER-TYPE          INVOKER-NAME                     PHASE       DURATION   AGE
 sample-mssqlserver-ag-archiver-full-backup-1728973299   BackupConfiguration   sample-mssqlserver-ag-archiver   Succeeded   51s        8m31s
-```
 
 ***Verify Snapshot:***
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=sample-mssqlserver-ag-archiver
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=sample-mssqlserver-ag-archiver
+```
 NAME                                                              REPOSITORY                       SESSION       SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 sample-mssqlserver-ag-archiver-sarchiver-full-backup-1728973299   sample-mssqlserver-ag-archiver   full-backup   2024-10-15T06:21:39Z   Delete            Succeeded   10m
-```
 
 ### Insert Some Data
 
 Every successful transaction log will be recorded during the log backup by Sidekick. By default, log backups occur at `25-second` intervals.
 
 ```bash
-$ kubectl get secret -n demo  sample-mssqlserver-ag-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  sample-mssqlserver-ag-auth -o jsonpath='{.data.username}'| base64 -d
+```
 sa⏎
 
-$ kubectl get secret -n demo  sample-mssqlserver-ag-auth -o jsonpath='{.data.password}'| base64 -d
+```bash
+kubectl get secret -n demo  sample-mssqlserver-ag-auth -o jsonpath='{.data.password}'| base64 -d
+```
 XhGrsDvJ7ATrPp7n⏎
 
-$ kubectl exec -it -n demo sample-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver-ag -U sa -P "XhGrsDvJ7ATrPp7n" -No
+```bash
+kubectl exec -it -n demo sample-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver-ag -U sa -P "XhGrsDvJ7ATrPp7n" -No
+```
 1> SELECT name from sys.databases;
 2> GO
 name                                                                                                                            
@@ -422,7 +436,6 @@ id          type                                               quant       color
 
 # exit from the pod
 1> exit
-```
 
 ### Point-in-time Recovery
 
@@ -431,7 +444,8 @@ Point-In-Time Recovery allows you to restore a `Microsoft SQL Server` database t
 Let’s say accidentally drops the table `equipment`.
 
 ```bash
-$ kubectl exec -it -n demo sample-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver-ag -U sa -P "XhGrsDvJ7ATrPp7n" -No
+kubectl exec -it -n demo sample-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver-ag -U sa -P "XhGrsDvJ7ATrPp7n" -No
+```
 1> use demo
 2> DROP table equipment;
 3> GO
@@ -444,7 +458,6 @@ name
 --------------------------------------------------------------------------------------------------------------------------------
 
 (0 rows affected) # It confirms that no tables are exist in `demo` database.
-```
 
 We can’t restore from a full backup since at this point no full backup was perform. So we can choose a specific time in which time we want to restore.
 
@@ -505,21 +518,21 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f restored-mssqlserver-ag.yaml
-mssqlserver.kubedb.com/restored-mssqlserver-ag created
+kubectl apply -f restored-mssqlserver-ag.yaml
 ```
+mssqlserver.kubedb.com/restored-mssqlserver-ag created
 
 Let’s check the pods which are related to the restore,
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                                                 READY   STATUS      RESTARTS   AGE
 restored-mssqlserver-ag-0                            2/2     Running     0          2m10s
 restored-mssqlserver-ag-1                            2/2     Running     0          2m3s
 restored-mssqlserver-ag-full-backup-restorer-7kpn8   0/1     Completed   0          65s
 restored-mssqlserver-ag-log-restorer-d9sjd           1/1     Running     0          11s
 restored-mssqlserver-ag-manifest-restorer-7kpn8      0/1     Completed   0          2m31s
-```
 
 Here,
 - Pod `restored-mssqlserver-ag-manifest-restorer-7kpn8` is responsible for manifest restore. 
@@ -533,21 +546,26 @@ Here,
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get mssqlserver -n demo restored-mssqlserver-ag 
+kubectl get mssqlserver -n demo restored-mssqlserver-ag 
+```
 NAME                      VERSION     STATUS   AGE
 restored-mssqlserver-ag   2022-cu12   Ready    10m
-```
 
 Now, Lets exec into the Pod to enter into mssqlserver shell and verify restored data,
 
 ```bash
-$ kubectl get secret -n demo  restored-mssqlserver-ag-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  restored-mssqlserver-ag-auth -o jsonpath='{.data.username}'| base64 -d
+```
 sa⏎
 
-$ kubectl get secret -n demo  restored-mssqlserver-ag-auth -o jsonpath='{.data.password}'| base64 -d
+```bash
+kubectl get secret -n demo  restored-mssqlserver-ag-auth -o jsonpath='{.data.password}'| base64 -d
+```
 Q2YKiGgqr5ju62NL⏎
 
-$ kubectl exec -it -n demo restored-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S restored-mssqlserver-ag -U sa -P "Q2YKiGgqr5ju62NL" -No
+```bash
+kubectl exec -it -n demo restored-mssqlserver-ag-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S restored-mssqlserver-ag -U sa -P "Q2YKiGgqr5ju62NL" -No
+```
 1> SELECT name from sys.databases;
 2> GO
 name                                                                                                                            
@@ -593,7 +611,6 @@ id          type                                               quant       color
 
 (1 rows affected)
 1> exit
-```
 
 So, we are able to successfully recover from a disaster.
 

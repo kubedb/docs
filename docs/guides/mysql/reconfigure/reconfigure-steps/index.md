@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Now, we are going to deploy a  `MySQL` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `MySQLOpsRequest` to reconfigure its configuration.
 
@@ -56,9 +56,9 @@ Here, `max_connections` is set to `200`, whereas the default value is `151`. Lik
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo my-configuration --from-file=./my-config.cnf
-secret/my-configuration created
+kubectl create secret generic -n demo my-configuration --from-file=./my-config.cnf
 ```
+secret/my-configuration created
 
 In this section, we are going to create a MySQL object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MySQL` CR that we are going to create,
 
@@ -111,9 +111,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/group-replication.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/group-replication.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
   </div>
 
@@ -149,9 +149,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/inndob-cluster.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/inndob-cluster.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
   </div>
 
@@ -188,9 +188,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/semi-sync.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/semi-sync.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
   </div>
 
@@ -221,9 +221,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/stand-alone.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/stand-alone.yaml
 ```
+mysql.kubedb.com/sample-mysql created
   </div>
 
 </div>
@@ -232,27 +232,30 @@ mysql.kubedb.com/sample-mysql created
 Now, wait until `sample-mysql` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mysql -n demo
+kubectl get mysql -n demo
+```
 NAME           VERSION   STATUS   AGE
 sample-mysql   8.4.8    Ready    5m49s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mysql instance,
 
 ```bash
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+```
 root
 
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
-86TwLJ!2Kpq*vv1y
+```bash
+kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 ```
+86TwLJ!2Kpq*vv1y
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
+kubectl exec -it -n demo sample-mysql-0 -- bash
+```
 mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -285,8 +288,6 @@ mysql> show variables like 'read_buffer_size';
 
 mysql> 
 
-```
-
 As we can see from the configuration of ready mysql, the value of `max_connections` has been set to `200` and `read_buffer_size` has been set to `1048576`.
 
 ### Reconfigure using new config secret
@@ -305,9 +306,9 @@ read_buffer_size = 122880
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-my-configuration --from-file=./new-my-config.cnf
-secret/new-my-configuration created
+kubectl create secret generic -n demo new-my-configuration --from-file=./new-my-config.cnf
 ```
+secret/new-my-configuration created
 
 #### Create MySQLOpsRequest
 
@@ -337,9 +338,9 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-using-secret.yaml
-mysqlopsrequest.ops.kubedb.com/myops-reconfigure-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-using-secret.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/myops-reconfigure-config created
 
 #### Verify the new configuration is working
 
@@ -348,15 +349,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
 ```bash
-$ kubectl get mysqlopsrequest --all-namespaces
+kubectl get mysqlopsrequest --all-namespaces
+```
 NAMESPACE   NAME                       TYPE          STATUS       AGE
 demo        myops-reconfigure-config   Reconfigure   Successful   3m8s
-```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mysqlopsrequest -n demo myops-reconfigure-config
+kubectl describe mysqlopsrequest -n demo myops-reconfigure-config
+```
 Name:         myops-reconfigure-config
 Namespace:    demo
 Labels:       <none>
@@ -445,13 +447,11 @@ Events:
   Normal  Successful  27m   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/sample-mysql
   Normal  Successful  27m   KubeDB Enterprise Operator  Controller has Successfully reconfigure the of MySQL: demo/sample-mysql
 
-```
-
 Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
-
+kubectl exec -it -n demo sample-mysql-0 -- bash
+```
 bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -487,8 +487,6 @@ mysql> show variables like 'read_buffer_size';
 
 mysql> 
 
-```
-
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
 ### Remove Custom Configuration
@@ -522,9 +520,9 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-remove.yaml
-mysqlopsrequest.ops.kubedb.com/myops-reconfigure-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-remove.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/myops-reconfigure-remove created
 
 #### Verify the new configuration is working
 
@@ -533,15 +531,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
 ```bash
-$ kubectl get mysqlopsrequest --all-namespaces
+kubectl get mysqlopsrequest --all-namespaces
+```
 NAMESPACE   NAME                       TYPE          STATUS       AGE
 demo        myops-reconfigure-remove   Reconfigure   Successful   2m1s
-```
 
 Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
+kubectl exec -it -n demo sample-mysql-0 -- bash
+```
 bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -576,8 +575,6 @@ mysql> show variables like 'read_buffer_size';
 
 mysql> 
 
-```
-
 As we can see from the configuration has changed to its default value. So removal of existing custom configuration using `MySQLOpsRequest` is successful.
 
 ## Cleaning Up
@@ -585,7 +582,13 @@ As we can see from the configuration has changed to its default value. So remova
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  myops-reconfigure-remove
-$ kubectl delete ns demo
+kubectl delete mysql -n demo sample-mysql
+```
+
+```bash
+kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  myops-reconfigure-remove
+```
+
+```bash
+kubectl delete ns demo
 ```

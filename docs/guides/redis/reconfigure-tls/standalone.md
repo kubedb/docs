@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -65,24 +65,24 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/redis-standalone.yaml
-redis.kubedb.com/rd-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/redis-standalone.yaml
 ```
+redis.kubedb.com/rd-sample created
 
 Now, wait until `redis-standalone` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get rd -n demo
 NAME        VERSION   STATUS   AGE
 rd-sample   6.2.14     Ready    88s
-```
 
 Now, we can connect to this database through redis-cli verify that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 root@rd-sample-0:/data# redis-cli
 
 127.0.0.1:6379> config get tls-cert-file
@@ -90,7 +90,6 @@ root@rd-sample-0:/data# redis-cli
 2) ""
 127.0.0.1:6379> exit
 root@rd-sample-0:/data# 
-```
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -101,23 +100,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls redis-ca \
+kubectl create secret tls redis-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/redis-ca created
 ```
+secret/redis-ca created
 
 Now, Let's create an `Issuer` using the `redis-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -135,9 +134,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/redis-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/redis-ca-issuer created
 
 ### Create RedisOpsRequest
 
@@ -177,27 +176,28 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-add-tls.yaml
-redisopsrequest.ops.kubedb.com/rd-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-add-tls.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 rd-add-tls     ReconfigureTLS   Successful    9m
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo rd-sample-client-cert
+kubectl describe secret -n demo rd-sample-client-cert
+```
 Name:         rd-sample-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -220,25 +220,24 @@ Data
 ca.crt:   1147 bytes
 tls.crt:  1127 bytes
 tls.key:  1679 bytes
-```
 
 Now, Lets exec into a redis container and find out the username to connect in a redis shell,
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 root@rd-sample-0:/data# ls /certs
 ca.crt	client.crt  client.key	server.crt  server.key
 
 root@rd-sample-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs/client.key" --cacert "/certs/ca.crt" config get tls-cert-file
 1) "tls-cert-file"
 2) "/certs/server.crt
-```
 
 Now, we can connect using tls-certs to connect to the redis and write some data
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 # Trying to connect without tls certificates
 root@rd-sample-0:/data# redis-cli
 127.0.0.1:6379> 
@@ -252,7 +251,6 @@ root@rd-sample-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs
 127.0.0.1:6379> set hello world
 OK
 127.0.0.1:6379> exit
-```
 
 ## Rotate Certificate
 
@@ -285,20 +283,20 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-rotate.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-rotate.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME             TYPE             STATUS        AGE
 rd-ops-rotate    ReconfigureTLS   Successful    5m5s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
@@ -309,23 +307,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls redis-new-ca \
+kubectl create secret tls redis-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/redis-new-ca created
 ```
+secret/redis-new-ca created
 
 Now, Let's create a new `Issuer` using the `redis-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -343,9 +341,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/rd-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/rd-new-issuer created
 
 ### Create RedisOpsRequest
 
@@ -377,20 +375,20 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-change-issuer.yaml
-redisopsrequest.ops.kubedb.com/rd-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-change-issuer.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 rd-change-issuer      ReconfigureTLS   Successful    4m65s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
@@ -425,27 +423,28 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-remove.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-remove.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME            TYPE             STATUS        AGE
 rd-ops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, Lets exec into the database primary node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 #
 root@rd-sample-0:/data# redis-cli
 
@@ -454,7 +453,6 @@ root@rd-sample-0:/data# redis-cli
 2) ""
 127.0.0.1:6379> exit
 root@rd-sample-0:/data# 
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 
@@ -463,22 +461,28 @@ So, we can see from the above that, output that tls is disabled successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redis/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redis/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-sample patched
 
-$ kubectl delete redis -n demo rd-sample
+```bash
+kubectl delete redis -n demo rd-sample
+```
 redis.kubedb.com/rd-sample deleted
 
-$ kubectl delete issuer -n demo redis-ca-issuer rd-new-issuer
+```bash
+kubectl delete issuer -n demo redis-ca-issuer rd-new-issuer
+```
 issuer.cert-manager.io "redis-ca-issuer" deleted
 issuer.cert-manager.io "rd-new-issuer" deleted
 
-$ kubectl delete redisopsrequest -n demo rd-add-tls rd-ops-remove rd-ops-rotate rd-change-issuer
+```bash
+kubectl delete redisopsrequest -n demo rd-add-tls rd-ops-remove rd-ops-rotate rd-change-issuer
+```
 redisopsrequest.ops.kubedb.com "rd-add-tls" deleted
 redisopsrequest.ops.kubedb.com "rd-ops-remove" deleted
 redisopsrequest.ops.kubedb.com "rd-ops-rotate" deleted
 redisopsrequest.ops.kubedb.com "rd-change-issuer" deleted
-```
 
 ## Next Steps
 

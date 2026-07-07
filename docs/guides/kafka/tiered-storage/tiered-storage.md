@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/tiered-storage/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -56,9 +58,9 @@ stringData:
 Apply the secret:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-s3-tiered-secret.yaml
-secret/aws-secret created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-s3-tiered-secret.yaml
 ```
+secret/aws-secret created
 
 ## Create a Kafka Tiered Storage with S3 compatible storage
 
@@ -115,24 +117,25 @@ Here,
     - `spec.tieredStorage.s3.prefix` specifies the prefix for the S3 objects.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-s3-tiered.yaml
-kafka.kubedb.com/kafka-prod-tiered created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-s3-tiered.yaml
 ```
+kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
-$ kubectl get kafka -n demo -w
+kubectl get kafka -n demo -w
+```
 NAME                TYPE            VERSION   STATUS   AGE
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
-```
 
 Exec one of the broker pods and run the following command to create a tiered storage enabled topic and insert some data into it:
 
 ```bash
-$ kubectl exec -n demo -it kafka-prod-tiered-broker-0 -- bash
+kubectl exec -n demo -it kafka-prod-tiered-broker-0 -- bash
+```
 root@kafka-prod-tiered-broker-0:/# kafka-topics.sh \
   --bootstrap-server localhost:9092 \
   --create \
@@ -158,7 +161,6 @@ root@kafka-prod-tiered-broker-0:/# kafka-producer-perf-test.sh \
 
 4998 records sent, 999.2 records/sec (0.49 MB/sec), 13.5 ms avg latency, 526.0 ms max latency.
 10000 records sent, 999.3 records/sec (0.49 MB/sec), 8.51 ms avg latency, 526.00 ms max latency, 4 ms 50th, 50 ms 95th, 92 ms 99th, 92 ms 99.9th.
-```
 
 here, we created a topic with `local.retention.bytes=1` which will force kafka to offload segments to the remote tiered storage as soon as possible. You can check the S3 bucket to see the offloaded segments.
 
@@ -282,19 +284,19 @@ Here,
     - `spec.tieredStorage.azure.storageAccount` specifies the azure storage account name.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-azure-tiered.yaml
-kafka.kubedb.com/kafka-prod-tiered created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-azure-tiered.yaml
 ```
+kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
-$ kubectl get kafka -n demo -w
+kubectl get kafka -n demo -w
+```
 NAME                TYPE            VERSION   STATUS   AGE
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
-```
 
 ## Create a Kafka Tiered Storage with GCS compatible storage
 
@@ -347,19 +349,19 @@ Here,
     - `spec.tieredStorage.gcs.prefix` specifies the prefix for the gcs objects.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-gcs-tiered.yaml
-kafka.kubedb.com/kafka-prod-tiered created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tiered-storage/kafka-gcs-tiered.yaml
 ```
+kafka.kubedb.com/kafka-prod-tiered created
 
 ```bash
-$ kubectl get kafka -n demo -w
+kubectl get kafka -n demo -w
+```
 NAME                TYPE            VERSION   STATUS   AGE
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   2s
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Provisioning   4s
 .
 .
 kafka-prod-tiered   kubedb.com/v1   4.0.0     Ready          112s
-```
 
 ## Next Steps
 

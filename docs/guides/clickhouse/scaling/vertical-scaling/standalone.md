@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/clickhouse](/docs/examples/clickhouse) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -69,9 +69,9 @@ spec:
 Let's create the `ClickHouse` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/scaling/clickhouse-standalone.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/scaling/clickhouse-standalone.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
@@ -140,9 +140,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/scaling/vertical-scaling/ch-vertical-ops-standalone.yaml
-clickhouseopsrequest.ops.kubedb.com/ch-vertical-scale-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/scaling/vertical-scaling/ch-vertical-ops-standalone.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/ch-vertical-scale-standalone created
 
 #### Verify ClickHouse standalone resources updated successfully
 

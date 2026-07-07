@@ -25,9 +25,9 @@ In this example, we will initialize MongoDB using a `.js` script from the GitHub
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## From Public Git Repository
 
@@ -82,16 +82,16 @@ The `git-sync` container has two required flags:
 Now, wait until `mg-git` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME   VERSION   STATUS   AGE
 mg-git     8.0.4     Ready    49m
-
-```
 
 Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
-$  kubectl exec -it -n demo mg-git-0 -- bash
+ kubectl exec -it -n demo mg-git-0 -- bash
+```
 Defaulted container "mongodb" out of: mongodb, copy-config (init), git-sync (init)
 mongodb@mg-git-0:/$ mongosh -u root -p $<your_mongodb_root_password>
 Current Mongosh Log ID:	6900695d231f7a9e99ce5f46
@@ -127,7 +127,6 @@ kubedb> db.people.find()
   }
 ]
 kubedb> exit
-```
 ## From Private Git Repository
 
 ### 1. Using SSH Key
@@ -137,7 +136,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -152,7 +151,7 @@ This secret will be used by git-sync to authenticate with the Git repository.
 >Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also, you can use any name instead of `git-creds` to create the secret.
 
 ```bash
-$ kubectl create secret generic -n demo git-creds \
+kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -214,7 +213,8 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 Next, we will connect to the MongoDB database and verify the data inserted from the `*.js` script stored in the Git repository.
 
 ```bash
-$  kubectl exec -it -n demo mg-git-ssh-0 -- bash
+ kubectl exec -it -n demo mg-git-ssh-0 -- bash
+```
 Defaulted container "mongodb" out of: mongodb, copy-config (init), git-sync (init)
 mongodb@mg-git-ssh-0:/$ mongosh -u root -p 'tQ;c(ykM_T_EbLKS'
 Current Mongosh Log ID:	6900695d231f7a9e99ce5f46
@@ -250,7 +250,6 @@ kubedb> db.people.find()
   }
 ]
 kubedb> exit
-```
 ### 2. Using Username and Personal Access Token(PAT)
 
 First, create a `Personal Access Token (PAT)` on your Git host server with the required permissions to access the repository.
@@ -259,7 +258,7 @@ Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 > Here, you can use any key name instead of `git-pat` to store the token in the secret.
 
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -331,7 +330,13 @@ mg-git-pat     8.0.4     Ready    38m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete MongoDB -n demo mg-git mg-git-ssh mg-git-pat
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete MongoDB -n demo mg-git mg-git-ssh mg-git-pat
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

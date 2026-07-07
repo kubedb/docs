@@ -31,9 +31,9 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -68,24 +68,24 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/sentinel.yaml
-redissentinel.kubedb.com/sen-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-sample created
 
 Now, wait until `sen-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME         VERSION   STATUS   AGE
 sen-sample   6.2.14     Ready    5m20s
-```
 
 Let's check the number of replicas this sentinel has from the RedisSentinel object
 
 ```bash
-$ kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
-5
+kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
 ```
+5
 
 ### Deploy Redis :
 
@@ -118,26 +118,27 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/rd-sentinel.yaml
-redis.kubedb.com/rd-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/rd-sentinel.yaml
 ```
+redis.kubedb.com/rd-sample created
 
 Now, wait until `rd-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME        VERSION   STATUS   AGE
 rd-sample   6.2.14     Ready    2m11s
-```
 Let's check the Pod containers resources,
 ```bash
-$ kubectl get redis -n demo rd-sample -o json | jq '.spec.replicas'
-3
+kubectl get redis -n demo rd-sample -o json | jq '.spec.replicas'
 ```
+3
 
 Now let's connect to redis with redis-cli to check the replication configuration
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- redis-cli info replication
+kubectl exec -it -n demo rd-sample-0 -c redis -- redis-cli info replication
+```
 # Replication
 role:master
 connected_slaves:2
@@ -152,7 +153,6 @@ repl_backlog_active:1
 repl_backlog_size:1048576
 repl_backlog_first_byte_offset:1
 repl_backlog_histlen:35492
-```
 
 Additionally, the sentinel monitoring can be checked with following command : 
 ```bash
@@ -192,9 +192,9 @@ Here,
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/horizontal-sentinel.yaml
-redissentinelopsrequest.ops.kubedb.com/sen-ops-horizontal created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling/horizontal-sentinel.yaml
 ```
+redissentinelopsrequest.ops.kubedb.com/sen-ops-horizontal created
 
 #### Verify RedisSentinel replicas updated successfully :
 
@@ -203,20 +203,20 @@ If everything goes well, `KubeDB` Enterprise operator will scale down the replic
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME                 TYPE              STATUS       AGE
 sen-ops-horizontal   HorizontalScaling   Successful   5m27s
-```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
 Let's check the number of replicas this database has from the RedisSentinel object
 
 ```bash
-$ kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
-3
+kubectl get redissentinel -n demo sen-sample -o json | jq '.spec.replicas'
 ```
+3
 
 The above output verifies that we have successfully scaled up the resources of the sentinel instance.
 ### Horizontal Scale Redis
@@ -250,9 +250,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling//horizontal-redis-sentinel.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-horizontal created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/horizontal-scaling//horizontal-redis-sentinel.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-horizontal created
 
 #### Verify Redis resources updated successfully :
 
@@ -261,22 +261,23 @@ If everything goes well, `KubeDB` Enterprise operator will scale up the replicas
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 NAME                TYPE                STATUS       AGE
 rd-ops-horizontal   HorizontalScaling   Successful   4m4s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 Now, we are going to verify if the number of replicas the redis sentinel has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get redis -n demo rd-sample -o json | jq '.spec.replicas'
-5
+kubectl get redis -n demo rd-sample -o json | jq '.spec.replicas'
 ```
+5
 
 Now let's connect to redis with redis-cli to check the replication configuration
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- redis-cli info replication
+kubectl exec -it -n demo rd-sample-0 -c redis -- redis-cli info replication
+```
 # Replication
 role:master
 connected_slaves:4
@@ -293,7 +294,6 @@ repl_backlog_active:1
 repl_backlog_size:1048576
 repl_backlog_first_byte_offset:1
 repl_backlog_histlen:325651
-```
 
 The above output verifies that we have successfully scaled up the resources of the redis database. There are 1 master and 4 connected slaves. So, the Ops Request
 scaled up the replicas to 5.
@@ -307,24 +307,34 @@ kubectl exec -it -n demo sen-sample-0 -c redissentinel -- redis-cli -p 26379 sen
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-sample patched
 
-$ kubectl delete -n demo redis rd-sample
+```bash
+kubectl delete -n demo redis rd-sample
+```
 redis.kubedb.com "rd-sample" deleted
 
-$ kubectl delete -n demo redisopsrequest rd-ops-horizontal 
+```bash
+kubectl delete -n demo redisopsrequest rd-ops-horizontal 
+```
 redisopsrequest.ops.kubedb.com "rd-ops-horizontal" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-sample patched
 
-$ kubectl delete -n demo redissentinel sen-sample
+```bash
+kubectl delete -n demo redissentinel sen-sample
+```
 redissentinel.kubedb.com "sen-sample" deleted
 
-$ kubectl delete -n demo redissentinelopsrequests sen-ops-horizontal 
-redissentinelopsrequest.ops.kubedb.com "sen-ops-horizontal" deleted
+```bash
+kubectl delete -n demo redissentinelopsrequests sen-ops-horizontal 
 ```
+redissentinelopsrequest.ops.kubedb.com "sen-ops-horizontal" deleted

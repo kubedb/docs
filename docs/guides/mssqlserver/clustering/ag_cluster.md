@@ -27,24 +27,25 @@ This tutorial will show you how to use KubeDB to run Microsoft SQL Server Availa
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d20h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available Microsoft SQL Server Versions
 
 When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
-$ kubectl get msversion
+kubectl get msversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                7d19h
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                7d19h
@@ -52,8 +53,6 @@ NAME        VERSION   DB_IMAGE                                                DE
 2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                7d19h
 2022-cu22   2022      mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04                7d19h
 2025-cu0    2025      mcr.microsoft.com/mssql/server:2025-RTM-ubuntu-22.04                 7d19h
-
-```
 
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/ag-cluster/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -74,9 +73,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -92,9 +91,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Configuring Environment Variables for SQL Server on Linux
 You can use environment variables to configure SQL Server on Linux containers.
@@ -176,9 +175,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ag-cluster.yaml
-mssqlserver.kubedb.com/mssqlserver-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Here,
 
@@ -197,8 +196,8 @@ KubeDB operator watches for `MSSQLServer` objects using Kubernetes api. When a `
 
 Let's see the sql server resources that are created. 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,issuer,pvc -n demo
-
+kubectl get ms,petset,pod,svc,secret,issuer,pvc -n demo
+```
 NAME                                            VERSION     STATUS   AGE
 mssqlserver.kubedb.com/mssqlserver-ag-cluster   2022-cu12   Ready    178m
 
@@ -228,12 +227,11 @@ NAME                                                  STATUS   VOLUME           
 persistentvolumeclaim/data-mssqlserver-ag-cluster-0   Bound    pvc-33ae1829-c559-407b-a148-1792c22b52a6   1Gi        RWO            standard       177m
 persistentvolumeclaim/data-mssqlserver-ag-cluster-1   Bound    pvc-b697b7ad-8348-431f-b2c7-01620bec4f8d   1Gi        RWO            standard       177m
 persistentvolumeclaim/data-mssqlserver-ag-cluster-2   Bound    pvc-b486a79c-a8ae-449a-bc15-74491f062573   1Gi        RWO            standard       177m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified MSSQLServer object:
 
 ```bash
-$ kubectl get ms -n demo mssqlserver-ag-cluster -o yaml
+kubectl get ms -n demo mssqlserver-ag-cluster -o yaml
 ```
 
 ```yaml
@@ -408,12 +406,14 @@ If you want to use an existing secret please specify that when creating the MSSQ
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `mssqlserver-ag-cluster-auth` secret holds username and password
 
 ```bash
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
-wFKDGnWgFP5Rdv92
+```bash
+kubectl get secret -n demo mssqlserver-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+wFKDGnWgFP5Rdv92
 We can exec into the pod `mssqlserver-ag-cluster-0` using the following command:
 ```bash
 kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
@@ -458,7 +458,8 @@ usage: sqlcmd            [-U login id]          [-P password]
 
 Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
-$ kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+kubectl exec -it -n demo mssqlserver-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> select name from sys.databases
 2> go
@@ -497,23 +498,22 @@ agdb2
 
 (2 rows affected)
 
-```
-
 
 Now, to check the redundancy and data availability in secondary members. Let's insert some data into the primary database of sql server availability group and see if data replication is working fine. First we have to determine the primary replica, as data writes are only permitted on the primary node.
 
 
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+```
 mssqlserver-ag-cluster-0	primary
 mssqlserver-ag-cluster-1	secondary
 mssqlserver-ag-cluster-2	secondary
-```
 
 From the output above, we can see that mssqlserver-ag-cluster-0 is the primary node. To insert data, log into the primary MSSQLServer pod. Use the following command,
 
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-0 -c mssql -n demo -- bash
+kubectl exec -it mssqlserver-ag-cluster-0 -c mssql -n demo -- bash
+```
 mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
@@ -540,13 +540,13 @@ ID    NAME                             AGE
 
 (2 rows affected)
 1> 
-```
 Now, Let's verify that the data inserted into the primary node has been replicated to the secondary nodes.
 ### Access the inserted data from secondaries
 Access the secondary node (Node 2) to verify that the data is present.
 
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+```
 mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
@@ -568,12 +568,12 @@ ID    NAME                             AGE
 
 (2 rows affected)
 1> 
-```
 
 
 Now access the secondary node (Node 3) to verify that the data is present.
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-2 -c mssql -n demo -- bash
+kubectl exec -it mssqlserver-ag-cluster-2 -c mssql -n demo -- bash
+```
 mssql@mssqlserver-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT database_name FROM sys.availability_databases_cluster
 2> go
@@ -595,42 +595,46 @@ ID    NAME                             AGE
 
 (2 rows affected)
 1> 
-```
 
 
 ## Automatic Failover
 To test automatic failover, we will force the primary member to restart. As the primary member (pod) becomes unavailable, the rest of the members will elect a primary member by election.
 
 ```bash
-$ kubectl get pods -n demo 
+kubectl get pods -n demo 
+```
 NAME                       READY   STATUS    RESTARTS   AGE
 mssqlserver-ag-cluster-0   2/2     Running   0          129m
 mssqlserver-ag-cluster-1   2/2     Running   0          129m
 mssqlserver-ag-cluster-2   2/2     Running   0          129m
 
-$ kubectl delete pod -n demo mssqlserver-ag-cluster-0 
+```bash
+kubectl delete pod -n demo mssqlserver-ag-cluster-0 
+```
 pod "mssqlserver-ag-cluster-0" deleted
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME                       READY   STATUS    RESTARTS   AGE
 mssqlserver-ag-cluster-0   2/2     Running   0          7s
 mssqlserver-ag-cluster-1   2/2     Running   0          130m
 mssqlserver-ag-cluster-2   2/2     Running   0          130m
-```
 
 
 Now find the new primary pod by running this command. 
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+```
 mssqlserver-ag-cluster-0	
 mssqlserver-ag-cluster-1	primary
 mssqlserver-ag-cluster-2	secondary
-```
 
 We can see that, the primary node is now is `mssqlserver-ag-cluster-1`. The old primary pod `mssqlserver-ag-cluster-0` role is still pending. It will be set when old primary joins with the new primary as secondary.  
 Lets exec into this new primary and see the availability replica role.
 ```bash
-$ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
+```
 mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT ar.replica_server_name, ars.role_desc
 2> FROM sys.dm_hadr_availability_replica_states ars
@@ -644,20 +648,18 @@ mssqlserver-ag-cluster-2                                                        
 
 (3 rows affected)
 
-```
-
 We can see that new primary is `mssqlserver-ag-cluster-1` and the old primary `mssqlserver-ag-cluster-0` joined the availability group cluster as secondary. MSSQLServer status is `Ready` now. We can see the updated pod labels. 
 ```bash
-$ kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+kubectl get pods -n demo --selector=app.kubernetes.io/instance=mssqlserver-ag-cluster -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.metadata.labels.kubedb\.com/role}{"\n"}{end}'
+```
 mssqlserver-ag-cluster-0	secondary
 mssqlserver-ag-cluster-1	primary
 mssqlserver-ag-cluster-2	secondary
-````
 
 
 Run the following command to see the created appbinding object:
 ```bash
-$ kubectl get appbinding -n demo -oyaml
+kubectl get appbinding -n demo -oyaml
 ```
 
 ```yaml
@@ -718,12 +720,14 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+```
 mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
 
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
-The MSSQLServer "mssqlserver-ag-cluster" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-ag-cluster": Can not delete as deletionPolicy is set to "DoNotTerminate"
+```bash
+kubectl delete ms -n demo mssqlserver-ag-cluster
 ```
+The MSSQLServer "mssqlserver-ag-cluster" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-ag-cluster": Can not delete as deletionPolicy is set to "DoNotTerminate"
 
 Now, run `kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -738,14 +742,15 @@ When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specd
 At first, run `kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
 ```bash
-$ kubectl delete ms -n demo mssqlserver-ag-cluster
-mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
+kubectl delete ms -n demo mssqlserver-ag-cluster
 ```
+mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
 
 Now, run the following command to get mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                                          TYPE                       DATA   AGE
 secret/mssqlserver-ag-cluster-auth            kubernetes.io/basic-auth   2      3h6m
 secret/mssqlserver-ag-cluster-client-cert     kubernetes.io/tls          3      3h6m
@@ -760,7 +765,6 @@ NAME                                                  STATUS   VOLUME           
 persistentvolumeclaim/data-mssqlserver-ag-cluster-0   Bound    pvc-33ae1829-c559-407b-a148-1792c22b52a6   1Gi        RWO            standard       3h6m
 persistentvolumeclaim/data-mssqlserver-ag-cluster-1   Bound    pvc-b697b7ad-8348-431f-b2c7-01620bec4f8d   1Gi        RWO            standard       3h6m
 persistentvolumeclaim/data-mssqlserver-ag-cluster-2   Bound    pvc-b486a79c-a8ae-449a-bc15-74491f062573   1Gi        RWO            standard       3h5m
-```
 
 From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
 
@@ -773,16 +777,20 @@ When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specd
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
-mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
-$ kubectl delete ms -n demo mssqlserver-ag-cluster 
-mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
+kubectl patch -n demo ms mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
+
+```bash
+kubectl delete ms -n demo mssqlserver-ag-cluster 
+```
+mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
 
 Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                                          TYPE                       DATA   AGE
 secret/mssqlserver-ag-cluster-auth            kubernetes.io/basic-auth   2      3h6m
 secret/mssqlserver-ag-cluster-client-cert     kubernetes.io/tls          3      3h6m
@@ -792,7 +800,6 @@ secret/mssqlserver-ag-cluster-endpoint-cert   kubernetes.io/tls          3      
 secret/mssqlserver-ag-cluster-master-key      kubernetes.io/basic-auth   1      3h6m
 secret/mssqlserver-ag-cluster-server-cert     kubernetes.io/tls          3      3h6m
 secret/mssqlserver-ca                         kubernetes.io/tls          2      3h8m
-```
 
 From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `Secrets`.
 
@@ -815,10 +822,10 @@ mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
 Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                       TYPE                       DATA   AGE
 secret/mssqlserver-ca      kubernetes.io/tls          2      3h8m
-```
 
 From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.
 

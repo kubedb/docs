@@ -29,9 +29,9 @@ This tutorial will show you how to use KubeDB to rotate authentication credentia
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -75,34 +75,38 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-prod.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-prod.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME              TYPE            VERSION   STATUS         AGE
 cassandra-prod    kubedb.com/v1   5.0.3     Provisioning   3s
 cassandra-prod    kubedb.com/v1   5.0.3     Provisioning   10s
 .
 .
 cassandra-prod    kubedb.com/v1   5.0.3     Ready          2m13s
-```
 
 We can verify from the above output that authentication is enabled for this cluster. By default, KubeDB operator create default credentials for the Cassandra cluster. The default credentials are stored in a secret named `<cassandra-name>-auth` in the same namespace as the Cassandra cluster. You can find the secret by running the following command:
 
 ```bash
-$ kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+```
 "cassandra-prod-auth"
 
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 admin
 
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-UajtzLlDwiizuHoV
+```bash
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+UajtzLlDwiizuHoV
 
 ### Create RotateAuth CassandraOpsRequest
 
@@ -132,22 +136,23 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-generated.yaml
-cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-generated created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-generated.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-generated created
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 casops-rotate-auth-generated   RotateAuth   Successful   3m18s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo casops-rotate-auth-generated 
+kubectl describe cassandraopsrequest -n demo casops-rotate-auth-generated 
+```
 Name:         casops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -243,31 +248,37 @@ Events:
   Normal   RestartNodes                                                       3m13s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           3m13s  KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         3m13s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-rotate-auth-generated
-```
 
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+```
 "cassandra-prod-auth"
 
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 admin
 
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-t0jL7;5CFWhqn~3o
+```bash
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+t0jL7;5CFWhqn~3o
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
-admin
-$ kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
-UajtzLlDwiizuHoV
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo cassandra-prod-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
+```
+UajtzLlDwiizuHoV
 
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
@@ -276,12 +287,12 @@ The above output shows that the password has been changed successfully. The prev
 At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom `username` and `password`. Below is the command to create a secret with `kubernetes.io/basic-auth` type,
 
 ```bash
-$ kubectl create secret generic cassandra-user-auth -n demo \
+kubectl create secret generic cassandra-user-auth -n demo \
           --type=kubernetes.io/basic-auth \
           --from-literal=username=cassandra \
           --from-literal=password=cassandra-secret
-secret/cassandra-user-auth created
 ```
+secret/cassandra-user-auth created
 
 Now create a Cassandra Ops Request with `RotateAuth` type. Below is the YAML of the `CassandraOpsRequest` that we are going to create,
 
@@ -312,23 +323,24 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-user.yaml
-cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/rotate-auth/cassandra-rotate-auth-user.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-rotate-auth-user created
 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CRO,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 casops-rotate-auth-generated   RotateAuth   Successful   53m
 casops-rotate-auth-user        RotateAuth   Successful   2m58s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo casops-rotate-auth-user 
+kubectl describe cassandraopsrequest -n demo casops-rotate-auth-user 
+```
 Name:         casops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -495,31 +507,37 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+kubectl get cas -n demo cassandra-prod -ojson | jq .spec.authSecret.name
+```
 "cassandra-user-auth"
 
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 cassandra
 
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.password}' | base64 -d
-cassandra-secret
+```bash
+kubectl get secret -n demo cassandra-user-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+cassandra-secret
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
-admin
-$ kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
-rM4OJfqoTzvKMAx8
+kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.username\.prev}" | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo cassandra-user-auth -o=jsonpath="{.data.password\.prev}" | base64 -d
+```
+rM4OJfqoTzvKMAx8
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 

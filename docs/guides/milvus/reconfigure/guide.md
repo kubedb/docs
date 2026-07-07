@@ -28,9 +28,9 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to reconfi
 - To keep things isolated, this tutorial uses a separate namespace called `demo`:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Milvus configuration is always supplied through a file named **`milvus.yaml`**. Use that exact key in config secrets and in `applyConfig`.
 
@@ -43,10 +43,10 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to reconfi
 Deploy a standalone Milvus and wait for it to become `Ready` (see the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md)):
 
 ```bash
-$ kubectl get milvuses.kubedb.com -n demo milvus-standalone
+kubectl get milvuses.kubedb.com -n demo milvus-standalone
+```
 NAME                VERSION   STATUS   AGE
 milvus-standalone   2.6.11    Ready    2m
-```
 
 ### Apply the Reconfigure OpsRequest
 
@@ -109,21 +109,22 @@ Here,
 - `spec.configuration.restart: "false"` requests the configuration be applied without forcing a restart.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure/yamls/reconfigure-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure/yamls/reconfigure-standalone.yaml
+```
 secret/mv-configuration created
 milvusopsrequest.ops.kubedb.com/reconfigure-1 created
-```
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest -n demo
+kubectl get milvusopsrequest -n demo
+```
 NAME            TYPE          STATUS       AGE
 reconfigure-1   Reconfigure   Successful   28s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest reconfigure-1 -n demo
+kubectl describe milvusopsrequest reconfigure-1 -n demo
+```
 ...
 Status:
   Conditions:
@@ -145,15 +146,18 @@ Events:
   Normal  UpdatePetSets  successfully reconciled the milvus with new configuration
   Normal  Starting       Resuming Milvus database: demo/milvus-standalone
   Normal  Successful     Successfully resumed Milvus database: demo/milvus-standalone for MilvusOpsRequest: reconfigure-1
-```
 
 ### Verify the New Configuration
 
 The applied values are rendered into the configuration secret's `milvus.yaml`:
 
 ```bash
-$ CFG=$(kubectl get secret -n demo -o name | grep -oE 'milvus-standalone-[a-f0-9]{6}' | head -1)
-$ kubectl get secret $CFG -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A3 -E '^log:|^queryNode:'
+CFG=$(kubectl get secret -n demo -o name | grep -oE 'milvus-standalone-[a-f0-9]{6}' | head -1)
+```
+
+```bash
+kubectl get secret $CFG -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A3 -E '^log:|^queryNode:'
+```
 log:
   file:
     maxAge: 30
@@ -164,7 +168,6 @@ log:
 queryNode:
   gracefulTime: 500
   port: 19536
-```
 
 The `log.level` is now `info`, `log.file.maxAge` is `30`, and `queryNode.gracefulTime` is `500` — exactly the values supplied through `applyConfig`.
 
@@ -221,20 +224,26 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure/yamls/reconfigure-distributed.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure/yamls/reconfigure-distributed.yaml
+```
 secret/mv-configuration created
 milvusopsrequest.ops.kubedb.com/reconfigure-1 created
 
-$ kubectl get milvusopsrequest reconfigure-1 -n demo
+```bash
+kubectl get milvusopsrequest reconfigure-1 -n demo
+```
 NAME            TYPE          STATUS       AGE
 reconfigure-1   Reconfigure   Successful   21s
-```
 
 The applied configuration is rendered into the cluster's configuration secret and propagated to all roles:
 
 ```bash
-$ CFG=$(kubectl get secret -n demo -o name | grep -oE 'milvus-cluster-[a-f0-9]{6}' | head -1)
-$ kubectl get secret $CFG -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A2 -E '^log:|^queryNode:|level:'
+CFG=$(kubectl get secret -n demo -o name | grep -oE 'milvus-cluster-[a-f0-9]{6}' | head -1)
+```
+
+```bash
+kubectl get secret $CFG -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A2 -E '^log:|^queryNode:|level:'
+```
 log:
   file:
     maxAge: 30
@@ -245,17 +254,25 @@ queryNode:
   enableDisk: true
   gracefulTime: 500
   port: 21123
-```
 
 As with standalone, `log.level` is now `info`, `log.file.maxAge` is `30`, and `queryNode.gracefulTime` is `500`.
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo reconfigure-1
-$ kubectl delete secret -n demo mv-configuration
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo reconfigure-1
+```
+
+```bash
+kubectl delete secret -n demo mv-configuration
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

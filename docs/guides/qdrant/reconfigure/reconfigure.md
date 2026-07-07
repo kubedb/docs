@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/reconfigure](/docs/examples/qdrant/reconfigure) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -62,9 +62,9 @@ type: Opaque
 Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/configuration-secret.yaml
-secret/qdrant-configuration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/configuration-secret.yaml
 ```
+secret/qdrant-configuration created
 
 Below is the YAML of the `Qdrant` CR that we are going to create:
 
@@ -91,17 +91,17 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m42s
-```
 
 ## Reconfigure using new config secret
 
@@ -127,9 +127,9 @@ type: Opaque
 Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/new-configuration-secret.yaml
-secret/new-qdrant-configuration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/new-configuration-secret.yaml
 ```
+secret/new-qdrant-configuration created
 
 ### Create QdrantOpsRequest
 
@@ -163,9 +163,9 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/reconfigure-using-secret.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/reconfigure-using-secret.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-config created
 
 ### Verify the new configuration is working
 
@@ -174,10 +174,10 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configura
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdops -n demo
+kubectl get qdops -n demo
+```
 NAME                       TYPE          STATUS       AGE
 qdops-reconfigure-config   Reconfigure   Successful   3m
-```
 
 ## Reconfigure using applyConfig
 
@@ -211,19 +211,19 @@ Here,
 - `spec.configuration.applyConfig` contains the inline configuration to apply.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/apply-config.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-apply-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/apply-config.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-apply-config created
 
 ### Verify the new configuration is working
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdops qdops-reconfigure-apply-config -n demo
+kubectl get qdops qdops-reconfigure-apply-config -n demo
+```
 NAME                              TYPE          STATUS       AGE
 qdops-reconfigure-apply-config    Reconfigure   Successful   5m30s
-```
 
 ## Remove Custom Configuration
 
@@ -244,17 +244,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/remove-config.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure/remove-config.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-reconfigure-remove created
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdops qdops-reconfigure-remove -n demo
+kubectl get qdops qdops-reconfigure-remove -n demo
+```
 NAME                       TYPE          STATUS       AGE
 qdops-reconfigure-remove   Reconfigure   Successful   97s
-```
 
 After this, the `Qdrant` CR will no longer reference a configuration secret and the database will use its default configuration.
 
@@ -269,14 +269,18 @@ After this, the `Qdrant` CR will no longer reference a configuration secret and 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete qdrantopsrequest -n demo qdops-reconfigure-config qdops-reconfigure-apply-config qdops-reconfigure-remove
+kubectl delete qdrantopsrequest -n demo qdops-reconfigure-config qdops-reconfigure-apply-config qdops-reconfigure-remove
+```
 qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-config" deleted
 qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-apply-config" deleted
 qdrantopsrequest.ops.kubedb.com "qdops-reconfigure-remove" deleted
 
-$ kubectl delete qdrant -n demo qdrant-sample
+```bash
+kubectl delete qdrant -n demo qdrant-sample
+```
 qdrant.kubedb.com "qdrant-sample" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted

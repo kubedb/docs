@@ -27,13 +27,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -63,15 +65,15 @@ spec:
 Let's create the Elasticsearch object we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/ssl-elasticsearch.yaml
-elasticsearch.kubedb.com/ssl-elasticsearch created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/ssl-elasticsearch.yaml
 ```
+elasticsearch.kubedb.com/ssl-elasticsearch created
 
 ```bash
-$ kubectl get es -n demo ssl-elasticsearch
+kubectl get es -n demo ssl-elasticsearch
+```
 NAME                VERSION   STATUS    AGE
 ssl-elasticsearch   xpack-9.2.3     Running   5m54s
-```
 
 ## Connect to Elasticsearch Database
 
@@ -80,7 +82,7 @@ As we have enabled TLS for our Elasticsearch cluster, only HTTPS calls are allow
 Let's check the certificates that has been created for Elasticsearch `ssl-elasticsearch` by KubeDB operator.
 
 ```bash
-$ kubectl get secret -n demo ssl-elasticsearch-cert -o yaml
+kubectl get secret -n demo ssl-elasticsearch-cert -o yaml
 ```
 
 ```yaml
@@ -111,10 +113,10 @@ Here, `root.pem` file is the root CA in `.pem` format. We will require to provid
 Let's forward port 9200 of `ssl-elasticsearch-0` pod. Run following command in a separate terminal,
 
 ```bash
-$ kubectl port-forward -n demo ssl-elasticsearch-0 9200
+kubectl port-forward -n demo ssl-elasticsearch-0 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, we can connect with the database at `localhost:9200`.
 
@@ -124,27 +126,27 @@ Now, we can connect with the database at `localhost:9200`.
 - Username: Run following command to get *username*
 
   ```bash
-  $ kubectl get secrets -n demo ssl-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
-  elastic
+  kubectl get secrets -n demo ssl-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   ```
+  elastic
 
 - Password: Run following command to get *password*
 
   ```bash
-  $ kubectl get secrets -n demo ssl-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
-  err5ns7w
+  kubectl get secrets -n demo ssl-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   ```
+  err5ns7w
 
 - Root CA: Run following command to get `root.pem` file
 
   ```bash
-  $ kubectl get secrets -n demo ssl-elasticsearch-cert -o jsonpath='{.data.\root\.pem}' | base64 --decode > root.pem
+  kubectl get secrets -n demo ssl-elasticsearch-cert -o jsonpath='{.data.\root\.pem}' | base64 --decode > root.pem
   ```
 
 Now, let's check health of our Elasticsearch database.
 
 ```bash
-$ curl --user "elastic:err5ns7w" "https://localhost:9200/_cluster/health?pretty" --cacert root.pem
+curl --user "elastic:err5ns7w" "https://localhost:9200/_cluster/health?pretty" --cacert root.pem
 ```
 
 ```json

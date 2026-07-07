@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/druid](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/druid) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,12 +48,12 @@ Here, we are going to deploy a `Druid` topology using a supported version by `Ku
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28h
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   27h
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   27h
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -64,18 +64,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+helm repo add minio https://operator.min.io/
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm repo update minio
+```
+
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -101,9 +108,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Now, we are going to deploy a `Druid` combined cluster with version `36.0.0`.
 
@@ -150,36 +157,40 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 Now, wait until `druid-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get dr -n demo -w
+kubectl get dr -n demo -w
+```
 NAME            TYPE                  VERSION   STATUS         AGE
 druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   0s
 druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   9s
 .
 .
 druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready          3m26s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo                                       
+```bash
+kubectl get pv -n demo                                       
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-0bf49077-1c7a-4943-bb17-1dffd1626dcd   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          10m
 pvc-59ed4914-53b3-4f18-a6aa-7699c2b738e2   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          10m
-```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -224,9 +235,9 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/volume-expansion-ops.yaml
-druidopsrequest.ops.kubedb.com/dr-volume-exp created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/volume-expansion-ops.yaml
 ```
+druidopsrequest.ops.kubedb.com/dr-volume-exp created
 
 #### Verify Druid Topology volume expanded successfully
 
@@ -235,10 +246,10 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `DruidOpsRequest` to be `Successful`.  Run the following command to watch `DruidOpsRequest` CR,
 
 ```bash
-$ kubectl get druidopsrequest -n demo
+kubectl get druidopsrequest -n demo
+```
 NAME                     TYPE              STATUS       AGE
 dr-volume-exp            VolumeExpansion   Successful   3m1s
-```
 
 We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to expand the volume of druid.
 

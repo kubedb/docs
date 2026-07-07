@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of MySQL
 
@@ -45,12 +45,11 @@ Here, we are going to deploy a  `MySQL` cluster using a supported version by `Ku
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   37s
-
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
@@ -108,9 +107,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/group_replication.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/group_replication.yaml
 ```
+mysql.kubedb.com/sample-mysql created
   </div>
 
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
@@ -143,9 +142,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/innodb.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/innodb.yaml
+```
 mysql.kubedb.com/sample-mysql created
-````
   </div>
 
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
@@ -179,9 +178,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/semi-sync.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/semi-sync.yaml
+```
 mysql.kubedb.com/sample-mysql created
-````
 
   </div>
 
@@ -209,9 +208,9 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/standalone.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/standalone.yaml
+```
 mysql.kubedb.com/sample-mysql created
-````
   </div>
 
 </div>
@@ -219,23 +218,25 @@ mysql.kubedb.com/sample-mysql created
 Now, wait until `sample-mysql` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mysql -n demo
+kubectl get mysql -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-mysql     8.4.8    Ready    5m4s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-0   topolvm-provisioner            63s
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-1   topolvm-provisioner            62s
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-mysql-2   topolvm-provisioner            62s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -276,9 +277,9 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
-mysqlopsrequest.ops.kubedb.com/my-online-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-online-volume-expansion created
 
 #### Verify MySQL volume expanded successfully
 
@@ -287,15 +288,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the volume siz
 Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
 ```bash
-$ kubectl get mysqlopsrequest -n demo
+kubectl get mysqlopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 my-online-volume-expansion   VolumeExpansion   Successful   96s
-```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mysqlopsrequest -n demo my-online-volume-expansion
+kubectl describe mysqlopsrequest -n demo my-online-volume-expansion
+```
 Name:         my-online-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -344,21 +346,21 @@ Events:
   Normal  Starting    41s   KubeDB Enterprise Operator  Resuming MySQL database: demo/sample-mysql
   Normal  Successful  41s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/sample-mysql
   Normal  Successful  41s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MySQL: demo/sample-mysql
-  
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   2Gi        RWO            Delete           Bound    demo/data-sample-mysql-0   topolvm-provisioner            12m
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   2Gi        RWO            Delete           Bound    demo/data-sample-mysql-1   topolvm-provisioner            12m
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   2Gi        RWO            Delete           Bound    demo/data-sample-mysql-2   topolvm-provisioner            12m
-```
 
 The above output verifies that we have successfully expanded the volume of the MySQL database.
 
@@ -367,6 +369,9 @@ The above output verifies that we have successfully expanded the volume of the M
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo my-online-volume-expansion
+kubectl delete mysql -n demo sample-mysql
+```
+
+```bash
+kubectl delete mysqlopsrequest -n demo my-online-volume-expansion
 ```

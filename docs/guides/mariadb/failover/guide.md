@@ -57,9 +57,9 @@ using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 ## Deploy MariaDB Cluster
 
 The following is an example `MariaDB` object which creates a single-master MariaDB `standard replication` cluster with three members.
@@ -96,9 +96,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
-mariadb.kubedb.com/ha-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
 ```
+mariadb.kubedb.com/ha-mariadb created
 
 Here,
 
@@ -117,8 +117,9 @@ watch kubectl get mariadb,petset,pods -n demo
 ```
 See the database is ready.
 
-```shell
-$ kubectl get mariadb,petset,pods -n demo
+```bash
+kubectl get mariadb,petset,pods -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/ha-mariadb   11.8.5   Ready    3m27s
 
@@ -134,23 +135,20 @@ pod/ha-mariadb-mx-0   1/1     Running   0          3m23s
 pod/ha-mariadb-mx-1   1/1     Running   0          3m23s
 pod/ha-mariadb-mx-2   1/1     Running   0          3m23s
 
-```
-
 Inspect who is `Master` and who is `slave`.
 
-```shell
 # you can inspect the role of the pods 
-
-$ kubectl get pods -n demo --show-labels | grep role
+```bash
+kubectl get pods -n demo --show-labels | grep role
+```
 ha-mariadb-0      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Master,statefulset.kubernetes.io/pod-name=ha-mariadb-0
 ha-mariadb-1      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=ha-mariadb-1
 ha-mariadb-2      2/2     Running   0          4m9s    app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mariadb,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mariadbs.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ha-mariadb-598cd56869,kubedb.com/role=Slave,statefulset.kubernetes.io/pod-name=ha-mariadb-2
-
-```
 The pod having `kubedb.com/role=Master` is the `Master` and `kubedb.com/role=Slave` are the slaves.
 You can also check it on the cluster status:
-```shell
-$ kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
+```bash
+kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
+```
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
@@ -162,8 +160,6 @@ bash-4.4$ maxctrl list servers
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
 │ server3 │ ha-mariadb-2.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-217 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
-
-```
 ## Verify Pod Reachability and Status
 Once the database is in running state we can connect to each of three nodes.
 We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
@@ -173,7 +169,8 @@ Writing to a slave replica can cause binlog conflicts. By default, slave-replica
 root user (with super privileges) can still make changes. For security, avoid using the root user
 in production and create a dedicated user with only the needed permissions instead.
 ```bash
-$ kubectl exec -it -n demo svc/ha-mariadb -- bash
+kubectl exec -it -n demo svc/ha-mariadb -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -197,13 +194,12 @@ MariaDB [(none)]> quit
 Bye
 mysql@ha-mariadb-0:/$ exit
 exit
-
-```
 ### Check Connectivity using Test User
 
-```bash
 # Master Node
-$ kubectl exec -it -n demo svc/ha-mariadb -- bash
+```bash
+kubectl exec -it -n demo svc/ha-mariadb -- bash
+```
 mysql@ha-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
@@ -225,7 +221,9 @@ MariaDB [(none)]> quit;
 Bye
 
 # Slave Node
-$ kubectl exec -it -n demo svc/ha-mariadb-standby -- bash
+```bash
+kubectl exec -it -n demo svc/ha-mariadb-standby -- bash
+```
 mysql@ha-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
@@ -248,20 +246,19 @@ Bye
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 ## Insert Data and Check Availability
 
 In a MariaDB Replication Cluster, Only master member can write, and slave member can read. In this section, we will insert data from master node, and we will see whether we can get the data from every other slave members.
 **Check which is the master pod**
-```shell
-$ kubectl get pods -n demo --show-labels | grep Master | awk '{ print $1 }'
-ha-mariadb-0
-
+```bash
+kubectl get pods -n demo --show-labels | grep Master | awk '{ print $1 }'
 ```
+ha-mariadb-0
 let's insert data in the master node
 ```bash
-$ kubectl exec -it -n demo ha-mariadb-0 -- bash
+kubectl exec -it -n demo ha-mariadb-0 -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@ha-mariadb-0:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -293,7 +290,6 @@ MariaDB [(none)]> exit
 Bye
 mysql@ha-mariadb-0:/$ exit
 exit
-```
 You can read data from the slave nodes
 ```shell
 kubectl exec -it -n demo ha-mariadb-1 -- bash
@@ -337,8 +333,8 @@ MaxScale:
 
 This process happens automatically, typically within seconds, ensuring minimal disruption.
 Lets open another terminal and monitor the state of all the pods:
-```shell
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+```bash
+watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 You'll see:
 ```shell
@@ -355,10 +351,10 @@ ha-mariadb-mx-2
 
 Let's delete the current `Master` pod and see how the role change happens almost immediately.
 
-```shell
-$ kubectl delete pods -n demo ha-mariadb-0 
-pod "ha-mariadb-0" deleted
+```bash
+kubectl delete pods -n demo ha-mariadb-0 
 ```
+pod "ha-mariadb-0" deleted
 You'll see the pods' status like that:
 ```
 ha-mariadb-0 Down
@@ -381,8 +377,9 @@ ha-mariadb-mx-2
 
 Now we know how failover is done, let's check if the new `Master` is working.
 
-```shell
-$ kubectl exec -it -n demo ha-mariadb-1 -- bash
+```bash
+kubectl exec -it -n demo ha-mariadb-1 -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@ha-mariadb-1:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -413,12 +410,11 @@ Bye
 mysql@ha-mariadb-1:/$ exit
 exit
 
-```
-
 Lets check if the new Slave(`ha-mariadb-0`) got the updated data from new `Master`, `ha-mariadb-1`.
 
-```shell
-$  kubectl exec -it -n demo ha-mariadb-0 -- bash
+```bash
+ kubectl exec -it -n demo ha-mariadb-0 -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -448,15 +444,13 @@ Bye
 mysql@ha-mariadb-0:/$ exit
 exit
 
-```
-
 #### Case 2: Delete the current `Master` and One slave
 
-```shell
-$ kubectl delete pods -n demo ha-mariadb-1 ha-mariadb-2
+```bash
+kubectl delete pods -n demo ha-mariadb-1 ha-mariadb-2
+```
 pod "ha-mariadb-1" deleted
 pod "ha-mariadb-2" deleted
-```
 Again we can see the failover happened pretty quickly.
 ```shell
 ha-mariadb-0 Master
@@ -477,8 +471,9 @@ ha-mariadb-mx-2
 ```
 Lets validate the cluster state from new `Master`(`ha-mariadb-0`).
 
-```shell
-$ kubectl exec -it -n demo ha-mariadb-0 -- bash
+```bash
+kubectl exec -it -n demo ha-mariadb-0 -- bash
+```
 Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (init)
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
@@ -510,8 +505,6 @@ MariaDB [(none)]> exit
 Bye
 mysql@ha-mariadb-0:/$ exit
 exit
-
-```
 Let's check whether the Slave nodes, `ha-mariadb-2` gets all the previous data 
 ```shell
 kubectl exec -it -n demo ha-mariadb-2 -- bash
@@ -580,13 +573,12 @@ ha-mariadb-mx-2
 
 Let's delete all the pods.
 
-```shell
-$ kubectl delete pods -n demo ha-mariadb-0 ha-mariadb-1 ha-mariadb-2
+```bash
+kubectl delete pods -n demo ha-mariadb-0 ha-mariadb-1 ha-mariadb-2
+```
 pod "ha-mariadb-0" deleted
 pod "ha-mariadb-1" deleted
 pod "ha-mariadb-2" deleted
-
-```
 ```shell
 ha-mariadb-0 Down
 ha-mariadb-1 Down
@@ -611,8 +603,9 @@ ha-mariadb-mx-2
 
 Lets verify the cluster state now.
 
-```shell
-$ kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
+```bash
+kubectl exec -it -n demo svc/ha-mariadb-mx -- bash
+```
 Defaulted container "maxscale" out of: maxscale, maxscale-init (init)
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬──────────┬────────────────────┐
@@ -625,16 +618,17 @@ bash-4.4$ maxctrl list servers
 │ server3 │ ha-mariadb-2.ha-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-3297 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴──────────┴────────────────────┘
 
-```
-
 ## CleanUp
 For cleaning up what we created in this tutorial follow the following command:
-```shell
-$ kubectl delete mariadb -n demo ha-mariadb
-mariadb.kubedb.com "ha-mariadb" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete mariadb -n demo ha-mariadb
 ```
+mariadb.kubedb.com "ha-mariadb" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted
 
 
 ## Next Steps

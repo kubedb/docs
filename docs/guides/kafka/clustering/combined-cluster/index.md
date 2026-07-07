@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/clustering) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,14 +64,15 @@ spec:
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/clustering/kf-standalone.yaml
-kafka.kubedb.com/kafka-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/clustering/kf-standalone.yaml
 ```
+kafka.kubedb.com/kafka-standalone created
 
 Watch the bootstrap progress:
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME               TYPE                  VERSION   STATUS         AGE
 kafka-standalone   kubedb.com/v1alpha2   3.9.0     Provisioning   8s
 kafka-standalone   kubedb.com/v1alpha2   3.9.0     Provisioning   14s
@@ -77,13 +80,13 @@ kafka-standalone   kubedb.com/v1alpha2   3.9.0     Provisioning   35s
 kafka-standalone   kubedb.com/v1alpha2   3.9.0     Provisioning   35s
 kafka-standalone   kubedb.com/v1alpha2   3.9.0     Provisioning   36s
 kafka-standalone   kubedb.com/v1alpha2   3.9.0     Ready          41s
-```
 
 Hence, the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Kafka CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-standalone'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-standalone'
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/kafka-standalone-0   1/1     Running   0          8m56s
 
@@ -102,7 +105,6 @@ secret/kafka-standalone-config       Opaque                     2      8m59s
 
 NAME                                                             STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/kafka-standalone-data-kafka-standalone-0   Bound    pvc-56f8284a-249e-4444-ab3d-31e01662a9a0   1Gi        RWO            standard       8m56s
-```
 
 ## Create Multi-Node Combined Kafka Cluster
 
@@ -131,27 +133,28 @@ spec:
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/clustering/kf-multinode.yaml
-kafka.kubedb.com/kafka-multinode created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/clustering/kf-multinode.yaml
 ```
+kafka.kubedb.com/kafka-multinode created
 
 Watch the bootstrap progress:
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Provisioning   9s
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Provisioning   14s
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Provisioning   18s
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Provisioning   2m6s
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Provisioning   2m8s
 kafka-multinode   kubedb.com/v1alpha2   3.9.0     Ready          2m14s
-```
 
 Hence, the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Kafka CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-multinode'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=kafka-multinode'
+```
 NAME                    READY   STATUS    RESTARTS   AGE
 pod/kafka-multinode-0   1/1     Running   0          6m2s
 pod/kafka-multinode-1   1/1     Running   0          5m56s
@@ -174,17 +177,16 @@ NAME                                                           STATUS   VOLUME  
 persistentvolumeclaim/kafka-multinode-data-kafka-multinode-0   Bound    pvc-15cc2329-15ba-4781-8b7f-f0fe6cf81614   1Gi        RWO            standard       6m2s
 persistentvolumeclaim/kafka-multinode-data-kafka-multinode-1   Bound    pvc-bc3773cc-dff0-458c-b71a-7ef6aa877549   1Gi        RWO            standard       5m56s
 persistentvolumeclaim/kafka-multinode-data-kafka-multinode-2   Bound    pvc-e4829946-b2bb-473e-84d9-c5f9c360f3f0   1Gi        RWO            standard       5m51s
-```
 
 ## Publish & Consume messages with Kafka
 
 We will create a Kafka topic using `kafka-topics.sh` script which is provided by kafka container itself. We will use `kafka console producer` and `kafka console consumer` as clients for publishing messages to the topic and then consume those messages. Exec into one of the kafka brokers in interactive mode first.
 
 ```bash
-$ kubectl exec -it -n demo  kafka-multinode-0 -- bash
+kubectl exec -it -n demo  kafka-multinode-0 -- bash
+```
 kafka@kafka-multinode-0:~# pwd
 /opt/kafka
-```
 
 You will find a file named `clientauth.properties` in the config directory. This file is generated by the operator which contains necessary authentication/authorization configurations that are required during publishing or subscribing messages to a kafka topic.
 
@@ -198,7 +200,8 @@ sasl.jaas.config=org.apache.kafka.common.security.plain.PlainLoginModule require
 Now, we have to use a bootstrap server to perform operations in a kafka broker. For this demo, we are going to use the http endpoint of the headless service `kafka-multinode-pods` as bootstrap server for publishing & consuming messages to kafka brokers. These endpoints are pointing to all the kafka broker pods. We will set an environment variable for the `clientauth.properties` filepath as well. At first, describe the service to get the http endpoints.
 
 ```bash
-$ kubectl describe svc -n demo kafka-multinode-pods
+kubectl describe svc -n demo kafka-multinode-pods
+```
 Name:              kafka-multinode-pods
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
@@ -223,7 +226,6 @@ TargetPort:        internal/TCP
 Endpoints:         10.244.0.69:29092,10.244.0.71:29092,10.244.0.73:29092
 Session Affinity:  None
 Events:            <none>
-```
 
 Use the `http endpoints` and `clientauth.properties` file to set environment variables. These environment variables will be useful for handling console command operations easily.
 
@@ -292,17 +294,27 @@ Notice that, messages are coming to the consumer as you continue sending message
 
 TO clean up the k8s resources created by this tutorial, run:
 
-```bash
 # standalone cluster
-$ kubectl patch -n demo kf kafka-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete kf -n demo kafka-standalone
+```bash
+kubectl patch -n demo kf kafka-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
+
+```bash
+kubectl delete kf -n demo kafka-standalone
+```
 
 # multinode cluster
-$ kubectl patch -n demo kf kafka-multinode -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete kf -n demo kafka-multinode
+```bash
+kubectl patch -n demo kf kafka-multinode -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
+
+```bash
+kubectl delete kf -n demo kafka-multinode
+```
 
 # delete namespace
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

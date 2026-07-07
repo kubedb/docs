@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/cassandra](/docs/examples/cassandra) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -84,26 +84,27 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/cassandra-topology.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/cassandra-topology.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   22s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   45s
 .
 .
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready   104s
-```
 
 Let's check the Pod containers resources of the Cassandra topology cluster. Run the following command to get the resources of the containers of the Cassandra topology cluster
 
 ```bash
-$ kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "2",
@@ -114,7 +115,6 @@ $ kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.container
     "memory": "1Gi"
   }
 }
-```
 
 We are now ready to apply the `CassandraOpsRequest` CR to update the resources of this database.
 
@@ -158,9 +158,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/vertical-scaling/cassandra-vertical-scaling-topology.yaml
-cassandraopsrequest.ops.kubedb.com/casops-vscale-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/vertical-scaling/cassandra-vertical-scaling-topology.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-vscale-topology created
 
 #### Verify Cassandra Topology cluster resources updated successfully
 
@@ -169,15 +169,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                        TYPE              STATUS       AGE
 cassandra-vertical-scale    VerticalScaling   Successful   3m56s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$  kubectl describe cassandraopsrequest -n demo cassandra-vertical-scale
+ kubectl describe cassandraopsrequest -n demo cassandra-vertical-scale
+```
 Name:         cassandra-vertical-scale
 Namespace:    demo
 Labels:       <none>
@@ -276,11 +277,11 @@ Events:
   Normal   RestartPods                                                        34m   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                           34m   KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         34m   KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cassandra-vertical-scale                                                              2m18s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-vscale-topology
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$  kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containers[].resources'
+ kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "3",
@@ -291,7 +292,6 @@ $  kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containe
     "memory": "3Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the Cassandra topology cluster.
 

@@ -31,12 +31,14 @@ process to enable `GitOps` operator.
 cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -97,11 +99,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── Elasticsearch.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Elasticsearch` CR is created in your cluster.
 
@@ -109,18 +111,19 @@ Our `gitops` operator will create an actual `Elasticsearch` database CR in the c
 
 
 ```bash
-$ kubectl get elasticsearch.gitops.kubedb.com,elasticsearch.kubedb.com -n demo
+kubectl get elasticsearch.gitops.kubedb.com,elasticsearch.kubedb.com -n demo
+```
 NAME                                        AGE
 elasticsearch.gitops.kubedb.com/es-gitops   20m
 
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    20m
-```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Elasticsearch.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=es-gitops'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=es-gitops'
+```
 NAME                                     AGE
 petset.apps.k8s.appscode.com/es-gitops   20m
 
@@ -149,7 +152,6 @@ service/es-gitops-pods     ClusterIP   None           <none>        9200/TCP   2
 
 NAME                                           TYPE                       VERSION   AGE
 appbinding.appcatalog.appscode.com/es-gitops   kubedb.com/elasticsearch   8.18.8     20m
-```
 
 ## Update Elasticsearch Database using GitOps
 ### Scale Elasticsearch Replicas
@@ -180,22 +182,22 @@ Now, `gitops` operator will detect the replica changes and create a `HorizontalS
 resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,esops -n demo
+kubectl get es,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    64m
 
 NAME                                                                        TYPE                STATUS       AGE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   HorizontalScaling   Successful   39m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=es-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=es-gitops'
+```
 NAME          READY   STATUS    RESTARTS   AGE
 es-gitops-0   1/1     Running   0          36m
 es-gitops-1   1/1     Running   0          16m
 es-gitops-2   1/1     Running   0          15m
-```
 
 
 We can also scale down the replicas by updating the `replicas` fields.
@@ -254,7 +256,8 @@ Resource Requests and Limits are updated to `1000m` CPU and `2Gi` Memory. Commit
 Now, `gitops` operator will detect the resource changes and create a `ElasticsearchOpsRequest` to update the `Elasticsearch` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,esops -n demo
+kubectl get es,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    64m
 
@@ -262,11 +265,10 @@ NAME                                                                        TYPE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-injx1l   HorizontalScaling   Successful   15m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-x5mfy0     VerticalScaling     Successful   39m
 
-```
-
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo es-gitops-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo es-gitops-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -277,7 +279,6 @@ $ kubectl get pod -n demo es-gitops-0 -o json | jq '.spec.containers[0].resource
     "memory": "2Gi"
   }
 }
-```
 
 
 ### Expand Elasticsearch Volume
@@ -320,7 +321,8 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` ElasticsearchOpsRequest to update the `Elasticsearch` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get es,esops -n demo
+ kubectl get es,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    3h1m
 
@@ -328,16 +330,15 @@ NAME                                                                        TYPE
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   HorizontalScaling   Successful   157m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-x5mfy0     VerticalScaling     Successful   157m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-sata37     VolumeExpansion     Successful   38m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=es-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=es-gitops'
+```
 NAME          READY   STATUS    RESTARTS   AGE
 es-gitops-0   1/1     Running   0          36m
 es-gitops-1   1/1     Running   0          16m
 es-gitops-2   1/1     Running   0          15m
-```
 
 ## Reconfigure Elasticsearch
 
@@ -357,12 +358,12 @@ stringData:
 Now, we will add this file to `kubedb/es-configuration.yaml`.
 
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── es-configuration.yaml
 │ └── Elasticsearch.yaml
 1 directories, 2 files
-```
 
 Update the `Elasticsearch.yaml` with the following,
 ```yaml
@@ -404,7 +405,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` ElasticsearchOpsRequest to update the `Elasticsearch` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,esops -n demo
+kubectl get es,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    3h53m
 
@@ -413,7 +415,6 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-horizontalscaling-32p116   Hori
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfigure-wj5qyx         Reconfigure         Successful   3m42s
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-lvh38k     VerticalScaling     Successful   99m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-sata37     VolumeExpansion     Successful   90m
-```
 
 
 
@@ -439,13 +440,13 @@ stringData:
 Now, we will add this file to `kubedb/es-rotateauth.yaml`.
 
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── es-configuration.yaml
 │ ├── es-rotateauth.yaml
 │ └── Elasticsearch.yaml
 1 directories, 3 files
-```
 
 Update the `Elasticsearch.yaml` with the following,
 ```yaml
@@ -490,7 +491,8 @@ Change the `authSecret` field to `es-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` ElasticsearchOpsRequest to update the `Elasticsearch` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,esops -n demo
+kubectl get es,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-8.18.8   Ready    32m
 
@@ -500,7 +502,6 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfigure-x7ou3f         Reco
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-rotate-auth-8cgx3b         RotateAuth          Successful   2m34s
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   21m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   17m
-```
 ### Update Version
 
 List Elasticsearch versions using `kubectl get Elasticsearchversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/elasticsearch/update-version/elasticsearch.md).
@@ -550,7 +551,8 @@ Update the `version` field to `xpack-9.2.3`. Commit the changes and push to your
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` ElasticsearchOpsRequest to update the `Elasticsearch` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,elasticsearch,esops -n demo
+kubectl get es,elasticsearch,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    54m
 
@@ -564,19 +566,24 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-rotate-auth-8cgx3b         Rota
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-versionupdate-z92dz0       UpdateVersion       Successful   17m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   44m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   39m
-```
 
 
 Now, we are going to verify whether the `Elasticsearch`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get Elasticsearch -n demo es-gitops -o=jsonpath='{.spec.version}{"\n"}'
-xpack-9.2.3
-$ kubectl get petset -n demo es-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
-$ kubectl get pod -n demo es-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
+kubectl get Elasticsearch -n demo es-gitops -o=jsonpath='{.spec.version}{"\n"}'
 ```
+xpack-9.2.3
+
+```bash
+kubectl get petset -n demo es-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
+
+```bash
+kubectl get pod -n demo es-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 
 
 
@@ -633,7 +640,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` ElasticsearchOpsRequest to add the `Elasticsearch` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get es,elasticsearch,esops -n demo
+kubectl get es,elasticsearch,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    66m
 
@@ -648,7 +656,6 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-rotate-auth-8cgx3b         Rota
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-versionupdate-z92dz0       UpdateVersion       Successful   28m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   55m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   50m
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
@@ -665,23 +672,23 @@ To add tls, we are going to create an example `Issuer` that will be used to enab
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls es-ca \
+kubectl create secret tls es-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/es-ca created
 ```
+secret/es-ca created
 
 Now, Let's create an `Issuer` using the `elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -698,7 +705,8 @@ spec:
 
 Let's add that to our `kubedb/es-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── es-configuration.yaml
 │ ├── es-rotateauth.yaml
@@ -706,7 +714,6 @@ $ tree .
 │ ├── es-issuer.yaml
 │ └── Elasticsearch.yaml
 1 directories, 5 files
-```
 
 Update the `Elasticsearch.yaml` with the following,
 ```yaml
@@ -771,7 +778,8 @@ Add `enableSSL: true` and `tls` fields in the spec.
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `Elasticsearch` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get es,elasticsearch,esops -n demo
+kubectl get es,elasticsearch,esops -n demo
+```
 NAME                                 VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-gitops   xpack-9.2.3   Ready    66m
 
@@ -787,7 +795,6 @@ elasticsearchopsrequest.ops.kubedb.com/es-gitops-versionupdate-z92dz0       Upda
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-verticalscaling-wyjx4l     VerticalScaling     Successful   55m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-volumeexpansion-z2e3qb     VolumeExpansion     Successful   50m
 elasticsearchopsrequest.ops.kubedb.com/es-gitops-reconfiguretls-r4mx7v      ReconfigureTLS      Successful   9m18s
-```
 
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Elasticsearch.

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -80,22 +80,23 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical.yaml
-pgbouncer.kubedb.com/pb-vertical created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical.yaml
 ```
+pgbouncer.kubedb.com/pb-vertical created
 
 Now, wait until `pb-vertical` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME          TYPE                  VERSION   STATUS   AGE
 pb-vertical   kubedb.com/v1         1.18.0    Ready    17s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -105,7 +106,6 @@ $ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resourc
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -152,9 +152,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical-ops.yaml
-pgbounceropsrequest.ops.kubedb.com/pgbouncer-scale-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical-ops.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pgbouncer-scale-vertical created
 
 #### Verify PgBouncer resources updated successfully 
 
@@ -163,16 +163,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ kubectl get pgbounceropsrequest -n demo
+kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                       TYPE              STATUS       AGE
 pgbouncer-scale-vertical   VerticalScaling   Successful   3m42s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to scale the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pgbouncer-scale-vertical
+kubectl describe pgbounceropsrequest -n demo pgbouncer-scale-vertical
+```
 Name:         pgbouncer-scale-vertical
 Namespace:    demo
 Labels:       <none>
@@ -274,12 +275,12 @@ Events:
   Normal   Starting                                                                30s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-vertical
   Normal   Successful                                                              30s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-vertical
   Normal   Successful                                                              30s   KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-vertical
-```
 
 Now, we are going to verify from the Pod yaml whether the resources of the pgbouncer has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -290,7 +291,6 @@ $ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resourc
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the PgBouncer.
 

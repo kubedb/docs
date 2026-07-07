@@ -48,9 +48,9 @@ final files into a per-instance config Secret that is mounted into every pod.
 - To keep things isolated, this tutorial uses a separate namespace called `demo`:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/documentdb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/documentdb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -105,38 +105,41 @@ spec:
 Apply both:
 
 ```bash
-$ kubectl apply -f documentdb-custom-config-secret.yaml
-secret/documentdb-custom-config created
-$ kubectl apply -f cluster-config-secret.yaml
-documentdb.kubedb.com/documentdb-cls-sample created
+kubectl apply -f documentdb-custom-config-secret.yaml
 ```
+secret/documentdb-custom-config created
+
+```bash
+kubectl apply -f cluster-config-secret.yaml
+```
+documentdb.kubedb.com/documentdb-cls-sample created
 
 ### Inspect the rendered configuration
 
 The `spec.configuration` block on the object confirms which Secret is wired in:
 
 ```bash
-$ kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.configuration}'
-{"secretName":"documentdb-custom-config"}
+kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.configuration}'
 ```
+{"secretName":"documentdb-custom-config"}
 
 The Secret holds the `user.conf` that KubeDB feeds into each replica:
 
 ```bash
-$ kubectl get secret -n demo documentdb-custom-config -o jsonpath='{.data.user\.conf}' | base64 -d
+kubectl get secret -n demo documentdb-custom-config -o jsonpath='{.data.user\.conf}' | base64 -d
+```
 max_connections=250
 work_mem=8MB
-```
 
 KubeDB also provisions the cluster's two auth secrets alongside it — `documentdb-cls-sample-auth`
 (the MongoDB-compatibility `default_user`) and `documentdb-cls-sample-admin-auth` (the backend
 admin):
 
 ```bash
-$ kubectl get secret -n demo | grep documentdb-cls-sample
+kubectl get secret -n demo | grep documentdb-cls-sample
+```
 documentdb-cls-sample-admin-auth   kubernetes.io/basic-auth   2      34m
 documentdb-cls-sample-auth         kubernetes.io/basic-auth   2      34m
-```
 
 ### Verify the database is serving
 
@@ -144,21 +147,24 @@ Connect over the MongoDB wire protocol (TLS, port `10260`) with the `default_use
 from `<db>-auth` and ping:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 The primary accepts MongoDB-protocol traffic with the custom configuration applied.
 
 Tear the instance down before the next example:
 
 ```bash
-$ kubectl delete docdb -n demo documentdb-cls-sample
-documentdb.kubedb.com "documentdb-cls-sample" deleted
+kubectl delete docdb -n demo documentdb-cls-sample
 ```
+documentdb.kubedb.com "documentdb-cls-sample" deleted
 
 ## Configuration inline
 
@@ -199,9 +205,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f standalone-config-inline.yaml
-documentdb.kubedb.com/documentdb-sa-sample created
+kubectl apply -f standalone-config-inline.yaml
 ```
+documentdb.kubedb.com/documentdb-sa-sample created
 
 On a healthy instance the rendered `user.conf` would show `max_connections=300` /
 `work_mem=16MB`, overriding any Secret-supplied values.
@@ -248,9 +254,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f standalone-config-tuning.yaml
-documentdb.kubedb.com/documentdb-sa-sample created
+kubectl apply -f standalone-config-tuning.yaml
 ```
+documentdb.kubedb.com/documentdb-sa-sample created
 
 On a healthy instance the auto-tuner emits a `pgtune.conf` derived from `profile: oltp`,
 `storageType: ssd`, and `maxConnections: 200` (tuned `shared_buffers`, `effective_cache_size`,

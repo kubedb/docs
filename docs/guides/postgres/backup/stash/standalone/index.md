@@ -35,9 +35,9 @@ You have to be familiar with following custom resources:
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create the `demo` namespace if you haven't created it already.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Backup PostgreSQL
 
@@ -73,9 +73,9 @@ spec:
 Create the above `Postgres` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/postgres.yaml
-postgres.kubedb.com/sample-postgres created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/postgres.yaml
 ```
+postgres.kubedb.com/sample-postgres created
 
 KubeDB will deploy a PostgreSQL database according to the above specification. It will also create the necessary secrets and services to access the database.
 
@@ -244,15 +244,24 @@ We are going to store our backed-up data into a GCS bucket. At first, we need to
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create Repository:**
 
@@ -275,9 +284,9 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/repository.yaml
-repository.stash.appscode.com/gcs-repo created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/repository.yaml
 ```
+repository.stash.appscode.com/gcs-repo created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -320,19 +329,19 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/backupconfiguration.yaml
-backupconfiguration.stash.appscode.com/sample-postgres-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/backupconfiguration.yaml
 ```
+backupconfiguration.stash.appscode.com/sample-postgres-backup created
 
 **Verify Backup Setup Successful:**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                     TASK                   SCHEDULE      PAUSED   PHASE      AGE
 sample-postgres-backup   postgres-backup-11.9   */5 * * * *            Ready      11s
-```
 
 **Verify CronJob:**
 
@@ -443,9 +452,9 @@ Notice the `init` section. Here, we have specified `waitForInitialRestore: true`
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restored-postgres.yaml
-postgres.kubedb.com/restored-postgres created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restored-postgres.yaml
 ```
+postgres.kubedb.com/restored-postgres created
 
 This time, the database will get stuck in the `Provisioning` state because we haven't restored the data yet.
 
@@ -512,9 +521,9 @@ Here,
 Let's create the `RestoreSession` crd we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restoresession.yaml
-restoresession.stash.appscode.com/sample-postgres-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/stash/standalone/examples/restoresession.yaml
 ```
+restoresession.stash.appscode.com/sample-postgres-restore created
 
 Once, you have created the `RestoreSession` object, Stash will create a job to restore the database. We can watch the `RestoreSession` phase to check whether the restore process has succeeded or not.
 

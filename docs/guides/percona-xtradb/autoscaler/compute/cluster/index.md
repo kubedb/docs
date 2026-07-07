@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ## Autoscaling of Cluster Database
 
 Here, we are going to deploy a `PerconaXtraDB` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `PerconaXtraDBAutoscaler` to set up autoscaling.
@@ -79,22 +79,23 @@ spec:
 Let's create the `PerconaXtraDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/compute/cluster/examples/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/compute/cluster/examples/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-pxc       8.4.3    Ready    14m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -105,11 +106,11 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the PerconaXtraDB resources,
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
+kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -120,7 +121,6 @@ $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.s
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the perconaxtradb.
 
@@ -181,20 +181,23 @@ If a step doesn't finish within the specified timeout, the ops request will resu
 Let's create the `PerconaXtraDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/compute/cluster/examples/pxas-compute.yaml
-perconaxtradbautoscaler.autoscaling.kubedb.com/pxas-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/compute/cluster/examples/pxas-compute.yaml
 ```
+perconaxtradbautoscaler.autoscaling.kubedb.com/pxas-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `perconaxtradbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get perconaxtradbautoscaler -n demo
+kubectl get perconaxtradbautoscaler -n demo
+```
 NAME            AGE
 px-as-compute   5m56s
 
-$ kubectl describe perconaxtradbautoscaler px-as-compute -n demo
+```bash
+kubectl describe perconaxtradbautoscaler px-as-compute -n demo
+```
 Name:         px-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -300,8 +303,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      sample-pxc
 Events:            <none>
-
-```
 So, the `perconaxtradbautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -311,23 +312,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `perconaxtradbopsrequest` in the demo namespace to see if any `perconaxtradbopsrequest` object is created. After some time you'll see that a `perconaxtradbopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 pxops-sample-pxc-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 pxops-vpa-sample-pxc-z43wc8   VerticalScaling   Successful   3m32s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo pxops-vpa-sample-pxc-z43wc8
+kubectl describe perconaxtradbopsrequest -n demo pxops-vpa-sample-pxc-z43wc8
+```
 Name:         pxops-sample-pxc-6xc1kc
 Namespace:    demo
 Labels:       <none>
@@ -445,12 +447,12 @@ Events:
   Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the PerconaXtraDB database: demo/sample-pxc
-```
 
 Now, we are going to verify from the Pod, and the PerconaXtraDB yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -462,7 +464,9 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
   }
 }
 
-$ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
+```bash
+kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "perconaxtradb") | .resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -473,7 +477,6 @@ $ kubectl get perconaxtradb -n demo sample-pxc -o json | jq '.spec.podTemplate.s
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the PerconaXtraDB replicaset database.

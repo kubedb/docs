@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -85,9 +85,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-topology-custom-config.yaml
-secret/es-topology-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-topology-custom-config.yaml
 ```
+secret/es-topology-custom-config created
 
 In this section, we are going to create an Elasticsearch object specifying `spec.configuration.secretName` field to apply this custom configuration. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
@@ -137,45 +137,45 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-topology.yaml
-elasticsearch.kubedb.com/es-topology created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-topology.yaml
 ```
+elasticsearch.kubedb.com/es-topology created
 
 Now, wait until `es-topology` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME          VERSION          STATUS         AGE
 es-topology   xpack-8.19.9    Provisioning   0s
 es-topology   xpack-8.19.9    Provisioning   24s
 .
 .
 es-topology   xpack-8.19.9    Ready          92s
-```
 
 Now, we will check if the Elasticsearch has started with the custom configuration we have provided.
 
 Exec into the master node and check the cluster setting:
 
 ```bash
-$ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
-          "max_shards_per_node" : "2000",
+kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
 ```
+          "max_shards_per_node" : "2000",
 
 Exec into a data node and check the index settings:
 
 ```bash
-$ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
-              "max_clause_count" : "2048"
-              "max_clause_count" : "2048"
+kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
 ```
+              "max_clause_count" : "2048"
+              "max_clause_count" : "2048"
 
 Exec into the ingest node and check the HTTP settings:
 
 ```bash
-$ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
-          "max_content_length" : "200mb",
+kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
 ```
+          "max_content_length" : "200mb",
 
 Here, we can see that our given configurations are applied to the respective node roles.
 
@@ -221,9 +221,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/new-es-topology-custom-config.yaml
-secret/new-es-topology-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/new-es-topology-custom-config.yaml
 ```
+secret/new-es-topology-custom-config created
 
 #### Create ElasticsearchOpsRequest
 
@@ -255,9 +255,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-update-topology.yaml
-elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-update-topology.yaml
 ```
+elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-topology created
 
 #### Verify the new configuration is working
 
@@ -266,15 +266,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get elasticsearchopsrequests -n demo
+kubectl get elasticsearchopsrequests -n demo
+```
 NAME                         TYPE          STATUS       AGE
 esops-reconfigure-topology   Reconfigure   Successful   4m55s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe elasticsearchopsrequest -n demo esops-reconfigure-topology
+kubectl describe elasticsearchopsrequest -n demo esops-reconfigure-topology
+```
 Name:         esops-reconfigure-topology
 Namespace:    demo
 Labels:       <none>
@@ -415,21 +416,24 @@ Events:
   Warning  create es client; ConditionStatus:True                                3m39s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True
   Normal   RestartNodes                                                          3m34s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Successful                                                            3m33s  KubeDB Ops-manager Operator  Successfully reconfigured all elasticsearch nodes.
-```
 
 Now let's exec into a master node, a data node, and the ingest node to verify the new configuration.
 
 ```bash
-$ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
+kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
+```
           "max_shards_per_node" : "3000",
 
-$ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
+```bash
+kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
+```
               "max_clause_count" : "4096"
               "max_clause_count" : "4096"
 
-$ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
-          "max_content_length" : "300mb",
+```bash
+kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_content_length
 ```
+          "max_content_length" : "300mb",
 
 As we can see, the values have been updated on their respective node roles. So the reconfiguration of the cluster is successful.
 
@@ -471,33 +475,37 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-apply-topology.yaml
-elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-apply-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-apply-topology.yaml
 ```
+elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-apply-topology created
 
 #### Verify the new configuration is working
 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.
 
 ```bash
-$  kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-topology
+ kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-topology
+```
 NAME                               TYPE          STATUS       AGE
 esops-reconfigure-apply-topology   Reconfigure   Successful   6m52s
-```
 
 Now let's verify the updated values on each node role.
 
 ```bash
-$ kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
+kubectl exec -it -n demo es-topology-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.cluster&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_shards_per_node
+```
           "max_shards_per_node" : "4000",
 
-$ kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
+```bash
+kubectl exec -it -n demo es-topology-data-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:$ELASTIC_USER_PASSWORD" | grep max_clause_count
+```
               "max_clause_count" : "8192"
               "max_clause_count" : "8192"
 
-$ kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:X4am_*ihVy~M)m0j" | grep max_content_length
-          "max_content_length" : "400mb",
+```bash
+kubectl exec -it -n demo es-topology-ingest-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.http&pretty" --user "elastic:X4am_*ihVy~M)m0j" | grep max_content_length
 ```
+          "max_content_length" : "400mb",
 
 As we can see, `cluster.max_shards_per_node` has been changed from `3000` to `4000` on master nodes, `indices.query.bool.max_clause_count` has been changed from `4096` to `8192` on data nodes, and `http.max_content_length` has been changed from `300mb` to `400mb` on ingest nodes. So the reconfiguration using the `applyConfig` field is successful.
 

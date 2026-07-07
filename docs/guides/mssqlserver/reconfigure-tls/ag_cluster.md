@@ -30,9 +30,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mssqlserver](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -53,9 +53,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -71,9 +71,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Deploy MSSQLServer without TLS
 
@@ -129,17 +129,17 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/mssql-ag-cluster.yaml
-mssqlserver.kubedb.com/mssql-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/mssql-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssql-ag-cluster created
 
 Now, wait until `mssql-ag-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ms  -n demo
+kubectl get ms  -n demo
+```
 NAME               VERSION     STATUS   AGE
 mssql-ag-cluster   2022-cu12   Ready    4m38s
-```
 
 Now, connect to this database by exec into a pod and verify the TLS is disabled. 
 
@@ -147,13 +147,18 @@ Now, connect to this database by exec into a pod and verify the TLS is disabled.
 
 
 ```bash
-$ kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+```bash
+kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 Q9kDWVQMnawLcnZq
 
-$ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
+```
 mssql@mssql-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
@@ -164,7 +169,6 @@ Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establ
 So Now, we have to connect with -C [Trust Server Certificate]
 mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Q9kDWVQMnawLcnZq" -N -C
 1> 
-```
 
 We can verify from the above output that TLS is disabled for this database, `mssql.conf` file has no tls configuration.
 
@@ -210,25 +214,26 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-add-tls.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-ag-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-add-tls.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-ag-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get msops -n demo
+watch kubectl get msops -n demo
+```
 Every 2.0s: kubectl get msops -n demo
 NAME               TYPE             STATUS       AGE
 msops-ag-add-tls   ReconfigureTLS   Successful   3m32s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-ag-add-tls 
+kubectl describe mssqlserveropsrequest -n demo msops-ag-add-tls 
+```
 Name:         msops-ag-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -359,12 +364,12 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, Let's exec into a database node
 
 ```bash
-$ kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+```
 mssql@mssql-ag-cluster-0:/$ ls /var/opt/mssql/tls
 mssql@mssql-ag-cluster-0:/$ openssl x509 -in /var/opt/mssql/tls/client.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=CN=mssql,OU=client,O=mssqlserver
@@ -378,7 +383,6 @@ tlskey = /var/opt/mssql/tls/server.key
 tlsprotocols = 1.2,1.1,1.0
 mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N
 1> 
-```
 
 We can verify from the above output that TLS is enabled for this database, `mssql.conf` file has tls configurations.  So, TLS is enabled successfully to this database.
 
@@ -388,11 +392,11 @@ We can verify from the above output that TLS is enabled for this database, `mssq
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+```
 mssql@mssql-ag-cluster-0:/$ openssl x509 -in /var/opt/mssql/tls/client.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb 16 14:13:49 2025 GMT
 mssql@mssql-ag-cluster-0:/$ 
-```
 
 So, the certificate will expire on this time `Feb 16 13:11:02 2025 GMT`.
 
@@ -426,25 +430,26 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-rotate.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-ag-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-rotate.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-ag-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CRO,
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
 NAME               TYPE             STATUS       AGE
 msops-ag-rotate    ReconfigureTLS   Successful   5m14s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-ag-rotate
+kubectl describe mssqlserveropsrequest -n demo msops-ag-rotate
+```
 Name:         msops-ag-rotate
 Namespace:    demo
 Labels:       <none>
@@ -570,15 +575,14 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+kubectl exec -it mssql-ag-cluster-0 -n demo -c mssql -- bash
+```
 mssql@mssql-ag-cluster-0:/$ openssl x509 -in /var/opt/mssql/tls/client.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb 16 14:36:54 2025 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -589,23 +593,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls mssqlserver-new-ca \
+kubectl create secret tls mssqlserver-new-ca \
            --cert=ca.crt \
            --key=ca.key \
            --namespace=demo
-secret/mssqlserver-new-ca created
 ```
+secret/mssqlserver-new-ca created
 
 Now, Let's create a new `Issuer` using the `mssqlserver-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -623,9 +627,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/mssqlserver-new-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-new-ca-issuer created
 
 ### Create MSSQLServerOpsRequest
 
@@ -657,25 +661,26 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-change-issuer.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-ag-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-change-issuer.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-ag-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CRO,
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
 NAME                     TYPE             STATUS       AGE
 msops-ag-change-issuer   ReconfigureTLS   Successful   3m56s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-ag-change-issuer
+kubectl describe mssqlserveropsrequest -n demo msops-ag-change-issuer
+```
 Name:         msops-ag-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -797,15 +802,14 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, Lets exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it mssql-ag-cluster-2 -n demo -c mssql -- bash
+kubectl exec -it mssql-ag-cluster-2 -n demo -c mssql -- bash
+```
 mssql@mssql-ag-cluster-2:/$ openssl x509 -in /var/opt/mssql/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -840,25 +844,26 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-remove.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-ag-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure-tls/msops-ag-remove.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-ag-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo
+watch kubectl get mssqlserveropsrequest -n demo
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
 NAME                     TYPE             STATUS       AGE
 msops-ag-remove          ReconfigureTLS   Successful   5m17s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-ag-remove
+kubectl describe mssqlserveropsrequest -n demo msops-ag-remove
+```
 Name:         msops-ag-remove
 Namespace:    demo
 Labels:       <none>
@@ -956,12 +961,12 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, Lets exec into the database node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo mssql-ag-cluster-1 -c mssql -- bash
+kubectl exec -it -n demo mssql-ag-cluster-1 -c mssql -- bash
+```
 mssql@mssql-ag-cluster-1:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
@@ -973,7 +978,6 @@ Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establ
 So Now, we have to connect with -C [Trust Server Certificate]
 mssql@mssql-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N -C
 1> 
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

@@ -97,8 +97,9 @@ watch kubectl get mg,petset,pods -n demo
 ```
 See the database is ready.
 
-```shell
-$ kubectl get mg,petset,pods -n demo
+```bash
+kubectl get mg,petset,pods -n demo
+```
 NAME                            VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-ha-demo   4.4.26    Ready    3m58s
 
@@ -109,34 +110,42 @@ NAME               READY   STATUS    RESTARTS   AGE
 pod/mg-ha-demo-0   2/2     Running   0          3m52s
 pod/mg-ha-demo-1   2/2     Running   0          3m27s
 pod/mg-ha-demo-2   2/2     Running   0          3m3s
-```
 
 Inspect who is primary and who is standby.
 
-```shell
 # you can inspect who is primary
 # and who is secondary like below
-
-$ kubectl get pods -n demo --show-labels | grep role
+```bash
+kubectl get pods -n demo --show-labels | grep role
+```
 mg-ha-demo-0   2/2     Running   0          5m6s    app.kubernetes.io/component=database,app.kubernetes.io/instance=mg-ha-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mongodbs.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=mg-ha-demo-6b559c9645,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=mg-ha-demo-0
 mg-ha-demo-1   2/2     Running   0          4m41s   app.kubernetes.io/component=database,app.kubernetes.io/instance=mg-ha-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mongodbs.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=mg-ha-demo-6b559c9645,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=mg-ha-demo-1
 mg-ha-demo-2   2/2     Running   0          4m17s   app.kubernetes.io/component=database,app.kubernetes.io/instance=mg-ha-demo,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mongodbs.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=mg-ha-demo-6b559c9645,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=mg-ha-demo-2
-```
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the standby's.
 
 
 Lets create a table in the primary.
 
-```shell
-$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root⏎          
-$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.password}' | base64 -d
+```
 JUIevJ)ISh!Srg4y⏎              
+
 # find the primary pod
-$ kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```bash
+kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
+
 # exec into the primary pod
-$ mongodb@mg-ha-demo-0:/$ mongosh admin
+```bash
+mongodb@mg-ha-demo-0:/$ mongosh admin
+```
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("57604543-ec8b-478a-bca3-bdbcf4dda0b6") }
@@ -185,8 +194,6 @@ admin          0.000GB
 config         0.000GB
 kubedb-system  0.000GB
 local          0.000GB
-
-```
 
 Now, connect to a secondary node to inspect how the data reflects changes from the primary, and
 observe any visible differences between their states.
@@ -308,10 +315,10 @@ mg-ha-demo-2 standby
 
 Lets delete the current primary and see how the role change happens almost immediately.
 
-```shell
-$ kubectl delete pods -n demo mg-ha-demo-0 
-pod "mg-ha-demo-0" deleted
+```bash
+kubectl delete pods -n demo mg-ha-demo-0 
 ```
+pod "mg-ha-demo-0" deleted
 You can see after some time the deleted pod came back as `standby` and one of the previous standby pods becomes the new `primary`.
 ```shell
 mg-ha-demo-0 standby
@@ -321,8 +328,9 @@ mg-ha-demo-2 standby
 
 Now we know how failover is done, let's check if the new primary is working.
 
-```shell
-$ `kubectl exec -it -n demo mg-ha-demo-1  -- bash
+```bash
+`kubectl exec -it -n demo mg-ha-demo-1  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-ha-demo-1:/$ mongosh admin
 MongoDB shell version v4.4.26
@@ -369,13 +377,12 @@ config         0.000GB
 kubedb-system  0.000GB
 local          0.000GB
 
-```
-
 You will see the deleted pod `mg-ha-demo-0` is brought back by the kubedb operator and it is now assigned to standby role.
 Lets check if the standby `mg-ha-demo-0` got the updated data from new primary `mg-ha-demo-1`.
 
-```shell
-$ kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```bash
+kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
@@ -395,15 +402,13 @@ kubedb-system  0.000GB
 local          0.000GB
 rs1:SECONDARY> 
 
-```
-
 #### Case 2: Delete the current primary and One replica
 
-```shell
-$ kubectl delete pods -n demo mg-ha-demo-1 mg-ha-demo-2
+```bash
+kubectl delete pods -n demo mg-ha-demo-1 mg-ha-demo-2
+```
 pod "mg-ha-demo-1" deleted
 pod "mg-ha-demo-2" deleted
-```
 Again we can see the failover happened pretty quickly.
 ```shell
 mg-ha-demo-0 
@@ -417,8 +422,9 @@ mg-ha-demo-1 standby
 mg-ha-demo-2 standby
 ```
 You can validate the replica set status from the new primary `mg-ha-demo-0` by checking the role, state, and health of each member.
-```shell
-$ kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```bash
+kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
@@ -595,8 +601,6 @@ mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
 mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 
-```
-
 #### Case3: Delete any of the replica's
 
 Let's delete both of the standby's.
@@ -620,8 +624,9 @@ mg-ha-demo-2 standby
 
 ```
 Lets verify cluster state.
-```shell
-$ kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```bash
+kubectl exec -it -n demo mg-ha-demo-0  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
@@ -648,19 +653,16 @@ mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
 mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 
-```
-
 #### Case 4: Delete both primary and all replicas
 
 Let's delete all the pods.
 
-```shell
-$ kubectl delete pods -n demo mg-ha-demo-0 mg-ha-demo-1 mg-ha-demo-2
+```bash
+kubectl delete pods -n demo mg-ha-demo-0 mg-ha-demo-1 mg-ha-demo-2
+```
 pod "mg-ha-demo-0" deleted
 pod "mg-ha-demo-1" deleted
 pod "mg-ha-demo-2" deleted
-
-```
 
 ```shell
 mg-ha-demo-0 
@@ -679,8 +681,9 @@ mg-ha-demo-2 standby
 
 Lets verify the cluster state now.
 
-```shell
-$ kubectl exec -it -n demo mg-ha-demo-1  -- bash
+```bash
+kubectl exec -it -n demo mg-ha-demo-1  -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-ha-demo-1:/$ mongosh admin
 MongoDB shell version v4.4.26
@@ -705,7 +708,6 @@ rs1:PRIMARY> rs.status().members.forEach(function(member) {
 mg-ha-demo-0.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
 mg-ha-demo-1.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	PRIMARY
 mg-ha-demo-2.mg-ha-demo-pods.demo.svc.cluster.local	27017   	ONLINE    	SECONDARY
-```
 #### Retryable Writes
 Retryable writes allow MongoDB drivers to safely retry certain write operations 
 (like insert, update, delete) once automatically if a network error or primary failover occurs.

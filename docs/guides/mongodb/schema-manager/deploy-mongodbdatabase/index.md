@@ -33,9 +33,9 @@ This guide will show you how to create database with MongoDB Schema Manager usin
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mongodb/schema-manager/deploy-mongodbdatabase/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mongodb/schema-manager/deploy-mongodbdatabase/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -98,9 +98,9 @@ Here,
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
 
 ```bash
-$ kubectl apply -f mongodb.yaml 
-mongodb.kubedb.com/mongodb created
+kubectl apply -f mongodb.yaml 
 ```
+mongodb.kubedb.com/mongodb created
 
 ### Deploy Vault Server
 
@@ -154,9 +154,9 @@ Here,
 Let’s save this yaml configuration into `vault.yaml` Then create the above `VaultServer` CR
 
 ```bash
-$ kubectl apply -f vault.yaml
-vaultserver.kubevault.com/vault created
+kubectl apply -f vault.yaml
 ```
+vaultserver.kubevault.com/vault created
 
 ### Create Separate Namespace For Schema Manager
 
@@ -174,9 +174,9 @@ metadata:
 Let’s save this yaml configuration into `namespace.yaml`. Then create the above `Namespace`,
 
 ```bash
-$ kubectl apply -f namespace.yaml
-namespace/dev created
+kubectl apply -f namespace.yaml
 ```
+namespace/dev created
 
 
 ### Deploy Schema Manager
@@ -221,18 +221,17 @@ Here,
 Let’s save this yaml configuration into `mongodb-schema.yaml` and apply it,
 
 ```bash
-$ kubectl apply -f mongodb-schema.yaml
-mongodbdatabase.schema.kubedb.com/mongodb-schema created
+kubectl apply -f mongodb-schema.yaml
 ```
+mongodbdatabase.schema.kubedb.com/mongodb-schema created
 
 Let's check the `STATUS` of `Schema Manager`,
 
 ```bash
-$ kubectl get mongodbdatabase -A
+kubectl get mongodbdatabase -A
+```
 NAMESPACE   NAME             DB_SERVER   DB_NAME   STATUS    AGE
 dev         mongodb-schema   mongodb     emptydb   Current   54s
-
-```
 Here,
 
 > In `STATUS` section, `Current` means that the current `Secret` of `Schema Manager` is vaild, and it will automatically `Expired` after it reaches the limit of `defaultTTL` that we've defined in the above yaml. 
@@ -240,20 +239,23 @@ Here,
 Now, let's get the secret name from `schema-manager`, and get the login credentials for connecting to the database,
 
 ```bash
-$ kubectl get mongodbdatabase mongodb-schema -n dev -o=jsonpath='{.status.authSecret.name}'
+kubectl get mongodbdatabase mongodb-schema -n dev -o=jsonpath='{.status.authSecret.name}'
+```
 mongodb-schema-mongo-req-fybh8z
 
-$ kubectl view-secret -n dev mongodb-schema-mongo-req-fybh8z -a
+```bash
+kubectl view-secret -n dev mongodb-schema-mongo-req-fybh8z -a
+```
 password=u-kDmBcMITz9dLrZ7cAL
 username=v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657
-```
 
 ### Insert Sample Data
 
 Here, we are going to connect to the database with the login credentials and insert some sample data into it. 
 
 ```bash
-$ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+```
 root@mongodb-0:/# mongosh --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
 MongoDB shell version v4.4.26
 ...
@@ -270,21 +272,20 @@ replicaset:PRIMARY> db.product.find().pretty()
 replicaset:PRIMARY> exit
 bye
 
-```
-
 
 Now, Let's check the `STATUS` of `Schema Manager` again,
 
 ```bash
-$ kubectl get mongodbdatabase -A
+kubectl get mongodbdatabase -A
+```
 NAMESPACE   NAME             DB_SERVER   DB_NAME   STATUS    AGE
 dev         mongodb-schema   mongodb     emptydb   Expired   6m
-```
 
 Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because it's exceeded `defaultTTL: "5m"`, which means the current `Secret` of `Schema Manager` isn't vaild anymore. Now, if we try to connect and login with the credentials that we have acquired before from `schema-manager`, it won't work.
 
 ```bash
-$ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+```
 root@mongodb-0:/# mongosh --authenticationDatabase=emptydb --username='v-kubernetes-demo-k8s-f7695915-1e-0NV83LXHuGMiittiObYE-1662635657' --password='u-kDmBcMITz9dLrZ7cAL' emptydb
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/emptydb?authSource=emptydb&compressors=disabled&gssapiServiceName=mongodb
@@ -295,7 +296,6 @@ exception: connect failed
 exiting with code 1
 root@mongodb-0:/# exit
 exit
-```
 > Note: We can't connect to the database with the login credentials, which is `Expired`. We will not be able to access the database even though we're in the middle of a connected session. And when the `Schema Manager` is deleted, the associated database and user will also be deleted.
 
 
@@ -304,8 +304,11 @@ exit
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete ns dev
-$ kubectl delete ns demo
+kubectl delete ns dev
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 

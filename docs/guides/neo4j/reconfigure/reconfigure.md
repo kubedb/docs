@@ -30,9 +30,9 @@ We will:
 - Review [Neo4j](/docs/guides/neo4j/concepts/neo4j.md), [OpsRequest](/docs/guides/neo4j/concepts/opsrequest.md), and [Reconfigure Overview](/docs/guides/neo4j/reconfigure/overview.md).
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Database
 
@@ -59,7 +59,7 @@ spec:
 ```
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: kubedb.com/v1alpha2
 kind: Neo4j
 metadata:
@@ -78,19 +78,24 @@ spec:
         storage: 2Gi
   deletionPolicy: WipeOut
 EOF
+```
 neo4j.kubedb.com/neo4j-test created
 
-$ kubectl wait --for=condition=Ready neo4j/neo4j-test -n demo --timeout=600s
-neo4j.kubedb.com/neo4j-test condition met
+```bash
+kubectl wait --for=condition=Ready neo4j/neo4j-test -n demo --timeout=600s
 ```
+neo4j.kubedb.com/neo4j-test condition met
 
 ## Check Current Settings (Before Reconfigure)
 
 Before applying the reconfigure request, connect with `cypher-shell` and check current values:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -it -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS"
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -it -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS"
 ```
 
 These are the current values before running the reconfigure OpsRequest.
@@ -173,7 +178,7 @@ stringData:
 ```
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: v1
 kind: Secret
 metadata:
@@ -186,8 +191,8 @@ stringData:
     -XX:+UseG1GC
     -XX:-OmitStackTraceInFastThrow
 EOF
-secret/custom-config created
 ```
+secret/custom-config created
 
 ## Reconfigure Request
 
@@ -219,7 +224,7 @@ Here,
 - If the same key exists in both places, `applyConfig` takes precedence.
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
@@ -237,27 +242,32 @@ spec:
   timeout: 5m
   apply: IfReady
 EOF
+```
 neo4jopsrequest.ops.kubedb.com/reconfigure created
 
-$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/reconfigure -n demo --timeout=600s
-neo4jopsrequest.ops.kubedb.com/reconfigure condition met
+```bash
+kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/reconfigure -n demo --timeout=600s
 ```
+neo4jopsrequest.ops.kubedb.com/reconfigure condition met
 
 ## Verify Reconfiguration
 
 Check OpsRequest status:
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo reconfigure
+kubectl get neo4jopsrequest -n demo reconfigure
+```
 NAME          TYPE          STATUS       AGE
 reconfigure   Reconfigure   Successful   2m5s
-```
 
 Now run the same three queries again and confirm updated values:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -it -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS"
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -it -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS"
 ```
 
 Check `db.query` settings:
@@ -330,18 +340,26 @@ From the output:
 ## Cleaning up
 
 ```bash
-$ kubectl delete neo4jopsrequest -n demo reconfigure
+kubectl delete neo4jopsrequest -n demo reconfigure
+```
 neo4jopsrequest.ops.kubedb.com "reconfigure" deleted
 
-$ kubectl delete secret -n demo custom-config
+```bash
+kubectl delete secret -n demo custom-config
+```
 secret "custom-config" deleted
 
-$ kubectl patch -n demo neo4j/neo4j-test -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo neo4j/neo4j-test -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 neo4j.kubedb.com/neo4j-test patched
 
-$ kubectl delete -n demo neo4j/neo4j-test
+```bash
+kubectl delete -n demo neo4j/neo4j-test
+```
 neo4j.kubedb.com "neo4j-test" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted

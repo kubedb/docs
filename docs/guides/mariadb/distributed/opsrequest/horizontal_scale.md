@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` Opsrequest operator to horizontally
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Horizontal Scaling on Distributed Cluster
 
@@ -90,9 +90,9 @@ Here,
 Apply the `PlacementPolicy` on the hub (`demo-controller`) cluster:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/placement-policy.yaml --context demo-controller
-placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/placement-policy.yaml --context demo-controller
 ```
+placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
@@ -135,37 +135,39 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mariadb.yaml --context demo-controller
-mariadb.kubedb.com/mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mariadb.yaml --context demo-controller
 ```
+mariadb.kubedb.com/mariadb created
 
 Now, wait until `mariadb` has status `Ready`:
 
 ```bash
-$ kubectl get mariadb -n demo --context demo-controller
+kubectl get mariadb -n demo --context demo-controller
+```
 NAME             VERSION   STATUS   AGE
 mariadb          11.5.2    Ready    2m36s
-```
 
 Let's check the number of replicas this database has from the MariaDB object:
 
 ```bash
-$ kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
-3
+kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
 ```
+3
 
 The pods are distributed across clusters as defined by the `PlacementPolicy`. Indices `0` and `2` land on `demo-controller`; index `1` lands on `demo-worker`:
 
 ```bash
-$ kubectl get pods -n demo --context demo-controller
+kubectl get pods -n demo --context demo-controller
+```
 NAME          READY   STATUS    RESTARTS   AGE
 mariadb-0     3/3     Running   0          2m30s
 mariadb-2     3/3     Running   0          2m30s
 
-$ kubectl get pods -n demo --context demo-worker
+```bash
+kubectl get pods -n demo --context demo-worker
+```
 NAME          READY   STATUS    RESTARTS   AGE
 mariadb-1     3/3     Running   0          2m30s
-```
 
 
 
@@ -202,9 +204,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mdops-upscale.yaml --context demo-controller
-mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mdops-upscale.yaml --context demo-controller
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-up created
 
 ### Verify Cluster Replicas Scaled Up Successfully
 
@@ -213,34 +215,35 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `MariaDBOpsRequest` to be `Successful`:
 
 ```bash
-$ watch kubectl get mariadbopsrequest -n demo --context demo-controller
+watch kubectl get mariadbopsrequest -n demo --context demo-controller
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME                        TYPE                STATUS       AGE
 mdops-scale-horizontal-up   HorizontalScaling   Successful   18m
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, let's verify the number of replicas:
 
 ```bash
-$ kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
-5
+kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
 ```
+5
 
 The two new pods are placed on the clusters according to the `PlacementPolicy` — index `4` on `demo-controller` and index `3` on `demo-worker`:
 
 ```bash
-$ kubectl get pods -n demo --context demo-controller
+kubectl get pods -n demo --context demo-controller
+```
 NAME        READY   STATUS    RESTARTS   AGE
 mariadb-0   3/3     Running   0          58m
 mariadb-2   3/3     Running   0          55m
 mariadb-4   3/3     Running   0          17m
 
-
-$ kubectl get pods -n demo --context demo-worker
+```bash
+kubectl get pods -n demo --context demo-worker
+```
 NAME        READY   STATUS    RESTARTS   AGE
 mariadb-1   3/3     Running   0          57m
 mariadb-3   3/3     Running   0          19m
-```
 
 From all the above outputs we can see that the cluster now has `5` replicas. We have successfully scaled up the distributed MariaDB cluster.
 
@@ -275,9 +278,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mdops-downscale.yaml --context demo-controller
-mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/opsrequest/examples/mdops-downscale.yaml --context demo-controller
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-scale-horizontal-down created
 
 ### Verify Cluster Replicas Scaled Down Successfully
 
@@ -286,31 +289,33 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `MariaDBOpsRequest` to be `Successful`:
 
 ```bash
-$ watch kubectl get mariadbopsrequest -n demo --context demo-controller
+watch kubectl get mariadbopsrequest -n demo --context demo-controller
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME                          TYPE               STATUS       AGE
 mdops-scale-horizontal-down   HorizontalScaling  Successful   2m32s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, let's verify the number of replicas:
 
 ```bash
-$ kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
-3
+kubectl get mariadb -n demo mariadb -o json | jq '.spec.replicas'
 ```
+3
 
 Pods `mariadb-3` and `mariadb-4` have been removed from their respective clusters:
 
 ```bash
-$ kubectl get pods -n demo --context demo-controller
+kubectl get pods -n demo --context demo-controller
+```
 NAME          READY   STATUS    RESTARTS   AGE
 mariadb-0     3/3     Running   0          20m
 mariadb-2     3/3     Running   0          20m
 
-$ kubectl get pods -n demo --context demo-worker
+```bash
+kubectl get pods -n demo --context demo-worker
+```
 NAME          READY   STATUS    RESTARTS   AGE
 mariadb-1     3/3     Running   0          20m
-```
 
 
 From all the above outputs we can see that the cluster now has `3` replicas. We have successfully scaled down the distributed MariaDB cluster.
@@ -320,7 +325,13 @@ From all the above outputs we can see that the cluster now has `3` replicas. We 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo mariadb --context demo-controller
-$ kubectl delete mariadbopsrequest -n demo mdops-scale-horizontal-up mdops-scale-horizontal-down --context demo-controller
-$ kubectl delete placementpolicy distributed-mariadb --context demo-controller
+kubectl delete mariadb -n demo mariadb --context demo-controller
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo mdops-scale-horizontal-up mdops-scale-horizontal-down --context demo-controller
+```
+
+```bash
+kubectl delete placementpolicy distributed-mariadb --context demo-controller
 ```

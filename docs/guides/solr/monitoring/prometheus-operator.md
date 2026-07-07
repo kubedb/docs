@@ -28,13 +28,15 @@ section_menu_id: guides
 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
-```bash
-  $ kubectl create ns monitoring
+  ```bash
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -49,17 +51,18 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus -A
+kubectl get prometheus -A
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        11d
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
 Now, let's view the YAML of the available Prometheus server `prometheus` in `monitoring` namespace.
 
 ```bash
-$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -oyaml
+kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -oyaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
@@ -164,7 +167,6 @@ status:
   shards: 1
   unavailableReplicas: 0
   updatedReplicas: 1
-```
 
 Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Solr crd.
 
@@ -217,34 +219,35 @@ Here,
 Let's create the Elasticsearch object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/monitoring/solr-operator.yaml
-solr.kubedb.com/operator-prom-sl created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/monitoring/solr-operator.yaml
 ```
+solr.kubedb.com/operator-prom-sl created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 operator-prom-sl   kubedb.com/v1alpha2   9.6.1     Ready    104m
-```
 
 KubeDB will create a separate stats service with name `{Solr crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo -l 'app.kubernetes.io/instance=operator-prom-sl'
+kubectl get svc -n demo -l 'app.kubernetes.io/instance=operator-prom-sl'
+```
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 operator-prom-sl         ClusterIP   10.96.76.207   <none>        8983/TCP   122m
 operator-prom-sl-pods    ClusterIP   None           <none>        8983/TCP   122m
 operator-prom-sl-stats   ClusterIP   10.96.192.50   <none>        9854/TCP   122m
-```
 
 Here, `operator-prom-sl-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
 ```bash
-$ kubectl describe svc -n demo operator-prom-sl-stats
+kubectl describe svc -n demo operator-prom-sl-stats
+```
 Name:              operator-prom-sl-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=database
@@ -264,22 +267,22 @@ TargetPort:        metrics/TCP
 Endpoints:         10.244.0.37:9854,10.244.0.39:9854
 Session Affinity:  None
 Events:            <none>
-```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
 
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-es-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo 
+kubectl get servicemonitor -n demo 
+```
 NAME                  AGE
 operator-prom-sl-stats   125m
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Elasticsearch crd.
 
 ```bash
-$ kubectl get servicemonitor -n demo operator-prom-sl-stats -oyaml
+kubectl get servicemonitor -n demo operator-prom-sl-stats -oyaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -318,7 +321,6 @@ spec:
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: solrs.kubedb.com
       kubedb.com/role: stats
-```
 
 Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Solr crd.
 
@@ -329,22 +331,22 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=release=prometheus
+kubectl get pod -n monitoring -l=release=prometheus
+```
 NAME                                                   READY   STATUS    RESTARTS         AGE
 prometheus-kube-prometheus-operator-6c8698f59d-cljvq   1/1     Running   12 (4h11m ago)   12d
 prometheus-kube-state-metrics-5548456c74-ksh5n         1/1     Running   13 (4h10m ago)   12d
 prometheus-prometheus-node-exporter-n5ht8              1/1     Running   9 (4h11m ago)    12d
-```
 
 Prometheus server is listening to port `9090` of `prometheus-kube-prometheus-operator-6c8698f59d-cljvq` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-kube-prometheus-operator-6c8698f59d-cljvq 9090
+kubectl port-forward -n monitoring prometheus-kube-prometheus-operator-6c8698f59d-cljvq 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `operator-prom-sl-stats` service as one of the targets.
 

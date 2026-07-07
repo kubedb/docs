@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/configuration/
 ) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -41,10 +43,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Kafka CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -74,9 +76,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/configuration/configsecret-combined.yaml
-secret/configsecret-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/configuration/configsecret-combined.yaml
 ```
+secret/configsecret-combined created
 
 Now that the config secret is created, it needs to be mentioned in the [Kafka](/docs/guides/kafka/concepts/kafka.md) object's yaml:
 
@@ -105,21 +107,21 @@ spec:
 Now, create the Kafka object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/configuration/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/configuration/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait for the Kafka to become ready:
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 ## Verify Configuration
 
@@ -128,9 +130,9 @@ Lets exec into one of the kafka pod that we have created and check the configura
 Exec into the Kafka pod:
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- bash
-kafka@kafka-dev-0:~$ 
+kubectl exec -it -n demo kafka-dev-0 -- bash
 ```
+kafka@kafka-dev-0:~$ 
 
 Now, execute the following commands to see the configurations:
 ```bash
@@ -148,9 +150,15 @@ Here, we can see that our given configuration is applied to the Kafka cluster fo
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete kf -n demo kafka-dev 
-$ kubectl delete secret -n demo configsecret-combined 
-$ kubectl delete namespace demo
+kubectl delete kf -n demo kafka-dev 
+```
+
+```bash
+kubectl delete secret -n demo configsecret-combined 
+```
+
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

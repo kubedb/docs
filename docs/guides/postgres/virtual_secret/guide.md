@@ -46,19 +46,28 @@ Before you begin, ensure you have the following prerequisites in place:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ## How to use Virtual Secrets
 ### Install Virtual Secrets Server
 
 First, install the virtual-secret-server which is a custom api server for the `secrets.virtual-secrets.dev` resource.
 
 ```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-$ helm search repo appscode/virtual-secrets-server --version=v2025.3.14
-$ helm upgrade -i virtual-secrets-server appscode/virtual-secrets-server \
+helm repo add appscode https://charts.appscode.com/stable/
+```
+
+```bash
+helm repo update
+```
+
+```bash
+helm search repo appscode/virtual-secrets-server --version=v2025.3.14
+```
+
+```bash
+helm upgrade -i virtual-secrets-server appscode/virtual-secrets-server \
     --version=v2025.3.14 -n kubevault --create-namespace 
 ```
 
@@ -69,28 +78,30 @@ read, list, delete and delete in a kv secret engine named `virtual-secrets.dev` 
 
 Now let’s configure the vault server with following commands:
 
-```shell
 # enable kv secret engine in the path virtual-secrets.dev
-$ vault secrets enable -path=virtual-secrets.dev -version=2 kv
+```bash
+vault secrets enable -path=virtual-secrets.dev -version=2 kv
+```
 Success! Enabled the kv secrets engine at: virtual-secrets.dev/
 
-
 # creates a policy with the permission to create, update, read, list and delete  
-$ vault policy write virtual-secrets-policy - <<EOF
+```bash
+vault policy write virtual-secrets-policy - <<EOF
 path "virtual-secrets.dev/*" {
 capabilities = ["create", "update", "read", "list", "delete"]
 }
 EOF
+```
 Success! Uploaded policy: virtual-secrets-policy
 
-
 # binds this policy with a service account of the virtual-secrets server
-$ vault write auth/kubernetes/role/virtual-secrets-role \
+```bash
+vault write auth/kubernetes/role/virtual-secrets-role \
     bound_service_account_names=virtual-secrets-server \
     bound_service_account_namespaces=kubevault \
     policies="virtual-secrets-policy"
-Success! Data written to: auth/kubernetes/role/virtual-secrets-role
 ```
+Success! Data written to: auth/kubernetes/role/virtual-secrets-role
 
 ### Create SecretStore
 We need to create another resource called `SecretStore` which will contain the connection information to the external secret manager where the secrets will be stored.
@@ -106,9 +117,9 @@ spec:
     roleName: virtual-secrets-role
 ```
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
-secretstore.config.virtual-secrets.dev/vault configured
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretstore.yaml
 ```
+secretstore.config.virtual-secrets.dev/vault configured
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
@@ -137,22 +148,23 @@ Here,
 - Other than that, everything else is similar to a core Kubernetes Secret.
   Let’s go ahead and apply the Secret,
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/virtualsecret.yaml
-secret.virtual-secrets.dev/virtual-secret created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/virtualsecret.yaml
 ```
+secret.virtual-secrets.dev/virtual-secret created
 
 Let's  list the Secrets to see if it is created or not,
 
-```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo
+```bash
+kubectl get secrets.virtual-secrets.dev -n demo
+```
 NAME             TYPE                       DATA   AGE
 virtual-secret   Opaque                     2      2d19h
-```
 
 We can also get the whole definition of the `Secret`,
 
-```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
+```bash
+kubectl get secrets.virtual-secrets.dev -n demo virtual-secret -oyaml
+```
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: dmlydHVhbC1zZWNyZXQ=
@@ -170,7 +182,6 @@ metadata:
   uid: c7887183-6885-4435-a3c9-c741b28130a3
 secretStoreName: vault
 type: Opaque
-```
 
 We can see that this `Secret`actually behaves identical of the core `Secret`. But the data is not stored in the `etcd` and it is way more secure than using the native `k8s Secret`.
 
@@ -179,15 +190,22 @@ We can see that this `Secret`actually behaves identical of the core `Secret`. Bu
 We will connect to the Vault by using Vault CLI. Therefore, we need to export the necessary environment variables and port-forward the service.
 
 In one terminal port-forward the vault server service,
-```shell
-$ kubectl port-forward -n demo service/vault 8200
+```bash
+kubectl port-forward -n demo service/vault 8200
+```
 Forwarding from 127.0.0.1:8200 -> 8200
 Forwarding from [::1]:8200 -> 8200
+```bash
+export VAULT_ADDR=http://127.0.0.1:8200
 ```
-```shell
-$ export VAULT_ADDR=http://127.0.0.1:8200
-$ export VAULT_TOKEN=(kubectl vault root-token get vaultserver vault -n demo --value-only)
-$ vault kv get virtual-secrets.dev/demo/virtual-secret
+
+```bash
+export VAULT_TOKEN=(kubectl vault root-token get vaultserver vault -n demo --value-only)
+```
+
+```bash
+vault kv get virtual-secrets.dev/demo/virtual-secret
+```
 ================ Secret Path ================
 virtual-secrets.dev/data/demo/virtual-secret
 
@@ -205,7 +223,6 @@ Key         Value
 ---         -----
 password    virtual-secret
 username    appscode
-```
 We can see that the secret data is stored in the `virtual-secrets.dev/demo/virtual-secret` path where,
 
 - `virtual-secret.dev` is the secret engine name.
@@ -220,22 +237,30 @@ data from virtual secrets and uses the `Secrets Store CSI Driver` to mount those
 
 Let’s go ahead and install `Secrets Store CSI Driver` and `secrets-store-csi-driver-provider-virtual-secrets` into our cluster,
 
-```shell
-$ helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
-$ helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
+```bash
+helm repo add secrets-store-csi-driver https://kubernetes-sigs.github.io/secrets-store-csi-driver/charts
+```
 
-$ helm search repo appscode/secrets-store-csi-driver-provider-virtual-secrets --version=v2025.3.14
-$ helm upgrade -i secrets-store-csi-driver-provider-virtual-secrets appscode/secrets-store-csi-driver-provider-virtual-secrets -n kube-system --create-namespace --version=v2025.3.14
+```bash
+helm install csi-secrets-store secrets-store-csi-driver/secrets-store-csi-driver --namespace kube-system
+```
+
+```bash
+helm search repo appscode/secrets-store-csi-driver-provider-virtual-secrets --version=v2025.3.14
+```
+
+```bash
+helm upgrade -i secrets-store-csi-driver-provider-virtual-secrets appscode/secrets-store-csi-driver-provider-virtual-secrets -n kube-system --create-namespace --version=v2025.3.14
 ```
 
 If both of them are deployed we should see two new pods in the `kube-system` namespace.
 
-```shell
-$ kubectl get pods -n kube-system
+```bash
+kubectl get pods -n kube-system
+```
 NAME                                                      READY   STATUS    RESTARTS      AGE
 csi-secrets-store-secrets-store-csi-driver-rvpvm          3/3     Running   0             61s
 secrets-store-csi-driver-provider-virtual-secrets-m78gv   1/1     Running   0             34s
-```
 The `Secrets Store CSI Driver` uses a custom resource named `SecretProviderClass` to mount the secret. Let’s go ahead and create that,
 
 ```yaml
@@ -258,10 +283,10 @@ Here,
 > **Note:** We can also call the mount subresource of the virtual secret to create the SecretProviderClass for us.
 The namespace and the name of SecretProviderClass should be same as the Virtual Secret it is being used for. Let’s create the SecretProviderClass,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
-secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/vault/secretProviderClass.yaml
 ```
+secretproviderclass.secrets-store.csi.x-k8s.io/virtual-secret created
 
 
 ### Use Virtual Secrets with Postgres
@@ -298,28 +323,29 @@ Here,
 
 We can now apply the Postgres custom resource,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/virtual_secret/postgres.yaml
+```
 Postgres.kubedb.com/pg created
-``` 
 Now, wait until `pg` has status `Ready`. i.e. ,
-```shell
-$ kubectl get Postgres -n demo
+```bash
+kubectl get Postgres -n demo
+```
 NAME   VERSION   STATUS   AGE
 pg     8.2.2     Ready    2m5s
-```
 
 Now, lets go ahead and check what secret it is using,
-```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo
+```bash
+kubectl get secrets.virtual-secrets.dev -n demo
+```
 NAME             TYPE                       DATA   AGE
 virtual-secret   Opaque                     2      11d19h
-```
 
 We can see that the Postgres user password is stored in the vault server as named `virtual-secret` . Let’s get the whole definition of the virtual secret,
 
-```shell
-$ kubectl get secrets.virtual-secrets.dev -n demo virtual-secret  -oyaml
+```bash
+kubectl get secrets.virtual-secrets.dev -n demo virtual-secret  -oyaml
+```
 apiVersion: virtual-secrets.dev/v1alpha1
 data:
   password: RUdKbCF0SEVHelpvWXdNaQ==
@@ -348,10 +374,10 @@ metadata:
   uid: 5c3c2a39-698d-44e7-8c63-8c14593581ad
 secretStoreName: vault
 type: kubernetes.io/basic-auth
-```
 In our vault server, we can check if this data exists or not,
-```shell
-$ vault kv get virtual-secrets.dev/demo/virtual-secret 
+```bash
+vault kv get virtual-secrets.dev/demo/virtual-secret 
+```
 ============ Secret Path ============
 virtual-secrets.dev/data/demo/virtual-secret 
 
@@ -369,7 +395,6 @@ Key         Value
 ---         -----
 password    EGJl!tHEGzZoYwMi
 username    postgres
-```
 
 
 We can see that the Postgres user password is stored in the vault server. Now let’s go ahead and connect to the database using the `psql` client to check whether it is working or not.
@@ -403,16 +428,31 @@ We can see that we are able to connect to the database and create a database and
 ## Cleanup
 To clean up the resources created in this guide, run the following commands:
 ```bash
-$ kubectl delete -n demo postgres pg
-$ kubectl delete secretproviderclass -n demo virtual-secret
-$ kubectl delete ns demo
-$ helm uninstall virtual-secrets-server -n kubevault
-$ helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system
-$ helm uninstall csi-secrets-store -n kube-system
+kubectl delete -n demo postgres pg
+```
+
+```bash
+kubectl delete secretproviderclass -n demo virtual-secret
+```
+
+```bash
+kubectl delete ns demo
+```
+
+```bash
+helm uninstall virtual-secrets-server -n kubevault
+```
+
+```bash
+helm uninstall secrets-store-csi-driver-provider-virtual-secrets -n kube-system
+```
+
+```bash
+helm uninstall csi-secrets-store -n kube-system
 ```
 If you want to uninstall the `KubeVault`, run:
 ```bash
-$ helm uninstall kubevault --namespace kubevault
+helm uninstall kubevault --namespace kubevault
 ```
 ## Next Steps
 

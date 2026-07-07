@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ## Autoscaling of Cluster Database
 
 Here, we are going to deploy a `MySQL` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `MySQLAutoscaler` to set up autoscaling.
@@ -81,22 +81,23 @@ spec:
 Let's create the `MySQL` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/compute/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/compute/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
 Now, wait until `sample-mysql` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mysql -n demo
+kubectl get mysql -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-mysql     8.4.8    Ready    14m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -107,11 +108,11 @@ $ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resour
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the MySQL resources,
 ```bash
-$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
+kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -122,7 +123,6 @@ $ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.co
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the mysql.
 
@@ -183,20 +183,23 @@ If a step doesn't finish within the specified timeout, the ops request will resu
 Let's create the `MySQLAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/compute/cluster/examples/my-as-compute.yaml
-mysqlautoscaler.autoscaling.kubedb.com/my-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/autoscaler/compute/cluster/examples/my-as-compute.yaml
 ```
+mysqlautoscaler.autoscaling.kubedb.com/my-as-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `mysqlautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mysqlautoscaler -n demo
+kubectl get mysqlautoscaler -n demo
+```
 NAME            AGE
 my-as-compute   5m56s
 
-$ kubectl describe mysqlautoscaler my-as-compute -n demo
+```bash
+kubectl describe mysqlautoscaler my-as-compute -n demo
+```
 Name:         my-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -300,8 +303,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      sample-mysql
 Events:            <none>
-
-```
 So, the `mysqlautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -311,23 +312,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `mysqlopsrequest` in the demo namespace to see if any `mysqlopsrequest` object is created. After some time you'll see that a `mysqlopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get mysqlopsrequest -n demo
+kubectl get mysqlopsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 myops-sample-mysql-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get mysqlopsrequest -n demo
+kubectl get mysqlopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 myops-vpa-sample-mysql-z43wc8   VerticalScaling   Successful   3m32s
-```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mysqlopsrequest -n demo myops-vpa-sample-mysql-z43wc8
+kubectl describe mysqlopsrequest -n demo myops-vpa-sample-mysql-z43wc8
+```
 Name:         myops-sample-mysql-6xc1kc
 Namespace:    demo
 Labels:       <none>
@@ -404,12 +406,12 @@ Events:
   Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming MySQL database: demo/sample-mysql
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/sample-mysql
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/sample-mysql
-```
 
 Now, we are going to verify from the Pod, and the MySQL yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -421,7 +423,9 @@ $ kubectl get pod -n demo sample-mysql-0 -o json | jq '.spec.containers[].resour
   }
 }
 
-$ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
+```bash
+kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mysql") | .resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -432,7 +436,6 @@ $ kubectl get mysql -n demo sample-mysql -o json | jq '.spec.podTemplate.spec.co
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the MySQL replicaset database.

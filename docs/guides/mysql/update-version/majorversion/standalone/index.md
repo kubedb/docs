@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to update the major ver
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/majorversion/standalone/yamls](/docs/guides/mysql/update-version/majorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a standalone using supported that `MySQL` versi
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions. Let's check support versions,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -65,7 +66,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
 
@@ -74,7 +74,8 @@ The version above that does not show `DEPRECATED` `true` is supported by `KubeDB
 Database version update constraints is a constraint that shows whether it is possible or not possible to update from one version to another. Let's check the version update constraints of `MySQL` `8.4.8`,
 
 ```bash
-$ kubectl get mysqlversion 8.4.8 -o yaml
+kubectl get mysqlversion 8.4.8 -o yaml
+```
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: MySQLVersion
 metadata:
@@ -143,7 +144,6 @@ spec:
       standalone:
       - < 8.4.8
   version: 8.4.8
-```
 
 The above `spec.updateConstraints` is showing that for both standalone and group replication, updating below version of `8.4.8` is not possible (denylist) and updating is allowed within the range `>= 8.4.8, <= 9.1.0` (allowlist). Here, we are going to create a `MySQL` standalone using MySQL  `8.4.8`. Then we are going to update this version to `9.1.0`.
 
@@ -173,9 +173,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/standalone/yamls/standalone.yaml
-mysql.kubedb.com/my-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/standalone/yamls/standalone.yaml
 ```
+mysql.kubedb.com/my-standalone created
 
 **Wait for the database to be ready:**
 
@@ -183,34 +183,39 @@ mysql.kubedb.com/my-standalone created
 Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-standalone
-
+watch -n 3 kubectl get my -n demo my-standalone
+```
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   3m
 
-$ watch -n 3 kubectl get petset -n demo my-standalone
-
+```bash
+watch -n 3 kubectl get petset -n demo my-standalone
+```
 NAME            READY   AGE
 my-standalone   1/1     3m42s
 
-$ watch -n 3 kubectl get pod -n demo my-standalone-0
-
+```bash
+watch -n 3 kubectl get pod -n demo my-standalone-0
+```
 NAME              READY   STATUS    RESTARTS   AGE
 my-standalone-0   1/1     Running   0          5m23s
-```
 
 Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 
 ```bash
-$ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
+```
 8.4.8
 
-$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 kubedb/my:8.4.8
 
-$ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/my:8.4.8
+```bash
+kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+kubedb/my:8.4.8
 
 We are ready to apply updating on this `MySQL` standalone.
 
@@ -245,9 +250,9 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/standalone/yamls/upgrade_major_version_standalone.yaml
-mysqlopsrequest.ops.kubedb.com/my-update-major-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/standalone/yamls/upgrade_major_version_standalone.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-update-major-standalone created
 
 **Verify MySQL version updated successfully:**
 
@@ -256,16 +261,16 @@ If everything goes well, `KubeDB` Ops Manager will update the image of `MySQL`, 
 At first, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```bash
-$ watch -n 3 kubectl get myops -n demo my-update-major-standalone
-
+watch -n 3 kubectl get myops -n demo my-update-major-standalone
+```
 NAME                         TYPE            STATUS       AGE
 my-update-major-standalone   UpdateVersion   Successful   3m57s
-```
 
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL`, `PetSet`, and its `Pod` have updated with a new image.
 
 ```bash
-$ kubectl describe myops -n demo my-update-major-standalone
+kubectl describe myops -n demo my-update-major-standalone
+```
 Name:         my-update-major-standalone
 Namespace:    demo
 Labels:       <none>
@@ -324,20 +329,23 @@ Events:
   Normal  Starting    4m47s  KubeDB Enterprise Operator  Resuming MySQL database: demo/my-standalone
   Normal  Successful  4m47s  KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-standalone
   Normal  Successful  4m47s  KubeDB Enterprise Operator  Controller has Successfully updated the version of MySQL : demo/my-standalone
-```
 
 Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
+```
 9.1.0
 
-$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 mysql:9.1.0
 
-$ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:9.1.0
+```bash
+kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+mysql:9.1.0
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.
 

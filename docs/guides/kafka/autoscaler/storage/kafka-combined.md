@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Kafka
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,10 +48,10 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -94,33 +94,35 @@ spec:
 Let's create the `Kafka` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait until `kafka-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                       STORAGECLASS          REASON     AGE
 pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0             longhorn              <unset>    40s
 pvc-f068d245-718b-4561-b452-f3130bb260f6   1Gi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1             longhorn              <unset>    35s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -162,9 +164,9 @@ Here,
 Let's create the `KafkaAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/storage/kafka-storage-autoscaler-combined.yaml
-kafkaautoscaler.autoscaling.kubedb.com/kf-storage-autoscaler-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/storage/kafka-storage-autoscaler-combined.yaml
 ```
+kafkaautoscaler.autoscaling.kubedb.com/kf-storage-autoscaler-combined created
 
 #### Storage Autoscaling is set up successfully
 
@@ -216,8 +218,9 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 
 Let's exec into the cluster pod and fill the cluster volume using the following commands:
 
-```bash
- $ kubectl exec -it -n demo kafka-dev-0 -- bash
+ ```bash
+ kubectl exec -it -n demo kafka-dev-0 -- bash
+ ```
 kafka@kafka-dev-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /var/log/kafka
@@ -228,31 +231,31 @@ kafka@kafka-dev-0:~$ dd if=/dev/zero of=/var/log/kafka/file.img bs=600M count=1
 kafka@kafka-dev-0:~$ df -h /var/log/kafka
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /var/log/kafka
-```
 
 So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `kafkaopsrequest` in the demo namespace to see if any `kafkaopsrequest` object is created. After some time you'll see that a `kafkaopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 Every 2.0s: kubectl get kafkaopsrequest -n demo
 NAME                     TYPE              STATUS        AGE
 kfops-kafka-dev-sa4thn   VolumeExpansion   Progressing   10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo 
+kubectl get kafkaopsrequest -n demo 
+```
 NAME                    TYPE              STATUS        AGE
 kfops-kafka-dev-sa4thn  VolumeExpansion   Successful    97s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-kafka-dev-sa4thn 
+kubectl describe kafkaopsrequests -n demo kfops-kafka-dev-sa4thn 
+```
 Name:         kfops-kafka-dev-sa4thn
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -434,18 +437,20 @@ Events:
   Normal   ReadyPetSets                             20s    KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                 20s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                               20s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-kafka-dev-sa4thn
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo kafka-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1531054080"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY      ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                       STORAGECLASS          REASON     AGE
 pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1462Mi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-0             longhorn              <unset>    30m5s
 pvc-f068d245-718b-4561-b452-f3130bb260f6   1462Mi        RWO            Delete           Bound    demo/kafka-dev-data-kafka-dev-1             longhorn              <unset>    30m1s
-```
 
 The above output verifies that we have successfully autoscaled the volume of the Kafka combined cluster.
 

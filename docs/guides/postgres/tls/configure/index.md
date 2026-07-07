@@ -27,9 +27,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/postgres/tls/configure/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -50,9 +50,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls postgres-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/postgres-ca created
+kubectl create secret tls postgres-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/postgres-ca created
 
 Now, we are going to create an `Issuer` using the `postgres-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
@@ -128,31 +128,33 @@ You can found more details from [here](/docs/guides/postgres/concepts/postgres.m
 Let’s create the `Postgres` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/tls/configure/yamls/tls-postgres.yaml
-postgres.kubedb.com/pg created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/tls/configure/yamls/tls-postgres.yaml
 ```
+postgres.kubedb.com/pg created
 
 **Wait for the database to be ready:**
 
 Now, watch `Postgres` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$  watch kubectl get postgres -n demo pg
-
+ watch kubectl get postgres -n demo pg
+```
 NAMESPACE   NAME   VERSION   STATUS   AGE
 demo        pg     18.3      Ready    62s
 
-
-$ watch -n 3 kubectl get petset -n demo pg
+```bash
+watch -n 3 kubectl get petset -n demo pg
+```
 NAME   READY   AGE
 pg     3/3     2m30s
 
-$  watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=pg
+```bash
+ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=pg
+```
 NAME   READY   STATUS    RESTARTS   AGE
 pg-0   2/2     Running   0          3m59s
 pg-1   2/2     Running   0          3m54s
 pg-2   2/2     Running   0          3m49s
-```
 
 **Verify tls-secrets created successfully:**
 
@@ -163,14 +165,14 @@ All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name form
 Let's check if the tls-secrets have been created properly,
 
 ```bash
-$ kubectl get secrets -n demo | grep pg
+kubectl get secrets -n demo | grep pg
+```
 pg-auth                    kubernetes.io/basic-auth              2      4m41s
 pg-client-cert             kubernetes.io/tls                     3      4m40s
 pg-metrics-exporter-cert   kubernetes.io/tls                     3      4m40s
 pg-server-cert             kubernetes.io/tls                     3      4m41s
 postgres-ca                kubernetes.io/tls                     2      5m10s
 pg-token-xvk9p             kubernetes.io/service-account-token   3      4m41s
-```
 
 **Verify Postgres Cluster configured with TLS/SSL:**
 
@@ -179,7 +181,8 @@ Now, we are going to connect to the database to verify that `Postgres` server ha
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n  demo  pg-0 -- bash
+kubectl exec -it -n  demo  pg-0 -- bash
+```
 bash-5.1$ ls /tls/certs
 client    exporter  server
 
@@ -220,8 +223,6 @@ primary_conninfo = 'application_name=pg-0 host=pg user=postgres password=0WpDlAb
 #ssl_passphrase_command = ''
 #ssl_passphrase_command_supports_reload = off
 
-```
-
 The above output shows that the `Postgres` server is configured with TLS/SSL configuration and in `/var/pv/data/postgresql.conf ` you can see that `ssl= on`. You can also see that the `.crt` and `.key` files are stored in the `/tls/certs/` directory for client and server.
 
 **Verify secure connection for SSL required user:**
@@ -230,10 +231,10 @@ Now, you can create an SSL required user that will be used to connect to the dat
 
 Let's connect to the database server with a secure connection,
 
-```bash
 # creating SSL required user
-$ kubectl exec -it -n  demo  pg-0 -- bash
-
+```bash
+kubectl exec -it -n  demo  pg-0 -- bash
+```
 bash-5.1$ psql -d "user=postgres password=$POSTGRES_PASSWORD host=pg port=5432 connect_timeout=15 dbname=postgres sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt"
 psql (18.3)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
@@ -244,7 +245,6 @@ postgres=# exit
 bash-5.1$ psql -d "user=postgres password=$POSTGRES_PASSWORD host=pg port=5432 connect_timeout=15 dbname=postgres sslmode=verify-full"
 psql: error: root certificate file "/var/lib/postgresql/.postgresql/root.crt" does not exist
 Either provide the file or change sslmode to disable server certificate verification.
-```
 
 From the above output, you can see that only using ca certificate we can access the database securely, otherwise, it ask for the ca verification. Our client certificate is stored in `ls /tls/certs/client` directory.
 

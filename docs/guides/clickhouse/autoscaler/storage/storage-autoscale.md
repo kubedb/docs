@@ -37,21 +37,21 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Click
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h2m
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   9m41s
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   9m24s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -115,9 +115,9 @@ spec:
 Let's create the `ClickHouse` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/storage/clickhouse-autoscale.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/storage/clickhouse-autoscale.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
@@ -185,9 +185,9 @@ Here,
 Let's create the `clickhouseAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/storage/clickhouse-autoscaler-ops.yaml
-clickhouseautoscaler.autoscaling.kubedb.com/ch-storage-autoscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/storage/clickhouse-autoscaler-ops.yaml
 ```
+clickhouseautoscaler.autoscaling.kubedb.com/ch-storage-autoscale created
 
 #### Storage Autoscaling is set up successfully
 

@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/Solr](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Solr) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a `Solr` topology using a supported version by `Kub
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get sc
+kubectl get sc
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  24d
-```
 
 We can see from the output the `local-path` storage class has `ALLOWVOLUMEEXPANSION` field as false. So, this storage class supports volume expansion. We can use it.
 
@@ -101,34 +101,42 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/volume-expansion/topology.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/volume-expansion/topology.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    41m
-
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          44m
 pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          44m
 pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          44m
-```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -173,9 +181,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/volume-expansion/solr-volume-expansion-topology.yaml
-solropsrequest.ops.kubedb.com/sl-volume-exp-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/volume-expansion/solr-volume-expansion-topology.yaml
 ```
+solropsrequest.ops.kubedb.com/sl-volume-exp-topology created
 
 #### Verify Solr Topology volume expanded successfully
 
@@ -184,15 +192,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get solropsrequest -n demo
+kubectl get solropsrequest -n demo
+```
 NAME                     TYPE              STATUS       AGE
 sl-volume-exp-topology   VolumeExpansion   Successful   3m1s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to expand the volume of Solr.
 
 ```bash
-$ kubectl describe slops -n demo sl-volume-exp-topology 
+kubectl describe slops -n demo sl-volume-exp-topology 
+```
 Name:         sl-volume-exp-topology
 Namespace:    demo
 Labels:       <none>
@@ -379,23 +388,31 @@ Events:
   Normal   ReadyPetSets                             19s    KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                 19s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                               19s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: sl-volume-exp-topology
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "11Gi"
-$ kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "11Gi"
-$ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-31538e3e-2d02-4ca0-9b76-5da7c63cea70   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          standard       <unset>                          52m
 pvc-8c5b14ab-3da4-4492-abf4-edd7faa265ef   11Gi       RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      standard       <unset>                          52m
 pvc-95522f35-52bd-4978-b66f-1979cec34982   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   standard       <unset>                          52m
-```
 
 The above output verifies that we have successfully expanded the volume of the Solr.
 

@@ -45,24 +45,23 @@ remain highly available, even in the face of failures.
 - To keep things isolated, this tutorial uses a separate namespace called 'demo' throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Find Available Solr Versions
 
 When you have installed KubeDB, it has created `SolrVersion` CR for all supported Solr versions. Check available versions by:
 
 ```bash
-$  kubectl get solrversions
+ kubectl get solrversions
+```
 NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 8.11.4   8.11.4    ghcr.io/appscode-images/solr:8.11.4                27d
 9.4.1    9.4.1     ghcr.io/appscode-images/solr:9.4.1                 27d
 9.6.1    9.6.1     ghcr.io/appscode-images/solr:9.6.1                 27d
 9.7.0    9.7.0     ghcr.io/appscode-images/solr:9.7.0                 27d
 9.8.0    9.8.0     ghcr.io/appscode-images/solr:9.8.0                 27d
-
-```
 
 ## Deploy a Highly Available Solr Cluster
 
@@ -99,18 +98,17 @@ We have to apply zookeeper first and wait till atleast pods are running to make 
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
-zooKeeper.kubedb.com/zoo-com created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 ```
+zooKeeper.kubedb.com/zoo-com created
 
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get zookeeper -n demo -w
+kubectl get zookeeper -n demo -w
+```
 NAME      TYPE                  VERSION   STATUS   AGE
 zoo-com   kubedb.com/v1alpha2   3.8.3     Ready    4d
-
-```
 
 Then we can deploy solr in our cluster.
 
@@ -141,14 +139,15 @@ spec:
 Apply the manifest:
 
 ```bash
-$ kubectl apply -f solr-ha.yaml
-solr.kubedb.com/solr-ha created
+kubectl apply -f solr-ha.yaml
 ```
+solr.kubedb.com/solr-ha created
 
 Monitor the status:
 
 ```bash
-$ kubectl get solr,pods -n demo
+kubectl get solr,pods -n demo
+```
 NAME                      TYPE                  VERSION   STATUS   AGE
 solr.kubedb.com/solr-ha   kubedb.com/v1alpha2   9.4.1     Ready    4d
 
@@ -160,12 +159,11 @@ pod/zoo-com-0                 1/1     Running   2 (103m ago)   4d
 pod/zoo-com-1                 1/1     Running   2 (103m ago)   4d
 pod/zoo-com-2                 1/1     Running   2 (103m ago)   4d
 
-```
-
 Let's create a collection and add some data to test failover scenarios:
 
 ```bash
-$ kubectl exec -it -n demo solr-ha-0 -- bash
+kubectl exec -it -n demo solr-ha-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-ha-0:/opt/solr-9.4.1$ alias solr_curl='curl -u admin:c4d0IeGGDO**1h9y'
 solr@solr-ha-0:/opt/solr-9.4.1$ solr_curl  "http://localhost:8983/solr/admin/collections?action=CREATE&name=sattriyam&numShards=1&replicationFactor=1&wt=json"
@@ -192,13 +190,11 @@ solr@solr-ha-0:/opt/solr-9.4.1$ solr_curl  "http://localhost:8983/solr/admin/col
   },
   "collections":["kubedb-system","sattriyam"]
 }solr@solr-ha-0:/opt/solr-9.4.1$ 
-
-
-```
 If we check another pod, we can see the collection there as well:
 
 ```bash
-$ kubectl exec -it -n demo solr-ha-1 -- bash
+kubectl exec -it -n demo solr-ha-1 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 
 solr@solr-ha-1:/opt/solr-9.4.1$ alias solr_curl='curl -u admin:c4d0IeGGDO**1h9y'
@@ -249,8 +245,6 @@ solr@solr-ha-1:/opt/solr-9.4.1$ solr_curl  "http://localhost:8983/solr/admin/col
       "_version_":1845866210893234177
     }]
   }
-
-```
 📌 Note: Because every Solr node is both readable and writable, data created in one pod is automatically
 replicated to other pods that host replicas of the same shard. If any pod is deleted or fails, 
 there will be no data loss as long as other replicas are available, since the data is stored in persistent
@@ -285,14 +279,14 @@ When a Solr node fails:
 Let's simulate by deleting a pod:
 
 ```bash
-$ kubectl delete pod -n demo solr-ha-0
-pod "solr-ha-0" deleted
+kubectl delete pod -n demo solr-ha-0
 ```
+pod "solr-ha-0" deleted
 
 Watch the recovery:
 
 ```bash
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 ```shell
 solr-ha-0
@@ -311,7 +305,8 @@ During this process:
 Let's verify the collection is still accessible:
 
 ```bash
-$ $ kubectl exec -it -n demo solr-ha-1 -- bash
+kubectl exec -it -n demo solr-ha-1 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 
 solr@solr-ha-1:/opt/solr-9.4.1$ alias solr_curl='curl -u admin:c4d0IeGGDO**1h9y'
@@ -362,7 +357,6 @@ solr@solr-ha-1:/opt/solr-9.4.1$ solr_curl  "http://localhost:8983/solr/admin/col
       "_version_":1845866210893234177
     }]
   }
-```
 
 ### Scenario 2: Multiple Node Failure
 
@@ -373,14 +367,14 @@ Even with multiple node failures, Solr remains available as long as:
 Let's simulate multiple failures:
 
 ```bash
-$ kubectl delete pod -n demo solr-ha-0 solr-ha-1
+kubectl delete pod -n demo solr-ha-0 solr-ha-1
+```
 pod "solr-ha-0" deleted
 pod "solr-ha-1" deleted
-```
 Watch the recovery:
 
 ```bash
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 ```shell
 solr-ha-0
@@ -396,7 +390,7 @@ zoo-com-2
 In case all nodes fail:
 
 ```bash
-$ kubectl delete pod -n demo solr-ha-0 solr-ha-1 solr-ha-2
+kubectl delete pod -n demo solr-ha-0 solr-ha-1 solr-ha-2
 ```
 
 The cluster will recover automatically, but full availability requires:
@@ -408,7 +402,10 @@ The cluster will recover automatically, but full availability requires:
 ## Cleanup
 
 ```bash
-$ kubectl delete solr -n demo solr-ha
-$ kubectl delete ns demo
+kubectl delete solr -n demo solr-ha
+```
+
+```bash
+kubectl delete ns demo
 ```
 

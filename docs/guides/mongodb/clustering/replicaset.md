@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,9 +62,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/replicaset.yaml
-mongodb.kubedb.com/mgo-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/replicaset.yaml
 ```
+mongodb.kubedb.com/mgo-replicaset created
 
 Here,
 
@@ -77,7 +77,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
-$ kubectl dba describe mg -n demo mgo-replicaset
+kubectl dba describe mg -n demo mgo-replicaset
+```
 Name:               mgo-replicaset
 Namespace:          demo
 CreationTimestamp:  Wed, 10 Feb 2021 11:05:06 +0600
@@ -195,28 +196,34 @@ Events:
   Normal  Successful  10m   MongoDB operator  Successfully patched PetSet demo/mgo-replicaset
   Normal  Successful  10m   MongoDB operator  Successfully patched MongoDB
 
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME             READY   AGE
 mgo-replicaset   3/3     105s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                       STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mgo-replicaset-0   Bound     pvc-597784c9-c093-11e8-b4a9-0800272618ed   1Gi        RWO            standard       1h
 datadir-mgo-replicaset-1   Bound     pvc-8ca7a9d9-c093-11e8-b4a9-0800272618ed   1Gi        RWO            standard       1h
 datadir-mgo-replicaset-2   Bound     pvc-b7d8a624-c093-11e8-b4a9-0800272618ed   1Gi        RWO            standard       1h
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                           STORAGECLASS   REASON    AGE
 pvc-597784c9-c093-11e8-b4a9-0800272618ed   1Gi        RWO            Delete           Bound     demo/datadir-mgo-replicaset-0   standard                 1h
 pvc-8ca7a9d9-c093-11e8-b4a9-0800272618ed   1Gi        RWO            Delete           Bound     demo/datadir-mgo-replicaset-1   standard                 1h
 pvc-b7d8a624-c093-11e8-b4a9-0800272618ed   1Gi        RWO            Delete           Bound     demo/datadir-mgo-replicaset-2   standard                 1h
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                 TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 mgo-replicaset       ClusterIP   10.97.174.220   <none>        27017/TCP   119s
 mgo-replicaset-pods  ClusterIP   None            <none>        27017/TCP   119s
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -361,14 +368,18 @@ Now, you can connect to this database through [mgo-replicaset](https://docs.mong
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mgo-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
+```
 5O4R2ze2bWXcWsdP
 
-$ kubectl exec -it mgo-replicaset-0 -n demo bash
-
+```bash
+kubectl exec -it mgo-replicaset-0 -n demo bash
+```
 mongodb@mgo-replicaset-0:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -413,13 +424,13 @@ rs0:PRIMARY> db.movie.find().pretty()
 
 rs0:PRIMARY> exit
 bye
-```
 
 Now, check the redundancy and data availability in secondary members.
 We will exec in `mgo-replicaset-1`(which is secondary member right now) to check the data availability.
 
 ```bash
-$ kubectl exec -it mgo-replicaset-1 -n demo bash
+kubectl exec -it mgo-replicaset-1 -n demo bash
+```
 mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -460,34 +471,36 @@ rs0:SECONDARY> db.movie.find().pretty()
 rs0:SECONDARY> exit
 bye
 
-```
-
 ## Automatic Failover
 
 To test automatic failover, we will force the primary member to restart. As the primary member (`pod`) becomes unavailable, the rest of the members will elect a primary member by election.
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME               READY     STATUS    RESTARTS   AGE
 mgo-replicaset-0   1/1       Running   0          1h
 mgo-replicaset-1   1/1       Running   0          1h
 mgo-replicaset-2   1/1       Running   0          1h
 
-$ kubectl delete pod -n demo mgo-replicaset-0
+```bash
+kubectl delete pod -n demo mgo-replicaset-0
+```
 pod "mgo-replicaset-0" deleted
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME               READY     STATUS        RESTARTS   AGE
 mgo-replicaset-0   1/1       Terminating   0          1h
 mgo-replicaset-1   1/1       Running       0          1h
 mgo-replicaset-2   1/1       Running       0          1h
 
-```
-
 Now verify the automatic failover, Let's exec in `mgo-replicaset-1` pod,
 
 ```bash
-$ kubectl exec -it mgo-replicaset-1 -n demo bash
+kubectl exec -it mgo-replicaset-1 -n demo bash
+```
 mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -528,7 +541,6 @@ switched to db newdb
 
 rs0:SECONDARY> db.movie.find().pretty()
 { "_id" : ObjectId("5b5efeea9d097ca0600694a3"), "name" : "batman" }
-```
 
 ## Halt Database
 
@@ -539,23 +551,24 @@ You can also keep the mongodb object and halt the database to resume it again la
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-mongodb.kubedb.com/mgo-replicaset patched
+kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-replicaset patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"halted":true}}' --type="merge"
-mongodb.kubedb.com/mgo-replicaset patched
+kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"halted":true}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-replicaset patched
 
 After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mongodb.kubedb.com/mgo-replicaset   4.4.26     Halted   9m43s
 
@@ -568,7 +581,6 @@ NAME                                             STATUS   VOLUME                
 persistentvolumeclaim/datadir-mgo-replicaset-0   Bound    pvc-816daa52-ee40-496f-a148-c75344a1b433   1Gi        RWO            standard       9m43s
 persistentvolumeclaim/datadir-mgo-replicaset-1   Bound    pvc-e818bc86-ab3c-4ec5-901f-630aab6b814b   1Gi        RWO            standard       9m5s
 persistentvolumeclaim/datadir-mgo-replicaset-2   Bound    pvc-5a50bce3-f85f-4157-be22-64dfc26e7517   1Gi        RWO            standard       8m25s
-```
 
 
 ## Resume Halted Database
@@ -576,23 +588,23 @@ persistentvolumeclaim/datadir-mgo-replicaset-2   Bound    pvc-5a50bce3-f85f-4157
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"halted":false}}' --type="merge"
-mongodb.kubedb.com/mgo-replicaset patched
+kubectl patch -n demo mg/mgo-replicaset -p '{"spec":{"halted":false}}' --type="merge"
 ```
+mongodb.kubedb.com/mgo-replicaset patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME             VERSION   STATUS    AGE
 mgo-replicaset   4.4.26     Ready     6m27s
-```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.
 
 ```bash
-$ kubectl exec -it mgo-replicaset-1 -n demo bash
-
+kubectl exec -it mgo-replicaset-1 -n demo bash
+```
 mongodb@mgo-replicaset-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 rs0:PRIMARY> use newdb
@@ -600,7 +612,6 @@ switched to db newdb
 
 rs0:PRIMARY> db.movie.find()
 { "_id" : ObjectId("6024b3e47c614cd582c9bb44"), "name" : "batman" }
-```
 
 ## Cleaning up
 

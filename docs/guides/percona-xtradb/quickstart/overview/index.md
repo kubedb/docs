@@ -31,10 +31,10 @@ This tutorial will show you how to use KubeDB to run a PerconaXtraDB database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
 ```bash
-$ kubectl get storageclasses
+kubectl get storageclasses
+```
 NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -48,11 +48,11 @@ namespace/demo created
 When you have installed KubeDB, it has created `PerconaXtraDBVersion` crd for all supported PerconaXtraDB versions. Check it by using the following command,
 
 ```bash
-$ kubectl get perconaxtradbversions
+kubectl get perconaxtradbversions
+```
 NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 8.0.40   8.0.40    percona/percona-xtradb-cluster:8.0.40                6m1s
 8.0.28   8.0.28    percona/percona-xtradb-cluster:8.0.28                6m1s
-```
 
 ## Create a PerconaXtraDB database
 
@@ -80,9 +80,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -104,9 +104,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1alpha2.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1alpha2.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Here,
 
@@ -120,7 +120,8 @@ Here,
 KubeDB operator watches for `PerconaXtraDB` objects using Kubernetes api. When a `PerconaXtraDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching PerconaXtraDB object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl describe -n demo perconaxtradb sample-pxc
+kubectl describe -n demo perconaxtradb sample-pxc
+```
 Name:         sample-pxc
 Namespace:    demo
 Labels:       <none>
@@ -220,33 +221,39 @@ Events:
   Normal   Successful    6m32s  KubeDB Operator  Successfully created appbinding
   Normal   PhaseChanged  51s    KubeDB Operator  Phase changed from NotReady to Provisioning.
   Normal   PhaseChanged  32s    KubeDB Operator  Phase changed from Provisioning to Ready.
-  
-  
-$ kubectl get petset -n demo
+
+```bash
+kubectl get petset -n demo
+```
 NAME             READY   AGE
 sample-pxc   1/1     27m
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-sample-pxc-0   Bound    pvc-10651900-d975-467f-80ff-9c4755bdf917   1Gi        RWO            standard       27m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
 pvc-10651900-d975-467f-80ff-9c4755bdf917   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   standard                27m
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 sample-pxc        ClusterIP   10.105.207.172   <none>        3306/TCP   28m
 sample-pxc-pods   ClusterIP   None             <none>        3306/TCP   28m
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see PerconaXtraDB object status:
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME         VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    9m32s
-```
 
 ## Connect with PerconaXtraDB database
 
@@ -257,18 +264,20 @@ If you want to use an existing secret please specify that when creating the Perc
 Now, we need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `sample-pxc-auth`  secret holds username and password.
 
 ```bash
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
-w*yOU$b53dTbjsjJ
+```bash
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+w*yOU$b53dTbjsjJ
 
 We will exec into the pod `sample-pxc-0` and connet to the database using `username` and `password`.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='w*yOU$b53dTbjsjJ'
-
+kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='w*yOU$b53dTbjsjJ'
+```
 Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2021 Percona LLC and/or its affiliates
@@ -292,8 +301,6 @@ mysql> show databases;
 +--------------------+
 5 rows in set (0.00 sec)
 
-```
-
 ## Database DeletionPolicy
 
 This field is used to regulate the deletion process of the related resources when `PerconaXtraDB` object is deleted. User can set the value of this field according to their needs. The available options and their use case scenario is described below:
@@ -303,9 +310,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. If you create a database with `deletionPolicy`  `DoNotTerminate` and try to delete it, you will see this:
 
 ```bash
-$ kubectl delete perconaxtradb sample-pxc -n demo
-Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: perconaxtradb "perconaxtradb-quickstart" can't be halted. To delete, change spec.deletionPolicy
+kubectl delete perconaxtradb sample-pxc -n demo
 ```
+Error from server (BadRequest): admission webhook "perconaxtradb.validators.kubedb.com" denied the request: perconaxtradb "perconaxtradb-quickstart" can't be halted. To delete, change spec.deletionPolicy
 
 Now, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.deletionPolicy` to `Halt` (which deletes the perconaxtradb object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -319,21 +326,21 @@ When the `DeletionPolicy` is set to `Halt` and the PerconaXtraDB object is delet
 At first, run `kubectl edit perconaxtradb sample-pxc -n demo` to set `spec.deletionPolicy` to `Halt`. Then delete the perconaxtradb object,
 
 ```bash
-$ kubectl delete perconaxtradb sample-pxc -n demo
-perconaxtradb.kubedb.com "sample-pxc" deleted
+kubectl delete perconaxtradb sample-pxc -n demo
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
 
 Now, run the following command to get all perconaxtradb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+kubectl get sts,svc,secret,pvc -n demo
+```
 NAME                         TYPE                                  DATA   AGE
 secret/default-token-w2pgw   kubernetes.io/service-account-token   3      31m
 secret/sample-pxc-auth   kubernetes.io/basic-auth              2      39s
 
 NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-sample-pxc-0   Bound    pvc-7502c222-2b02-4363-9027-91ab0e7b76dc   1Gi        RWO            standard       39s
-```
 
 From the above output, you can see that all perconaxtradb resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your perconaxtradb again using this resources.
 
@@ -346,14 +353,15 @@ When the `DeletionPolicy` is set to `Delete` and the PerconaXtraDB object is del
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete perconaxtradb sample-pxc -n demo
-perconaxtradb.kubedb.com "sample-pxc" deleted
+kubectl delete perconaxtradb sample-pxc -n demo
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
 
 Now, run the following command to get all perconaxtradb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+kubectl get sts,svc,secret,pvc -n demo
+```
 NAME                          READY   AGE
 petset.apps/sample-pxc   3/3     3m46s
 
@@ -372,7 +380,6 @@ NAME                                      STATUS   VOLUME                       
 persistentvolumeclaim/data-sample-pxc-0   Bound    pvc-11f7b634-689e-457e-ba41-157a51090475   1Gi        RWO            standard       3m46s
 persistentvolumeclaim/data-sample-pxc-1   Bound    pvc-84dce4b5-35df-4a06-bfea-b0530d83ebb0   1Gi        RWO            standard       3m46s
 persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-85a35a7c-dfb8-4ca2-96a6-21c9e0b892db   1Gi        RWO            standard       3m46s
-```
 
 From the above output, you can see that all perconaxtradb resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.
 
@@ -392,9 +399,9 @@ perconaxtradb.kubedb.com "sample-pxc" deleted
 Now, run the following command to get all perconaxtradb resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
-No resources found in demo namespace.
+kubectl get sts,svc,secret,pvc -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all perconaxtradb resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
@@ -409,7 +416,8 @@ Suppose we have a database running `perconaxtradb-quickstart` in our cluster. No
 Run the following command to get PerconaXtraDB resources,
 
 ```bash
-$ kubectl get perconaxtradb,sts,secret,svc,pvc -n demo
+kubectl get perconaxtradb,sts,secret,svc,pvc -n demo
+```
 NAME                                VERSION   STATUS   AGE
 perconaxtradb.kubedb.com/sample-pxc   8.4.3    Halted   22m
 
@@ -428,7 +436,6 @@ NAME                                      STATUS   VOLUME                       
 persistentvolumeclaim/data-sample-pxc-0   Bound    pvc-11f7b634-689e-457e-ba41-157a51090475   1Gi        RWO            standard       3m46s
 persistentvolumeclaim/data-sample-pxc-1   Bound    pvc-84dce4b5-35df-4a06-bfea-b0530d83ebb0   1Gi        RWO            standard       3m46s
 persistentvolumeclaim/data-sample-pxc-2   Bound    pvc-85a35a7c-dfb8-4ca2-96a6-21c9e0b892db   1Gi        RWO            standard       3m46s
-```
 
 From the above output , you can see that `PerconaXtraDB` object, `PVCs`, `Secret` are still alive. Then you can recreate your `PerconaXtraDB` with same configuration.
 

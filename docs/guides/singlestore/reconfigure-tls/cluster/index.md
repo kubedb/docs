@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Add TLS to a SingleStore Cluster
 
@@ -41,11 +41,11 @@ Here, We are going to create a SingleStore database without TLS and then reconfi
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ### Deploy SingleStore without TLS
 
@@ -109,21 +109,21 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sample-sdb.yaml
-singlestore.kubedb.com/sample-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sample-sdb.yaml
 ```
+singlestore.kubedb.com/sample-sdb created
 
 Now, wait until `sample-sdb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sdb -n demo
+kubectl get sdb -n demo
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    38m
 
-```
-
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
@@ -166,7 +166,6 @@ singlestore> show variables like '%ssl%';
 | ssl_last_successful_reload_time |            |
 +---------------------------------+------------+
 21 rows in set (0.00 sec)
-```
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -177,12 +176,12 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memsql/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memsql/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
@@ -252,21 +251,19 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-add-tls.yaml
-singlestoreopsrequest.ops.kubedb.com/sdbops-add-tls created
-
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-add-tls.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdbops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CRO,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                                                  TYPE             STATUS       AGE
 singlestoreopsrequest.ops.kubedb.com/sdbops-add-tls   ReconfigureTLS   Successful   2m45s
-
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded.
 
@@ -275,7 +272,8 @@ Now, we are going to connect to the database for verifying the `SingleStore` ser
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ ls etc/memsql/certs/
 ca.crt	client.crt  client.key	server.crt  server.key
@@ -321,7 +319,6 @@ singlestore> show variables like '%ssl%';
 | ssl_last_successful_reload_time |                              |
 +---------------------------------+------------------------------+
 21 rows in set (0.00 sec)
-```
 
 We can see from the above output that, `have_ssl` is set to `ture`. So, database TLS is enabled successfully to this database.
 
@@ -330,12 +327,11 @@ We can see from the above output that, `have_ssl` is set to `ture`. So, database
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ openssl x509 -in /etc/memsql/certs/server.crt -inform  PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jan  6 06:56:55 2025 GMT
-
-```
 
 So, the certificate will expire on this time `Jan  6 06:56:55 2025 GMT`.
 
@@ -366,30 +362,28 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-rotate-tls.yaml
-singlestoreopsrequest.ops.kubedb.com/sdbops-rotate-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-rotate-tls.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdbops-rotate-tls created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CRO,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                TYPE             STATUS       AGE
 sdbops-rotate-tls   ReconfigureTLS   Successful   4m14s
-
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded. Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ openssl x509 -in /etc/memsql/certs/server.crt -inform  PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jan  6 07:15:47 2025 GMT
-
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -398,8 +392,9 @@ As we can see from the above output, the certificate has been rotated successful
 Now, we are going to update the server certificate.
 
 - Let's describe the server certificate `sample-sdb-server-cert`
-```bash
- $ kubectl describe certificate -n demo sample-sdb-server-cert
+ ```bash
+ kubectl describe certificate -n demo sample-sdb-server-cert
+ ```
 Name:         sample-sdb-server-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -473,8 +468,6 @@ Events:
   Normal  Issuing    5m7s (x23 over 23m)    cert-manager-certificates-issuing          The certificate has been successfully issued
   Normal  Requested  5m7s (x13 over 7m6s)   cert-manager-certificates-request-manager  (combined from similar events): Created new CertificateRequest resource "sample-sdb-server-cert-qn8g9"
 
-```
-
 We want to add `subject` and `emailAddresses` in the spec of server sertificate.
 
 ### Create SingleStoreOpsRequest
@@ -512,34 +505,31 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-update-tls.yaml
-singlestoreopsrequest.ops.kubedb.com/sdbops-update-tls created
-
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-update-tls.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdbops-update-tls created
 
 #### Verify certificate is updated successfully
 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CRO,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                TYPE             STATUS       AGE
 sdbops-update-tls   ReconfigureTLS   Successful   3m24s
-
-
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded.
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ openssl x509 -in /etc/memsql/certs/server.crt -inform PEM  -subject -email -nameopt RFC2253 -noout
 subject=CN=sample-sdb,O=kubedb:server
 kubedb@appscode.com
-```
 
 We can see from the above output that, the subject name and email address match with the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -574,26 +564,27 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-remove-tls.yaml
-singlestoreopsrequest.ops.kubedb.com/sdbops-remove-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/reconfigure-tls/cluster/examples/sdbops-remove-tls.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdbops-remove-tls created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CRO,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                TYPE             STATUS       AGE
 sdbops-remove-tls   ReconfigureTLS   Successful   27m
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded. If we describe the `SingleStoreOpsRequest` we will get an overview of the steps that were followed.
 
 Now, Let's exec into the database and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sample-sdb-aggregator-0 /]$ ls etc/memsql/
 memsql_exporter.cnf  memsqlctl.hcl
@@ -642,7 +633,6 @@ singlestore> show variables like '%ssl%';
 
 singlestore> exit
 Bye
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 
@@ -651,8 +641,17 @@ So, we can see from the above that, output that tls is disabled successfully.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete sdb -n demo --all
-$ kubectl delete issuer -n demo --all
-$ kubectl delete singlestoreopsrequest -n demo --all
-$ kubectl delete ns demo
+kubectl delete sdb -n demo --all
+```
+
+```bash
+kubectl delete issuer -n demo --all
+```
+
+```bash
+kubectl delete singlestoreopsrequest -n demo --all
+```
+
+```bash
+kubectl delete ns demo
 ```

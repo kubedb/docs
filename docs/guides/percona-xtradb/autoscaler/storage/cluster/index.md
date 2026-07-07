@@ -37,20 +37,20 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Perco
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -85,30 +85,32 @@ spec:
 Let's create the `PerconaXtraDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/storage/cluster/examples/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/storage/cluster/examples/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-pxc      8.4.3    Ready    3m46s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   topolvm-provisioner            57s
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   topolvm-provisioner            58s
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   topolvm-provisioner            57s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -150,20 +152,23 @@ Here,
 Let's create the `PerconaXtraDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/storage/cluster/examples/pxas-storage.yaml
-perconaxtradbautoscaler.autoscaling.kubedb.com/px-as-st created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/autoscaler/storage/cluster/examples/pxas-storage.yaml
 ```
+perconaxtradbautoscaler.autoscaling.kubedb.com/px-as-st created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `perconaxtradbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get perconaxtradbautoscaler -n demo
+kubectl get perconaxtradbautoscaler -n demo
+```
 NAME           AGE
 px-as-st   33s
 
-$ kubectl describe perconaxtradbautoscaler px-as-st -n demo
+```bash
+kubectl describe perconaxtradbautoscaler px-as-st -n demo
+```
 Name:         px-as-st
 Namespace:    demo
 Labels:       <none>
@@ -185,7 +190,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
-```
 
 So, the `perconaxtradbautoscaler` resource is created successfully.
 
@@ -194,7 +198,8 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the database pod and fill the database volume(`var/lib/mysql`) using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 root@sample-pxc-0:/ df -h /var/lib/mysql
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  357M  658M  36% /var/lib/mysql
@@ -205,30 +210,30 @@ root@sample-pxc-0:/ dd if=/dev/zero of=/var/lib/mysql/file.img bs=500M count=1
 root@sample-pxc-0:/ df -h /var/lib/mysql
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/57cd4330-784f-42c1-bf8e-e743241df164 1014M  857M  158M  85% /var/lib/mysql
-```
 
 So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 20%.
 
 Let's watch the `perconaxtradbopsrequest` in the demo namespace to see if any `perconaxtradbopsrequest` object is created. After some time you'll see that a `perconaxtradbopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 NAME                         TYPE              STATUS        AGE
 mops-sample-pxc-xojkua   VolumeExpansion   Progressing   15s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 mops-sample-pxc-xojkua   VolumeExpansion   Successful   97s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo mops-sample-pxc-xojkua
+kubectl describe perconaxtradbopsrequest -n demo mops-sample-pxc-xojkua
+```
 Name:         mops-sample-pxc-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -291,19 +296,21 @@ Events:
   Normal  Starting    103s   KubeDB Enterprise Operator  Resuming PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of PerconaXtraDB: demo/sample-pxc
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   topolvm-provisioner            23m
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   topolvm-provisioner            24m
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   topolvm-provisioner            23m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the PerconaXtraDB replicaset database.
 

@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -67,9 +67,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/arbiter/replicaset.yaml
-mongodb.kubedb.com/mongo-arb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/arbiter/replicaset.yaml
 ```
+mongodb.kubedb.com/mongo-arb created
 
 Here,
 
@@ -83,7 +83,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new PetSets (one for replicas & one for arbiter) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
-$ kubectl dba describe mg -n demo mongo-arb
+kubectl dba describe mg -n demo mongo-arb
+```
 Name:               mongo-arb
 Namespace:          demo
 CreationTimestamp:  Thu, 21 Apr 2022 14:39:32 +0600
@@ -204,33 +205,35 @@ Events:
   Normal  Successful  1m    Postgres operator  Successfully created Primary Service
   Normal  Successful  1m    Postgres operator  Successfully created appbinding
 
-
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME                READY   AGE
 mongo-arb           2/2     2m37s
 mongo-arb-arbiter   1/1     108s
 
-
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mongo-arb-0           Bound    pvc-93a2681f-096d-4af1-b1fb-93cd7b7b6020   500Mi      RWO            standard       2m57s
 datadir-mongo-arb-1           Bound    pvc-fb06ea3b-a9dd-4479-87b2-de73ca272718   500Mi      RWO            standard       2m35s
 datadir-mongo-arb-arbiter-0   Bound    pvc-169fd172-0e41-48e3-81a5-3abae4a85056   500Mi      RWO            standard       2m8s
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                              STORAGECLASS   REASON   AGE
 pvc-169fd172-0e41-48e3-81a5-3abae4a85056   500Mi      RWO            Delete           Bound    demo/datadir-mongo-arb-arbiter-0   standard                2m23s
 pvc-93a2681f-096d-4af1-b1fb-93cd7b7b6020   500Mi      RWO            Delete           Bound    demo/datadir-mongo-arb-0           standard                3m11s
 pvc-fb06ea3b-a9dd-4479-87b2-de73ca272718   500Mi      RWO            Delete           Bound    demo/datadir-mongo-arb-1           standard                2m50s
 
-
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 mongo-arb        ClusterIP   10.96.148.184   <none>        27017/TCP   3m32s
 mongo-arb-pods   ClusterIP   None            <none>        27017/TCP   3m32s
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -342,14 +345,18 @@ Now, you can connect to this database through [mongo-arb](https://docs.mongodb.c
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mongo-arb-auth -o jsonpath='{.data.password}' | base64 -d
+```
 OX4yb!IFm;~yAHkD
 
-$ kubectl exec -it mongo-arb-0 -n demo bash
-
+```bash
+kubectl exec -it mongo-arb-0 -n demo bash
+```
 mongodb@mongo-arb-0:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -488,7 +495,6 @@ rs0:PRIMARY> rs.status()
 	},
 	"operationTime" : Timestamp(1650530787, 1)
 }
-```
 
 Here you can see the arbiter pod in the members list of `rs.status()` output.
 
@@ -539,7 +545,8 @@ Now, check the redundancy and data availability in secondary members.
 We will exec in `mongo-arb-1`(which is secondary member right now) to check the data availability.
 
 ```bash
-$ kubectl exec -it mongo-arb-1 -n demo bash
+kubectl exec -it mongo-arb-1 -n demo bash
+```
 mongodb@mongo-arb-1:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -584,33 +591,36 @@ rs0:SECONDARY> db.songs.find().pretty()
 rs0:SECONDARY> exit
 bye
 
-```
-
 ## Automatic Failover
 
 To test automatic failover, we will force the primary member to restart. As the primary member (`pod`) becomes unavailable, the rest of the members will elect a primary member by election.
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 mongo-arb-0           2/2     Running   0          15m
 mongo-arb-1           2/2     Running   0          14m
 mongo-arb-arbiter-0   1/1     Running   0          14m
 
-$ kubectl delete pod -n demo mongo-arb-0
+```bash
+kubectl delete pod -n demo mongo-arb-0
+```
 pod "mongo-arb-0" deleted
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME                  READY   STATUS        RESTARTS   AGE
 mongo-arb-0           2/2     Terminating   0          16m
 mongo-arb-1           2/2     Running       0          15m
 mongo-arb-arbiter-0   1/1     Running       0          15m
-```
 
 Now verify the automatic failover, Let's exec in `mongo-arb-0` pod,
 
 ```bash
-$ kubectl exec -it mongo-arb-0  -n demo bash
+kubectl exec -it mongo-arb-0  -n demo bash
+```
 mongodb@mongo-arb-0:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -638,8 +648,6 @@ rs0:SECONDARY> db.songs.find().pretty()
 	"pink floyd" : "shine on you crazy diamond"
 }
 
-```
-
 ## Halt Database
 
 When [DeletionPolicy](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy) is set to halt, and you delete the mongodb object, the KubeDB operator will delete the PetSet and its pods but leaves the PVCs, secrets and database backup (snapshots) intact. Learn details of all `DeletionPolicy` [here](/docs/guides/mongodb/concepts/mongodb.md#specdeletionpolicy).
@@ -649,23 +657,24 @@ You can also keep the mongodb object and halt the database to resume it again la
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-arb -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-mongodb.kubedb.com/mongo-arb patched
+kubectl patch -n demo mg/mongo-arb -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-arb patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-arb -p '{"spec":{"halted":true}}' --type="merge"
-mongodb.kubedb.com/mongo-arb patched
+kubectl patch -n demo mg/mongo-arb -p '{"spec":{"halted":true}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-arb patched
 
 After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mongo-arb   4.4.26     Halted   21m
 
@@ -678,7 +687,6 @@ NAME                                                STATUS   VOLUME             
 persistentvolumeclaim/datadir-mongo-arb-0           Bound    pvc-93a2681f-096d-4af1-b1fb-93cd7b7b6020   500Mi      RWO            standard       21m
 persistentvolumeclaim/datadir-mongo-arb-1           Bound    pvc-fb06ea3b-a9dd-4479-87b2-de73ca272718   500Mi      RWO            standard       21m
 persistentvolumeclaim/datadir-mongo-arb-arbiter-0   Bound    pvc-169fd172-0e41-48e3-81a5-3abae4a85056   500Mi      RWO            standard       21m
-```
 
 
 ## Resume Halted Database
@@ -686,23 +694,23 @@ persistentvolumeclaim/datadir-mongo-arb-arbiter-0   Bound    pvc-169fd172-0e41-4
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-arb  -p '{"spec":{"halted":false}}' --type="merge"
-mongodb.kubedb.com/mongo-arb patched
+kubectl patch -n demo mg/mongo-arb  -p '{"spec":{"halted":false}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-arb patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mongo-arb   4.4.26     Ready    23m
-```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.
 
 ```bash
-$ kubectl exec -it mongo-arb-1 -n demo bash
-
+kubectl exec -it mongo-arb-1 -n demo bash
+```
 mongodb@mongo-arb-1:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 
 rs0:PRIMARY> use mydb
@@ -712,7 +720,6 @@ rs0:PRIMARY> db.songs.find().pretty()
 	"_id" : ObjectId("62611ae33583279dfca0a5e4"),
 	"pink floyd" : "shine on you crazy diamond"
 }
-```
 
 ## Cleaning up
 

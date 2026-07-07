@@ -30,22 +30,22 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
 ## Available Versions
 
 ```bash
-$ kubectl get milvusversions
+kubectl get milvusversions
+```
 NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 2.6.11   2.6.11    ghcr.io/appscode-images/milvus:2.6.11                11h
 2.6.7    2.6.7     ghcr.io/appscode-images/milvus:2.6.7                 11h
 2.6.9    2.6.9     ghcr.io/appscode-images/milvus:2.6.9                 11h
-```
 
 ## Update Version of Standalone Milvus
 
 Deploy a standalone Milvus at version `2.6.9` and wait until it is `Ready`:
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo
+kubectl get milvuses.kubedb.com milvus-standalone -n demo
+```
 NAME                VERSION   STATUS   AGE
 milvus-standalone   2.6.9     Ready    46s
-```
 
 ### Apply the UpdateVersion OpsRequest
 
@@ -70,20 +70,21 @@ spec:
 Here, `spec.updateVersion.targetVersion` is the name of the target `MilvusVersion` (`2.6.11`).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/update-version/yamls/update-version-standalone.yaml
-milvusopsrequest.ops.kubedb.com/milvus-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/update-version/yamls/update-version-standalone.yaml
 ```
+milvusopsrequest.ops.kubedb.com/milvus-update-version created
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest milvus-update-version -n demo
+kubectl get milvusopsrequest milvus-update-version -n demo
+```
 NAME                    TYPE            STATUS       AGE
 milvus-update-version   UpdateVersion   Successful   77s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest milvus-update-version -n demo
+kubectl describe milvusopsrequest milvus-update-version -n demo
+```
 ...
 Status:
   Conditions:
@@ -102,15 +103,14 @@ Status:
     Reason:   Successful
     Type:     Successful
   Phase:      Successful
-```
 
 ### Verify the New Version
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo
+kubectl get milvuses.kubedb.com milvus-standalone -n demo
+```
 NAME                VERSION   STATUS   AGE
 milvus-standalone   2.6.11    Ready    2m3s
-```
 
 ## Update Version of Distributed Milvus
 
@@ -137,9 +137,9 @@ spec:
 Apply it the same way, pointing at the distributed database:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/update-version/yamls/update-version-distributed.yaml
-milvusopsrequest.ops.kubedb.com/milvus-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/update-version/yamls/update-version-distributed.yaml
 ```
+milvusopsrequest.ops.kubedb.com/milvus-update-version created
 
 The distributed flow is mechanically identical to the standalone flow shown above: the operator validates the target `MilvusVersion`, pauses the database, updates the container image of **each** distributed role (`mixcoord`, `datanode`, `querynode`, `streamingnode`, `proxy`), restarts them one workload at a time, and resumes the database. Because `apply: IfReady` is set, the ops request runs only once the database is `Ready`, after which it reports `Successful`.
 
@@ -148,9 +148,15 @@ The distributed flow is mechanically identical to the standalone flow shown abov
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo milvus-update-version
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo milvus-update-version
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

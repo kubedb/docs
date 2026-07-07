@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscaling compute resources i.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/clickhouse](/docs/examples/clickhouse) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -97,9 +97,9 @@ spec:
 Let's create the `ClickHouse` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/compute/clickhouse-autoscale.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/compute/clickhouse-autoscale.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
@@ -196,9 +196,9 @@ Here,
 Let's create the `ClickHouseAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/compute/clickhouse-autoscaler-ops.yaml
-clickhouseautoscaler.autoscaling.kubedb.com/ch-compute-autoscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/autoscaling/compute/clickhouse-autoscaler-ops.yaml
 ```
+clickhouseautoscaler.autoscaling.kubedb.com/ch-compute-autoscale created
 
 #### Verify Autoscaling is set up successfully
 
@@ -355,20 +355,20 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `clickhouseopsrequest` in the demo namespace to see if any `clickhouseopsrequest` object is created. After some time you'll see that a `clickhouseopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get clickhouseopsrequest -n demo
+watch kubectl get clickhouseopsrequest -n demo
+```
 Every 2.0s: kubectl get clickhouseopsrequest -n demo
 NAME                                        TYPE              STATUS        AGE
 chops-clickhouse-prod-appscode-cluster-shard-0-ckc28v   VerticalScaling   Progressing   1m28s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get clickhouseopsrequest -n demo
+watch kubectl get clickhouseopsrequest -n demo
+```
 Every 2.0s: kubectl get clickhouseopsrequest -n demo
 NAME                                        TYPE              STATUS       AGE
 chops-clickhouse-prod-appscode-cluster-shard-0-ckc28v   VerticalScaling   Successful   3m34s
-```
 
 We can see from the above output that the `ClickHouseOpsRequest` has succeeded. If we describe the `ClickHouseOpsRequest` we will get an overview of the steps that were followed to scale the ClickHouse.
 

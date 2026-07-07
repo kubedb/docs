@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,27 +73,29 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
-mongodb.kubedb.com/mg-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-replicaset.yaml
 ```
+mongodb.kubedb.com/mg-replicaset created
 
 Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME            VERSION   STATUS    AGE
 mg-replicaset   4.4.26     Ready     2m36s
-```
 
 Let's check the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
+kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 ```
+3
 
 We can see from both command that the database has 3 replicas in the replicaset. 
 
@@ -101,17 +103,20 @@ Also, we can verify the replicas of the replicaset from an internal mongodb comm
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
-nrKuxni0wDSMrgwy
+```bash
+kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+nrKuxni0wDSMrgwy
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+```
 [
 	{
 		"_id" : 0,
@@ -190,7 +195,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 		"configVersion" : 3
 	}
 ]
-```
 
 We can see from the above output that the replicaset has 3 nodes.
 
@@ -227,9 +231,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-up-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-hscale-up-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-up-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-hscale-up-replicaset created
 
 #### Verify Replicaset replicas scaled up successfully 
 
@@ -238,16 +242,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                        TYPE                STATUS       AGE
 mops-hscale-up-replicaset   HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset                     
+kubectl describe mongodbopsrequest -n demo mops-hscale-up-replicaset                     
+```
 Name:         mops-hscale-up-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -328,21 +333,23 @@ Events:
   Normal  ResumeDatabase     45s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase     45s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful         45s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
+kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas'
+```
 4
 
-$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
-4
+```bash
+kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 ```
+4
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet
+```
 [
 	{
 		"_id" : 0,
@@ -448,7 +455,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 		"configVersion" : 4
 	}
 ]
-```
 
 From all the above outputs we can see that the replicas of the replicaset is `4`. That means we have successfully scaled up the replicas of the MongoDB replicaset.
 
@@ -484,9 +490,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-down-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-hscale-down-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/horizontal-scaling/mops-hscale-down-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-hscale-down-replicaset created
 
 #### Verify Replicaset replicas scaled down successfully 
 
@@ -495,16 +501,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
 mops-hscale-down-replicaset   HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset                     
+kubectl describe mongodbopsrequest -n demo mops-hscale-down-replicaset                     
+```
 Name:         mops-hscale-down-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -585,21 +592,23 @@ Events:
   Normal  ResumeDatabase       30s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase       30s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful           30s   KubeDB Ops-manager operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify the number of replicas this database has from the MongoDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas' 
+kubectl get mongodb -n demo mg-replicaset -o json | jq '.spec.replicas' 
+```
 3
 
-$ kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo mg-replicaset -o json | jq '.spec.replicas'
 ```
+3
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the number of replicas,
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db.adminCommand( { replSetGetStatus : 1 } ).members" --quiet 
+```
 [
 	{
 		"_id" : 0,
@@ -678,7 +687,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 		"configVersion" : 5
 	}
 ]
-```
 
 From all the above outputs we can see that the replicas of the replicaset is `3`. That means we have successfully scaled down the replicas of the MongoDB replicaset.
 

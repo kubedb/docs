@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Vertical Scaling on Cluster
 
@@ -71,22 +71,23 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/vertical-scaling/cluster/example/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/vertical-scaling/cluster/example/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION    STATUS     AGE
 sample-pxc    8.4.3     Ready     3m46s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -97,7 +98,6 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has the default resources which is assigned by KubeDB operator.
 
@@ -141,9 +141,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/vertical-scaling/cluster/example/pxops-vscale.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/vertical-scaling/cluster/example/pxops-vscale.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale created
 
 #### Verify PerconaXtraDB Cluster resources updated successfully 
 
@@ -152,16 +152,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
 pxops-vscale        VerticalScaling      Successful    3m56s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -172,7 +173,6 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
     "memory": "1288490188800m"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the PerconaXtraDB database.
 
@@ -181,6 +181,9 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo pxops-vscale
+kubectl delete perconaxtradb -n demo sample-pxc
+```
+
+```bash
+kubectl delete perconaxtradbopsrequest -n demo pxops-vscale
 ```

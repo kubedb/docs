@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -69,22 +69,23 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-standalone.yaml
-mongodb.kubedb.com/mg-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/mg-standalone.yaml
 ```
+mongodb.kubedb.com/mg-standalone created
 
 Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME            VERSION    STATUS    AGE
 mg-standalone   4.4.26      Ready     5m56s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -95,7 +96,6 @@ $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -145,9 +145,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-standalone.yaml
-mongodbopsrequest.ops.kubedb.com/mops-vscale-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-standalone.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-vscale-standalone created
 
 #### Verify MongoDB Standalone resources updated successfully 
 
@@ -156,16 +156,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
 mops-vscale-standalone   VerticalScaling   Successful   108s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-vscale-standalone
+kubectl describe mongodbopsrequest -n demo mops-vscale-standalone
+```
 Name:         mops-vscale-standalone
 Namespace:    demo
 Labels:       <none>
@@ -276,12 +277,11 @@ Events:
   Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-standalone
   Normal  Successful                 3s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 
-```
-
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -292,7 +292,6 @@ $ kubectl get pod -n demo mg-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the MongoDB standalone database.
 

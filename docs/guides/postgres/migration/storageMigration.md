@@ -28,9 +28,9 @@ This guide will show you how to use `KubeDB` Ops Manager to  migrate `StorageCla
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare PostgreSQL Database
 
@@ -73,13 +73,14 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/sample-postgres.yaml
-postgres.kubedb.com/sample-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/sample-postgres.yaml
 ```
+postgres.kubedb.com/sample-postgres created
 Now, wait until sample-postgres has status `Ready` and check the `StorageClass`,
 
 ```bash
-$ kubectl get postgres,pvc -n demo
+kubectl get postgres,pvc -n demo
+```
 NAME              VERSION   STATUS   AGE
 sample-postgres   18.3     Ready    101s
 
@@ -87,17 +88,19 @@ NAME                                           STATUS   VOLUME                  
 persistentvolumeclaim/data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   3Gi        RWO            local-path     <unset>                 96s
 persistentvolumeclaim/data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   3Gi        RWO            local-path     <unset>                 90s
 persistentvolumeclaim/data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   3Gi        RWO            local-path     <unset>                 85s
-```
 
 The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a table in the primary.
 
-```bash
 # find the primary pod
-$ kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```bash
+kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```
 sample-postgres-0
 
 # exec into the primary and generate some data
-$ kubectl exec -it -n demo sample-postgres-0 -- bash
+```bash
+kubectl exec -it -n demo sample-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 sample-postgres-0:/$ psql
 psql (18.3)
@@ -112,8 +115,6 @@ postgres=# select count(*) from hello;
 --------
  111111
 (1 row)
-
-```
 
 ## Apply StorageMigration Ops-Request
 To migrate `StorageClass` we have to create a `PostgresOpsRequest` CR with our desired `StorageClass`. Below is the YAML of the `PostgresOpsRequest` CR that we are going to create,
@@ -144,39 +145,39 @@ Here,
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
-``` bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/storage-migration.yaml
-postgresopsrequest.ops.kubedb.com/storage-migration created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/storage-migration.yaml
 ```
+postgresopsrequest.ops.kubedb.com/storage-migration created
 ## Verify the StorageClass Migrated Successfully
 
 If everything goes well, `KubeDB` operator will migrate the `StorageClass` along with the data.
 
 Let’s wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch PostgresOpsRequest CR,
 
-``` bash
-$ watch kubectl get postgresopsrequest -n demo
-
+```bash
+watch kubectl get postgresopsrequest -n demo
+```
 Every 2.0s: kubectl get postgresopsrequest -n demo  
 
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   13m
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. Let's verify the StorageClass.
 
-``` bash
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
 data-sample-postgres-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   3Gi        RWO            standard-custom     <unset>                 21m
 data-sample-postgres-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   3Gi        RWO            standard-custom     <unset>                 21m
 data-sample-postgres-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   3Gi        RWO            standard-custom     <unset>                 21m
-```
 
 The `PersistentVolumeClaim` StorageClass has changed to `standard-custom`. Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `Postgres` pod and perform read query.
 
 ```bash
-$ kubectl exec -it -n demo sample-postgres-0 -- bash
+kubectl exec -it -n demo sample-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 sample-postgres-0:/$ psql
 psql (18.3)
@@ -187,7 +188,6 @@ postgres=# select count(*) from hello;
 --------
  111111
 (1 row)
-```
 
 From the above output we can verify that data remains intact after the `StorageMigration` operation.
 
@@ -196,7 +196,13 @@ From the above output we can verify that data remains intact after the `StorageM
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete postgresopsrequest -n demo storage-migration
-$ kubectl delete postgres -n demo sample-postgres
-$ kubectl delete ns demo
+kubectl delete postgresopsrequest -n demo storage-migration
+```
+
+```bash
+kubectl delete postgres -n demo sample-postgres
+```
+
+```bash
+kubectl delete ns demo
 ```

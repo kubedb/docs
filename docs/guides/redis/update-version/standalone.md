@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -65,17 +65,17 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/rd-standalone.yaml
-redis.kubedb.com/redis-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/rd-standalone.yaml
 ```
+redis.kubedb.com/redis-quickstart created
 
 Now, wait until `redis-quickstart` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME               VERSION    STATUS   AGE
 redis-quickstart   6.2.14   Ready    5m14s
-```
 
 We are now ready to apply the `RedisOpsRequest` CR to update this database.
 
@@ -110,9 +110,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-standalone.yaml
-redisopsrequest.ops.kubedb.com/update-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-standalone.yaml
 ```
+redisopsrequest.ops.kubedb.com/update-standalone created
 
 #### Verify Redis version updated successfully :
 
@@ -121,26 +121,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                    TYPE            STATUS       AGE
 update-standalone       UpdateVersion   Successful   3m45s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get redis -n demo redis-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get redis -n demo redis-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+```
 7.0.14
 
-$ kubectl get petset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo redis-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
-$ kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+```bash
+kubectl get pods -n demo redis-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 > If you are a current `Redis` user and want to switch to `Valkey`, just make sure that both `Redis` and `Valkey` versions are 7.\*.\*
 
@@ -151,12 +155,16 @@ You can see from above, our `Redis` standalone database has been updated with th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/redis-quickstart patched
 
-$ kubectl delete -n demo redis redis-quickstart
+```bash
+kubectl delete -n demo redis redis-quickstart
+```
 redis.kubedb.com "redis-quickstart" deleted
 
-$ kubectl delete -n demo redisopsrequest update-standalone
-redisopsrequest.ops.kubedb.com "update-standalone" deleted
+```bash
+kubectl delete -n demo redisopsrequest update-standalone
 ```
+redisopsrequest.ops.kubedb.com "update-standalone" deleted

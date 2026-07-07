@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,9 +44,9 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
@@ -65,9 +65,9 @@ metadata:
 Now, we need to create a role that has necessary access permissions for the Pgpool instance named `pgpool`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/mg-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/mg-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -93,10 +93,9 @@ This permission is required for Pgpool pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
-
+kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
@@ -123,9 +122,9 @@ subjects:
 Now, create a Pgpool crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/pp-custom.yaml
-pgpool.kubedb.com/pgpool created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/pp-custom.yaml
 ```
+pgpool.kubedb.com/pgpool created
 
 Below is the YAML for the Pgpool crd we just created.
 
@@ -152,15 +151,16 @@ Now, wait a few minutes. the KubeDB operator will create necessary petset, servi
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo pgpool-0
+kubectl get pod -n demo pgpool-0
+```
 NAME       READY   STATUS    RESTARTS   AGE
 pgpool-0   1/1     Running   0          50s
-```
 
 Check the pod's log to see if the pgpool is ready
 
 ```bash
-$ kubectl logs -f -n demo pgpool-0
+kubectl logs -f -n demo pgpool-0
+```
 Configuring Pgpool-II...
 Custom pgpool.conf file detected. Use custom configuration files.
 Generating pool_passwd...
@@ -192,13 +192,13 @@ Starting Pgpool-II...
 2024-08-01 05:03:30.152: health_check pid 70: LOG:  process started
 2024-08-01 05:03:30.152: health_check pid 71: LOG:  process started
 2024-08-01 05:03:30.153: main pid 61: LOG:  pgpool-II successfully started. version 4.5.0 (hotooriboshi)
-```
 
 Once we see `pgpool-II successfully started` in the log, the pgpool is ready.
 
 Also, if we want to verify that the pod is actually using our custom service account we can just describe the pod and see the `Service Accouunt Name`,
 ```bash
-$ kubectl describe pp -n demo pgpool                                                        
+kubectl describe pp -n demo pgpool                                                        
+```
 Name:         pgpool
 Namespace:    demo
 Labels:       <none>
@@ -288,7 +288,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 ## Reusing Service Account
 
@@ -297,9 +296,9 @@ An existing service account can be reused in another Pgpool instance. No new acc
 Now, create Pgpool crd `pgpool-new` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/pgpool-new.yaml
-pgpool.kubedb.com/pgpool-new created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/custom-rbac/pgpool-new.yaml
 ```
+pgpool.kubedb.com/pgpool-new created
 
 Below is the YAML for the Pgpool crd we just created.
 
@@ -326,15 +325,16 @@ Now, wait a few minutes. the KubeDB operator will create necessary petset, servi
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo pgpool-new-0
+kubectl get pod -n demo pgpool-new-0
+```
 NAME           READY   STATUS    RESTARTS   AGE
 pgpool-new-0   1/1     Running   0          55s
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo pgpool-new-0
+kubectl logs -f -n demo pgpool-new-0
+```
 Configuring Pgpool-II...
 Custom pgpool.conf file detected. Use custom configuration files.
 Generating pool_passwd...
@@ -366,12 +366,12 @@ Starting Pgpool-II...
 2024-08-01 05:05:34.570: health_check pid 70: LOG:  process started
 2024-08-01 05:05:34.570: pcp_main pid 67: LOG:  PCP process: 67 started
 2024-08-01 05:05:34.570: main pid 60: LOG:  pgpool-II successfully started. version 4.5.0 (hotooriboshi)
-```
 `pgpool-II successfully started` in the log signifies that the pgpool is running successfully.
 
 Also, if we want to verify that the pod is actually using our custom service account we can just describe the pod and see the `Service Accouunt Name`,
 ```bash
-$ kubectl describe pp -n demo pgpool-new
+kubectl describe pp -n demo pgpool-new
+```
 Name:         pgpool-new
 Namespace:    demo
 Labels:       <none>
@@ -461,7 +461,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:

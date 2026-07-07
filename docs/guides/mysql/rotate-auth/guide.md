@@ -31,24 +31,25 @@ updates the existing secret with the new credential.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available MySQLVersion
 
 When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check it by using the following command,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -64,7 +65,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 ## Create a Mysql Database
 
@@ -91,15 +91,15 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
-mysql.kubedb.com/mysql-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
 ```
+mysql.kubedb.com/mysql-quickstart created
 Let's wait for `MySQL` status is `Ready`. Run the following command to watch `MySQL` CRO
-```shell
-$ kubectl get mysql -n demo -w
+```bash
+kubectl get mysql -n demo -w
+```
 NAME             VERSION   STATUS   AGE
 mysql-quickstart 9.6.0   Ready    30m
-```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To
 do this, the user needs `username` and `password` in order to connect to the database. Below is an
@@ -115,8 +115,8 @@ H04(Wn6AM_4r6)(k⏎
 ````
 Now, you can exec into the pod `mysql-quickstart-0` and connect to database using `username` and `password`
 ```bash
-$  kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
-
+ kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```
 bash-5.1$  mysql -uroot -p"H04(Wn6AM_4r6)(k"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -142,8 +142,6 @@ mysql> SHOW DATABASES;
 | sys                |
 +--------------------+
 5 rows in set (0.01 sec)
-
-```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MySQLOpsRequest
@@ -172,19 +170,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on MySQL.
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-generated.yaml
+ ```
  MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-generated created
-```
 Let's wait for `MySQLOpsRequest` to be `Successful`. Run the following command to watch `MySQLOpsRequest` CRO
-```shell
- $ kubectl get mysqlopsrequest -n demo
+ ```bash
+ kubectl get mysqlopsrequest -n demo
+ ```
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   82s
-```
 If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe mysqlopsrequest -n demo myops-rotate-auth-generated
+```bash
+kubectl describe mysqlopsrequest -n demo myops-rotate-auth-generated
+```
 Name:         myops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -266,22 +265,26 @@ Events:
   Normal   Starting                                  26m   KubeDB Ops-manager Operator  Resuming MySQL database: demo/mysql-quickstart
   Normal   Successful                                26m   KubeDB Ops-manager Operator  Successfully resumed MySQL database: demo/mysql-quickstart
   Normal   Successful                                26m   KubeDB Ops-manager Operator  Controller has successfully rotate MySQL auth secret
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
-"mysql-quickstart-auth"
-$ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-root⏎                                    
-$ kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-vYBjULhCEzPwe5xo⏎                                     
+```bash
+kubectl get mysql -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mysql-quickstart-auth"
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
+root⏎                                    
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+vYBjULhCEzPwe5xo⏎                                     
 Let's verify if we can connect to the database using the new credentials.
 
-```shell
-$ kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
-
+```bash
+kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```
 bash-5.1$  mysql -uroot -p"vYBjULhCEzPwe5xo"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -308,16 +311,17 @@ mysql> SHOW DATABASES;
 +--------------------+
 5 rows in set (0.00 sec)
 
-```
-
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo mysql-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                        
-$ kubectl get secret -n demo mysql-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-H04(Wn6AM_4r6)(k⏎                                           
+```bash
+kubectl get secret -n demo mysql-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                        
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+H04(Wn6AM_4r6)(k⏎                                           
 Let's confirm that the previous credentials no longer work.
 ```shell
 kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
@@ -333,13 +337,13 @@ The above output shows that the password has been changed successfully. The prev
 At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom password.
 Below is the command to create a secret with `kubernetes.io/basic-auth` type,
 > Note: The `username` must be fixed as `root`. 
-```shell
-$ kubectl create secret generic mysql-quickstart-auth-user -n demo \
+```bash
+kubectl create secret generic mysql-quickstart-auth-user -n demo \
                 --type=kubernetes.io/basic-auth \
                 --from-literal=username=root \
                 --from-literal=password=Mysql2
-secret/mysql-quickstart-auth-user created
 ```
+secret/mysql-quickstart-auth-user created
 Now create a `MySQLOpsRequest` with `RotateAuth` type. Below is the YAML of the `MySQLOpsRequest` that we are going to create,
 
 ```shell
@@ -368,21 +372,22 @@ Here,
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-user.yaml
-MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-user.yaml
 ```
+MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-user created
 Let’s wait for `MySQLOpsRequest` to be Successful. Run the following command to watch `MySQLOpsRequest` CRO:
 
-```shell
-$ kubectl get mysqlopsrequest -n demo
+```bash
+kubectl get mysqlopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   35m
 myops-rotate-auth-user        RotateAuth   Successful   2m18s
-```
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe mysqlopsrequest -n demo myops-rotate-auth-user 
+```bash
+kubectl describe mysqlopsrequest -n demo myops-rotate-auth-user 
+```
 Name:         myops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -469,21 +474,26 @@ Events:
   Normal   Starting                                   2m9s   KubeDB Ops-manager Operator  Resuming MySQL database: demo/mysql-quickstart
   Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Successfully resumed MySQL database: demo/mysql-quickstart
   Normal   Successful                                 2m9s   KubeDB Ops-manager Operator  Controller has successfully rotate MySQL auth secret
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
-"mysql-quickstart-auth-user"
-$ kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
-root⏎                                                                
-$ kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
-Mysql2⏎                                                                                       
+```bash
+kubectl get my -n demo mysql-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mysql-quickstart-auth-user"
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
+```
+root⏎                                                                
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
+```
+Mysql2⏎                                                                                       
 
 Let's verify if we can connect to the database using the new credentials.
-```shell
-$ kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```bash
+kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```
 bash-5.1$ mysql -uroot -p"Mysql2"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -509,23 +519,24 @@ mysql> SHOW DATABASES;
 | sys                |
 +--------------------+
 5 rows in set (0.02 sec)
-
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo mysql-quickstart-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎           
-$ kubectl get secret -n demo mysql-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-vYBjULhCEzPwe5xo⏎             
+```bash
+kubectl get secret -n demo mysql-quickstart-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎           
+
+```bash
+kubectl get secret -n demo mysql-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+vYBjULhCEzPwe5xo⏎             
 Let's confirm that the previous credentials no longer work.
-```shell
-$ kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```bash
+kubectl exec -it -n demo mysql-quickstart-0 -c mysql -- bash
+```
 bash-5.1$ mysql -uroot -p"vYBjULhCEzPwe5xo"
 mysql: [Warning] Using a password on the command line interface can be insecure.
 ERROR 1045 (28000): Access denied for user 'root'@'localhost' (using password: YES)
 bash-5.1$ 
-```
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning up
@@ -533,15 +544,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Alternatively, you can delete individual resources by name. To do so, run:
 
-```shell
-$ kubectl delete mysqlopsrequest myops-rotate-auth-generated myops-rotate-auth-user -n demo
-MySQLOpsRequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo mysql-quickstart-auth-user
-secret "mysql-quickstart-auth-user" deleted
-$ kubectl delete secret -n demo   mysql-quickstart-auth 
-secret "mysql-quickstart-auth " deleted
-
+```bash
+kubectl delete mysqlopsrequest myops-rotate-auth-generated myops-rotate-auth-user -n demo
 ```
+MySQLOpsRequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo mysql-quickstart-auth-user
+```
+secret "mysql-quickstart-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo   mysql-quickstart-auth 
+```
+secret "mysql-quickstart-auth " deleted
 
 ## Next Steps
 

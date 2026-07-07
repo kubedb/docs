@@ -27,12 +27,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy the prometheus operator helm chart. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 
 
@@ -45,10 +47,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   REPLICAS   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.39.0   1          13d
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -165,27 +167,27 @@ Here,
 Let's create the RabbitMQ object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/monitoring/prom-rm.yaml
-rabbitmq.kubedb.com/prom-rm created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/monitoring/prom-rm.yaml
 ```
+rabbitmq.kubedb.com/prom-rm created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get rm -n demo prom-rm
+kubectl get rm -n demo prom-rm
+```
 NAME              VERSION    STATUS    AGE
 prom-rm           4.2.4     Ready     34s
-```
 
 KubeDB will create a separate stats service with name `{RabbitMQ crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=prom-rm"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=prom-rm"
+```
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 prom-rm                 ClusterIP   10.96.150.171   <none>        27017/TCP   84s
 prom-rm-pods            ClusterIP   None            <none>        27017/TCP   84s
 prom-rm-stats           ClusterIP   10.96.218.41    <none>        56790/TCP   64s
-```
 
 Here, `prom-rm-stats` service has been created for monitoring purpose.
 
@@ -220,10 +222,10 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use this informatio
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `prom-rm-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                    AGE
 prom-rm-stats           2m40s
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of RabbitMQ crd.
 
@@ -280,20 +282,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   1          13d
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-kube-prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-kube-prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `prom-rm-stats` service as one of the targets.
 

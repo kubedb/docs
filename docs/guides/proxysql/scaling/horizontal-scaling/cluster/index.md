@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to scale the cl
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml. 
 
@@ -61,9 +61,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created 
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created 
 
 After applying the above yaml wait for the MySQL to be Ready.
 
@@ -93,26 +93,29 @@ spec:
 Let's create the `ProxySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 Now, wait until `proxy-server` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get proxysql -n demo
+kubectl get proxysql -n demo
+```
 NAME             VERSION       STATUS    AGE
 proxy-server   3.0.1-debian    Ready    2m36s
-```
 
 Let's check the number of replicas this cluster has from the ProxySQL object, number of pods the petset have,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
-3
-$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
-3
+kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
 ```
+3
+
+```bash
+kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
+```
+3
 
 We can see from both command that the server has 3 replicas in the cluster.
 
@@ -121,7 +124,8 @@ Also, we can verify the replicas of the replicaset from an internal proxysql com
 Now let's connect to a proxysql instance and run a proxysql internal command to check the cluster status,
 
 ```bash
-$  kubectl exec -it -n demo proxy-server-0 -- bash
+ kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * from runtime_proxysql_servers;"
 +---------------------------------------+------+--------+---------+
 | hostname                              | port | weight | comment |
@@ -130,7 +134,6 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * fro
 | proxy-server-1.proxy-server-pods.demo | 6032 | 1      |         |
 | proxy-server-0.proxy-server-pods.demo | 6032 | 1      |         |
 +---------------------------------------+------+--------+---------+
-```
 
 We can see from the above output that the cluster has 3 nodes.
 
@@ -168,9 +171,9 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-upscale.yaml
-proxysqlopsrequest.ops.kubedb.com/scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-upscale.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/scale-up created
 
 ### Verify Cluster replicas scaled up successfully
 
@@ -179,25 +182,29 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
 ```bash
-$ watch kubectl get proxysqlopsrequest -n demo
+watch kubectl get proxysqlopsrequest -n demo
+```
 Every 2.0s: kubectl get proxysqlopsrequest -n demo
 NAME                        TYPE                STATUS       AGE
 scale-up                HorizontalScaling    Successful     106s
-```
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the petset have,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
-5
-$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
-5
+kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas'
 ```
+5
+
+```bash
+kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
+```
+5
 
 Now let's connect to a proxysql instance and run a proxysql internal command to check the number of replicas,
 
 ```bash
-$  kubectl exec -it -n demo proxy-server-0 -- bash
+ kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * from runtime_proxysql_servers;"
 +---------------------------------------+------+--------+---------+
 | hostname                              | port | weight | comment |
@@ -209,9 +216,6 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * fro
 | proxy-server-4.proxy-server-pods.demo | 6032 | 1      |         |
 +---------------------------------------+------+--------+---------+
 root@proxy-server-1:/# 
-
-
-```
 
 From all the above outputs we can see that the replicas of the cluster is `5`. That means we have successfully scaled up the replicas of the ProxySQL replicaset.
 
@@ -246,9 +250,9 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-downscale.yaml
-proxysqlopsrequest.ops.kubedb.com/scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/horizontal-scaling/cluster/examples/proxyops-downscale.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/scale-down created
 
 #### Verify Cluster replicas scaled down successfully
 
@@ -257,24 +261,28 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
 ```bash
-$ watch kubectl get proxysqlopsrequest -n demo
+watch kubectl get proxysqlopsrequest -n demo
+```
 Every 2.0s: kubectl get proxysqlopsrequest -n demo
 NAME                          TYPE                STATUS       AGE
 scale-down              HorizontalScaling       Successful   2m32s
-```
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the ProxySQL object, number of pods the petset have,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas' 
-4
-$ kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
-4
+kubectl get proxysql -n demo proxy-server -o json | jq '.spec.replicas' 
 ```
+4
+
+```bash
+kubectl get petset -n demo proxy-server -o json | jq '.spec.replicas'
+```
+4
 
 Now let's connect to a proxysql instance and run a proxysql internal command to check the number of replicas,
 ```bash
-$  kubectl exec -it -n demo proxy-server-0 -- bash
+ kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * from runtime_proxysql_servers;"
 +---------------------------------------+------+--------+---------+
 | hostname                              | port | weight | comment |
@@ -284,7 +292,6 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "select * fro
 | proxy-server-0.proxy-server-pods.demo | 6032 | 1      |         |
 | proxy-server-3.proxy-server-pods.demo | 6032 | 1      |         |
 +---------------------------------------+------+--------+---------+
-```
 
 From all the above outputs we can see that the replicas of the cluster is `4`. That means we have successfully scaled down the replicas of the ProxySQL replicaset.
 
@@ -293,6 +300,9 @@ From all the above outputs we can see that the replicas of the cluster is `4`. T
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete proxysql -n demo proxy-server
-$ kubectl delete proxysqlopsrequest -n demo  scale-up scale-down
+kubectl delete proxysql -n demo proxy-server
+```
+
+```bash
+kubectl delete proxysqlopsrequest -n demo  scale-up scale-down
 ```

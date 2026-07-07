@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the S
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -90,48 +90,55 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/topology/solr.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/topology/solr.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    90m
-```
 
 Let's check the number of replicas has from Solr object, number of pods the petset have,
 
 **Data Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
-1
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
 ```
+1
+
+```bash
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
+```
+1
 
 **Overseer Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
+```
 1
 
+```bash
+kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
 ```
+1
 
 **Coordinator Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
+```
 1
 
+```bash
+kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
 ```
+1
 
 We can see from commands that the cluster has 3 replicas for data, overseer, coordinator.
 
@@ -173,9 +180,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/topology/slops-hscale-up-topology.yaml
-solropsrequest.ops.kubedb.com/slops-hscale-up-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/topology/slops-hscale-up-topology.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-hscale-up-topology created
 
 > **Note:** If you want to scale down only broker or controller, you can specify the desired replicas for only broker or controller in the `SolrOpsRequest` CR. You can specify one at a time. If you want to scale broker only, no node will need restart to apply the changes. But if you want to scale controller, all nodes will need restart to apply the changes.
 
@@ -186,15 +193,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `SolrOpsRequest` to be `Successful`. Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ watch kubectl get Solropsrequest -n demo
+watch kubectl get Solropsrequest -n demo
+```
 NAME                        TYPE                STATUS       AGE
 slops-hscale-up-topology    HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-hscale-up-topology 
+kubectl describe slops -n demo slops-hscale-up-topology 
+```
 Name:         slops-hscale-up-topology
 Namespace:    demo
 Labels:       <none>
@@ -268,32 +276,40 @@ Events:
   Normal   HorizontalScaleOverseerNode                6m16s  KubeDB Ops-manager Operator  ScaleUp solr-cluster-overseer nodes
   Normal   Starting                                   6m16s  KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                 6m16s  KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-hscale-up-topolog
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Solr object, number of pods the petset have,
 
 **Broker Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
-2
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
-2
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
 ```
+2
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
-2
-$ kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
-2
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
 ```
+2
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
-2
-$ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
-2
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
 ```
+2
+
+```bash
+kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
+```
+2
+
+```bash
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
+```
+2
+
+```bash
+kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
+```
+2
 
 From all the above outputs we can see that all data, overseer, coordinator of the topology Solr is `2`. That means we have successfully scaled up the replicas of the Solr topology cluster.
 
@@ -332,9 +348,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/scaling/horizontal-scaling/Solr-hscale-down-topology.yaml
-solropsrequest.ops.kubedb.com/slops-hscale-down-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/scaling/horizontal-scaling/Solr-hscale-down-topology.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-hscale-down-topology created
 
 #### Verify Topology cluster replicas scaled down successfully
 
@@ -343,15 +359,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `SolrOpsRequest` to be `Successful`. Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ watch kubectl get solropsrequest -n demo
+watch kubectl get solropsrequest -n demo
+```
 NAME                          TYPE                STATUS       AGE
 slops-hscale-down-topology    HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-hscale-down-topology 
+kubectl describe slops -n demo slops-hscale-down-topology 
+```
 Name:         slops-hscale-down-topology
 Namespace:    demo
 Labels:       <none>
@@ -451,7 +468,6 @@ Events:
   Normal   HorizontalScaleOverseerNode                13s    KubeDB Ops-manager Operator  ScaleDown solr-cluster-overseer nodes
   Normal   Starting                                   13s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                 13s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-hscale-down-topology
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Solr object, number of pods the petset have,
 
@@ -460,31 +476,38 @@ Let's check the number of replicas has from Solr object, number of pods the pets
 **Data Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
-1
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.replicas'
 ```
+1
+
+```bash
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.replicas'
+```
+1
 
 **Overseer Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.overseer.replicas'
+```
 1
 
+```bash
+kubectl get petset -n demo solr-cluster-overseer -o json | jq '.spec.replicas'
 ```
+1
 
 **Coordinator Replicas**
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
-1
-$ kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.coordinator.replicas'
+```
 1
 
+```bash
+kubectl get petset -n demo solr-cluster-coordinator -o json | jq '.spec.replicas'
 ```
+1
 
 
 ## Cleaning Up

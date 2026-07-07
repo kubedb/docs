@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -69,22 +69,23 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-vertical.yaml
-pgpool.kubedb.com/pp-vertical created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-vertical.yaml
 ```
+pgpool.kubedb.com/pp-vertical created
 
 Now, wait until `pp-vertical` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
 NAME          TYPE                  VERSION   STATUS   AGE
 pp-vertical   kubedb.com/v1alpha2   4.5.0     Ready    17s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -95,7 +96,6 @@ $ kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resourc
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -142,9 +142,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-vertical-ops.yaml
-pgpoolopsrequest.ops.kubedb.com/pgpool-scale-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-vertical-ops.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/pgpool-scale-vertical created
 
 #### Verify Pgpool resources updated successfully 
 
@@ -153,16 +153,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ kubectl get pgpoolopsrequest -n demo
+kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                    TYPE              STATUS       AGE
 pgpool-scale-vertical   VerticalScaling   Successful   3m42s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to scale the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo pgpool-scale-vertical
+kubectl describe pgpoolopsrequest -n demo pgpool-scale-vertical
+```
 Name:         pgpool-scale-vertical
 Namespace:    demo
 Labels:       <none>
@@ -252,12 +253,12 @@ Events:
   Normal   RestartPods                                                      3m28s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                         3m28s  KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-vertical
   Normal   Successful                                                       3m28s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-vertical for PgpoolOpsRequest: pgpool-scale-vertical
-```
 
 Now, we are going to verify from the Pod yaml whether the resources of the pgpool has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -268,7 +269,6 @@ $ kubectl get pod -n demo pp-vertical-0 -o json | jq '.spec.containers[].resourc
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the Pgpool.
 

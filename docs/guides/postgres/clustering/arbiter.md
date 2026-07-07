@@ -36,9 +36,9 @@ So storage space of 2Gi is more than enough for most of the clusters.
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Let's apply the following yaml. 
 

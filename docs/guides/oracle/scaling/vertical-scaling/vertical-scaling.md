@@ -25,9 +25,9 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/scaling) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,9 +70,9 @@ spec:
 Let's create the `Oracle` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/scaling/standalone-minimal.yaml
-oracle.kubedb.com/oracle-sa-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/scaling/standalone-minimal.yaml
 ```
+oracle.kubedb.com/oracle-sa-sample created
 
 Now, wait until `oracle-sa-sample` has status `Ready` and the pod prints the `DATABASE IS READY TO USE!!!` banner.
 
@@ -81,7 +81,8 @@ Now, wait until `oracle-sa-sample` has status `Ready` and the pod prints the `DA
 Let's check the Pod containers' resources of the database. Run the following command to get the resources of the `oracle-sa-sample-0` Pod,
 
 ```bash
-$ kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | select(.name=="oracle") | .resources'
+kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | select(.name=="oracle") | .resources'
+```
 {
   "limits": {
     "cpu": "4",
@@ -92,7 +93,6 @@ $ kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | 
     "memory": "7Gi"
   }
 }
-```
 
 These are the default resources KubeDB assigns to the main `oracle` container. Now, we are going to update these resources using vertical scaling.
 
@@ -134,24 +134,25 @@ Here,
 Let's create the `OracleOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/scaling/standalone-vertical-scaling.yaml
-oracleopsrequest.ops.kubedb.com/standalone-vertical-scaling created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/scaling/standalone-vertical-scaling.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-vertical-scaling created
 
 **Verify Oracle resources updated successfully:**
 
 If everything goes well, the `OracleOpsRequest` will reach the `Successful` phase. Let's wait for it,
 
 ```bash
-$ kubectl get oracleopsrequest -n demo standalone-vertical-scaling
+kubectl get oracleopsrequest -n demo standalone-vertical-scaling
+```
 NAME                          TYPE              STATUS       AGE
 standalone-vertical-scaling   VerticalScaling   Successful   43s
-```
 
 We can see from the following `kubectl describe` output that the scaling completed successfully,
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo standalone-vertical-scaling
+kubectl describe oracleopsrequest -n demo standalone-vertical-scaling
+```
 Name:         standalone-vertical-scaling
 Namespace:    demo
 ...
@@ -178,12 +179,12 @@ Status:
     Status:                True
     Type:                  Successful
   Phase:                   Successful
-```
 
 Now, let's verify that the Pod resources have been updated to our desired values,
 
 ```bash
-$ kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | select(.name=="oracle") | .resources'
+kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | select(.name=="oracle") | .resources'
+```
 {
   "limits": {
     "cpu": "5",
@@ -194,7 +195,6 @@ $ kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | 
     "memory": "10Gi"
   }
 }
-```
 
 The resources of the Oracle database have been updated successfully.
 

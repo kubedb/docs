@@ -25,9 +25,9 @@ In this example, we will initialize MariaDB using a `.sql` script from the GitHu
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## From Public Git Repository
 
@@ -78,10 +78,10 @@ The `--link` argument creates a symlink that always points to the latest synced 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5   Ready    5m
-```
 
 Next, we will connect to the MariaDB database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
@@ -132,7 +132,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -145,7 +145,7 @@ Use the `kubectl create secret` command to create a secret from your local SSH k
 This secret will be used by git-sync to authenticate with the Git repository.
 
 ```bash
-$ kubectl create secret generic -n demo git-creds \
+kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -198,7 +198,7 @@ First, create a `Personal Access Token (PAT)` on your Git host server with the r
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -248,7 +248,13 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete mariadb -n demo sample-mariadb
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

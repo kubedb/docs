@@ -39,17 +39,17 @@ This guide walks you through setting up a PerconaXtraDB HA cluster using KubeDB 
 * A valid [StorageClass](https://kubernetes.io /concepts/storage/storage-classes/) is required.
 
 ```bash
-$ kubectl get storageclasses
+kubectl get storageclasses
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h
-```
 
 * For isolation, we’ll use a separate namespace called `demo`.
 
-```shell
-$ kubectl create ns demo
-namespace/demo created
+```bash
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Step 1: Deploy a PerconaXtraDB Cluster
 
@@ -79,15 +79,15 @@ spec:
 
 Apply the manifest:
 
-```shell
-$ kubectl apply -f pxc-ha.yaml
-perconaxtradb.kubedb.com/pxc-ha created
+```bash
+kubectl apply -f pxc-ha.yaml
 ```
+perconaxtradb.kubedb.com/pxc-ha created
 
 Watch resources until ready:
 
-```shell
-$ watch kubectl get perconaxtradb,petset,pods -n demo
+```bash
+watch kubectl get perconaxtradb,petset,pods -n demo
 ```
 
 Sample ready output:
@@ -108,16 +108,17 @@ pod/pxc-ha-2   2/2     Running   0          16h
 All nodes are part of the Galera cluster and can handle read/write traffic.
 Inspect the role/labels of all nodes (note: Galera is multi-primary — labels might show `Primary` for each):
 
-```shell
-$ kubectl get pods -n demo --show-labels | grep pxc-ha
+```bash
+kubectl get pods -n demo --show-labels | grep pxc-ha
 ```
 
 ### Step 2: Verify Cluster Functionality
 
 Let’s connect to one node and create a database:
 
-```shell
-$ kubectl exec -it -n demo pxc-ha-0 -- bash
+```bash
+kubectl exec -it -n demo pxc-ha-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 
 bash-5.1$ mysql -u root --password='kpbogmFdR!tXVcaG'
@@ -156,12 +157,12 @@ Bye
 bash-5.1$ exit
 exit
 ⏎                                   
-```
 
 Check the database from another node:
 
-```shell
-$kubectl exec -it -n demo pxc-ha-1 -- bash
+```bash
+kubectl exec -it -n demo pxc-ha-1 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-5.1$ mysql -u root --password='kpbogmFdR!tXVcaG'
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -197,7 +198,6 @@ bash-5.1$ exit
 exit
 
 # odissi is present instantly (Galera synchronous replication)
-```
 
 ### Step 3: Simulate Node Failure
 
@@ -210,18 +210,18 @@ Below are corrected, explicit steps and expected outputs for the failure scenari
 1. **Observe current pod state** (open a separate terminal and run):
 
 ```bash
-$ kubectl get pods -n demo --show-labels | grep pxc-ha
+kubectl get pods -n demo --show-labels | grep pxc-ha
+```
 pxc-ha-0 Primary
 pxc-ha-1 Primary
 pxc-ha-2 Primary
-```
 
 2. **Delete the node (pod)**:
 
 ```bash
-$ kubectl delete pod -n demo pxc-ha-0
-pod "pxc-ha-0" deleted
+kubectl delete pod -n demo pxc-ha-0
 ```
+pod "pxc-ha-0" deleted
 we can see output similar to:
 ```shell
 
@@ -231,7 +231,7 @@ we can see output similar to:
 3. **Watch cluster state while the pod is terminated and recreated**:
 
 ```bash
-$ watch -n 2 "kubectl get pods -n demo --show-labels | grep pxc-ha"
+watch -n 2 "kubectl get pods -n demo --show-labels | grep pxc-ha"
 ```
 
 You will see a sequence similar to:
@@ -264,19 +264,19 @@ pxc-ha-2 Primary
 4. **Verify Galera cluster membership and status while the node is down** (check from any remaining node, e.g., `pxc-ha-1`):
 
 ```bash
-$ kubectl exec -it -n demo pxc-ha-1 -- mysql -uroot --password='kpbogmFdR!tXVcaG' -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
-
+kubectl exec -it -n demo pxc-ha-1 -- mysql -uroot --password='kpbogmFdR!tXVcaG' -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
+```
 +---------------------+-------+
 | Variable_name       | Value |
 +---------------------+-------+
 | wsrep_cluster_size  | 2     |
 +---------------------+-------+
-```
 
 When `pxc-ha-0` is back:
 
-```shell
-$ kubectl exec -it -n demo pxc-ha-1 -- mysql -uroot --password='kpbogmFdR!tXVcaG' -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
+```bash
+kubectl exec -it -n demo pxc-ha-1 -- mysql -uroot --password='kpbogmFdR!tXVcaG' -e "SHOW STATUS LIKE 'wsrep_cluster_size';"
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +--------------------+-------+
@@ -285,18 +285,15 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | wsrep_cluster_size | 3     |
 +--------------------+-------+
 
-```
-
 #### Case 2: Delete two nodes
 
 (Kept and clarified from the original doc.) Example commands and expected behavior:
 
 ```bash
-$ kubectl delete pod -n demo pxc-ha-0 pxc-ha-1
+kubectl delete pod -n demo pxc-ha-0 pxc-ha-1
+```
 pod "pxc-ha-0" deleted
 pod "pxc-ha-1" deleted
-
-```
 
 * Immediately after deletion you'll see two pods terminating; the remaining pod will keep serving traffic as long as it can (quorum depends on how your cluster is configured and how many nodes are healthy).
 * Monitor `wsrep_cluster_size` on the remaining node — it will show `1` while two nodes are down and return to `3` after the others rejoin.
@@ -304,12 +301,11 @@ pod "pxc-ha-1" deleted
 #### Case 3: Delete all nodes
 
 ```bash
-$ kubectl delete pod -n demo pxc-ha-0 pxc-ha-1 pxc-ha-2
+kubectl delete pod -n demo pxc-ha-0 pxc-ha-1 pxc-ha-2
+```
 pod "pxc-ha-0" deleted
 pod "pxc-ha-1" deleted
 pod "pxc-ha-2" deleted
-
-```
 
 KubeDB will recreate all pods. After they are all `Running` and Galera finishes SST/IST, cluster size will return to `3` and data will be available.
 
@@ -318,8 +314,11 @@ KubeDB will recreate all pods. After they are all `Running` and Galera finishes 
 To clean up resources created in this tutorial:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo pxc-ha
-$ kubectl delete ns demo
+kubectl delete perconaxtradb -n demo pxc-ha
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ### Next Steps

@@ -27,9 +27,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,12 +44,12 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mariadb/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mariadb/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
@@ -133,23 +133,25 @@ You can found more details from [here](/docs/guides/mariadb/concepts/mariadb/#sp
 Let’s create the `MariaDB` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/tls/configure/examples/tls-standalone.yaml
-mariadb.kubedb.com/md-standalone-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/tls/configure/examples/tls-standalone.yaml
 ```
+mariadb.kubedb.com/md-standalone-tls created
 
 **Wait for the database to be ready:**
 
 Now, wait for `MariaDB` going on `Running` state and also wait for `PetSet` and its pod to be created and going to `Running` state,
 
 ```bash
-$ kubectl get mariadb -n demo md-standalone-tls
+kubectl get mariadb -n demo md-standalone-tls
+```
 NAME             VERSION   STATUS   AGE
 md-standalone-tls   11.8.5    Ready    5m48s
 
-$ kubectl get petset -n demo md-standalone-tls
+```bash
+kubectl get petset -n demo md-standalone-tls
+```
 NAME             READY   AGE
 md-standalone-tls   1/1     7m5s
-```
 
 **Verify tls-secrets created successfully:**
 
@@ -160,14 +162,14 @@ All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name form
 Let's check the tls-secrets have created,
 
 ```bash
-$ kubectl get secrets -n demo | grep md-standalone-tls
+kubectl get secrets -n demo | grep md-standalone-tls
+```
 md-standalone-tls-archiver-cert             kubernetes.io/tls                     3      7m53s
 md-standalone-tls-auth                      kubernetes.io/basic-auth              2      7m54s
 md-standalone-tls-metrics-exporter-cert     kubernetes.io/tls                     3      7m53s
 md-standalone-tls-metrics-exporter-config   Opaque                                1      7m54s
 md-standalone-tls-server-cert               kubernetes.io/tls                     3      7m53s
 md-standalone-tls-token-7hhg2
-```
 
 **Verify MariaDB Standalone configured with TLS/SSL:**
 
@@ -176,8 +178,8 @@ Now, we are going to connect to the database for verifying the `MariaDB` server 
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo md-standalone-tls-0 -- bash
-
+kubectl exec -it -n demo md-standalone-tls-0 -- bash
+```
 root@md-standalone-tls-0:/ ls /etc/mysql/certs/client
 ca.crt  tls.crt  tls.key
 root@md-standalone-tls-0:/ ls /etc/mysql/certs/server
@@ -219,7 +221,6 @@ MariaDB [(none)]> show variables like '%require_secure_transport%';
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 The above output shows that the `MariaDB` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/etc/mysql/certs/client/` and `/etc/mysql/certs/server/` directory for client and server respectively.
 
@@ -230,7 +231,8 @@ Now, you can create an SSL required user that will be used to connect to the dat
 Let's connect to the database server with a secure connection,
 
 ```bash
-$ kubectl exec -it -n demo md-standalone-tls-0 -- bash
+kubectl exec -it -n demo md-standalone-tls-0 -- bash
+```
 root@md-standalone-tls-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 92
@@ -265,7 +267,6 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 MariaDB [(none)]> exit 
 Bye
-```
 
 From the above output, you can see that only using client certificate we can access the database securely, otherwise, it shows "Access denied". Our client certificate is stored in `/etc/mysql/certs/client/` directory.
 
@@ -320,15 +321,17 @@ mariadb.kubedb.com/md-cluster-tls created
 Now, wait for `MariaDB` going on `Running` state and also wait for `PetSet` and its pods to be created and going to `Running` state,
 
 ```bash
-$ kubectl get mariadb -n demo md-cluster-tls
+kubectl get mariadb -n demo md-cluster-tls
+```
 NAME             VERSION   STATUS   AGE
 md-cluster-tls   11.8.5    Ready    2m49s
 
-$ kubectl get pod -n demo | grep md-cluster-tls
+```bash
+kubectl get pod -n demo | grep md-cluster-tls
+```
 md-cluster-tls-0   1/1     Running   0          3m29s
 md-cluster-tls-1   1/1     Running   0          3m9s
 md-cluster-tls-2   1/1     Running   0          2m49s
-```
 
 **Verify tls-secrets created successfully :**
 
@@ -339,14 +342,14 @@ All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name form
 Let's check the tls-secrets have created,
 
 ```bash
-$ kubectl get secrets -n demo | grep md-cluster-tls
+kubectl get secrets -n demo | grep md-cluster-tls
+```
 md-cluster-tls-archiver-cert             kubernetes.io/tls                     3      6m20s
 md-cluster-tls-auth                      kubernetes.io/basic-auth              2      6m22s
 md-cluster-tls-metrics-exporter-cert     kubernetes.io/tls                     3      6m20s
 md-cluster-tls-metrics-exporter-config   Opaque                                1      6m21s
 md-cluster-tls-server-cert               kubernetes.io/tls                     3      6m21s
 md-cluster-tls-token-nrs75
-```
 
 **Verify MariaDB Cluster configured with TLS/SSL:**
 
@@ -355,8 +358,8 @@ Now, we are going to connect to the database for verifying the `MariaDB` server 
 Let's exec into the first pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo md-cluster-tls-0 -- bash
-
+kubectl exec -it -n demo md-cluster-tls-0 -- bash
+```
 root@md-cluster-tls-0:/ ls /etc/mysql/certs/client
 ca.crt  tls.crt  tls.key
 root@md-cluster-tls-0:/ ls /etc/mysql/certs/server
@@ -398,12 +401,12 @@ MariaDB [(none)]> show variables like '%require_secure_transport%';
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 Now let's check for the second database server,
 
 ```bash
-$ kubectl exec -it -n demo md-cluster-tls-1 -- bash
+kubectl exec -it -n demo md-cluster-tls-1 -- bash
+```
 root@md-cluster-tls-1:/ ls /etc/mysql/certs/client
 ca.crt  tls.crt  tls.key
 root@md-cluster-tls-1:/ ls /etc/mysql/certs/server
@@ -444,7 +447,6 @@ MariaDB [(none)]> show variables like '%require_secure_transport%';
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 The above output shows that the `MariaDB` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/etc/mysql/certs/client/` and `/etc/mysql/certs/server/` directory for client and server respectively.
 
@@ -455,7 +457,8 @@ Now, you can create an SSL required user that will be used to connect to the dat
 Let's connect to the database server with a secure connection,
 
 ```bash
-$ kubectl exec -it -n demo md-cluster-tls-0 -- bash
+kubectl exec -it -n demo md-cluster-tls-0 -- bash
+```
 root@md-cluster-tls-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 92
@@ -490,7 +493,6 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 MariaDB [(none)]> exit 
 Bye
-```
 
 From the above output, you can see that only using client certificate we can access the database securely, otherwise, it shows "Access denied". Our client certificate is stored in `/etc/mysql/certs/client/` directory.
 
@@ -499,10 +501,16 @@ From the above output, you can see that only using client certificate we can acc
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete  mariadb demo  md-standalone-tls
-mariadb.kubedb.com "md-standalone-tls" deleted
-$ kubectl delete  mariadb demo  md-cluster-tls
-mariadb.kubedb.com "md-cluster-tls" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete  mariadb demo  md-standalone-tls
 ```
+mariadb.kubedb.com "md-standalone-tls" deleted
+
+```bash
+kubectl delete  mariadb demo  md-cluster-tls
+```
+mariadb.kubedb.com "md-cluster-tls" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

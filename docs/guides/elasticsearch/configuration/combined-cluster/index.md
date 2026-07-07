@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/combined-cluster/yamls
 ) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -41,10 +43,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Elasticsearch CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -87,9 +89,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/combined-cluster/yamls/config-secret.yaml
-secret/es-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/combined-cluster/yamls/config-secret.yaml
 ```
+secret/es-custom-config created
 
 Now that the config secret is created, it needs to be mention in the [Elasticsearch](/docs/guides/elasticsearch/concepts/elasticsearch/index.md) object's yaml:
 
@@ -120,19 +122,19 @@ spec:
 Now, create the Elasticsearch object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/combined-cluster/yamls/es-combined.yaml
-elasticsearch.kubedb.com/es-multinode created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/combined-cluster/yamls/es-combined.yaml
 ```
+elasticsearch.kubedb.com/es-multinode created
 
 Now, wait for the Elasticsearch to become ready:
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME           VERSION          STATUS         AGE
 es-multinode   xpack-9.2.3   Provisioning   18s
 es-multinode   xpack-9.2.3   Provisioning   2m5s
 es-multinode   xpack-9.2.3   Ready          2m5s
-```
 
 ## Verify Configuration
 
@@ -140,12 +142,12 @@ Let's connect to the Elasticsearch cluster that we have created and check the no
 
 Connect to the Cluster:
 
-```bash
 # Port-forward the service to local machine
-$ kubectl port-forward -n demo svc/es-multinode 9200
+```bash
+kubectl port-forward -n demo svc/es-multinode 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
@@ -155,22 +157,21 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
-  elastic
+  kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  elastic
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
-  ehG7*7SJZ0o9PA05
+  kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  ehG7*7SJZ0o9PA05
 
 Now, we will query for settings of all nodes in an Elasticsearch cluster,
 
 ```bash
-$ curl -XGET -k -u 'elastic:ehG7*7SJZ0o9PA05' "https://localhost:9200/_nodes/_all/settings?pretty"
-
+curl -XGET -k -u 'elastic:ehG7*7SJZ0o9PA05' "https://localhost:9200/_nodes/_all/settings?pretty"
 ```
 
 This will return a large JSON with node settings. Here is the prettified JSON response,
@@ -504,11 +505,15 @@ Here we can see that our given configuration is merged to the default configurat
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete elasticsearch -n demo es-multinode 
+kubectl delete elasticsearch -n demo es-multinode 
+```
 
-$ kubectl delete secret -n demo es-custom-config 
+```bash
+kubectl delete secret -n demo es-custom-config 
+```
 
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [examples](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -55,9 +55,9 @@ Here, `default_vhost` is set to `/customvhost` instead of the default vhost `/`.
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo rabbit-custom-config --from-file=./rabbitmq.conf
-secret/rabbit-custom-config created
+kubectl create secret generic -n demo rabbit-custom-config --from-file=./rabbitmq.conf
 ```
+secret/rabbit-custom-config created
 
 In this section, we are going to create a RabbitMQ object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
@@ -84,39 +84,41 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/cluster/rabbit-custom-config.yaml
-rabbitmq.kubedb.com/rm-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/cluster/rabbit-custom-config.yaml
 ```
+rabbitmq.kubedb.com/rm-cluster created
 
 Now, wait until `rm-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo
+kubectl get rm -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 rm-cluster      kubedb.com/v1alpha2   4.2.4    Ready    79m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a RabbitMQ instance,
 ```bash
-$ kubectl get secrets -n demo rm-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo rm-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+```
 admin
 
-$ kubectl get secrets -n demo rm-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
-m6lXjZugrC4VEpB8
+```bash
+kubectl get secrets -n demo rm-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
 ```
+m6lXjZugrC4VEpB8
 
 Now let's check the configuration we have provided by using rabbitmq's inbuilt cli.
 
 ```bash
-$ kubectl exec -it -n demo rm-cluster-0 -- bash
+kubectl exec -it -n demo rm-cluster-0 -- bash
+```
 Defaulted container "rabbitmq" out of: rabbitmq, rabbitmq-init (init)
 rm-cluster-0:/$ rabbitmqctl list_vhosts
 Listing vhosts ...
 name
 /customvhost
-```
 
 Provided custom vhost is there and is defaulted.
 
@@ -127,15 +129,15 @@ Now we will update this default vhost to `/newvhost` using Reconfigure Ops-Reque
 Now, Let's edit the `rabbitmq.conf` file containing required configuration settings.
 
 ```bash
-$ echo "default_vhost = /newvhost" > rabbitmq.conf
+echo "default_vhost = /newvhost" > rabbitmq.conf
 ```
 
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./rabbitmq.conf
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./rabbitmq.conf
 ```
+secret/new-custom-config created
 
 #### Create RabbitMQOpsRequest
 
@@ -168,9 +170,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/opsrequests/rabbit-reconfigure-with-secret.yaml
-rabbitmqopsrequest.ops.kubedb.com/reconfigure-rm-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/opsrequests/rabbit-reconfigure-with-secret.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/reconfigure-rm-cluster created
 
 #### Verify the new configuration is working 
 
@@ -179,16 +181,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ watch kubectl get rabbitmqopsrequest -n demo
+watch kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 reconfigure-rm-cluster        Reconfigure   Successful   3m
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo reconfigure-rm-cluster
+kubectl describe rabbitmqopsrequest -n demo reconfigure-rm-cluster
+```
 Name:         reconfigure-rm-cluster
 Namespace:    demo
 Labels:       <none>
@@ -265,19 +268,18 @@ Events:
   Normal   RestartNodes                                           5m40s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                               5m40s  KubeDB Ops-manager Operator  Resuming RabbitMQ database: demo/rm-cluster
   Normal   Successful                                             5m39s  KubeDB Ops-manager Operator  Successfully resumed RabbitMQ database: demo/rm-cluster for RabbitMQOpsRequest: reconfigure-rm-cluster
-```
 
 Now let's check the configuration we have provided after reconfiguration.
 
 ```bash
-$ kubectl exec -it -n demo rm-cluster-0 -- bash
+kubectl exec -it -n demo rm-cluster-0 -- bash
+```
 Defaulted container "rabbitmq" out of: rabbitmq, rabbitmq-init (init)
 rm-cluster-0:/$ rabbitmqctl list_vhosts
 Listing vhosts ...
 name
 /newvhost
 /customvhost
-```
 As we can see from the configuration of running RabbitMQ, `/newvhost` is in the list of vhosts.
 
 ### Reconfigure using apply config
@@ -315,9 +317,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/opsrequests/rabbitmq-reconfigure-apply.yaml
-rabbitmqopsrequest.ops.kubedb.com/reconfigure-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/opsrequests/rabbitmq-reconfigure-apply.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/reconfigure-apply created
 
 ## Cleaning Up
 

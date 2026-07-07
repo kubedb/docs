@@ -25,12 +25,14 @@ This guide will show you how to use `KubeDB` GitOps operator to create postgres 
 - You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -100,11 +102,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── postgres.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Postgres` CR is created in your cluster.
 
@@ -112,18 +114,19 @@ Our `gitops` operator will create an actual `Postgres` database CR in the cluste
 
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   2m11s
 
 NAME                              VERSION   STATUS   AGE
 postgres.kubedb.com/ha-postgres   18.3      Ready    2m11s
-```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Postgres.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+```
 NAME                                       AGE
 petset.apps.k8s.appscode.com/ha-postgres   3m26s
 
@@ -142,7 +145,6 @@ service/ha-postgres-standby   ClusterIP   10.43.106.75    <none>        5432/TCP
 
 NAME                                             TYPE                  VERSION   AGE
 appbinding.appcatalog.appscode.com/ha-postgres   kubedb.com/postgres   18.3      3m26s
-```
 
 ## Update Postgres Database using GitOps
 
@@ -184,7 +186,8 @@ Resource Requests and Limits are updated to `700m` CPU and `2Gi` Memory. Commit 
 Now, `gitops` operator will detect the resource changes and create a `PostgresOpsRequest` to update the `Postgres` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   13m
 
@@ -193,11 +196,11 @@ postgres.kubedb.com/ha-postgres   18.3      Ready    13m
 
 NAME                                                                   TYPE              STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l   VerticalScaling   Progressing   2s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -207,7 +210,6 @@ $ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[0].resour
     "memory": "2Gi"
   }
 }
-```
 
 ### Scale Postgres Replicas
 Update the `postgres.yaml` with the following, 
@@ -245,7 +247,8 @@ Update the `replicas` to `5`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` PostgresOpsRequest to update the `Postgres` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   21m
 
@@ -255,18 +258,17 @@ postgres.kubedb.com/ha-postgres   18.3      Ready    21m
 NAME                                                                     TYPE                STATUS        AGE
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Progressing   6s
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful    7m54s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+```
 NAME            READY   STATUS    RESTARTS   AGE
 ha-postgres-0   2/2     Running   0          9m4s
 ha-postgres-1   2/2     Running   0          10m
 ha-postgres-2   2/2     Running   0          9m44s
 ha-postgres-3   2/2     Running   0          2m58s
 ha-postgres-4   2/2     Running   0          2m23s
-```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
@@ -308,7 +310,8 @@ Update the `storage.resources.requests.storage` to `10Gi`. Commit the changes an
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` PostgresOpsRequest to update the `Postgres` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   27m
 
@@ -319,18 +322,17 @@ NAME                                                                     TYPE   
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful   6m
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful   13m
 postgresopsrequest.ops.kubedb.com/ha-postgres-volumeexpansion-2j5x5g     VolumeExpansion     Progressing  2s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+kubectl get pvc -n demo -l 'app.kubernetes.io/instance=ha-postgres'
+```
 NAME                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-ha-postgres-0   Bound    pvc-061f3622-234f-4f91-b4d1-b81aa8739503   10Gi       RWO            longhorn       <unset>                 30m
 data-ha-postgres-1   Bound    pvc-045fc563-fb4e-416c-a9c2-b20c96532978   10Gi       RWO            longhorn       <unset>                 30m
 data-ha-postgres-2   Bound    pvc-a0f1d8fd-a677-4407-80b1-104b9f7b4cd1   10Gi       RWO            longhorn       <unset>                 30m
 data-ha-postgres-3   Bound    pvc-060b6fab-0c2d-4935-b31b-2866be68dd6f   10Gi       RWO            longhorn       <unset>                 8m58s
 data-ha-postgres-4   Bound    pvc-8149b579-a40f-4cd8-ac37-6a2401fd7807   10Gi       RWO            longhorn       <unset>                 8m23s
-```
 
 ## Reconfigure Postgres
 
@@ -352,12 +354,12 @@ type: Opaque
 Now, we will add this file to `kubedb/pg-configuration.yaml`.
 
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── pg-configuration.yaml
 │ └── postgres.yaml
 1 directories, 2 files
-```
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -397,7 +399,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` PostgresOpsRequest to update the `Postgres` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   36m
 
@@ -408,12 +411,12 @@ NAME                                                                     TYPE   
 postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   HorizontalScaling   Successful    15m
 postgresopsrequest.ops.kubedb.com/ha-postgres-reconfigure-i4r23j         Reconfigure         Progressing   1s
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful    23m
-```
 
 After Ops Request becomes `Succesful`, lets check these parameters,
 
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql
 psql (18.3)
@@ -430,7 +433,6 @@ postgres=# show shared_buffers;
 ----------------
  256MB
 (1 row)
-```
 You can check the other pods same way.
 So we have configured custom parameters.
 
@@ -456,13 +458,13 @@ type: kubernetes.io/basic-auth
 
 File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── pg-auth.yaml
 │ ├── pg-configuration.yaml
 │ └── postgres.yaml
 1 directories, 3 files
-```
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -505,7 +507,8 @@ Change the `authSecret` field to `pg-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` PostgresOpsRequest to update the `Postgres` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   44m
 
@@ -517,18 +520,16 @@ postgresopsrequest.ops.kubedb.com/ha-postgres-horizontalscaling-wvxu5x   Horizon
 postgresopsrequest.ops.kubedb.com/ha-postgres-reconfigure-i4r23j         Reconfigure         Successful    7m25s
 postgresopsrequest.ops.kubedb.com/ha-postgres-rotate-auth-zot83x         RotateAuth          Progressing   2s
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful    30m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting postgres with new credentials.
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -U postgres -W
 Password: <new-password>
 psql (18.3)
 Type "help" for help.
-
-```
 
 ### TLS configuration
 
@@ -539,23 +540,23 @@ To add tls, we are going to create an example `Issuer` that will be used to enab
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls postgres-ca \
+kubectl create secret tls postgres-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/postgres-ca created
 ```
+secret/postgres-ca created
 
 Now, Let's create an `Issuer` using the `postgres-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -572,14 +573,14 @@ spec:
 
 Let's add that to our `kubedb/pg-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── pg-auth.yaml
 │ ├── pg-configuration.yaml
 │ ├── pg-issuer.yaml
 │ └── postgres.yaml
 1 directories, 4 files
-```
 
 Update the `postgres.yaml` with the following, 
 ```yaml
@@ -637,7 +638,8 @@ Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` PostgresOpsRequest to update the `Postgres` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h17m
 
@@ -650,17 +652,16 @@ postgresopsrequest.ops.kubedb.com/ha-postgres-reconfigure-i4r23j         Reconfi
 postgresopsrequest.ops.kubedb.com/ha-postgres-reconfiguretls-91fseg      ReconfigureTLS      Progressing   4s
 postgresopsrequest.ops.kubedb.com/ha-postgres-rotate-auth-zot83x         RotateAuth          Successful    153m
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful    3h4m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes connecting postgres with new credentials.
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql -h ha-postgres.demo.svc -U postgres -d "sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt sslcert=/tls/certs/client/client.crt sslkey=/tls/certs/client/client.key"
 psql (18.3)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
-```
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for postgres.
 
@@ -726,7 +727,8 @@ Update the `version` field to `18.3`. Commit the changes and push to your Git re
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` PostgresOpsRequest to update the `Postgres` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h25m
 
@@ -740,21 +742,24 @@ postgresopsrequest.ops.kubedb.com/ha-postgres-reconfiguretls-91fseg      Reconfi
 postgresopsrequest.ops.kubedb.com/ha-postgres-rotate-auth-zot83x         RotateAuth          Successful    161m
 postgresopsrequest.ops.kubedb.com/ha-postgres-versionupdate-1wxgt9       UpdateVersion       Progressing   4s
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful    3h11m
-```
 
 
 Now, we are going to verify whether the `Postgres`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get postgres -n demo ha-postgres -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get postgres -n demo ha-postgres -o=jsonpath='{.spec.version}{"\n"}'
+```
 18.3
 
-$ kubectl get petset -n demo ha-postgres -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo ha-postgres -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/postgres:18.3-alpine
 
-$ kubectl get pod -n demo ha-postgres-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/postgres:18.3-alpine
+```bash
+kubectl get pod -n demo ha-postgres-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/postgres:18.3-alpine
 
 ### Enable Monitoring
 
@@ -822,7 +827,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` PostgresOpsRequest to add the `Postgres` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+kubectl get postgreses.gitops.kubedb.com,postgreses.kubedb.com,postgresopsrequest -n demo
+```
 NAME                                     AGE
 postgres.gitops.kubedb.com/ha-postgres   3h34m
 
@@ -837,7 +843,6 @@ postgresopsrequest.ops.kubedb.com/ha-postgres-restart-nhjk9u             Restart
 postgresopsrequest.ops.kubedb.com/ha-postgres-rotate-auth-zot83x         RotateAuth          Successful   170m
 postgresopsrequest.ops.kubedb.com/ha-postgres-versionupdate-1wxgt9       UpdateVersion       Successful   9m30s
 postgresopsrequest.ops.kubedb.com/ha-postgres-verticalscaling-i0kr1l     VerticalScaling     Successful   3h21m
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 

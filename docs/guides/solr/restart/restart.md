@@ -24,10 +24,10 @@ KubeDB supports restarting the Solr database via a `SolrOpsRequest`. Restarting 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/Solr](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/solr) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -81,9 +81,9 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Sslr/restart/solr-cluster.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Sslr/restart/solr-cluster.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 ## Apply Restart opsRequest
 
@@ -109,20 +109,21 @@ spec:
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/restart/ops.yaml
-solropsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/restart/ops.yaml
 ```
+solropsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the controller pods, then broker of the referenced Solr.
 
-```shell
-$ kubectl get slops -n demo
+```bash
+kubectl get slops -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   2m34s
-````
 
 ```bash
-$ kubectl get slops -n demo restart -oyaml
+kubectl get slops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SolrOpsRequest
 metadata:
@@ -197,7 +198,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Cleaning up
 

@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a `Elasticsearch` combined using a supported versio
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `standard` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -86,29 +86,30 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/multi-node-es.yaml
-Elasticsearch.kubedb.com/es-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/multi-node-es.yaml
 ```
+Elasticsearch.kubedb.com/es-combined created
 
 Now, wait until `es-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME          VERSION        STATUS   AGE
 es-combined   xpack-9.2.3   Ready    75s
-
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-edeeff75-9823-4aeb-9189-37adad567ec7   1Gi        RWO            Delete           Bound    demo/data-es-combined-0   standard       <unset>                          2m21s
-
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -146,9 +147,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/elasticsearch-volume-expansion-combined.yaml
-Elasticsearchopsrequest.ops.kubedb.com/es-volume-expansion-combinedcreated
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/volume-expansion/elasticsearch-volume-expansion-combined.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/es-volume-expansion-combinedcreated
 
 #### Verify Elasticsearch Combined volume expanded successfully
 
@@ -157,15 +158,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                            TYPE              STATUS       AGE
 es-volume-expansion-combined  VolumeExpansion   Successful   2m4s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo es-volume-expansion-combined
+kubectl describe Elasticsearchopsrequest -n demo es-volume-expansion-combined
+```
 Name:         es-volume-expansion-combined
 Namespace:    demo
 Labels:       <none>
@@ -333,18 +335,18 @@ Events:
   Normal   ResumeDatabase                           11s   KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es-combined
   Normal   Successful                               11s   KubeDB Ops-manager Operator  Successfully Updated Database
 
-```
-
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$  kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "4Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-edeeff75-9823-4aeb-9189-37adad567ec7   4Gi        RWO            Delete           Bound    demo/data-es-combined-0   standard       <unset>                          13m
-```
 
 The above output verifies that we have successfully expanded the volume of the Elasticsearch.
 

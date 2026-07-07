@@ -29,9 +29,9 @@ Now,
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: The yaml files used in this tutorial are stored in [mg-archiver-demo](https://github.com/kubedb/mg-archiver-demo)
 ## Continuous archiving
 Continuous archiving involves making regular copies (or "archives") of the MongoDB transaction log files. To ensure continuous archiving to a remote location we need to prepare `BackupStorage`,`RetentionPolicy`,`MongoDBArchiver` for the KubeDB Managed MongoDB Databases.
@@ -70,10 +70,10 @@ s3:
   secret: linode-secret 
 ```
 
-```bash
-   $ kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/backupstorage.yaml
+   ```bash
+   kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/backupstorage.yaml
+   ```
    backupstorage.storage.kubestash.com/gcs-storage created
-```
 
 ### Secret for BackupStorage
 
@@ -93,10 +93,10 @@ kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_SECRET_ACCESS_KEY
 ```
 
-```bash
-  $ kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/storage-secret.yaml
+  ```bash
+  kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/storage-secret.yaml
+  ```
   secret/gcs-secret created
-```
 
 ### Retention policy
 RetentionPolicy is a CR provided by KubeStash that allows you to set how long you'd like to retain the backup data.
@@ -114,9 +114,9 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/retention-policy.yaml
-retentionpolicy.storage.kubestash.com/mongodb-retention-policy created
+kubectl apply -https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/retention-policy.yaml
 ```
+retentionpolicy.storage.kubestash.com/mongodb-retention-policy created
 
 
 ## Ensure volumeSnapshotClass
@@ -130,11 +130,11 @@ longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
 If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 
 ```bash
-$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
+helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
+```
   ...
   ...
   kubectl get pod -n longhorn-system
-````
 
 
 ```yaml
@@ -161,9 +161,9 @@ deletionPolicy: Delete
 
 
 ```bash
-$ kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/volume-snapshot-class.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/gke-vsc unchanged
+kubectl apply -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/gke/volume-snapshot-class.yaml
 ```
+  volumesnapshotclass.snapshot.storage.k8s.io/gke-vsc unchanged
 
 
 ### MongoDBArchiver
@@ -224,10 +224,13 @@ stringData:
   RESTIC_PASSWORD: "changeit"
 ```
 
-```bash 
- $ kubectl create -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/encrypt-secret.yaml
- $ kubectl create -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/archiver.yaml
-```
+ ```bash
+ kubectl create -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/encrypt-secret.yaml
+ ```
+
+ ```bash
+ kubectl create -f https://raw.githubusercontent.com/kubedb/mg-archiver-demo/master/common/archiver.yaml
+ ```
 
 
 # Deploy MongoDB
@@ -269,7 +272,8 @@ The `archiver: "true"` label is important here. Because that's how we are specif
 
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                                                  READY   STATUS      RESTARTS   AGE
 mg-rs-0                                               2/2     Running     0          8m30s
 mg-rs-1                                               2/2     Running     0          7m32s
@@ -279,8 +283,6 @@ mg-rs-backup-manifest-backup-1702457110-fjpw5         0/1     Completed   0     
 mg-rs-backup-manifest-backup-1702457253-f4chq         0/1     Completed   0          65s
 mg-rs-sidekick                                        1/1     Running     0          5m29s
 trigger-mg-rs-backup-manifest-backup-28374285-rdcfq   0/1     Completed   0          3m38s
-
-```
 `mg-rs-sidekick` is responsible for uploading oplog-files
 `mg-rs-full-backup-*****` are the volumes levels backups for MongoDB.
 `mg-rs-manifest-backup-*****` are the backups of the manifest relate to MongoDB object
@@ -288,8 +290,8 @@ trigger-mg-rs-backup-manifest-backup-28374285-rdcfq   0/1     Completed   0     
 ### Validate BackupConfiguration and VolumeSnapshot
 
 ```bash
-$ kubectl get backupstorage,backupconfigurations,backupsession,volumesnapshots -A
-
+kubectl get backupstorage,backupconfigurations,backupsession,volumesnapshots -A
+```
 NAMESPACE   NAME                                              PROVIDER   DEFAULT   DELETION-POLICY   TOTAL-SIZE   PHASE   AGE
 demo        backupstorage.storage.kubestash.com/gcs-storage   gcs                  WipeOut           3.292 KiB    Ready   11m
 
@@ -304,12 +306,11 @@ demo        backupsession.core.kubestash.com/mg-rs-backup-manifest-backup-170245
 NAMESPACE   NAME                                                      READYTOUSE   SOURCEPVC         SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS   SNAPSHOTCONTENT                                    CREATIONTIME   AGE
 demo        volumesnapshot.snapshot.storage.k8s.io/mg-rs-1702457262   true         datadir-mg-rs-1                           1Gi           gke-vsc         snapcontent-87f1013f-cd7e-4153-b245-da9552d2e44f   2m7s           2m11s
 
-```
-
 ## data insert and switch oplog
 After each and every oplog switch the oplog files will be uploaded to backup storage
 ```bash
-$ kubectl exec -it -n demo mg-rs-0 bash
+kubectl exec -it -n demo mg-rs-0 bash
+```
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-rs-0:/$ 
@@ -342,7 +343,6 @@ songs
 rs:PRIMARY> db.songs.find()
 { "_id" : ObjectId("657970c1f965be0513c7f4d7"), "name" : "shine on you crazy diamond" }
 rs:PRIMARY> 
-```
 > At this point We have a document in our newly created collection `songs` on database `pink_floyd`
 ## Point-in-time Recovery
 Point-In-Time Recovery allows you to restore a MongoDB database to a specific point in time using the archived transaction logs. This is particularly useful in scenarios where you need to recover to a state just before a specific error or data corruption occurred.

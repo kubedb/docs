@@ -124,16 +124,16 @@ spec:
 Deploy Elasticsearch:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/jvm-options/yamls/elasticsearch.yaml
-elasticsearch/es-test created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/configuration/jvm-options/yamls/elasticsearch.yaml
 ```
+elasticsearch/es-test created
 
 Wait for the Elasticsearch to become ready:
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME          VERSION             STATUS         AGE
 es-test       opensearch-3.4.0   Provisioning   12s
 es-test       opensearch-3.4.0   Provisioning   2m2s
 es-test       opensearch-3.4.0   Ready          2m2s
-```

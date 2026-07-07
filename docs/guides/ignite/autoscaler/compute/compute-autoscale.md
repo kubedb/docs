@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscaling compute resources i.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -77,22 +77,23 @@ spec:
 Let's create the `Ignite` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/autoscaling/compute/ignite-autoscale.yaml
-ignite.kubedb.com/ignite-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/autoscaling/compute/ignite-autoscale.yaml
 ```
+ignite.kubedb.com/ignite-autoscale created
 
 Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME                 TYPE                  VERSION   STATUS   AGE
 ignite-autoscale     kubedb.com/v1alpha2   2.17.0     Ready    22s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -103,11 +104,11 @@ $ kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].re
     "memory": "1Gi"
   }
 }
-```
 
 Let's check the Ignite resources,
 ```bash
-$ kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -118,7 +119,6 @@ $ kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.sp
     "memory": "1Gi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the ignite.
 
@@ -172,20 +172,23 @@ Here,
 Let's create the `IgniteAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/autoscaling/compute/ignite-autoscaler.yaml
-igniteautoscaler.autoscaling.kubedb.com/ignite-autoscaler-ops created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/autoscaling/compute/ignite-autoscaler.yaml
 ```
+igniteautoscaler.autoscaling.kubedb.com/ignite-autoscaler-ops created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `igniteautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get igniteautoscaler -n demo
+kubectl get igniteautoscaler -n demo
+```
 NAME                   AGE
 ignite-autoscale-ops   6m55s
 
-$ kubectl describe igniteautoscaler ignite-autoscale-ops -n demo
+```bash
+kubectl describe igniteautoscaler ignite-autoscale-ops -n demo
+```
 Name:         ignite-autoscale-ops
 Namespace:    demo
 Labels:       <none>
@@ -268,7 +271,6 @@ Status:
           Memory:  2Gi
     Vpa Name:      ignite-autoscale
 Events:            <none>
-```
 So, the `Igniteautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our Ignite. Our autoscaler operator continuously watches the recommendation generated and creates an `igniteopsrequest` based on the recommendations, if the ignite pods are needed to scaled up or down.
@@ -276,25 +278,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `igniteopsrequest` in the demo namespace to see if any `igniteopsrequest` object is created. After some time you'll see that a `igniteopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get igniteopsrequest -n demo
+watch kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                            TYPE              STATUS        AGE
 igops-ignite-autoscale-zzell6   VerticalScaling   Progressing   1m48s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get igniteopsrequest -n demo
+watch kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                            TYPE              STATUS       AGE
 igops-ignite-autoscale-zzell6   VerticalScaling   Successful   3m40s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the Ignite.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-ignite-autoscale-zzell6
+kubectl describe igniteopsrequest -n demo igops-ignite-autoscale-zzell6
+```
 Name:         igops-ignite-autoscale-zzell6
 Namespace:    demo
 Labels:       app.kubernetes.io/component=connection-pooler
@@ -393,12 +396,12 @@ Events:
   Normal   RestartPods                                                           7m31s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                              7m31s  KubeDB Ops-manager Operator  Resuming ignite database: demo/ignite-autoscale
   Normal   Successful                                                            7m30s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite-autoscale for IgniteOpsRequest: igops-ignite-autoscale-zzell6
-```
 
 Now, we are going to verify from the Pod, and the Ignite yaml whether the resources of the Ignite has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -410,7 +413,9 @@ $ kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].re
   }
 }
 
-$ kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```bash
+kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -421,7 +426,6 @@ $ kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.sp
     "memory": "1.2Gi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto-scaled the resources of the ignite.

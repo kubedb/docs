@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -80,9 +80,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/hidden-node/sharding.yaml
-mongodb.kubedb.com/mongo-sh-hid created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/hidden-node/sharding.yaml
 ```
+mongodb.kubedb.com/mongo-sh-hid created
 
 Here,
 
@@ -120,7 +120,8 @@ MongoDB `mongo-sh-hid` state,
 All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
-$ kubectl get mg,petset,svc,pvc,pv -n demo
+kubectl get mg,petset,svc,pvc,pv -n demo
+```
 NAME                              VERSION          STATUS   AGE
 mongodb.kubedb.com/mongo-sh-hid   percona-7.0.18   Ready    4m46s
 
@@ -150,8 +151,6 @@ persistentvolume/pvc-489fb5c9-edee-4cf9-985f-48e04f14f695   2Gi        RWO      
 persistentvolume/pvc-61712454-2038-4692-a6ea-88685d7f34e1   2Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-hid-shard1-hidden-0   standard                3m33s
 persistentvolume/pvc-9a4fd907-8225-4ed2-90e3-8ca43c0521d2   2Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-hid-shard0-hidden-0   standard                3m42s
 persistentvolume/pvc-b77cd5d1-d5c1-433b-90dd-3784c5207cd6   2Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-hid-shard0-hidden-1   standard                3m20s
-
-```
 
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. It has also defaulted some field of crd object. Run the following command to see the modified MongoDB object:
@@ -301,16 +300,16 @@ If you want to use custom or existing secret please specify that when creating t
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.username}' | base64 -d
-  root
+  kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  root
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.password}' | base64 -d
-  6&UiN5;qq)Tnai=7
+  kubectl get secrets -n demo mongo-sh-hid-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  6&UiN5;qq)Tnai=7
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/).
 
@@ -319,13 +318,15 @@ Now, you can connect to this database through [mongo-shell](https://docs.mongodb
 In this tutorial, we will insert sharded and unsharded document, and we will see if the data actually sharded across cluster or not.
 
 ```bash
-$ kubectl get pod -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-hid-mongos
+kubectl get pod -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-hid-mongos
+```
 NAME                    READY   STATUS    RESTARTS   AGE
 mongo-sh-hid-mongos-0   1/1     Running   0          6m38s
 mongo-sh-hid-mongos-1   1/1     Running   0          6m20s
 
-$ kubectl exec -it mongo-sh-hid-mongos-0 -n demo bash
-
+```bash
+kubectl exec -it mongo-sh-hid-mongos-0 -n demo bash
+```
 mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
@@ -338,7 +339,6 @@ For more comprehensive documentation, see
 Questions? Try the support group
 	https://www.percona.com/forums/questions-discussions/percona-server-for-mongodb
 mongos> 
-```
 
 To detect if the MongoDB instance that your client is connected to is mongos, use the isMaster command. When a client connects to a mongos, isMaster returns a document with a `msg` field that holds the string `isdbgrid`.
 

@@ -27,7 +27,8 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For mariadb, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following MariaDBVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
-$ kubectl get mariadbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+kubectl get mariadbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+```
 NAME      VERSION   DB_IMAGE                                        EXPORTER_IMAGE                           INITCONTAINER_IMAGE                 DEPRECATED
 10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
@@ -43,7 +44,6 @@ NAME      VERSION   DB_IMAGE                                        EXPORTER_IMA
 11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-```
 
 Docker hub repositories:
 
@@ -79,9 +79,9 @@ Docker hub repositories:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-   ```
 
 ## Create ImagePullSecret
 
@@ -90,13 +90,13 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -136,25 +136,28 @@ spec:
 Now run the command to deploy this `MariaDB` object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/private-registry/quickstart/examples/demo.yaml
-mariadb.kubedb.com/md-pvt-reg created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/private-registry/quickstart/examples/demo.yaml
 ```
+mariadb.kubedb.com/md-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `MariaDB` is in running state:
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME              READY     STATUS    RESTARTS   AGE
 md-pvt-reg-0   1/1       Running   0          56s
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo md-pvt-reg
-mariadb.kubedb.com "md-pvt-reg" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo md-pvt-reg
 ```
+mariadb.kubedb.com "md-pvt-reg" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

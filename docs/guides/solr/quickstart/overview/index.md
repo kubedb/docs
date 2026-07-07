@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Solr CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -58,11 +60,11 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named `SolrVersions`. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
 
 ```bash
-$ kubectl get solrversion
+kubectl get solrversion
+```
 NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 8.11.2   8.11.2    ghcr.io/appscode-images/solr:8.11.2                9d
 9.4.1    9.4.1     ghcr.io/appscode-images/solr:9.4.1                 9d
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
 
@@ -115,17 +117,17 @@ Here,
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
-zooKeeper.kubedb.com/zoo-com created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 ```
+zooKeeper.kubedb.com/zoo-com created
 
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get zookeeper -n demo -w
+kubectl get zookeeper -n demo -w
+```
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
-```
 
 Then we can deploy solr in our cluster.
 
@@ -166,23 +168,24 @@ Here,
 Let's create the Solr CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
-solr.kubedb.com/solr-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 The Solr's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get Solr -n demo -w
+kubectl get Solr -n demo -w
+```
 NAME            TYPE                    VERSION     STATUS   AGE
 solr-combined   kubedb.com/v1alpha2     9.4.1       Ready    17m
-```
 
 
 Describe the Solr object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ Name:       solr-combined
+Name:       solr-combined
+```
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -310,14 +313,14 @@ Status:
     Type:                  DatabaseReadAccess
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a Solr CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 pod/solr-combined-0   1/1     Running   0          3m40s
 pod/solr-combined-1   1/1     Running   0          3m33s
@@ -345,7 +348,6 @@ NAME                                                       STATUS   VOLUME      
 persistentvolumeclaim/solr-combined-data-solr-combined-0   Bound    pvc-6dc5573b-b59f-4ad7-beed-7438400ff500   1Gi        RWO            standard       <unset>                 3m40s
 persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-1649cba5-b5e1-421b-aa73-ab6a4be0d637   1Gi        RWO            standard       <unset>                 3m33s
 persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2-e64b-4a53-8b46-5c30301bb905   1Gi        RWO            standard       <unset>                 3m26s
-```
 
 - `PetSet` - a PetSet(Appscode manages customized petset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
 - `Services` -  2 services are generated for each Solr database.
@@ -367,10 +369,10 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `8983` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/solr-combined 8983
+kubectl port-forward -n demo svc/solr-combined 8983
+```
 Forwarding from 127.0.0.1:8983 -> 8983
 Forwarding from [::1]:8983 -> 8983
-```
 
 Now, our Solr cluster is accessible at `localhost:8983`.
 
@@ -380,21 +382,22 @@ Now, our Solr cluster is accessible at `localhost:8983`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
+  kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
+  ```
   admin
-    ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
-  Xy3ZjyU)~(9IO8_n
+  kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  Xy3ZjyU)~(9IO8_n
 
 Now let's check the health of our Solr database.
 
 ```bash
-$ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+```
 {
   "responseHeader":{
     "status":0,
@@ -436,7 +439,6 @@ $ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/co
     "live_nodes":["solr-combined-2.solr-combined-pods.demo:8983_solr","solr-combined-1.solr-combined-pods.demo:8983_solr","solr-combined-0.solr-combined-pods.demo:8983_solr"]
   }
 }
-```
 
 From the health information above, we can see that health of our collections in Solr cluster's status is `green` which means the cluster is healthy.
 
@@ -447,21 +449,22 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-solr.kubedb.com/solr-combined patched
+kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+solr.kubedb.com/solr-combined patched
 
 Now, if you delete the Solr object, the KubeDB operator will delete every resource created for this Solr CR, but leaves the auth secrets, and PVCs.
 
 ```bash
-$  kubectl delete solr -n demo solr-combined
-solr.kubedb.com "solr-combined" deleted
+ kubectl delete solr -n demo solr-combined
 ```
+solr.kubedb.com "solr-combined" deleted
 
 Check resources:
 
 ```bash
-$ kubectl get all,petset,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
+kubectl get all,petset,secret,pvc -n demo -l 'app.kubernetes.io/instance=solr-combined'
+```
 NAME                                      TYPE                       DATA   AGE
 secret/solr-combined-admin-cred           kubernetes.io/basic-auth   2      9d
 secret/solr-combined-auth-config          Opaque                     1      9d
@@ -473,8 +476,6 @@ persistentvolumeclaim/solr-combined-data-solr-combined-0   Bound    pvc-6dc5573b
 persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-1649cba5-b5e1-421b-aa73-ab6a4be0d637   1Gi        RWO            standard       <unset>                 24m
 persistentvolumeclaim/solr-combined-data-solr-combined-2   Bound    pvc-dcb8c9e2-e64b-4a53-8b46-5c30301bb905   1Gi        RWO            standard       <unset>                 23m
 
-```
-
 ## Resume Solr
 
 Say, the Solr CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Solr cluster using the existing auth secrets and the PVCs.
@@ -482,24 +483,28 @@ Say, the Solr CR was deleted with `spec.deletionPolicy` to `Halt` and you want t
 You can do it by simpily re-deploying the original Solr object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
-solr.kubedb.com/solr-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 solr.kubedb.com/solr-combined patched
 
-$ kubectl delete -n demo sl/solr-combined
+```bash
+kubectl delete -n demo sl/solr-combined
+```
 solr.kubedb.com "solr-combined" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

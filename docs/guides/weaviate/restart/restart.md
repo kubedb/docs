@@ -29,9 +29,9 @@ KubeDB supports restarting the Weaviate database via a `WeaviateOpsRequest`. Res
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/restart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/restart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,17 +62,17 @@ spec:
 Let's create the `Weaviate` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/restart/weaviate.yaml
-weaviate.kubedb.com/weaviate-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/restart/weaviate.yaml
 ```
+weaviate.kubedb.com/weaviate-sample created
 
 Now, wait until `weaviate-sample` has status `Ready`:
 
 ```bash
-$ kubectl get weaviate -n demo
+kubectl get weaviate -n demo
+```
 NAME              TYPE                  VERSION   STATUS   AGE
 weaviate-sample   kubedb.com/v1alpha2   1.33.1    Ready    5m
-```
 
 ## Apply Restart OpsRequest
 
@@ -98,20 +98,21 @@ spec:
 Let's create the `WeaviateOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/restart/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/restart/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will restart the Weaviate pods one by one, waiting for each pod to come back to `Running` state before proceeding to the next.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo restart
+kubectl get weaviateopsrequest -n demo restart
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   92s
-```
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo restart -o yaml
+kubectl get weaviateopsrequest -n demo restart -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: WeaviateOpsRequest
 metadata:
@@ -195,7 +196,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Next Steps
 
@@ -208,7 +208,13 @@ status:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo restart
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo restart
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

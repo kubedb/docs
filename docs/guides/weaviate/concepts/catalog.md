@@ -54,10 +54,10 @@ spec:
 ## List available versions
 
 ```bash
-$ kubectl get weaviateversions
+kubectl get weaviateversions
+```
 NAME     VERSION   DB_IMAGE                                  DEPRECATED   AGE
 1.33.1   1.33.1    ghcr.io/appscode-images/weaviate:1.33.1                34h
-```
 
 ## Next Steps
 

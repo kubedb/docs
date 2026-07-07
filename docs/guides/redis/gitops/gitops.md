@@ -26,12 +26,14 @@ This guide will show you how to use `KubeDB` GitOps operator to create Redis dat
 - You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/Redis](/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -94,11 +96,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── Redis.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `Redis` CR is created in your cluster.
 
@@ -106,18 +108,19 @@ Our `gitops` operator will create an actual `Redis` database CR in the cluster. 
 
 
 ```bash
-$ kubectl get redis.gitops.kubedb.com,redis.kubedb.com -n demo
+kubectl get redis.gitops.kubedb.com,redis.kubedb.com -n demo
+```
 NAME                                AGE
 redis.gitops.kubedb.com/rd-gitops   8m37s
 
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   8.0.4     Ready    8m37s
-```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` Redis.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+```
 NAME                                            AGE
 petset.apps.k8s.appscode.com/rd-gitops-shard0   8m58s
 petset.apps.k8s.appscode.com/rd-gitops-shard1   8m55s
@@ -141,7 +144,6 @@ service/rd-gitops-pods   ClusterIP   None           <none>        6379/TCP,16379
 
 NAME                                           TYPE               VERSION   AGE
 appbinding.appcatalog.appscode.com/rd-gitops   kubedb.com/redis   8.0.4     8m53s
-```
 
 ## Update Redis Database using GitOps
 
@@ -161,7 +163,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-$ kubectl create secret tls redis-ca \
+kubectl create secret tls redis-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
@@ -183,19 +185,19 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/issuer.yaml
-issuer.cert-manager.io/redis-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/issuer.yaml
 ```
+issuer.cert-manager.io/redis-ca-issuer created
 
 Let's add that to our `kubedb /rd-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── rd-issuer.yaml
 │ ├── rd-secret.yaml
 │ └── redis.yaml
 1 directories, 3 files
-```
 
 Update the `redis.yaml` with the following,
 ```yaml
@@ -232,7 +234,8 @@ Add  `tls` fields in the spec. Commit the changes and push to your Git repositor
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` RedisOpsRequest to update the `Redis` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   7.4.1     Ready    15m
 
@@ -241,7 +244,6 @@ redis.gitops.kubedb.com/rd-gitops   15m
 
 NAME                                                             TYPE             STATUS       AGE
 redisopsrequest.ops.kubedb.com/rd-gitops-reconfiguretls-qcdjjd   ReconfigureTLS   Successful   9m47s
-```
 
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for Redis.
@@ -277,7 +279,8 @@ Update the `replicas` to `3`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` RedisOpsRequest to update the `Redis` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   8.0.4     Ready    19m
 
@@ -286,11 +289,11 @@ redis.gitops.kubedb.com/rd-gitops   19m
 
 NAME                                                                TYPE                STATUS       AGE
 redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-4ecw03   HorizontalScaling   Successful   4m2s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+```
 NAME                 READY   STATUS    RESTARTS   AGE
 rd-gitops-shard0-0   1/1     Running   0          20m
 rd-gitops-shard0-1   1/1     Running   0          19m
@@ -301,7 +304,6 @@ rd-gitops-shard1-2   1/1     Running   0          4m6s
 rd-gitops-shard2-0   1/1     Running   0          20m
 rd-gitops-shard2-1   1/1     Running   0          19m
 rd-gitops-shard2-2   1/1     Running   0          3m46s
-```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
@@ -310,7 +312,8 @@ We can also scale down the replicas by updating the `replicas` fields.
 Before the Ops Request reaches the `Successful` state, the configured memory limits are as follows:
 
 ```bash
-$ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -320,7 +323,6 @@ $ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].r
     "memory": "1Gi"
   }
 }
-```
 
 
 Update the `Redis.yaml` with the following,
@@ -364,7 +366,8 @@ Resource Requests and Limits are updated to `1000m` CPU and `1.5Gi` Memory. Comm
 Now, `gitops` operator will detect the resource changes and create a `RedisOpsRequest` to update the `Redis` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   8.0.4     Ready    17h
 
@@ -374,10 +377,10 @@ redis.gitops.kubedb.com/rd-gitops   17h
 NAME                                                                TYPE                STATUS       AGE
 redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-ule15j   HorizontalScaling   Successful   16h
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-lliwo8     VerticalScaling     Successful   16h
-```
 
-```bash 
-$ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
+```bash
+kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -388,7 +391,6 @@ $ kubectl get pod -n demo rd-gitops-shard0-0 -o json | jq '.spec.containers[0].r
     "memory": "1536Mi"
   }
 }
-```
 
 
 ### Expand Redis Volume
@@ -433,7 +435,8 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` RedisOpsRequest to update the `Redis` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   8.0.4     Ready    39m
 
@@ -444,11 +447,11 @@ NAME                                                                TYPE        
 redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-4ecw03   HorizontalScaling   Successful   24m
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-r0oosa     VerticalScaling     Successful   17m
 redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpansion     Successful   7m31s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+kubectl get pvc -n demo -l 'app.kubernetes.io/instance=rd-gitops'
+```
 NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-rd-gitops-shard0-0   Bound    pvc-97afbd7c-5887-4381-bef8-4584411b4ed5   2Gi        RWO            longhorn       <unset>                 39m
 data-rd-gitops-shard0-1   Bound    pvc-461c6122-94ba-4b96-805b-1bf2619a10d4   2Gi        RWO            longhorn       <unset>                 38m
@@ -459,7 +462,6 @@ data-rd-gitops-shard1-2   Bound    pvc-6d3d1e55-689e-4884-a3cc-ed6080e48cf0   2G
 data-rd-gitops-shard2-0   Bound    pvc-e6b9fa56-40b2-45aa-8ebd-ab360522a294   2Gi        RWO            longhorn       <unset>                 39m
 data-rd-gitops-shard2-1   Bound    pvc-6fdfd395-d2b8-45df-8369-f9897e3d678c   2Gi        RWO            longhorn       <unset>                 38m
 data-rd-gitops-shard2-2   Bound    pvc-1570c37b-63da-456c-af59-b60ed544e651   2Gi        RWO            longhorn       <unset>                 23m
-```
 
 
 ### Update Version
@@ -508,7 +510,8 @@ Update the `version` field to `7.4.1`. Commit the changes and push to your Git r
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` RedisOpsRequest to update the `Redis` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   7.4.1     Ready    21m
 
@@ -520,7 +523,6 @@ redisopsrequest.ops.kubedb.com/rd-gitops-horizontalscaling-4ecw03   HorizontalSc
 redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-wbsjct       UpdateVersion       Successful   12m
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-r0oosa     VerticalScaling     Successful   137m
 redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpansion     Successful   127m
-```
 ## Reconfigure Redis
 
 
@@ -541,14 +543,14 @@ stringData:
 
 Let's add that to  `kubedb/rd_conf.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── rd-config.yaml
 │ ├── rd-issuer.yaml
 │ ├── rd-secret.yaml
 │ └── redis.yaml
 1 directories, 4 files
-```
 
 
 
@@ -594,7 +596,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` RedisOpsRequest to update the `Redis` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   7.4.1     Ready    51m
 
@@ -607,7 +610,6 @@ redisopsrequest.ops.kubedb.com/rd-gitops-reconfigure-uc97bo         Reconfigure 
 redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-wbsjct       UpdateVersion       Successful   91m
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-r0oosa     VerticalScaling     Successful   3h35m
 redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpansion     Successful   3h26m
-```
 
 We can also reconfigure the parameters creating another secret and reference the secret in the `configuration.secretName` field. Also you can remove the `configuration.secretName` field to use the default parameters.
 
@@ -633,7 +635,8 @@ stringData:
 
 Let's add that to our `kubedb/rdauth.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── rd-auth.yaml
 │ ├── rd-config.yaml
@@ -641,7 +644,6 @@ $ tree .
 │ ├── rd-secret.yaml
 │ └── redis.yaml
 1 directories, 5 files
-```
 
 Update the `Redis.yaml` with the following,
 ```yaml
@@ -688,7 +690,8 @@ Change the `authSecret` field to `rd-rotate-auth`. Commit the changes and push t
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` RedisOpsRequest to update the `Redis` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get rd,redis,redisopsrequest -n demo
+ kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   7.4.1     Ready    77m
 
@@ -702,7 +705,6 @@ redisopsrequest.ops.kubedb.com/rd-gitops-rotate-auth-2l0psh         RotateAuth  
 redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-wbsjct       UpdateVersion       Successful   117m
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-r0oosa     VerticalScaling     Successful   4h2m
 redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpansion     Successful   3h52m
-```
 ### Enable Monitoring
 
 If you already don't have a Prometheus server running, deploy one following tutorial from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md#deploy-prometheus-server).
@@ -758,7 +760,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` RedisOpsRequest to add the `Redis` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get rd,redis,redisopsrequest -n demo
+kubectl get rd,redis,redisopsrequest -n demo
+```
 NAME                         VERSION   STATUS   AGE
 redis.kubedb.com/rd-gitops   7.4.1     Ready    117m
 
@@ -773,7 +776,6 @@ redisopsrequest.ops.kubedb.com/rd-gitops-rotate-auth-2l0psh         RotateAuth  
 redisopsrequest.ops.kubedb.com/rd-gitops-versionupdate-wbsjct       UpdateVersion       Successful   157m
 redisopsrequest.ops.kubedb.com/rd-gitops-verticalscaling-r0oosa     VerticalScaling     Successful   4h41m
 redisopsrequest.ops.kubedb.com/rd-gitops-volumeexpansion-0ubdaw     VolumeExpansion     Successful   4h32m
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 

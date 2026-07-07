@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Kafka. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -84,9 +84,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kf-issuer.yaml
-issuer.cert-manager.io/kafka-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kf-issuer.yaml
 ```
+issuer.cert-manager.io/kafka-ca-issuer created
 
 ## TLS/SSL encryption in Kafka Combined Cluster
 
@@ -119,15 +119,15 @@ spec:
 ### Deploy Kafka Combined Cluster
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kafka-dev-tls.yaml
-kafka.kubedb.com/kafka-dev-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kafka-dev-tls.yaml
 ```
+kafka.kubedb.com/kafka-dev-tls created
 
 Now, wait until `kafka-dev-tls created` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get mg -n demo
-
+watch kubectl get mg -n demo
+```
 Every 2.0s: kubectl get kafka -n demo                                                                                                                          aadee: Fri Sep  6 12:34:51 2024
 NAME            TYPE            VERSION   STATUS         AGE
 kafka-dev-tls   kubedb.com/v1   3.9.0     Provisioning   0s
@@ -135,13 +135,12 @@ kafka-dev-tls   kubedb.com/v1   3.9.0     Provisioning   12s
 .
 .
 kafka-dev-tls   kubedb.com/v1   3.9.0     Ready          77s
-```
 
 ### Verify TLS/SSL in Kafka Combined Cluster
 
 ```bash
-$ kubectl describe secret -n demo kafka-dev-tls-client-cert
-
+kubectl describe secret -n demo kafka-dev-tls-client-cert
+```
 Name:         kafka-dev-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -168,37 +167,36 @@ ca.crt:          1184 bytes
 keystore.jks:    3245 bytes
 tls.crt:         1452 bytes
 tls.key:         1704 bytes
-```
 
 Now, Let's exec into a kafka broker pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-tls-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
-  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
-  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
-  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
-  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
-  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
-  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
+kubectl exec -it -n demo kafka-dev-tls-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
 ```
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
+  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
+  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
+  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
+  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
+  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
+  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
+  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+  zookeeper.ssl.keystore.location=null sensitive=false synonyms={}
+  zookeeper.ssl.keystore.password=null sensitive=true synonyms={}
+  zookeeper.ssl.keystore.type=null sensitive=false synonyms={}
 
 We can see from the above output that, keystore location is `/var/private/ssl/server.keystore.jks` which means that TLS is enabled.
 
@@ -216,7 +214,8 @@ ssl.truststore.password=***********
 Now, let's exec into the kafka pod and connect using this configuration to verify the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-tls-0 -- bash
+kubectl exec -it -n demo kafka-dev-tls-0 -- bash
+```
 kafka@kafka-dev-tls-0:~$ kafka-metadata-quorum.sh --command-config config/clientauth.properties --bootstrap-server localhost:9092 describe --status
 ClusterId:              11ef-921c-f2a07f85765w
 LeaderId:               1
@@ -226,7 +225,6 @@ MaxFollowerLag:         0
 MaxFollowerLagTimeMs:   16
 CurrentVoters:          [0,1,2]
 CurrentObservers:       []
-```
 
 From the above output, we can see that we are able to connect to the Kafka cluster using the TLS configuration.
 

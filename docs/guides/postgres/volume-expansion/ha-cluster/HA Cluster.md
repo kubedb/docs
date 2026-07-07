@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/volume-expansion/ha-cluster/yamls](/docs/guides/postgres/volume-expansion/ha-cluster/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -47,10 +47,10 @@ Here, we are going to deploy a `Postgres` High Availability cluster using a supp
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER               RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 linode-block-storage  linodebs.csi.linode.com   Delete          Immediate           true                   5m
-```
 
 We can see the output from the `linode-block-storage` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -84,30 +84,32 @@ spec:
 Let's create the `Postgres` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/ha-cluster/yamls/pg-ha-cluster.yaml
-postgres.kubedb.com/pg-ha-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/ha-cluster/yamls/pg-ha-cluster.yaml
 ```
+postgres.kubedb.com/pg-ha-cluster created
 
 Now, wait until `pg-ha-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pg -n demo
+kubectl get pg -n demo
+```
 NAME            VERSION   STATUS   AGE
 pg-ha-cluster   18.3     Ready    3m6s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "10Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS           REASON   AGE
 pvc-037525b1de294233   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-0           linode-block-storage            4m24s
 pvc-3bd05d8b36c84c0a   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-1           linode-block-storage            3m2s
 pvc-f03277c318c44029   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-2           linode-block-storage            3m35s
-```
 
 You can see the petset has 10GB storage, and the capacity of the persistent volume is also 10GB.
 
@@ -147,9 +149,9 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/ha-cluster/yamls/vol-exp-ha-cluster.yaml
-postgresopsrequest.ops.kubedb.com/pgops-vol-exp-ha-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/volume-expansion/ha-cluster/yamls/vol-exp-ha-cluster.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pgops-vol-exp-ha-cluster created
 
 #### Verify Postgres HA Cluster volume expanded successfully
 
@@ -158,15 +160,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `PostgresOpsRequest` to be `Successful`. Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get postgresopsrequest -n demo
+kubectl get postgresopsrequest -n demo
+```
 NAME                       TYPE              STATUS       AGE
 pgops-vol-exp-ha-cluster   VolumeExpansion   Successful   105s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe postgresopsrequest pgops-vol-exp-ha-cluster -n demo
+kubectl describe postgresopsrequest pgops-vol-exp-ha-cluster -n demo
+```
 Name:         pgops-vol-exp-ha-cluster
 Namespace:    demo
 Labels:       <none>
@@ -228,20 +231,21 @@ Events:
   Normal  ResumeDatabase            2m3s   KubeDB Ops-manager Operator  Resuming PostgreSQL demo/pg-ha-cluster
   Normal  ResumeDatabase            2m3s   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/pg-ha-cluster
   Normal  Successful                2m2s   KubeDB Ops-manager Operator  Successfully Expanded Volume
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the `pg-ha-cluster` has expanded to meet the desired state, Let's check that particular petset,
 
 ```bash
-$ kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo pg-ha-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "12Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS           REASON   AGE
 pvc-037525b1de294233   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-0           linode-block-storage            16m
 pvc-3bd05d8b36c84c0a   12Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-1           linode-block-storage            14m
 pvc-f03277c318c44029   10Gi       RWO            Delete           Bound    demo/data-pg-ha-cluster-2           linode-block-storage            15m
-```
 
 The above output verifies that we have successfully expanded the volume of the Postgres HA cluster database.
 
@@ -250,9 +254,11 @@ The above output verifies that we have successfully expanded the volume of the P
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete pg -n demo pg-ha-cluster
+kubectl delete pg -n demo pg-ha-cluster
+```
 postgres.kubedb.com "pg-ha-cluster" deleted
 
-$ kubectl delete postgresopsrequest -n demo pgops-vol-exp-ha-cluster
-postgresopsrequest.ops.kubedb.com "pgops-vol-exp-ha-cluster" deleted
+```bash
+kubectl delete postgresopsrequest -n demo pgops-vol-exp-ha-cluster
 ```
+postgresopsrequest.ops.kubedb.com "pgops-vol-exp-ha-cluster" deleted

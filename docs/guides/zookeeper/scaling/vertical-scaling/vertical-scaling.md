@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -72,22 +72,23 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME            VERSION    STATUS    AGE
 zk-quickstart   3.9.1      Ready     5m56s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -97,7 +98,6 @@ $ kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resou
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -144,9 +144,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-vscale.yaml
-zookeeperopsrequest.ops.kubedb.com/vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-vscale.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/vscale created
 
 #### Verify ZooKeeper Standalone resources updated successfully
 
@@ -155,16 +155,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ kubectl get zookeeperopsrequest -n demo
+kubectl get zookeeperopsrequest -n demo
+```
 Every 2.0s: kubectl get zookeeperopsrequest -n demo
 NAME        TYPE              STATUS       AGE
 vscale      VerticalScaling   Successful   108s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo vscale
+kubectl describe zookeeperopsrequest -n demo vscale
+```
 Name:         vscale
 Namespace:    demo
 Labels:       <none>
@@ -263,12 +264,11 @@ Events:
   Warning  get pod; ConditionStatus:True; PodName:zk-quickstart-2    116s   KubeDB Ops-manager Operator  get pod; ConditionStatus:True; PodName:zk-quickstart-2
   Warning  evict pod; ConditionStatus:True; PodName:zk-quickstart-2  116s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:zk-quickstart-2
 
-```
-
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -279,7 +279,6 @@ $ kubectl get pod -n demo zk-quickstart-0 -o json | jq '.spec.containers[].resou
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the ZooKeeper standalone database.
 

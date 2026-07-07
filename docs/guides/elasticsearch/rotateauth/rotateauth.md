@@ -31,9 +31,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Create a Elasticsearch database
 The KubeDB operator implements an Elasticsearch CRD to define the specification of an Elasticsearch database.
@@ -86,19 +86,19 @@ spec:
 ```
 Let's create the above `Elasticsearch` object,
 
-```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/sample_es.yaml
-elasticsearch.kubedb.com/sample-es created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/sample_es.yaml
 ```
+elasticsearch.kubedb.com/sample-es created
 
 
 Now, wait until `sample-es` has status Ready. i.e,
 
-```shell
-$ kubectl get Elasticsearch -n demo -w
+```bash
+kubectl get Elasticsearch -n demo -w
+```
 NAME        VERSION        STATUS   AGE
 sample-es   xpack-9.2.3   Ready    3m12s
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -115,23 +115,23 @@ Now, you can exec into the pod `sample-es` and connect to database using `userna
 **Port-forward the Service**
 
 At first, let’s port-forward the `sample-es` Service. Run the following command into a separate terminal.
-```shell
-$ kubectl port-forward -n demo service/sample-es 9200
+```bash
+kubectl port-forward -n demo service/sample-es 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 **Insert database**
 
-```shell
-$ curl -XPOST --user "elastic:l;)1knmenzgH0c2M" "http://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d'
+```bash
+curl -XPOST --user "elastic:l;)1knmenzgH0c2M" "http://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d'
+```
                               {
                                   "name": "KubeDB",
                                   "vendor": "AppsCode Inc.",
                                   "description": "Database Operator for Kubernetes"
                               }
                               '
-```
 You'll see:
 ```shell
 {
@@ -173,19 +173,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Elasticsearch.
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-generated.yaml
+ ```
  Elasticsearchopsrequest.ops.kubedb.com/essops-rotate-auth-generated created
-```
 Let's wait for `ElasticsearchOpsrequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsrequest` CRO
-```shell
-$ kubectl get esops -n demo
+```bash
+kubectl get esops -n demo
+```
 NAME                           TYPE         STATUS       AGE
 essops-rotate-auth-generated   RotateAuth   Successful   7m12s
-```
 If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Elasticsearchopsrequest -n demo essops-rotate-auth-generated
+```bash
+kubectl describe Elasticsearchopsrequest -n demo essops-rotate-auth-generated
+```
 Name:         essops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -351,26 +352,33 @@ Events:
   Normal   ResumeDatabase                                                      5m14s  KubeDB Ops-manager Operator  Resuming Elasticsearch demo/sample-es
   Normal   ResumeDatabase                                                      5m14s  KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/sample-es
   Normal   Successful                                                          5m14s  KubeDB Ops-manager Operator  Successfully updated authsecret.
-
-```
 **Verify Auth is rotated**
 
-```shell
-$ kubectl get es -n demo sample-es -ojson | jq .spec.authSecret.name
-"sample-es-auth"
-$ kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d
-elastic⏎                                                                            
-$ kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d
-k3pcRRtJi8iMhlVy⏎                     
+```bash
+kubectl get es -n demo sample-es -ojson | jq .spec.authSecret.name
 ```
+"sample-es-auth"
+
+```bash
+kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d
+```
+elastic⏎                                                                            
+
+```bash
+kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d
+```
+k3pcRRtJi8iMhlVy⏎                     
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo sample-es-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-elastic⏎                                                                                                          
-$ kubectl get secret -n demo sample-es-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-l;)1knmenzgH0c2M⏎                        
+```bash
+kubectl get secret -n demo sample-es-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+elastic⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo sample-es-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+l;)1knmenzgH0c2M⏎                        
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
@@ -378,13 +386,13 @@ At first, we need to create a secret with kubernetes.io/basic-auth type using cu
 
 > Note: `username` must be `elastic`.
 
-```shell
-$ kubectl create secret generic sample-es-auth-user -n demo \
+```bash
+kubectl create secret generic sample-es-auth-user -n demo \
    --type=kubernetes.io/basic-auth \
    --from-literal=username=elastic \
    --from-literal=password=testpassword
-secret/sample-es-auth-user created
 ```
+secret/sample-es-auth-user created
 Now create a `ElasticsearchOpsRequest` with `RotateAuth` type. Below is the YAML of the `ElasticsearchOpsRequest` that we are going to create,
 
 ```shell
@@ -412,21 +420,22 @@ Here,
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-user.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-user.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-rotate-auth-user created
 Let’s wait for `ElasticsearchOpsRequest` to be Successful. Run the following command to watch `ElasticsearchOpsRequest` CRO:
 
-```shell
-$ kubectl get Elasticsearchopsrequest -n demo
+```bash
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 essops-rotate-auth-generated  RotateAuth   Successful   100s
 esops-rotate-auth-user        RotateAuth   Successful   62s
-```
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$kubectl describe Elasticsearchopsrequest -n demo esops-rotate-auth-user
+```bash
+kubectl describe Elasticsearchopsrequest -n demo esops-rotate-auth-user
+```
 Name:         esops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -594,23 +603,31 @@ Events:
   Normal   ResumeDatabase                                                      2m7s   KubeDB Ops-manager Operator  Resuming Elasticsearch demo/sample-es
   Normal   ResumeDatabase                                                      2m7s   KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/sample-es
   Normal   Successful                                                          2m7s   KubeDB Ops-manager Operator  Successfully updated authsecret.
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get Elasticsearch -n demo sample-es -ojson | jq .spec.authSecret.name
+```bash
+kubectl get Elasticsearch -n demo sample-es -ojson | jq .spec.authSecret.name
+```
 "sample-es-auth-user"
-$ kubectl get secret -n demo sample-es-auth-user -o jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo sample-es-auth-user -o jsonpath='{.data.username}' | base64 -d
+```
 elastic⏎ 
-$ kubectl get secret -n demo sample-es-auth-user -o jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo sample-es-auth-user -o jsonpath='{.data.password}' | base64 -d
+```
 testpassword⏎                                                                                                        
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
-elastic                                                        
-$ kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-k3pcRRtJi8iMhlVy⏎                                             
+```bash
+kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+elastic                                                        
+
+```bash
+kubectl get secret -n demo sample-es-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+k3pcRRtJi8iMhlVy⏎                                             
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -619,15 +636,21 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Elasticsearchopsrequest essps-rotate-auth-generated esops-rotate-auth-user -n demo
+```bash
+kubectl delete Elasticsearchopsrequest essps-rotate-auth-generated esops-rotate-auth-user -n demo
+```
 Elasticsearchopsrequest.ops.kubedb.com "essops-rotate-auth-generated" deleted
 Elasticsearchopsrequest.ops.kubedb.com "esops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  sample-es-auth-user
-secret "sample-es-auth-user" deleted
-$ kubectl delete secret -n demo  sample-es-auth
-secret "sample-es-auth" deleted
+
+```bash
+kubectl delete secret -n demo  sample-es-auth-user
 ```
+secret "sample-es-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  sample-es-auth
+```
+secret "sample-es-auth" deleted
 ## Next Steps
 
 - [Quickstart Kibana](/docs/guides/elasticsearch/elasticsearch-dashboard/kibana/index.md) with KubeDB Operator.

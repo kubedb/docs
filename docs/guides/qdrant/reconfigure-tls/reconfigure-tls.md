@@ -32,9 +32,9 @@ KubeDB supports reconfiguring TLS certificates for Qdrant — adding, removing, 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/reconfigure-tls](/docs/examples/qdrant/reconfigure-tls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -67,19 +67,19 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ watch -n 3 kubectl get qdrant -n demo qdrant-sample
+watch -n 3 kubectl get qdrant -n demo qdrant-sample
+```
 Every 3.0s: kubectl get qdrant -n demo qdrant-sample
 
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    2m
-```
 
 ### Create Issuer
 
@@ -88,19 +88,19 @@ Now, we are going to create an example `Issuer` that will be used to enable TLS 
 1. Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=qdrant/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=qdrant/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
-```
 
 2. Create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls qdrant-ca --cert=ca.crt  --key=ca.key --namespace=demo
-secret/qdrant-ca created
+kubectl create secret tls qdrant-ca --cert=ca.crt  --key=ca.key --namespace=demo
 ```
+secret/qdrant-ca created
 
 3. Now we are going to create an `Issuer` using the `qdrant-ca` secret that contains the CA certificate we have just created:
 
@@ -116,9 +116,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/qdrant-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/qdrant-issuer created
 
 ### Add TLS
 
@@ -162,29 +162,30 @@ Here,
 - `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/add-tls.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/add-tls.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-add-tls created
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdrantopsrequest -n demo qdops-add-tls -w
+kubectl get qdrantopsrequest -n demo qdops-add-tls -w
+```
 NAME            TYPE             STATUS       AGE
 qdops-add-tls   ReconfigureTLS   Successful   111s
-```
 
 **Verify the TLS secrets:**
 
 ```bash
-$ kubectl get secrets -n demo | grep qdrant-sample
+kubectl get secrets -n demo | grep qdrant-sample
+```
 qdrant-sample-auth                 Opaque                     2      3m
 qdrant-sample-client-cert          kubernetes.io/tls          4      108s
 qdrant-sample-server-cert          kubernetes.io/tls          3      108s
-```
 
 ```bash
-$ kubectl describe secret -n demo qdrant-sample-client-cert
+kubectl describe secret -n demo qdrant-sample-client-cert
+```
 Name:         qdrant-sample-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -209,7 +210,6 @@ ca.crt:            1151 bytes
 tls-combined.pem:  2811 bytes
 tls.crt:           1131 bytes
 tls.key:           1679 bytes
-```
 
 **Connect to the TLS-enabled database:**
 
@@ -224,20 +224,22 @@ kubectl get secret -n demo qdrant-sample-client-cert -o jsonpath='{.data.tls\.ke
 Get the API key:
 
 ```bash
-$ kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d
-XEHmg7bc4grSjWlH
+kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d
 ```
+XEHmg7bc4grSjWlH
 
 Port-forward and connect:
 
 ```bash
-$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+```
 Forwarding from 127.0.0.1:6333 -> 6333
 
-$ curl --cacert ca.crt --cert tls.crt --key tls.key -H "api-key: XEHmg7bc4grSjWlH" \
+```bash
+curl --cacert ca.crt --cert tls.crt --key tls.key -H "api-key: XEHmg7bc4grSjWlH" \
   'https://localhost:6333/collections'
-{"result":{"collections":[]},"status":"ok","time":7.87e-6}
 ```
+{"result":{"collections":[]},"status":"ok","time":7.87e-6}
 
 ## Rotate Certificates
 
@@ -262,17 +264,17 @@ Here,
 - `spec.tls.rotateCertificates` specifies that we are requesting to rotate the certificates of the `qdrant-sample` database.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/rotate-tls.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-rotate-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/rotate-tls.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-rotate-tls created
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdrantopsrequest -n demo qdops-rotate-tls -w
+kubectl get qdrantopsrequest -n demo qdops-rotate-tls -w
+```
 NAME               TYPE             STATUS       AGE
 qdops-rotate-tls   ReconfigureTLS   Successful   101s
-```
 
 ## Remove TLS from the Database
 
@@ -297,22 +299,22 @@ Here,
 - `spec.tls.remove` specifies that we are removing the TLS configuration from `qdrant-sample` database.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/remove-tls.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-remove-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/reconfigure-tls/remove-tls.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-remove-tls created
 
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ kubectl get qdrantopsrequest -n demo qdops-remove-tls -w
+kubectl get qdrantopsrequest -n demo qdops-remove-tls -w
+```
 NAME               TYPE             STATUS       AGE
 qdops-remove-tls   ReconfigureTLS   Successful   3m
-```
 
 Verify that TLS has been removed:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o yaml | grep tls
+kubectl get qdrant -n demo qdrant-sample -o yaml | grep tls
 ```
 
 No TLS fields should appear in the output.

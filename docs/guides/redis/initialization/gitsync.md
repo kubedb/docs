@@ -25,9 +25,9 @@ In this example, we will initialize Redis using a `.sh` script from the GitHub r
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## From Public Git Repository
 
@@ -79,15 +79,16 @@ The `git-sync` container has two required flags:
 Now, wait until `redis-demo` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get Redis -n demo
+kubectl get Redis -n demo
+```
 NAME             VERSION   STATUS   AGE
 redis-demo        8.2.2    Ready    5m
-```
 
 Next, we will connect to the Redis database and verify the data inserted from the `*.sh` script stored in the Git repository.
 
 ```bash
-$ kubectl exec -n demo -it redis-demo-0 -- bash
+kubectl exec -n demo -it redis-demo-0 -- bash
+```
 Defaulted container "redis" out of: redis, redis-init (init)
 
 # Inside the pod
@@ -120,7 +121,6 @@ root@redis-demo-0:/data# redis-cli
 11) "user:6:name"
 12) "user:6:email"
 127.0.0.1:6379> QUIT
-```
 ## From Private Git Repository
 
 ### 1. Using SSH Key
@@ -130,7 +130,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -143,7 +143,7 @@ Use the `kubectl create secret` command to create a secret from your local SSH k
 This secret will be used by git-sync to authenticate with the Git repository.
 > Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also, you can use any name instead of `git-creds` to create the secret.
 ```bash
-$ kubectl create secret generic -n demo git-creds \
+kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -208,15 +208,15 @@ NAME         VERSION   STATUS   AGE
 redis-demo   8.2.2     Ready    48m
 
 ```
-```shell
-$ kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+```bash
+kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+```
 Defaulted container "redis" out of: redis, redis-init (init), git-sync (init)
 redis@redis-demo-shard0-0:/data$ redis-cli -c
 127.0.0.1:6379>  get user:1:name
 -> Redirected to slot [12440] located at 10.42.0.241:6379
 "John Doe"
 10.42.0.241:6379> exit
-```
 
 ### 2. Using Username and Personal Access Token(PAT)
 
@@ -224,7 +224,7 @@ First, create a `Personal Access Token (PAT)` on your Git host server with the r
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 > Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -281,22 +281,28 @@ NAME         VERSION   STATUS   AGE
 redis-demo   8.2.2     Ready    48m
 
 ```
-```shell
-$ kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+```bash
+kubectl exec -n demo -it redis-demo-shard0-0 -- bash
+```
 Defaulted container "redis" out of: redis, redis-init (init), git-sync (init)
 redis@redis-demo-shard0-0:/data$ redis-cli -c
 127.0.0.1:6379>  get user:1:name
 -> Redirected to slot [12440] located at 10.42.0.241:6379
 "John Doe"
 10.42.0.241:6379> exit
-```
 
 ## CleanUp
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Redis -n demo redis-demo
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete Redis -n demo redis-demo
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

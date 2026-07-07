@@ -59,12 +59,12 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 `spec.db.image` is a required field that specifies the Docker image which will be used to create the Petset by KubeDB operator to create the expected Qdrant database.
 
 ```bash
-$ kubectl get qdrantversions
+kubectl get qdrantversions
+```
 NAME     VERSION   DB_IMAGE                                       DEPRECATED   AGE
 1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                28d
 1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                28d
 1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                28d
-```
 
 ### spec.endOfLife
 

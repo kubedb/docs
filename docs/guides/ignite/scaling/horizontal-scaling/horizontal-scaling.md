@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the I
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -66,27 +66,29 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/ignite-cluster.yaml
-ignite.kubedb.com/ignite created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/ignite-cluster.yaml
 ```
+ignite.kubedb.com/ignite created
 
 Now, wait until `ignite` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 ignite          kubedb.com/v1alpha2   2.17.0    Ready    2m
-```
 
 Let's check the number of replicas this ignite has from the Ignite object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get ignite -n demo ignite -o json | jq '.spec.replicas'
+kubectl get ignite -n demo ignite -o json | jq '.spec.replicas'
+```
 1
 
-$ kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
-1
+```bash
+kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
 ```
+1
 
 We can see from both command that the ignite has 3 replicas. 
 
@@ -123,9 +125,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/horizontal-scaling/ig-hscale-up-ops.yaml
-igniteopsrequest.ops.kubedb.com/ignite-horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/horizontal-scaling/ig-hscale-up-ops.yaml
 ```
+igniteopsrequest.ops.kubedb.com/ignite-horizontal-scale-up created
 
 #### Verify replicas scaled up successfully 
 
@@ -134,16 +136,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ watch kubectl get igniteopsrequest -n demo
+watch kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 ignite-horizontal-scale-up   HorizontalScaling   Successful   2m49s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the ignite.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo ignite-horizontal-scale-up
+kubectl describe igniteopsrequest -n demo ignite-horizontal-scale-up
+```
 Name:         ignite-horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -225,17 +228,18 @@ Events:
   Normal   UpdatePetSets                              7m42s  KubeDB Ops-manager Operator  successfully reconciled the Ignite with modified node
   Normal   Starting                                   7m42s  KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite
   Normal   Successful                                 7m42s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite for IgniteOpsRequest: ignite-horizontal-scale-up
-```
 
 Now, we are going to verify the number of replicas this ignite has from the Ignite object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get ig -n demo ignite -o json | jq '.spec.replicas'
+kubectl get ig -n demo ignite -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
 ```
+3
 From all the above outputs we can see that the replicas of the ignite is `3`. That means we have successfully scaled up the replicas of the Ignite.
 
 
@@ -270,9 +274,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/horizontal-scaling/igops-hscale-down-ops.yaml
-igniteopsrequest.ops.kubedb.com/ignite-horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/horizontal-scaling/igops-hscale-down-ops.yaml
 ```
+igniteopsrequest.ops.kubedb.com/ignite-horizontal-scale-down created
 
 #### Verify replicas scaled down successfully
 
@@ -281,16 +285,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ watch kubectl get igniteopsrequest -n demo
+watch kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 ignite-horizontal-scale-down   HorizontalScaling   Successful   75s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the ignite.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo ignite-horizontal-scale-down
+kubectl describe igniteopsrequest -n demo ignite-horizontal-scale-down
+```
 Name:         ignite-horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -377,17 +382,18 @@ Events:
   Normal   UpdateDatabase                                               48s   KubeDB Ops-manager Operator  Successfully updated Ignite
   Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite
   Normal   Successful                                                   48s   KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite for IgniteOpsRequest: ignite-horizontal-scale-down
-```
 
 Now, we are going to verify the number of replicas this ignite has from the Ignite object, number of pods the petset have,
 
 ```bash
-$ kubectl get ig -n demo ignite -o json | jq '.spec.replicas'
+kubectl get ig -n demo ignite -o json | jq '.spec.replicas'
+```
 2
 
-$ kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo ignite -o json | jq '.spec.replicas'
 ```
+2
 From all the above outputs we can see that the replicas of the ignite is `2`. That means we have successfully scaled up the replicas of the Ignite.
 
 ## Cleaning Up

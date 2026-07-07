@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -68,9 +68,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-combined-custom-config.yaml
-secret/kf-combined-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-combined-custom-config.yaml
 ```
+secret/kf-combined-custom-config created
 
 In this section, we are going to create a Kafka object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Kafka` CR that we are going to create,
 
@@ -99,31 +99,31 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait until `kafka-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Now, we will check if the kafka has started with the custom configuration we have provided.
 
 Exec into the Kafka pod and execute the following commands to see the configurations:
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- bash
+kubectl exec -it -n demo kafka-dev-0 -- bash
+```
 kafka@kafka-dev-0:~$ kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep log.retention.hours
   log.retention.hours=100 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=100, DEFAULT_CONFIG:log.retention.hours=168}
   log.retention.hours=100 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=100, DEFAULT_CONFIG:log.retention.hours=168}
-```
 Here, we can see that our given configuration is applied to the Kafka cluster for all brokers. `log.retention.hours` is set to `100` from the default value `168`.
 
 ### Reconfigure using new config secret
@@ -152,9 +152,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/new-kafka-combined-custom-config.yaml
-secret/new-kf-combined-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/new-kafka-combined-custom-config.yaml
 ```
+secret/new-kf-combined-custom-config created
 
 #### Create KafkaOpsRequest
 
@@ -186,9 +186,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-reconfigure-update-combined.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-reconfigure-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-reconfigure-update-combined.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-reconfigure-combined created
 
 #### Verify the new configuration is working
 
@@ -197,15 +197,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `.spec.co
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequests -n demo 
+kubectl get kafkaopsrequests -n demo 
+```
 NAME                         TYPE          STATUS       AGE
 kfops-reconfigure-combined   Reconfigure   Successful   4m55s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-reconfigure-combined
+kubectl describe kafkaopsrequest -n demo kfops-reconfigure-combined
+```
 Name:         kfops-reconfigure-combined
 Namespace:    demo
 Labels:       <none>
@@ -302,15 +303,14 @@ Events:
   Normal   RestartNodes                                                   2m53s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                       2m53s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     2m53s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-reconfigure-combined
-```
 
 Now let's exec one of the instance and run a kafka-configs.sh command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'log.retention.hours'
-  log.retention.hours=125 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=125, DEFAULT_CONFIG:log.retention.hours=168}
-  log.retention.hours=125 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=125, DEFAULT_CONFIG:log.retention.hours=168}
+kubectl exec -it -n demo kafka-dev-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'log.retention.hours'
 ```
+  log.retention.hours=125 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=125, DEFAULT_CONFIG:log.retention.hours=168}
+  log.retention.hours=125 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=125, DEFAULT_CONFIG:log.retention.hours=168}
 
 As we can see from the configuration of ready kafka, the value of `log.retention.hours` has been changed from `100` to `125`. So the reconfiguration of the cluster is successful.
 
@@ -350,9 +350,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-reconfigure-apply-combined.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-reconfigure-apply-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure/kafka-reconfigure-apply-combined.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-reconfigure-apply-combined created
 
 #### Verify the new configuration is working
 
@@ -361,15 +361,16 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequests -n demo kfops-reconfigure-apply-combined 
+kubectl get kafkaopsrequests -n demo kfops-reconfigure-apply-combined 
+```
 NAME                               TYPE          STATUS       AGE
 kfops-reconfigure-apply-combined   Reconfigure   Successful   55s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to reconfigure the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-reconfigure-apply-combined
+kubectl describe kafkaopsrequest -n demo kfops-reconfigure-apply-combined
+```
 Name:         kfops-reconfigure-apply-combined
 Namespace:    demo
 Labels:       <none>
@@ -472,15 +473,14 @@ Events:
   Normal   RestartNodes                                                   73s   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                       73s   KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     73s   KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-reconfigure-apply-combined
-```
 
 Now let's exec into one of the instance and run a `kafka-configs.sh` command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'log.retention.hours'
-  log.retention.hours=150 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=150, DEFAULT_CONFIG:log.retention.hours=168}
-  log.retention.hours=150 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=150, DEFAULT_CONFIG:log.retention.hours=168}
+kubectl exec -it -n demo kafka-dev-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'log.retention.hours'
 ```
+  log.retention.hours=150 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=150, DEFAULT_CONFIG:log.retention.hours=168}
+  log.retention.hours=150 sensitive=false synonyms={STATIC_BROKER_CONFIG:log.retention.hours=150, DEFAULT_CONFIG:log.retention.hours=168}
 
 As we can see from the configuration of ready kafka, the value of `log.retention.hours` has been changed from `125` to `150`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of PerconaXtraDB
 
@@ -45,12 +45,11 @@ Here, we are going to deploy a  `PerconaXtraDB` cluster using a supported versio
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   37s
-
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
@@ -84,30 +83,32 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/volume-expansion/volume-expansion/example/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/volume-expansion/volume-expansion/example/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    5m4s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   topolvm-provisioner            63s
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   topolvm-provisioner            62s
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   topolvm-provisioner            62s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -148,9 +149,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
-perconaxtradbopsrequest.ops.kubedb.com/px-online-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/px-online-volume-expansion created
 
 #### Verify PerconaXtraDB volume expanded successfully
 
@@ -159,15 +160,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the volume siz
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 px-online-volume-expansion   VolumeExpansion   Successful   96s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe perconaxtradbopsrequest -n demo px-online-volume-expansion
+kubectl describe perconaxtradbopsrequest -n demo px-online-volume-expansion
+```
 Name:         px-online-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -216,21 +218,21 @@ Events:
   Normal  Starting    41s   KubeDB Enterprise Operator  Resuming PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  41s   KubeDB Enterprise Operator  Successfully resumed PerconaXtraDB database: demo/sample-pxc
   Normal  Successful  41s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of PerconaXtraDB: demo/sample-pxc
-  
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get sts -n demo sample-pxc -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-0   topolvm-provisioner            12m
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-1   topolvm-provisioner            12m
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   2Gi        RWO            Delete           Bound    demo/data-sample-pxc-2   topolvm-provisioner            12m
-```
 
 The above output verifies that we have successfully expanded the volume of the PerconaXtraDB database.
 
@@ -239,6 +241,9 @@ The above output verifies that we have successfully expanded the volume of the P
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo px-online-volume-expansion
+kubectl delete perconaxtradb -n demo sample-pxc
+```
+
+```bash
+kubectl delete perconaxtradbopsrequest -n demo px-online-volume-expansion
 ```

@@ -40,16 +40,18 @@ directory is copied verbatim, so the migrated replica does not have to re-stream
 The cluster is on `longhorn`, `10Gi` per replica:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
     -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName,STATUS:.status.phase
+```
 NAME                           SIZE   SC         STATUS
 data-documentdb-cls-sample-0   10Gi   longhorn   Bound
 data-documentdb-cls-sample-1   10Gi   longhorn   Bound
 data-documentdb-cls-sample-2   10Gi   longhorn   Bound
 
-$ kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.storage.storageClassName}'
-longhorn
+```bash
+kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.storage.storageClassName}'
 ```
+longhorn
 
 ## Create the StorageMigration OpsRequest
 
@@ -73,13 +75,15 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-storage-migration.yaml
+kubectl apply -f cluster-storage-migration.yaml
+```
 documentdbopsrequest.ops.kubedb.com/documentdb-cls-storage-migration created
 
-$ kubectl get dcops -n demo documentdb-cls-storage-migration
+```bash
+kubectl get dcops -n demo documentdb-cls-storage-migration
+```
 NAME                               TYPE               STATUS       AGE
 documentdb-cls-storage-migration   StorageMigration   Successful   8m13s
-```
 
 ## What happened
 
@@ -90,8 +94,9 @@ old PVC, binds the new one under the original PVC name, recreates the pod, and w
 be ready. The condition stream (trimmed) captures the loop:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-storage-migration \
+kubectl get dcops -n demo documentdb-cls-storage-migration \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 Running=True :: StorageClass migration is in progress
 PetSetDeleted--documentdb-cls-sample=True :: pet set deleted
 GetStorageClass=True :: get storage class
@@ -111,7 +116,6 @@ PodMigrationCompleted-documentdb-cls-sample-2=True :: PVC Migration Completed fo
 StorageMigration=True :: Successfully migrated StorageClass for DocumentDB Database
 Successful=True :: Successfully Migrated DocumentDB StorageClass
 UnsetRaftKeyOpsRequestProgressing=True :: Successfully Unset Raft Key OpsRequestProgressing
-```
 
 ## PVCs after
 
@@ -119,27 +123,32 @@ All three data volumes are now backed by `standard-custom`, keeping their `10Gi`
 original PVC names, and the `DocumentDB` object reflects the new StorageClass:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
     -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName,STATUS:.status.phase
+```
 NAME                           SIZE   SC                STATUS
 data-documentdb-cls-sample-0   10Gi   standard-custom   Bound
 data-documentdb-cls-sample-1   10Gi   standard-custom   Bound
 data-documentdb-cls-sample-2   10Gi   standard-custom   Bound
 
-$ kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='sc={.spec.storage.storageClassName} phase={.status.phase}'
-sc=standard-custom phase=Ready
+```bash
+kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='sc={.spec.storage.storageClassName} phase={.status.phase}'
 ```
+sc=standard-custom phase=Ready
 
 The cluster is `Ready`, all pods `2/2`, and previously written data survived the migration
 intact:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'printjson(db.runCommand({ping:1}));'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 > [!NOTE]
 > In the test environment, migrating to `standard-custom` (backed by the `local-path`

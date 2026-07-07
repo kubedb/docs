@@ -43,9 +43,9 @@ A brief downtime occurs only during the final cutover when application endpoints
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Source Database
 
@@ -85,7 +85,7 @@ Add `wal_level: logical` under `postgresql` parameters in the `Cluster` spec.
 ### Verify prerequisites
 
 ```bash
-$ psql -h <rds-endpoint>.rds.amazonaws.com -U postgres -p 5432
+psql -h <rds-endpoint>.rds.amazonaws.com -U postgres -p 5432
 ```
 
 ```sql
@@ -158,7 +158,7 @@ SELECT * FROM orders;
 First, create an authentication secret using the `migrator` user credentials:
 
 ```bash
-$ kubectl create secret generic source-postgres-auth -n demo \
+kubectl create secret generic source-postgres-auth -n demo \
                 --type=kubernetes.io/basic-auth \
                 --from-literal=username=migrator \
                 --from-literal=password=<password>
@@ -221,9 +221,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/target-postgres.yaml
-postgres.kubedb.com/target-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/target-postgres.yaml
 ```
+postgres.kubedb.com/target-postgres created
 
 > Note: Adjust the `resources.requests.storage` based on the source database size.
 
@@ -268,9 +268,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/postgres-migrate.yaml
-migration.courier.kubedb.com/postgres-migrate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/migration/postgres-migrate.yaml
 ```
+migration.courier.kubedb.com/postgres-migrate created
 
 Here we connect to and migrate the `shop` database. Schema is extracted via `pg_dump` (`pgDump.schemaOnly: true`) and data is replicated using PostgreSQL logical replication with publication `pub` on the source and subscription `sub` on the target. For a full description of every field, see the [Migration CRD reference](/docs/guides/postgres/concepts/migrator.md).
 
@@ -290,7 +290,7 @@ postgres-migrate   Running   postgres   Streaming   0B    100%       4h36m
 Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
 
 ```bash
-$ kubectl exec -it -n demo target-postgres-0 -- psql -U postgres -d shop
+kubectl exec -it -n demo target-postgres-0 -- psql -U postgres -d shop
 ```
 
 ```sql
@@ -308,7 +308,7 @@ SELECT * FROM orders;
 With the migration still running, connect to the **source RDS** instance and run some DML:
 
 ```bash
-$ psql -h <rds-endpoint>.rds.amazonaws.com -U migrator -d shop -p 5432
+psql -h <rds-endpoint>.rds.amazonaws.com -U migrator -d shop -p 5432
 ```
 
 ```sql
@@ -344,8 +344,8 @@ Once the `LAG` drops to near zero, stop all writes to the source database. Wait 
 Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migration -n demo postgres-migrate
-migration.courier.kubedb.com "postgres-migrate" deleted
+kubectl delete migration -n demo postgres-migrate
 ```
+migration.courier.kubedb.com "postgres-migrate" deleted
 
 Finally, update your application's connection string to point to the target KubeDB-managed `PostgreSQL` database. The migration is complete.

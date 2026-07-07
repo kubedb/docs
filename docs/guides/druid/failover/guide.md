@@ -45,13 +45,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/druid/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,10 +64,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Druid CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -74,14 +76,13 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [DruidVersion](/docs/guides/druid/concepts/druidversion.md). The installation process comes with a set of tested DruidVersion objects. Let's check available DruidVersions by,
 
 ```bash
-$ kubectl get druidversion
+kubectl get druidversion
+```
 NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
 28.0.1   28.0.1    ghcr.io/appscode-images/druid:28.0.1                24h
 30.0.1   30.0.1    ghcr.io/appscode-images/druid:30.0.1                24h
 31.0.0   31.0.0    ghcr.io/appscode-images/druid:31.0.0                24h
 36.0.0   36.0.0    ghcr.io/appscode-images/druid:36.0.0                24h
-
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
 
@@ -96,19 +97,25 @@ One of the external dependency of Druid is deep storage where the segments are s
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -134,9 +141,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 ## Deploy a Highly Available Druid Cluster
 
 ## Create a Druid Cluster
@@ -180,29 +187,29 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-with-monitoring.yaml
-druid.kubedb.com/druid-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-with-monitoring.yaml
 ```
+druid.kubedb.com/druid-quickstart created
 
 The Druid's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the newly provisioned Druid cluster.
 
 ```bash
-$ kubectl get druid -n demo -w
+kubectl get druid -n demo -w
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    4m12s
-
-```
 ## Inspect Druid Pod Roles and Health
 
 
 You can monitor on another terminal the status until all pods are ready:
-```shell
-$ watch kubectl get druid,petset,pods -n demo
+```bash
+watch kubectl get druid,petset,pods -n demo
 ```
 See the database is ready.
 
-```shell
-$ kubectl get druid,petset,pods -n demo
+```bash
+kubectl get druid,petset,pods -n demo
+```
 NAME                             TYPE                  VERSION   STATUS   AGE
 druid.kubedb.com/druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    15m
 
@@ -237,13 +244,12 @@ pod/druid-cluster-zk-1               1/1     Running   0          15m
 pod/druid-cluster-zk-2               1/1     Running   0          15m
 pod/myminio-default-0                2/2     Running   0          3d21h
 
-```
-
 
 You can check the roles and status of Druid pods using labels:
 
 ```bash
-$ kubectl get pods -n demo --show-labels | grep role
+kubectl get pods -n demo --show-labels | grep role
+```
 druid-cluster-brokers-0          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-0
 druid-cluster-brokers-1          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-brokers-64667d6fbb,kubedb.com/role=brokers,statefulset.kubernetes.io/pod-name=druid-cluster-brokers-1
 druid-cluster-coordinators-0     1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-coordinators-955d5f7c4,kubedb.com/role=coordinators,statefulset.kubernetes.io/pod-name=druid-cluster-coordinators-0
@@ -260,8 +266,6 @@ druid-cluster-overlords-1        1/1     Running   0          2d19h   app.kubern
 druid-cluster-routers-0          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=druid-cluster-routers-86f759b75b,kubedb.com/role=routers,statefulset.kubernetes.io/pod-name=druid-cluster-routers-0
 druid-cluster-routers-1          1/1     Running   0          2d19h   app.kubernetes.io/component=database,app.kubernetes.io/instance=druid-cluster,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=druids.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=druid-cluster-routers-86f759b75b,kubedb.com/role=routers,statefulset.kubernetes.io/pod-name=druid-cluster-routers-1
 
-```
-
 ## How Failover Works in Druid with KubeDB
 
 KubeDB continuously monitors the health of Druid pods. If a Coordinator, Overlord, or any other critical pod fails (due to crash, node failure, or manual deletion), KubeDB:
@@ -276,12 +280,12 @@ This process is automatic and typically completes within seconds, ensuring minim
 For highly-available ZooKeeper, `KubeDB` provides a cluster of 3 `Zookeeper` nodes. You can delete one of the `Zookeeper` pods to see how `KubeDB` handles failover.
 **Delete a `Zookeeper` pod**
 ```bash
-$ kubectl delete pod -n demo druid-cluster-zk-0
-pod "druid-cluster-zk-0" deleted
+kubectl delete pod -n demo druid-cluster-zk-0
 ```
+pod "druid-cluster-zk-0" deleted
 in another terminal you can watch their status 
-```shell
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+```bash
+watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 
 ```shell
@@ -315,11 +319,10 @@ You can not see that a new `druid-cluster-zk-0` pod is created automatically and
 Druid uses MySQL for metadata storage. Each of the nods has their role also, you can see the role of each pod.
 
 **Delete the `primary` MySQL pod**
-```shell
-$ kubectl delete pod -n demo druid-cluster-mysql-metadata-0 
-pod "druid-cluster-mysql-metadata-0" deleted
-
+```bash
+kubectl delete pod -n demo druid-cluster-mysql-metadata-0 
 ```
+pod "druid-cluster-mysql-metadata-0" deleted
 You can delete `druid-cluster-mysql-metadata-0` pods which has `primary` role to see how KubeDB handles failover.
 ```shell
 druid-cluster-brokers-0 brokers
@@ -370,11 +373,11 @@ myminio-default-0
 **Delete two `standby` MySQL pod**
 
 You can also delete `druid-cluster-mysql-metadata-1` pods which has `standby` role to see how KubeDB handles failover.
-```shell
-$ kubectl delete pod -n demo druid-cluster-mysql-metadata-0 druid-cluster-mysql-metadata-1
+```bash
+kubectl delete pod -n demo druid-cluster-mysql-metadata-0 druid-cluster-mysql-metadata-1
+```
 pod "druid-cluster-mysql-metadata-0" deleted
 pod "druid-cluster-mysql-metadata-1" deleted
-```
 
 For few seconds, you will see that  `standby` roles are missing.
 ```shell
@@ -433,10 +436,9 @@ recommend placing them behind a load balancer.
 **Delete a `Broker` pod and observe failover:**
 
 ```bash
-$ kubectl delete pod -n demo druid-cluster-brokers-0
-pod "druid-cluster-brokers-0" deleted
-
+kubectl delete pod -n demo druid-cluster-brokers-0
 ```
+pod "druid-cluster-brokers-0" deleted
 
 Monitor the pods:
 
@@ -472,9 +474,9 @@ at a time, but inactive servers will redirect to the currently active server.
 **Delete a Coordinator Pod**
 
 ```bash
-$ kubectl delete pod -n demo druid-cluster-coordinators-0
+kubectl delete pod -n demo druid-cluster-coordinators-0
+```
 pod "druid-cluster-coordinators-0" deleted
-``` 
 ```shell
 
 druid-cluster-brokers-0 brokers
@@ -502,9 +504,9 @@ myminio-default-0
 **Delete a Overlord Pod**
 
 ```bash
-$ kubectl delete pod -n demo druid-cluster-overlords-0
-pod "druid-cluster-overlords-0" deleted
+kubectl delete pod -n demo druid-cluster-overlords-0
 ```
+pod "druid-cluster-overlords-0" deleted
 ```shell
 
 druid-cluster-brokers-0 brokers
@@ -534,8 +536,11 @@ myminio-default-0
 To clean up run:
 
 ```bash
-$ kubectl delete druid -n demo druid-cluster
-$ kubectl delete ns demo
+kubectl delete druid -n demo druid-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

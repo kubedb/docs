@@ -29,9 +29,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Create a MariaDB database
 
@@ -59,17 +59,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/quickstart/overview/examples/sample-mariadb-v1.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until sample-mariadb has status Ready. i.e,
 
-```shell
-$ kubectl get mariadb -n demo -w
+```bash
+kubectl get mariadb -n demo -w
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5   Ready    30m
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -82,8 +82,9 @@ $ kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.password}' 
 s)cJQ*iL8wHySpvT⏎                                                                                                                 
 ````
 Now, you can exec into the pod `sample-mariadb` and connect to database using `username` and `password`
-```shell
-$ kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='s)cJQ*iL8wHySpvT'
+```bash
+kubectl exec -it -n demo sample-mariadb-0 -- mariadb -u root --password='s)cJQ*iL8wHySpvT'
+```
 Defaulted container "mariadb" out of: mariadb, mariadb-init (init)
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 207
@@ -118,9 +119,6 @@ MariaDB [(none)]> show databases;
 | performance_schema |
 +--------------------+
 5 rows in set (0.000 sec)
-
-
-```
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MariaDBOpsRequest
 
@@ -149,19 +147,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on MariaDB.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/Mariadb-rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/Mariadb-rotate-auth-generated.yaml
+ ```
  mariadbopsrequest.ops.kubedb.com/mdops-rotate-auth-generated created
-```
 Let's wait for `MariaDBOpsrequest` to be `Successful`. Run the following command to watch `MariaDBOpsrequest` CRO
-```shell
-$ kubectl get Mariadbopsrequest -n demo
+```bash
+kubectl get Mariadbopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 mdops-rotate-auth-generated   RotateAuth   Successful   6m28s
-```
 If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Mariadbopsrequest -n demo mdops-rotate-auth-generated
+```bash
+kubectl describe Mariadbopsrequest -n demo mdops-rotate-auth-generated
+```
 Name:         mdops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -239,25 +238,32 @@ Events:
   Normal   Starting                                                   8m26s  KubeDB Ops-manager Operator  Resuming MariaDB database: demo/sample-mariadb
   Normal   Successful                                                 8m26s  KubeDB Ops-manager Operator  Successfully resumed MariaDB database: demo/sample-mariadb
   Normal   Successful                                                 8m26s  KubeDB Ops-manager Operator  Controller has successfully rotate MariaDB auth secret
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
-"sample-mariadb-auth"
-$ kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.username}' | base64 -d
-root⏎                                                               
-$ kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.password}' | base64 -d
-gTJJMdgpKy9U(Eqi⏎                      
+```bash
+kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
 ```
+"sample-mariadb-auth"
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+root⏎                                                               
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth -o=jsonpath='{.data.password}' | base64 -d
+```
+gTJJMdgpKy9U(Eqi⏎                      
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo sample-mariadb-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                                          
-$ kubectl get secret -n demo sample-mariadb-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-s)cJQ*iL8wHySpvT⏎                        
+```bash
+kubectl get secret -n demo sample-mariadb-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+s)cJQ*iL8wHySpvT⏎                        
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
@@ -265,13 +271,13 @@ At first, we need to create a secret with kubernetes.io/basic-auth type using cu
 
 > Note: You cannot change the database `username`, but you can update the `password` while keeping the existing `username`.
 
-```shell
-$ kubectl create secret generic sample-mariadb-auth-user -n demo \
+```bash
+kubectl create secret generic sample-mariadb-auth-user -n demo \
    --type=kubernetes.io/basic-auth \
    --from-literal=username=root \
    --from-literal=password=testpassword
-secret/sample-mariadb-auth-user created
 ```
+secret/sample-mariadb-auth-user created
 Now create a `MariaDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MariaDBOpsRequest` that we are going to create,
 
 ```shell
@@ -299,21 +305,22 @@ Here,
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/rotate-auth-user.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/rotate-auth/overview/examples/rotate-auth-user.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-rotate-auth-user created
 Let’s wait for `MariaDBOpsRequest` to be Successful. Run the following command to watch `MariaDBOpsRequest` CRO:
 
-```shell
-$ kubectl get Mariadbopsrequest -n demo
+```bash
+kubectl get Mariadbopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 mdops-rotate-auth-generated   RotateAuth   Successful   100s
 mdops-rotate-auth-user        RotateAuth   Successful   62s
-```
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$  kubectl describe Mariadbopsrequest -n demo mdops-rotate-auth-user
+```bash
+ kubectl describe Mariadbopsrequest -n demo mdops-rotate-auth-user
+```
 Name:         mdops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -393,24 +400,31 @@ Events:
   Normal   Starting                                                   63s   KubeDB Ops-manager Operator  Resuming MariaDB database: demo/sample-mariadb
   Normal   Successful                                                 63s   KubeDB Ops-manager Operator  Successfully resumed MariaDB database: demo/sample-mariadb
   Normal   Successful                                                 63s   KubeDB Ops-manager Operator  Controller has successfully rotate MariaDB auth secret
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
+```bash
+kubectl get mariadb -n demo sample-mariadb -ojson | jq .spec.authSecret.name
+```
 "sample-mariadb-auth-user"
-$ kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.username}' | base64 -d
+```
 root⏎                                                                    
-$ kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth-user -o=jsonpath='{.data.password}' | base64 -d
+```
 testpassword⏎                                                                                    
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                                          
-$ kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-gTJJMdgpKy9U(Eqi⏎                                             
+```bash
+kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo sample-mariadb-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+gTJJMdgpKy9U(Eqi⏎                                             
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -419,15 +433,21 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Mariadbopsrequest mdops-rotate-auth-generated mdops-rotate-auth-user -n demo
+```bash
+kubectl delete Mariadbopsrequest mdops-rotate-auth-generated mdops-rotate-auth-user -n demo
+```
 mariadbopsrequest.ops.kubedb.com "mdops-rotate-auth-generated" deleted
 mariadbopsrequest.ops.kubedb.com "mdops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  sample-mariadb-auth-user
-secret "sample-mariadb-auth-user" deleted
-$ kubectl delete secret -n demo  sample-mariadb-auth
-secret "sample-mariadb-auth" deleted
+
+```bash
+kubectl delete secret -n demo  sample-mariadb-auth-user
 ```
+secret "sample-mariadb-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  sample-mariadb-auth
+```
+secret "sample-mariadb-auth" deleted
 
 ## Next Steps
 

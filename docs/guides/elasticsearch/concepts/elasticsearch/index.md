@@ -564,11 +564,11 @@ AuthSecret contains a `user` key and a `password` key which contains the `userna
 Example:
 
 ```bash
-$ kubectl create secret generic elastic-auth -n demo \
+kubectl create secret generic elastic-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "elastic-auth" created
 ```
+secret "elastic-auth" created
 
 ```yaml
 apiVersion: v1
@@ -690,13 +690,13 @@ The configuration file names are used as secret keys.
 - `YML`: The default configuration file pre-stored at config directories is overwritten by the operator-generated configuration file (if any). Then the resultant configuration file is overwritten by the user-provided custom configuration file (if any). The [yq](https://github.com/mikefarah/yq) tool is used to merge two YAML files.
 
   ```bash
-  $ yq merge -i --overwrite file1.yml file2.yml
+  yq merge -i --overwrite file1.yml file2.yml
   ```
 
 - `Non-YML`: The default configuration file is replaced by the operator-generated one (if any). Then the resultant configuration file is replaced by the user-provided custom configuration file (if any).
 
   ```bash
-  $ cp -f file2 file1
+  cp -f file2 file1
   ```
 
 **How to provide node-role specific configurations?**

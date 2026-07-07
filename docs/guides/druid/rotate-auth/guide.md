@@ -28,10 +28,10 @@ section_menu_id: guides
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
+  ```bash
+  kubectl create ns demo
+  ```
   namespace/demo created
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/druid](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/druid) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,19 +46,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -84,9 +90,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Now, lets go ahead and create a druid database.
 
@@ -111,16 +117,16 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
-druid.kubedb.com/druid-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
 ```
+druid.kubedb.com/druid-quickstart created
 Now, wait until `druid-quickstart` has status Ready. i.e,
 
-```shell
-$ kubectl get druid -n demo
+```bash
+kubectl get druid -n demo
+```
 NAME               TYPE                  VERSION   STATUS   AGE
 druid-quickstart   kubedb.com/v1alpha2   36.0.0    Ready    5m3s
-```
 
 ## Verify authentication
 
@@ -157,19 +163,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Druid.
 
 Let's create the `DruidOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
+ ```
  Druidopsrequest.ops.kubedb.com/druidops-rotate-auth-generated created
-```
 Let's wait for `DruidOpsrequest` to be `Successful`. Run the following command to watch `DruidOpsrequest` CRO
-```shell
-$ kubectl get Druidopsrequest -n demo
+```bash
+kubectl get Druidopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 druidops-rotate-auth-generated   RotateAuth   Successful   6m28s
-```
 If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Druidopsrequest -n demo druidops-rotate-auth-generated
+```bash
+kubectl describe Druidopsrequest -n demo druidops-rotate-auth-generated
+```
 Name:         druidops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -327,38 +334,45 @@ Events:
   Normal   RestartNodes                                                                        51m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                            51m   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-quickstart
   Normal   Successful                                                                          51m   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-quickstart for DruidOpsRequest: druidops-rotate-auth-generated
-
-```
 **Verify Auth is rotated**
-```shell
-$  kubectl get druid -n demo druid-quickstart -ojson | jq .spec.authSecret.name
-"druid-quickstart-auth"
-$ kubectl get secret -n demo druid-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
-admin⏎                                                               
-$ kubectl get secret -n demo druid-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
-gTJJMdgpKy9U(Eqi⏎                      
+```bash
+ kubectl get druid -n demo druid-quickstart -ojson | jq .spec.authSecret.name
 ```
+"druid-quickstart-auth"
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+admin⏎                                                               
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
+```
+gTJJMdgpKy9U(Eqi⏎                      
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo druid-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-admin⏎                                                                                                          
-$ kubectl get secret -n demo druid-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-e4qcqnS.tt_zFQDa⏎                        
+```bash
+kubectl get secret -n demo druid-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+admin⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+e4qcqnS.tt_zFQDa⏎                        
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
 > Note: The database `username` is fixed as `admin` and cannot be changed. However, you can update the `password` while keeping the same `username`.
-```shell
-$ kubectl create secret generic druid-quickstart-auth-user -n demo \
+```bash
+kubectl create secret generic druid-quickstart-auth-user -n demo \
                                              --type=kubernetes.io/basic-auth \
                                              --from-literal=username=admin \
                                              --from-literal=password=testpassword
-secret/druid-quickstart-auth-user created
 ```
+secret/druid-quickstart-auth-user created
 Now create a `DruidOpsRequest` with `RotateAuth` type. Below is the YAML of the `DruidOpsRequest` that we are going to create,
 
 ```shell
@@ -386,22 +400,22 @@ Here,
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-user.yaml
-Druidopsrequest.ops.kubedb.com/drops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-user.yaml
 ```
+Druidopsrequest.ops.kubedb.com/drops-rotate-auth-user created
 Let’s wait for `DruidOpsRequest` to be Successful. Run the following command to watch `DruidOpsRequest` CRO:
 
-```shell
-$ kubectl get drops -n demo
+```bash
+kubectl get drops -n demo
+```
 NAME                             TYPE         STATUS       AGE
 drops-rotate-auth-user           RotateAuth   Successful   5m32s
 druidops-rotate-auth-generated   RotateAuth   Successful   15m
-
-```
 We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$  kubectl describe Druidopsrequest -n demo drops-rotate-auth-user
+```bash
+ kubectl describe Druidopsrequest -n demo drops-rotate-auth-user
+```
 Name:         drops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -560,24 +574,31 @@ Events:
   Normal   RestartNodes                                                                        56m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                            56m   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-quickstart
   Normal   Successful                                                                          56m   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-quickstart for DruidOpsRequest: drops-rotate-auth-user
-
-```
 **Verify auth is rotate**
-```shell
-$  kubectl get druid -n demo druid-quickstart -ojson | jq .spec.authSecret.name
+```bash
+ kubectl get druid -n demo druid-quickstart -ojson | jq .spec.authSecret.name
+```
 "druid-quickstart-auth-user"
-$ kubectl get secret -n demo druid-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
+```
 admin⏎                                                                    
-$ kubectl get secret -n demo druid-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
+```
 testpassword⏎                                                                                   
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo druid-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-admin⏎                                                                                                                                                             
-$ kubectl get secret -n demo druid-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-gTJJMdgpKy9U(Eqi⏎                                             
+```bash
+kubectl get secret -n demo druid-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
 ```
+admin⏎                                                                                                                                                             
+
+```bash
+kubectl get secret -n demo druid-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+gTJJMdgpKy9U(Eqi⏎                                             
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -586,14 +607,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Druidopsrequest druidops-rotate-auth-generated drops-rotate-auth-user -n demo
-Druidopsrequest.ops.kubedb.com "druidops-rotate-auth-generated" "drops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  druid-quickstart-auth-user
-secret "druid-quickstart-auth-user" deleted
-$ kubectl delete secret -n demo  druid-quickstart-auth
-secret "druid-quickstart-auth" deleted
+```bash
+kubectl delete Druidopsrequest druidops-rotate-auth-generated drops-rotate-auth-user -n demo
 ```
+Druidopsrequest.ops.kubedb.com "druidops-rotate-auth-generated" "drops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  druid-quickstart-auth-user
+```
+secret "druid-quickstart-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  druid-quickstart-auth
+```
+secret "druid-quickstart-auth" deleted
 
 
 ## Next Steps

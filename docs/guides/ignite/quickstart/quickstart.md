@@ -31,23 +31,25 @@ This tutorial will show you how to use KubeDB to run a Ignite server.
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME      STATUS    AGE
 demo      Active    1s
-```
 
 ## Find Available IgniteVersion
 
 When you have installed KubeDB, it has created `IgniteVersion` crd for all supported Ignite versions. Check 0
 
 ```bash
-$ kubectl get igniteversions
+kubectl get igniteversions
+```
 NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
 2.17.0      2.17.0     ghcr.io/appscode-images/ignite:2.17.0                            2h
-```
 
 ## Create a Ignite server
 
@@ -72,9 +74,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/quickstart/demo.yaml
-ignite.kubedb.com/ignite-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/quickstart/demo.yaml
 ```
+ignite.kubedb.com/ignite-quickstart created
 
 Here,
 
@@ -85,11 +87,14 @@ Here,
 
 KubeDB operator watches for `Ignite` objects using Kubernetes api. When a `Ignite` object is created, KubeDB operator will create a new PetSet and a Service with the matching Ignite object name.
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME                TYPE                  VERSION   STATUS   AGE
 ignite-quickstart   kubedb.com/v1alpha2   2.17.0    Ready    2m
 
-$ kubectl describe ig -n demo ignite-quickstart
+```bash
+kubectl describe ig -n demo ignite-quickstart
+```
 Name:         ignite-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -202,15 +207,18 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME                AGE
 ignite-quickstart   2m
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                     TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                  AGE
 ignite-quickstart        ClusterIP   10.96.163.80   <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   4m8s
 ignite-quickstart-pods   ClusterIP   None           <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   4m8s
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Ignite object:
 
@@ -334,7 +342,8 @@ Now, you can connect to this database using `sqlline`.
 Here, firstly we will exec one of the running pod:
 
 ```bash
-$ kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
+kubectl exec -it -n demo ignite-quickstart-0 -c ignite -- bash
+```
 ignite@ignite-quickstart-0:/# apache-ignite/bin/sqlline.sh -u jdbc:ignite:thin://127.0.0.1/ -n ignite -p 'pyX39AdZlOog!3Lt'
 sqlline version 1.9.0
 0: jdbc:ignite:thin://127.0.0.1/> CREATE TABLE City (id LONG PRIMARY KEY, name VARCHAR);
@@ -354,7 +363,6 @@ No rows affected (0.087 seconds)
 | 1  | Forest Hill    |
 +----+----------------+
 3 rows selected (0.039 seconds)
-```
 
 ## Database DeletionPolicy
 
@@ -365,9 +373,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete ig ignite-quickstart -n demo
-Error from server (Forbidden): admission webhook "ignitewebhook.validators.kubedb.com" denied the request: ignite demo/ignite-quickstart is can't terminated. To delete, change spec.deletionPolicy
+kubectl delete ig ignite-quickstart -n demo
 ```
+Error from server (Forbidden): admission webhook "ignitewebhook.validators.kubedb.com" denied the request: ignite demo/ignite-quickstart is can't terminated. To delete, change spec.deletionPolicy
 Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite.md#specdeletionpolicy).
 
 **Delete:**
@@ -379,18 +387,18 @@ When the [DeletionPolicy](/docs/guides/ignite/concepts/ignite.md#specdeletionpol
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete -n demo ig/ignite-quickstart
-ignite.kubedb.com "ignite-quickstart" deleted
+kubectl delete -n demo ig/ignite-quickstart
 ```
+ignite.kubedb.com "ignite-quickstart" deleted
 
 Now, run the following command to get all ignite resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                              TYPE                       DATA   AGE
 secret/ignite-quickstart-auth     kubernetes.io/basic-auth   2      27m
 secret/ignite-quickstart-config   Opaque                     1      27m
-```
 
 From the above output, you can see that all ignite resources(`PetSet`, `Service` etc.) are deleted except `Secret`.
 
@@ -410,9 +418,9 @@ ignite.kubedb.com "ignite-quickstart" deleted
 Now, run the following command to get all ignite resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petsets,svc,secret -n demo
-No resources found in demo namespace.
+kubectl get petsets,svc,secret -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all ignite resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
@@ -423,15 +431,19 @@ From the above output, you can see that all ignite resources are deleted. there 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo ig/ignite-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo ig/ignite-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 ignite.kubedb.com/ignite-quickstart patched
 
-$ kubectl delete -n demo ig/ignite-quickstart
+```bash
+kubectl delete -n demo ig/ignite-quickstart
+```
 ignite.kubedb.com "ignite-quickstart" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

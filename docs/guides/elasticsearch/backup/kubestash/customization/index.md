@@ -312,10 +312,10 @@ spec:
 You can also restore a specific snapshot. At first, list the available snapshot as bellow,
 
 ```bash
-$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=s3-elasticsearch-repo
+kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=s3-elasticsearch-repo
+```
 NAME                                                              REPOSITORY              SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 s3-elasticsearch-repo-es-quickstckup-frequent-backup-1726655113   s3-elasticsearch-repo   frequent-backup   2024-09-18T10:25:23Z   Delete            Succeeded   147m
-```
 
 The below example shows how you can pass a specific snapshot name in `.spec.dataSource` section.
 

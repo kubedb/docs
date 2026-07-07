@@ -29,14 +29,14 @@ This tutorial will show you how to use KubeDB to run Pgpool.
 - To keep things isolated, this tutorial uses two separate namespaces called `demo` for deploying PostgreSQL and `pool` for Pgpool,  throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ```bash
-$ kubectl create ns pool
-namespace/pool created
+kubectl create ns pool
 ```
+namespace/pool created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,12 +47,11 @@ namespace/pool created
 When you have installed KubeDB, it has created `PgpoolVersion` CRD for all supported Pgpool versions. Let's check available PgpoolVersion by,
 
 ```bash
-$ kubectl get pgpoolversions
-
+kubectl get pgpoolversions
+```
   NAME    VERSION   PGPOOL_IMAGE                            DEPRECATED   AGE
   4.4.5   4.4.5     ghcr.io/appscode-images/pgpool2:4.4.5                2d17h
   4.5.0   4.5.0     ghcr.io/appscode-images/pgpool2:4.5.0                2d17h
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgpoolVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgpoolVersion.
 
@@ -71,7 +70,7 @@ In this tutorial, we will use a PostgreSQL named `quick-postgres` in the `demo` 
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
 ```bash
-$ kubectl get secrets -n demo quick-postgres-auth -o yaml
+kubectl get secrets -n demo quick-postgres-auth -o yaml
 ```
 ```yaml
 apiVersion: v1
@@ -96,31 +95,36 @@ type: kubernetes.io/basic-auth
 For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
 ```bash
-$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 3mn~ap3ImNjMQ25j⏎
 
-$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
-postgres⏎ 
+```bash
+kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
 ```
+postgres⏎ 
 
 Now, to test connection with this database using the credentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
 
 ```bash
-$ kubectl port-forward -n demo svc/quick-postgres 5432
+kubectl port-forward -n demo svc/quick-postgres 5432
+```
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
-```
 
 With that done, we should now be able to connect to `postgres` database using username `postgres`, and password `3mn~ap3ImNjMQ25j`.
 
 ```bash
-$ export PGPASSWORD='3mn~ap3ImNjMQ25j'
-$ psql --host=localhost --port=5432 --username=postgres postgres
+export PGPASSWORD='3mn~ap3ImNjMQ25j'
+```
+
+```bash
+psql --host=localhost --port=5432 --username=postgres postgres
+```
 psql (16.2 (Ubuntu 16.2-1.pgdg22.04+1), server 13.13)
 Type "help" for help.
 
 postgres=# 
-```
 
 After establishing connection successfully, we will create a table in `postgres` database and populate it with data.
 
@@ -188,56 +192,59 @@ Here,
 Now that we've been introduced to the pgpool CRD, let's create it,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/quick-pgpool.yaml
-pgpool.kubedb.com/quick-pgpool created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/quickstart/quick-pgpool.yaml
 ```
+pgpool.kubedb.com/quick-pgpool created
 
 ## Connect via Pgpool
 
 To connect via pgpool we have to expose its service to localhost.
 
 ```bash
-$ kubectl port-forward -n pool svc/quick-pgpool 9999
-Forwarding from 127.0.0.1:9999 -> 9999
+kubectl port-forward -n pool svc/quick-pgpool 9999
 ```
+Forwarding from 127.0.0.1:9999 -> 9999
 
 Now, let's connect to `postgres` database via Pgpool using psql.
 
-``` bash
-$ export PGPASSWORD='3mn~ap3ImNjMQ25j'
-$ psql --host=localhost --port=9999 --username=postgres postgres
+```bash
+export PGPASSWORD='3mn~ap3ImNjMQ25j'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=postgres postgres
+```
 psql (16.2 (Ubuntu 16.2-1.pgdg22.04+1), server 13.13)
 Type "help" for help.
 
 postgres=#
-```
 
 If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Let's confirm if the company data we inserted in the  `postgres` database before are available via Pgpool:
 
 ```bash
-$ psql --host=localhost --port=9999 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
+psql --host=localhost --port=9999 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
+```
   name  | employee
 --------+----------
  Apple  |       10
  Google |       15
 (2 rows)
-```
 
 KubeDB operator watches for Pgpool objects using Kubernetes api. When a Pgpool object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet, if one is not already present. There are also two secrets created by KubeDB operator, one is auth secret for Pgpool `PCP` user and another one is the configuration secret, which will be created based on default and user given declarative configuration.
 
 KubeDB operator sets the `status.phase` to `Ready` once Pgpool is ready after all checks.
 
 ```bash
-$ kubectl get pp -n pool quick-pgpool -o wide
+kubectl get pp -n pool quick-pgpool -o wide
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 quick-pgpool   kubedb.com/v1alpha2   4.5.0     Ready    63m
-
-```
 
 Let's describe Pgpool object `quick-pgpool`
 
 ```bash
-$ kubectl dba describe pp -n pool quick-pgpool
+kubectl dba describe pp -n pool quick-pgpool
+```
 Name:         quick-pgpool
 Namespace:    pool
 Labels:       <none>
@@ -380,31 +387,28 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-```
-
 KubeDB has created services for the Pgpool object.
 
 ```bash
-$ `kubectl get service -n pool --selector=app.kubernetes.io/name=pgpools.kubedb.com,app.kubernetes.io/instance=quick-pgpool`
+`kubectl get service -n pool --selector=app.kubernetes.io/name=pgpools.kubedb.com,app.kubernetes.io/instance=quick-pgpool`
+```
 NAME                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 quick-pgpool        ClusterIP   10.96.33.221   <none>        9999/TCP   67m
 quick-pgpool-pods   ClusterIP   None           <none>        9999/TCP   67m
-```
 
 Here, Service *`quick-pgpool`* targets random pods to carry out any operation that are made through this service.
 
 KubeDB has created secrets for the Pgpool object. Let's see the secrets KubeDB operator created for us.
 ```bash
-$ kubectl get secrets -n pool
+kubectl get secrets -n pool
+```
 NAME                  TYPE                       DATA   AGE
 quick-pgpool-auth     kubernetes.io/basic-auth   2      67m
 quick-pgpool-config   Opaque                     2      67m
 
-```
-
 Now lets get the auth secret first with yaml format.
 ```bash
-$ kubectl get secrets -n pool quick-pgpool-auth -oyaml
+kubectl get secrets -n pool quick-pgpool-auth -oyaml
 ```
 ```yaml
 apiVersion: v1
@@ -435,7 +439,8 @@ Here, this username and password specified in the secret can be used for `PCP` u
 
 Now let's apply this command,
 ```bash
-$ kubectl view-secret -n pool quick-pgpool-config --all
+kubectl view-secret -n pool quick-pgpool-config --all
+```
 pgpool.conf='backend_hostname0 = 'quick-postgres.demo.svc'
 backend_port0 = 5432
 backend_weight0 = 1
@@ -484,7 +489,6 @@ host         all             all             0.0.0.0/0               md5
 host         postgres        postgres        0.0.0.0/0               md5
 host         all             all             ::/0                    md5
 host         postgres        postgres        ::/0                    md5'
-```
 Here, we can see the default configuration KubeDB operator has set for us. You can also use declarative configuration to configure the server as you want.
 
 ## Cleaning up
@@ -497,50 +501,70 @@ If you want to delete the existing pgpool, but want to keep the secrets intact t
 When the DeletionPolicy is set to Delete and the pgpool object is deleted, the KubeDB operator will delete the PetSet and its pods along with the services  but leaves the secrets intact.
 
 ```bash
-$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
+kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
+```
 pgpool.kubedb.com/quick-pgpool patched
 
-$ kubectl delete -n pool pp/quick-pgpool
+```bash
+kubectl delete -n pool pp/quick-pgpool
+```
 pgpool.kubedb.com "quick-pgpool" deleted
 
-$ kubectl get pp,petset,svc,secret -n pool
+```bash
+kubectl get pp,petset,svc,secret -n pool
+```
 NAME                         TYPE                       DATA   AGE
 secret/quick-pgpool-auth     kubernetes.io/basic-auth   2      3h22m
 secret/quick-pgpool-config   Opaque                     2      3h22m
 
-$ kubectl delete ns pool
+```bash
+kubectl delete ns pool
+```
 namespace "pool" deleted
 
-$ kubectl delete -n demo pg/quick-postgres
+```bash
+kubectl delete -n demo pg/quick-postgres
+```
 pgpool.kubedb.com "quick-postgres" deleted
 
-$ kubectl get pp,petset,svc,secret -n pool
+```bash
+kubectl get pp,petset,svc,secret -n pool
+```
 NAME                         TYPE                       DATA   AGE
 secret/quick-pgpool-auth     kubernetes.io/basic-auth   2      3h22m
 secret/quick-pgpool-config   Opaque                     2      3h22m
-```
 
 ### WipeOut
 But if you want to cleanup each of the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n pool pp/quick-pgpool -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n pool pp/quick-pgpool
+```bash
+kubectl delete -n pool pp/quick-pgpool
+```
 pgpool.kubedb.com "quick-pgpool" deleted
 
-$ kubectl get pp,petset,svc,secret -n pool
+```bash
+kubectl get pp,petset,svc,secret -n pool
+```
 No resources found in pool namespace.
 
-$ kubectl delete ns pool
+```bash
+kubectl delete ns pool
+```
 namespace "pool" deleted
 
-$ kubectl delete -n demo pg/quick-postgres
+```bash
+kubectl delete -n demo pg/quick-postgres
+```
 pgpool.kubedb.com "quick-postgres" deleted
 
-$ kubectl get pp,petset,svc,secret -n pool
-No resources found in pool namespace.
+```bash
+kubectl get pp,petset,svc,secret -n pool
 ```
+No resources found in pool namespace.
 
 ## Next Steps
 

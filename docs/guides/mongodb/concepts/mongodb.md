@@ -236,11 +236,11 @@ AuthSecret contains a `user` key and a `password` key which contains the `userna
 Example:
 
 ```bash
-$ kubectl create secret generic mgo1-auth -n demo \
+kubectl create secret generic mgo1-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "mgo1-auth" created
 ```
+secret "mgo1-auth" created
 
 ```yaml
 apiVersion: v1

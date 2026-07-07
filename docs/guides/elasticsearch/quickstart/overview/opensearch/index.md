@@ -31,23 +31,25 @@ This tutorial will show you how to use KubeDB to run an OpenSearch database.
 * [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required for CRD specification. Check the available StorageClass in cluster.
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  11h
-```
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/opensearch/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -59,7 +61,8 @@ demo                 Active   9s
 When you install the KubeDB operator, it registers a CRD named [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md). The installation process comes with a set of tested ElasticsearchVersion objects. Let's check available ElasticsearchVersions by following command,
 
 ```bash
-$ kubectl get elasticsearchversions
+kubectl get elasticsearchversions
+```
 NAME                   VERSION   DISTRIBUTION   DB_IMAGE                                          DEPRECATED   AGE
 kubedb-xpack-7.12.0    7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                  17h
 kubedb-xpack-7.13.2    7.13.2    KubeDB         kubedb/elasticsearch:7.13.2-xpack-v2021.08.23                  17h
@@ -122,7 +125,6 @@ xpack-7.7.1-v1         7.7.1     ElasticStack   elasticsearch:7.7.1             
 xpack-7.8.0-v1         7.8.0     ElasticStack   elasticsearch:7.8.0                                            17h
 xpack-8.19.9         7.9.1     ElasticStack   elasticsearch:7.9.1                                            17h
 xpack-7.9.1-v2         7.9.1     ElasticStack   elasticsearch:7.9.1                                            17h
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
@@ -160,9 +162,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch-v1.yaml
-elasticsearch.kubedb.com/es-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/opensearch/yamls/opensearch-v1.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
@@ -178,19 +180,23 @@ Here,
 Wait for few minutes until the `STATUS` will go from `Provisioning` to `Ready`. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME                VERSION            STATUS         AGE
 sample-opensearch   opensearch-3.4.0   Provisioning   49s
 ... ...
-$ kubectl get elasticsearch -n demo -w
+
+```bash
+kubectl get elasticsearch -n demo -w
+```
 NAME                VERSION            STATUS   AGE
 sample-opensearch   opensearch-3.4.0   Ready    5m4s
-```
 
 Describe the object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe elasticsearch -n demo sample-opensearch
+kubectl describe elasticsearch -n demo sample-opensearch
+```
 Name:         sample-opensearch
 Namespace:    demo
 Labels:       <none>
@@ -326,14 +332,14 @@ Events:
   ----    ------      ----   ----             -------
   Normal  Successful  56m    KubeDB Operator  Successfully  governing service
   Normal  Successful  56m    KubeDB Operator  Successfully  governing service
-```
 
 ### KubeDB Operator Generated Resources
 
 after the deployment, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=sample-opensearch'
+kubectl get all,secret -n demo -l 'app.kubernetes.io/instance=sample-opensearch'
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/sample-opensearch-0   1/1     Running   0          23m
 pod/sample-opensearch-1   1/1     Running   0          23m
@@ -364,8 +370,6 @@ secret/sample-opensearch-readall-cred           kubernetes.io/basic-auth   2    
 secret/sample-opensearch-snapshotrestore-cred   kubernetes.io/basic-auth   2      23m
 secret/sample-opensearch-transport-cert         kubernetes.io/tls          3      23m
 
-```
-
 - `PetSet` - a PetSet named after the OpenSearch instance.
 - `Services` -  3 services are generated for each OpenSearch database.
   - `{OpenSearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
@@ -386,27 +390,28 @@ In this section, we are going to create few indexes in the deployed OpenSearch. 
 KubeDB will create few Services to connect with the database. Let’s see the Services created by KubeDB for our OpenSearch,
 
 ```bash
-$ kubectl get service -n demo
+kubectl get service -n demo
+```
 NAME                               TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 sample-opensearch                  ClusterIP   10.48.14.99   <none>        9200/TCP   4m33s
 sample-opensearch-master           ClusterIP   None          <none>        9300/TCP   4m33s
 sample-opensearch-pods             ClusterIP   None          <none>        9200/TCP   4m33s
-```
 Here, we are going to use the `sample-opensearch` Service to connect with the database. Now, let’s port-forward the `sample-opensearch` Service.
 
-```bash
 # Port-forward the service to local machine
-$ kubectl port-forward -n demo svc/sample-opensearch 9200
+```bash
+kubectl port-forward -n demo svc/sample-opensearch 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 #### Export the Credentials
 
 KubeDB will create some Secrets for the database. Let’s check which Secrets have been created by KubeDB for our `sample-opensearch`.
 
 ```bash
-$ kubectl get secret -n demo | grep sample-opensearch
+kubectl get secret -n demo | grep sample-opensearch
+```
 sample-opensearch-admin-cert             kubernetes.io/tls                     3      10m
 sample-opensearch-auth             kubernetes.io/basic-auth              2      10m
 sample-opensearch-ca-cert                kubernetes.io/tls                     2      10m
@@ -418,7 +423,6 @@ sample-opensearch-readall-cred           kubernetes.io/basic-auth              2
 sample-opensearch-snapshotrestore-cred   kubernetes.io/basic-auth              2      10m
 sample-opensearch-token-zbn46            kubernetes.io/service-account-token   3      10m
 sample-opensearch-transport-cert         kubernetes.io/tls                     3      10m
-```
 Now, we can connect to the database using the `sample-opensearch-auth` secret, which holds the `admin` credentials used to connect with the database.
 
 
@@ -427,16 +431,20 @@ Now, we can connect to the database using the `sample-opensearch-auth` secret, w
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.username}' | base64 -d
-admin
-$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.password}' | base64 -d
-9aHT*ZhEK_qjPS~v
+kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.password}' | base64 -d
+```
+9aHT*ZhEK_qjPS~v
 
 Then login and check the health of our OpenSearch database.
 
 ```bash
-$ curl -XGET -k -u 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/_cluster/health?pretty"
+curl -XGET -k -u 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/_cluster/health?pretty"
+```
 {
   "cluster_name" : "sample-opensearch",
   "status" : "green",
@@ -455,33 +463,33 @@ $ curl -XGET -k -u 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/_cluster/hea
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 Now, insert some data into OpenSearch:
 
 ```bash
-$ curl -XPOST -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_doc?pretty" -H 'Content-Type: application/json' -d'
+curl -XPOST -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_doc?pretty" -H 'Content-Type: application/json' -d'
+```
 {
     "Name": "Backstreet Boys",
     "Album": "Millennium",
     "Song": "Show Me The Meaning"
 }
 '
-```
 
 Let’s verify that the index have been created successfully.
 
 ```bash
-$ curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index                        uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .opendistro_security         ARYAKuVwQsKel2_0Fl3H2w   1   2          9            0    150.3kb         59.9kb
 green  open   bands                        1z6Moj6XS12tpDwFPZpqYw   1   1          1            0     10.4kb          5.2kb
 green  open   security-auditlog-2022.02.10 j8-mj4o_SKqCD1g-Nz2PAA   1   1          5            0    183.2kb         91.6kb
-```
 Also, let’s verify the data in the indexes:
 
 ```bash
-$ curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_search?pretty"
+curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_search?pretty"
+```
 {
   "took" : 183,
   "timed_out" : false,
@@ -513,22 +521,24 @@ $ curl -XGET -k --user 'admin:9aHT*ZhEK_qjPS~v' "https://localhost:9200/bands/_s
   }
 }
 
-```
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch sample-opensearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo elasticsearch sample-opensearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 elasticsearch.kubedb.com/sample-opensearch patched
 
-$ kubectl delete -n demo es/sample-opensearch
+```bash
+kubectl delete -n demo es/sample-opensearch
+```
 elasticsearch.kubedb.com "sample-opensearch" deleted
 
-$ kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

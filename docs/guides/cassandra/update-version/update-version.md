@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/cassandra](/docs/examples/cassandra) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -80,22 +80,21 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/update-version/cassandra.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/update-version/cassandra.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` created has status `Ready`. i.e,
 
 ```bash
-$  kubectl get cas -n demo -w
+ kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   45s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   82s
 .
 .
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready          106s
-
-```
 
 We are now ready to apply the `CassandraOpsRequest` CR to update.
 
@@ -132,9 +131,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/update-version/update-version.yaml
-cassandraopsrequest.ops.kubedb.com/cassandra-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/update-version/update-version.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/cassandra-update-version created
 
 #### Verify Cassandra version updated successfully
 
@@ -143,15 +142,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                       TYPE            STATUS        AGE
 cassandra-update-version   UpdateVersion   Successful    2m6s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo cassandra-update-version
+kubectl describe cassandraopsrequest -n demo cassandra-update-version
+```
 Name:         cassandra-update-version
 Namespace:    demo
 Labels:       <none>
@@ -243,21 +243,23 @@ Events:
   Normal   RestartPods                                                        3m58s  KubeDB Ops-manager Operator  Successfully Restarted Cassandra nodes
   Normal   Starting                                                           3m58s  KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         3m58s  KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cassandra-update-version
-```
 
 Now, we are going to verify whether the `Cassandra` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get cas -n demo cassandra-prod -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get cas -n demo cassandra-prod -o=jsonpath='{.spec.version}{"\n"}'
+```
 5.0.3
 
-$ kubectl get petset -n demo cassandra-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo cassandra-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/cassandra-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/cassandra-management:5.0.3@sha256:ef296c7ce02b438f3af43bd07457ca44881c845c6eeef631989b4ed7351b7243
-
+```bash
+kubectl get petset -n demo cassandra-prod-rack-r0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/cassandra-management:5.0.3@sha256:ef296c7ce02b438f3af43bd07457ca44881c845c6eeef631989b4ed7351b7243
 
 You can see from above, our `Cassandra` has been updated with the new version. So, the updateVersion process is successfully completed.
 

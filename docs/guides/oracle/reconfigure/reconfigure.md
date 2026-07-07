@@ -25,9 +25,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/reconfigure](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/reconfigure) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -66,9 +66,9 @@ spec:
 Let's create the `Oracle` CR we have shown above and wait until it becomes `Ready`,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/standalone-minimal.yaml
-oracle.kubedb.com/oracle-sa-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/standalone-minimal.yaml
 ```
+oracle.kubedb.com/oracle-sa-sample created
 
 ## Reconfigure using a config Secret
 
@@ -89,9 +89,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/oracle-custom-config-secret.yaml
-secret/oracle-custom created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/oracle-custom-config-secret.yaml
 ```
+secret/oracle-custom created
 
 ### Create OracleOpsRequest
 
@@ -121,24 +121,25 @@ Here,
 Let's create the `OracleOpsRequest`,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/standalone-reconfigure.yaml
-oracleopsrequest.ops.kubedb.com/standalone-reconfigure created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/reconfigure/standalone-reconfigure.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-reconfigure created
 
 ### Verify the new configuration
 
 Let's wait for the `OracleOpsRequest` to become `Successful`,
 
 ```bash
-$ kubectl get oracleopsrequest -n demo standalone-reconfigure
+kubectl get oracleopsrequest -n demo standalone-reconfigure
+```
 NAME                     TYPE          STATUS       AGE
 standalone-reconfigure   Reconfigure   Successful   118s
-```
 
 We can see the full progress in the `kubectl describe` output,
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo standalone-reconfigure
+kubectl describe oracleopsrequest -n demo standalone-reconfigure
+```
 Name:         standalone-reconfigure
 Namespace:    demo
 ...
@@ -174,21 +175,21 @@ Status:
     Status:                True
     Type:                  Successful
   Phase:                   Successful
-```
 
 Finally, let's connect to the database and confirm that `PROCESSES` is now `800`,
 
 ```bash
-$ kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
+kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
+```
 # (use the printed password below)
 
-$ kubectl exec -n demo oracle-sa-sample-0 -c oracle -- bash -lc \
+```bash
+kubectl exec -n demo oracle-sa-sample-0 -c oracle -- bash -lc \
     "echo -e 'SHOW PARAMETER processes;\nexit;' | sqlplus -s sys/<password>@localhost:1521/ORCL as sysdba"
-
+```
 NAME                                 TYPE        VALUE
 ------------------------------------ ----------- -----
 processes                            integer     800
-```
 
 The `processes` parameter has been updated to `800`, confirming the reconfiguration was applied successfully.
 

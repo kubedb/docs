@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` to auto-scale compute resources i.e
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ## Autoscaling of Cluster Database
 
 Here, we are going to deploy a `Postgres` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `PostgresAutoscaler` to set up autoscaling.
@@ -78,22 +78,23 @@ spec:
 Let's create the `Postgres` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/autoscaler/compute/ha-postgres.yaml
-postgres.kubedb.com/ha-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/autoscaler/compute/ha-postgres.yaml
 ```
+postgres.kubedb.com/ha-postgres created
 
 Now, wait until `ha-postgres` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get postgres -n demo
+kubectl get postgres -n demo
+```
 NAME             VERSION   STATUS   AGE
 ha-postgres        18.3    Ready    14m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -104,11 +105,11 @@ $ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resourc
     "memory": "512Mi"
   }
 }
-```
 
 Let's check the Postgres resources,
 ```bash
-$ kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.resources'
+kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -119,7 +120,6 @@ $ kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.
     "memory": "512Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the postgres.
 
@@ -180,20 +180,23 @@ Here,
 Let's create the `PostgresAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/autoscaler/compute/pgas-compute.yaml
-postgresautoscaler.autoscaling.kubedb.com/pg-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/autoscaler/compute/pgas-compute.yaml
 ```
+postgresautoscaler.autoscaling.kubedb.com/pg-as-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `postgresautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get postgresautoscaler -n demo
+kubectl get postgresautoscaler -n demo
+```
 NAME            AGE
 pg-as-compute   5m56s
 
-$ kubectl describe postgresautoscaler pg-as-compute -n demo
+```bash
+kubectl describe postgresautoscaler pg-as-compute -n demo
+```
 Name:         pg-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -346,8 +349,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      ha-postgres
 Events:            <none>
-
-```
 So, the `postgresautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -357,23 +358,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `postgresopsrequest` in the demo namespace to see if any `postgresopsrequest` object is created. After some time you'll see that a `postgresopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get postgresopsrequest -n demo
+kubectl get postgresopsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 pgops-ha-postgres-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get postgresopsrequest -n demo
+kubectl get postgresopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 pgops-vpa-ha-postgres-z43wc8   VerticalScaling   Successful   3m32s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe postgresopsrequest -n demo pgops-vpa-ha-postgres-z43wc8
+kubectl describe postgresopsrequest -n demo pgops-vpa-ha-postgres-z43wc8
+```
 Name:         pgops-ha-postgres-6xc1kc
 Namespace:    demo
 Labels:       <none>
@@ -491,12 +493,12 @@ Events:
   Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming Postgres database: demo/ha-postgres
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed Postgres database: demo/ha-postgres
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the Postgres database: demo/ha-postgres
-```
 
 Now, we are going to verify from the Pod, and the Postgres yaml whether the resources of the cluster database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -508,7 +510,9 @@ $ kubectl get pod -n demo ha-postgres-0 -o json | jq '.spec.containers[].resourc
   }
 }
 
-$ kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.resources'
+```bash
+kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -519,7 +523,6 @@ $ kubectl get postgres -n demo ha-postgres -o json | jq '.spec.podTemplate.spec.
     "memory": "1Gi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the Postgres cluster database.

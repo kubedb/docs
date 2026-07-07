@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscaling compute resources i.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/cassandra](/docs/examples/cassandra) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -78,22 +78,23 @@ spec:
 Let's create the `Cassandra` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscale.yaml
-cassandra.kubedb.com/cassandra-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscale.yaml
 ```
+cassandra.kubedb.com/cassandra-autoscale created
 
 Now, wait until `cassandra-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo
+kubectl get cas -n demo
+```
 NAME                 TYPE                  VERSION   STATUS   AGE
 cassandra-autoscale   kubedb.com/v1alpha2   5.0.3     Ready    22s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -104,11 +105,11 @@ $ kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.cont
     "memory": "600Mi"
   }
 }
-```
 
 Let's check the Cassandra resources,
 ```bash
-$ kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topology.rack[0].podTemplate.spec.containers[0].resources'
+kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topology.rack[0].podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -119,7 +120,6 @@ $ kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topology
     "memory": "600Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the cassandra.
 
@@ -173,20 +173,23 @@ Here,
 Let's create the `CassandraAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscaler-ops.yaml
-cassandraautoscaler.autoscaling.kubedb.com/cassandra-autoscaler-ops created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/compute/cassandra-autoscaler-ops.yaml
 ```
+cassandraautoscaler.autoscaling.kubedb.com/cassandra-autoscaler-ops created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `cassandraautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get cassandraautoscaler -n demo
+kubectl get cassandraautoscaler -n demo
+```
 NAME                   AGE
 cassandra-autoscale-ops   6m55s
 
-$ kubectl describe cassandraautoscaler cassandra-autoscale-ops -n demo
+```bash
+kubectl describe cassandraautoscaler cassandra-autoscale-ops -n demo
+```
 Name:         cassandra-autoscale-ops
 Namespace:    demo
 Labels:       <none>
@@ -276,7 +279,6 @@ Status:
           Memory:  3Gi
     Vpa Name:      cassandra-autoscale-rack-r0
 Events:            <none>
-```
 So, the `Cassandraautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our Cassandra. Our autoscaler operator continuously watches the recommendation generated and creates an `cassandraopsrequest` based on the recommendations, if the cassandra pods are needed to scaled up or down.
@@ -284,25 +286,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `cassandraopsrequest` in the demo namespace to see if any `cassandraopsrequest` object is created. After some time you'll see that a `cassandraopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get cassandraopsrequest -n demo
+watch kubectl get cassandraopsrequest -n demo
+```
 Every 2.0s: kubectl get cassandraopsrequest -n demo
 NAME                                        TYPE              STATUS        AGE
 casops-cassandra-autoscale-rack-r0-kefyuq   VerticalScaling   Progressing   1m28s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get cassandraopsrequest -n demo
+watch kubectl get cassandraopsrequest -n demo
+```
 Every 2.0s: kubectl get cassandraopsrequest -n demo
 NAME                                        TYPE              STATUS       AGE
 casops-cassandra-autoscale-rack-r0-kefyuq   VerticalScaling   Successful   3m34s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to scale the Cassandra.
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo casops-cassandra-autoscale-rack-r0-kefyuq
+kubectl describe cassandraopsrequest -n demo casops-cassandra-autoscale-rack-r0-kefyuq
+```
 Name:         casops-cassandra-autoscale-rack-r0-kefyuq
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -410,12 +413,12 @@ Events:
   Normal   RestartPods                                                             89s    KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                                89s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-autoscale
   Normal   Successful                                                              89s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-autoscale for CassandraOpsRequest: casops-cassandra-autoscale-rack-r0-kefyuq
-```
 
 Now, we are going to verify from the Pod, and the Cassandra yaml whether the resources of the Cassandra has updated to meet up the desired state, Let's check,
 
 ```bash
-$  kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.containers[].resources'
+ kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1600m",
@@ -427,7 +430,9 @@ $  kubectl get pod -n demo cassandra-autoscale-rack-r0-0 -o json | jq '.spec.con
   }
 }
 
-$  kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topology.rack[0].podTemplate.spec.containers[0].resources'
+```bash
+ kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topology.rack[0].podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -438,7 +443,6 @@ $  kubectl get cassandra -n demo cassandra-autoscale -o json | jq '.spec.topolog
     "memory": "600Mi"
   }
 }
-```
 
 The above output verifies that we have successfully auto-scaled the resources of the cassandra.
 

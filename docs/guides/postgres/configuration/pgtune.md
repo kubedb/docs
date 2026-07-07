@@ -27,9 +27,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -116,38 +116,41 @@ spec:
 Let's create it:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-tuning.yaml
-postgres.kubedb.com/pg-ha-tuning created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-tuning.yaml
 ```
+postgres.kubedb.com/pg-ha-tuning created
 
 Now wait for the database to become `Ready`:
 
 ```bash
-$ kubectl get pg -n demo pg-ha-tuning
+kubectl get pg -n demo pg-ha-tuning
+```
 NAME           VERSION   STATUS   AGE
 pg-ha-tuning   18.3      Ready    69s
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=pg-ha-tuning
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=pg-ha-tuning
+```
 NAME             READY   STATUS    RESTARTS   AGE
 pg-ha-tuning-0   2/2     Running   0          63s
 pg-ha-tuning-1   2/2     Running   0          57s
 pg-ha-tuning-2   2/2     Running   0          51s
-```
 
 ## See the Generated Configuration
 
 KubeDB stores the generated configuration in a Secret owned by the database. The secret name has a random suffix, so it will be different in your cluster. You can find it by listing the secrets for this database:
 
 ```bash
-$ kubectl get secret -n demo | grep pg-ha-tuning
+kubectl get secret -n demo | grep pg-ha-tuning
+```
 pg-ha-tuning-auth     kubernetes.io/basic-auth   2      52s
 pg-ha-tuning-eba1da   Opaque                     1      52s
-```
 
 The `Opaque` secret (`pg-ha-tuning-eba1da` here) holds the tuned configuration under the `pgtune.conf` key. Let's print it:
 
 ```bash
-$ kubectl get secret -n demo pg-ha-tuning-eba1da -o jsonpath='{.data.pgtune\.conf}' | base64 -d
+kubectl get secret -n demo pg-ha-tuning-eba1da -o jsonpath='{.data.pgtune\.conf}' | base64 -d
+```
 # Tuned by KubeDB
 # https://kubedb.com
 
@@ -172,7 +175,6 @@ work_mem = 2520kB
 huge_pages = off
 min_wal_size = 1GB
 max_wal_size = 4GB
-```
 
 The comment block at the top shows exactly what inputs KubeDB used (database type, total memory, CPUs, connections and storage), and the values below are calculated from them.
 
@@ -181,7 +183,8 @@ The comment block at the top shows exactly what inputs KubeDB used (database typ
 Finally, let's confirm the running database actually uses these values. We'll `exec` into a pod and use the [SHOW](https://www.postgresql.org/docs/current/sql-show.html) command:
 
 ```bash
-$ kubectl exec -it -n demo pg-ha-tuning-0 -c postgres -- psql -U postgres -c "SHOW shared_buffers; SHOW max_connections;"
+kubectl exec -it -n demo pg-ha-tuning-0 -c postgres -- psql -U postgres -c "SHOW shared_buffers; SHOW max_connections;"
+```
  shared_buffers
 ----------------
  512MB
@@ -191,7 +194,6 @@ $ kubectl exec -it -n demo pg-ha-tuning-0 -c postgres -- psql -U postgres -c "SH
 -----------------
  200
 (1 row)
-```
 
 The values match what KubeDB generated. 🎉
 

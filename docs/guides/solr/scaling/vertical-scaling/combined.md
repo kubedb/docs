@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,22 +73,23 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/combined/solr.yaml
-solr.kubedb.com/solr-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/combined/solr.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.4.1     Ready    63m
-```
 
 Let's check the Pod containers resources for `data`, `overseer` and `coordinator` of the solr Combined cluster. Run the following command to get the resources of the `broker` and `controller` containers of the Solr Combined cluster
 
 ```bash
-$ kubectl get pod -n demo solr-combined-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-combined-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -99,7 +100,9 @@ $ kubectl get pod -n demo solr-combined-0 -o json | jq '.spec.containers[].resou
   }
 }
 
-$ kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resources'
+```bash
+kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -109,7 +112,6 @@ $ kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resou
     "memory": "2Gi"
   }
 }
-```
 
 This is the default resources of the Solr Combined cluster set by the `KubeDB` operator.
 
@@ -153,9 +155,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/combined/scaling.yaml
-solropsrequest.ops.kubedb.com/slops-slops-vscale-combined-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/combined/scaling.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-slops-vscale-combined-combined created
 
 #### Verify Solr Combined cluster resources updated successfully
 
@@ -164,15 +166,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                    TYPE              STATUS       AGE
 slops-slops-vscale-combined-combined   VerticalScaling   Successful   3m9s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-vscale-combined
+kubectl describe slops -n demo slops-vscale-combined
+```
 Name:         slops-vscale-combined
 Namespace:    demo
 Labels:       <none>
@@ -266,22 +269,11 @@ Events:
   Normal   RestartPods                                               35s    KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                  35s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-combined
   Normal   Successful                                                35s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-combined for SolrOpsRequest: slops-vscale-combined
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the Combined cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo solr-combined-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  }
-}
-$ kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-combined-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -293,7 +285,19 @@ $ kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resou
   }
 }
 
+```bash
+kubectl get pod -n demo solr-combined-1 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the Solr Combined cluster.
 

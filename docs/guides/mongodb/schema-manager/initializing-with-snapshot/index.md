@@ -55,10 +55,10 @@ metadata:
 Let’s save this yaml configuration into `namespace.yaml` Then create those above namespaces.
 
 ```bash
-$ kubectl apply -f namespace.yaml
+kubectl apply -f namespace.yaml
+```
 namespace/db created
 namespace/demo created
-```
 
 ## Deploy MongoDB Server and Vault Server 
 
@@ -112,9 +112,9 @@ Here,
 Let’s save this yaml configuration into `mongodb.yaml` Then create the above `MongoDB` CR
 
 ```bash
-$ kubectl apply -f mongodb.yaml 
-mongodb.kubedb.com/mongodb created
+kubectl apply -f mongodb.yaml 
 ```
+mongodb.kubedb.com/mongodb created
 
 ### Deploy Vault Server
 
@@ -167,9 +167,9 @@ Here,
 Let’s save this yaml configuration into `vault.yaml` Then create the above `VaultServer` CR
 
 ```bash
-$ kubectl apply -f vault.yaml
-vaultserver.kubevault.com/vault created
+kubectl apply -f vault.yaml
 ```
+vaultserver.kubevault.com/vault created
 
 
 ### Create Repository Secret
@@ -179,17 +179,20 @@ Here, we are using local backend for storing data snapshots. It can be a cloud s
 Let's, create a Secret for our Repository,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo repo-secret --from-file=./RESTIC_PASSWORD
-secret/repo-secret created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo repo-secret --from-file=./RESTIC_PASSWORD
+```
+secret/repo-secret created
 
 Let’s save this yaml configuration into `repo-secret.yaml` Then create the secret,
 
 ```bash
-$ kubectl apply -f repo-secret.yaml 
-secret/repo-secret created
+kubectl apply -f repo-secret.yaml 
 ```
+secret/repo-secret created
 
 
 ### Create Repository
@@ -218,9 +221,9 @@ This repository CRO specifies the `repo-secret` that we've created before and sp
 Let’s save this yaml configuration into `repo.yaml` Lets create the repository,
 
 ```bash
-$ kubectl apply -f repo.yaml 
-repository.stash.appscode.com/repo created
+kubectl apply -f repo.yaml 
 ```
+repository.stash.appscode.com/repo created
 
 After creating the repository we've backed up one of our MongoDB database with some sample data via Stash. So, now our repository contains some sample data inside it.
 
@@ -277,18 +280,17 @@ Here,
 Let’s save this yaml configuration into `schema-restore.yaml` and apply it,
 
 ```bash
-$ kubectl apply -f schema-restore.yaml 
-mongodbdatabase.schema.kubedb.com/schema-restore created
-
+kubectl apply -f schema-restore.yaml 
 ```
+mongodbdatabase.schema.kubedb.com/schema-restore created
 
 Let's check the `STATUS` of `Schema Manager`,
 
 ```bash
-$ kubectl get mongodbdatabase -A
+kubectl get mongodbdatabase -A
+```
 NAMESPACE   NAME              DB_SERVER   DB_NAME    STATUS    AGE
 demo        schema-restore    mongodb     products   Current   56s
-```
 Here,
 
 > In `STATUS` section, `Current` means that the current `Secret` of `Schema Manager` is vaild, and it will automatically `Expired` after it reaches the limit of `defaultTTL` that we've defined in the above yaml. 
@@ -296,29 +298,32 @@ Here,
 Also, check the `STATUS` of `restoresession`
 
 ```bash
-$ kubectl get restoresession -n demo
+kubectl get restoresession -n demo
+```
 NAME                      REPOSITORY   PHASE       DURATION   AGE
 schema-restore-mongo-rs   repo         Succeeded   5s         21s
-```
 
 
 Now, let's get the secret name from `schema-manager`, and the login credentials for connecting to the database,
 
 ```bash
-$ kubectl get mongodbdatabase schema-restore -n demo -o=jsonpath='{.status.authSecret.name}'
+kubectl get mongodbdatabase schema-restore -n demo -o=jsonpath='{.status.authSecret.name}'
+```
 schema-restore-mongo-req-98k0ch
 
-$ kubectl view-secret -n demo schema-restore-mongo-req-98k0ch -a
+```bash
+kubectl view-secret -n demo schema-restore-mongo-req-98k0ch -a
+```
 password=6ykdBljJ7D8agXeoSp-f
 username=v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843
-```
 
 ### Verify Initialization
 
 Here, we are going to connect to the database with the login credentials and verify the database initialization,
 
 ```bash
-$ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+```
 root@mongodb-0:/# mongosh --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
 MongoDB shell version v4.4.26
 ...
@@ -335,21 +340,20 @@ replicaset:PRIMARY> db.products.find()
 replicaset:PRIMARY> exit
 bye
 
-```
-
 Now, Let's check the `STATUS` of `Schema Manager` again,
 
 ```bash
-$ kubectl get mongodbdatabase -A
+kubectl get mongodbdatabase -A
+```
 NAMESPACE   NAME              DB_SERVER   DB_NAME    STATUS    AGE
 demo        schema-restore    mongodb     products   Expired   7m
-```
 
 Here, we can see that the `STATUS` of the `schema-manager` is `Expired` because it's exceeded `defaultTTL: "5m"`, which means the current `Secret` of `Schema Manager` isn't vaild anymore. Now, if we try to connect and login with the credentials that we have acquired before from `schema-manager`, it won't work.
 
 
 ```bash
-$ kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+kubectl exec -it -n demo mongodb-0 -c mongodb -- bash
+```
 root@mongodb-0:/# mongosh --authenticationDatabase=products --username='v-kubernetes-demo-k8s-f7695915-1e-2zXmduPS89LfvW6tr5Bw-1662639843' --password='6ykdBljJ7D8agXeoSp-f' products
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/products?authSource=products&compressors=disabled&gssapiServiceName=mongodb
@@ -360,7 +364,6 @@ exception: connect failed
 exiting with code 1
 root@mongodb-0:/# exit
 exit
-```
 > We can't connect to the database with the login credentials, which is `Expired`. We will not be able to access the database even though we're in the middle of a connected session. 
 
 
@@ -370,8 +373,11 @@ exit
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete ns db
-$ kubectl delete ns demo
+kubectl delete ns db
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 

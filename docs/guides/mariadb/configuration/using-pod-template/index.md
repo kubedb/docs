@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for MariaDB via [PodTemplate](/do
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/configuration/using-pod-template/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -95,24 +95,25 @@ spec:
 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples/md-misc-config.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-pod-template/examples/md-misc-config.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `sample-mariadb` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   1/1     Running   0          96s
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo sample-mariadb-0
+kubectl logs -f -n demo sample-mariadb-0
+```
 2021-03-18 06:06:17+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
 2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
 2021-03-18 06:06:18+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
@@ -120,14 +121,14 @@ $ kubectl logs -f -n demo sample-mariadb-0
 ...
 2021-03-18  6:06:33 0 [Note] mysqld: ready for connections.
 Version: '11.8.5-MariaDB-1:11.8.5+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
-```
 
 Once we see `Note] mysqld: ready for connections.` in the log, the database is ready.
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 22
@@ -167,15 +168,17 @@ MariaDB [(none)]> show variables like 'char%';
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

@@ -37,20 +37,20 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Ignit
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -100,30 +100,32 @@ spec:
 Let's create the `Ignite` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/autoscaler/storage/cluster/examples/sample-ignite.yaml
-ignite.kubedb.com/ignite-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/autoscaler/storage/cluster/examples/sample-ignite.yaml
 ```
+ignite.kubedb.com/ignite-autoscale created
 
 Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ignite -n demo
+kubectl get ignite -n demo
+```
 NAME                 VERSION   STATUS   AGE
 ignite-autoscale     2.17.0    Ready    3m46s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo ignite-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo ignite-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   1Gi        RWO            Delete           Bound    demo/data-sample-ignite-2   topolvm-provisioner            57s
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   1Gi        RWO            Delete           Bound    demo/data-sample-ignite-0   topolvm-provisioner            58s
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   1Gi        RWO            Delete           Bound    demo/data-sample-ignite-1   topolvm-provisioner            57s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -165,20 +167,23 @@ Here,
 Let's create the `igniteAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/autoscaler/storage/cluster/examples/ig-storage-autoscale-ops.yaml
-igniteautoscaler.autoscaling.kubedb.com/ignite-storage-autosclaer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/autoscaler/storage/cluster/examples/ig-storage-autoscale-ops.yaml
 ```
+igniteautoscaler.autoscaling.kubedb.com/ignite-storage-autosclaer created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `igniteautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get igniteautoscaler -n demo
+kubectl get igniteautoscaler -n demo
+```
 NAME                          AGE
 ignite-storage-autosclaer   33s
 
-$ kubectl describe igniteautoscaler ignite-storage-autoscaler -n demo
+```bash
+kubectl describe igniteautoscaler ignite-storage-autoscaler -n demo
+```
 Name:         ignite-storage-autosclaer
 Namespace:    demo
 Labels:       <none>
@@ -200,30 +205,30 @@ Spec:
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
-```
 
 So, the `igniteautoscaler` resource is created successfully.
 
 Let's watch the `igniteopsrequest` in the demo namespace to see if any `igniteopsrequest` object is created. After some time you'll see that a `igniteopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 NAME                              TYPE              STATUS        AGE
 igops-ignite-autoscale-xojkua   VolumeExpansion   Progressing   15s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 igops-ignite-autoscale-xojkua   VolumeExpansion   Successful   97s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-ignite-autoscale-xojkua
+kubectl describe igniteopsrequest -n demo igops-ignite-autoscale-xojkua
+```
 Name:         igops-ignite-autoscaleq-xojkua
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -286,19 +291,21 @@ Events:
   Normal  Starting    103s   KubeDB Enterprise Operator  Resuming ignite database: demo/ignite-autoscale
   Normal  Successful  103s   KubeDB Enterprise Operator  Successfully resumed ignite database: demo/ignite-autoscale
   Normal  Successful  103s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of ignite: demo/ignite-autoscale
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo ignite-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo ignite-autoscale -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-43266d76-f280-4cca-bd78-d13660a84db9   2Gi        RWO            Delete           Bound    demo/data-ignite-autoscale-2   topolvm-provisioner            23m
 pvc-4a509b05-774b-42d9-b36d-599c9056af37   2Gi        RWO            Delete           Bound    demo/data-signite-autoscale-0   topolvm-provisioner            24m
 pvc-c27eee12-cd86-4410-b39e-b1dd735fc14d   2Gi        RWO            Delete           Bound    demo/data-ignite-autoscale-1   topolvm-provisioner            23m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the ignite cluster.
 

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -78,22 +78,23 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/vertical-scaling/hazelcast.yaml
-hazelcast.kubedb.com/hz-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/vertical-scaling/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hz-prod created
 
 Now, wait until `hz-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo
+kubectl get hz -n demo
+```
 NAME      TYPE                  VERSION   STATUS   AGE
 hz-prod   kubedb.com/v1alpha2   5.5.2     Ready    4m
-```
 
 Let's check the container resources,
 
 ```bash
-$ kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1536Mi"
@@ -103,8 +104,6 @@ $ kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
     "memory": "1536Mi"
   }
 }
-
-```
 
 You can see the container has `500m` CPU and `1Gi` memory as resource limits.
 
@@ -148,9 +147,9 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/vertical-scaling/hz-vscale-up.yaml
-hazelcastopsrequest.ops.kubedb.com/hz-vscale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/vertical-scaling/hz-vscale-up.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hz-vscale-up created
 
 ### Verify Hazelcast resources updated successfully
 
@@ -159,15 +158,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `HazelcastOpsRequest` to be `Successful`. Run the following command to watch `HazelcastOpsRequest` CR,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME           TYPE              STATUS       AGE
 hz-vscale-up   VerticalScaling   Successful   3m2s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to update the database.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hz-vscale-up
+kubectl describe hazelcastopsrequest -n demo hz-vscale-up
+```
 Name:         hz-vscale-up
 Namespace:    demo
 Labels:       <none>
@@ -262,12 +262,11 @@ Events:
   Normal   Starting                                            67s    KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                          67s    KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hz-vscale-up
 
-```
-
 Now, we are going to verify from the Pod, and the PetSet that the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1536Mi"
@@ -277,8 +276,6 @@ $ kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
     "memory": "1536Mi"
   }
 }
-
-```
 
 The above output verifies that we have successfully scaled up the resources of the Hazelcast database.
 

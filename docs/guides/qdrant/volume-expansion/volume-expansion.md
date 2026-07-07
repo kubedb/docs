@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/volume-expansion](/docs/examples/qdrant/volume-expansion) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -47,12 +47,12 @@ Here, we are going to deploy a `Qdrant` cluster using a supported version by `Ku
 At first verify that your cluster has a storage class that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  2d
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   3m25s
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   3m19s
-```
 
 We can see from the output that `longhorn (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class.
 
@@ -84,30 +84,32 @@ spec:
 Let's create the `Qdrant` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/volume-expansion/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/volume-expansion/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m47s
-```
 
 Let's check volume size from the PetSet and from the persistent volumes:
 
 ```bash
-$ kubectl get petset -n demo qdrant-sample -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo qdrant-sample -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 pvc-0e300ccf-49f1-4e11-b630-bc3756baeaa0   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0      longhorn       <unset>                 4m
 pvc-20ab1d50-23d7-409a-ba2e-759250f9f758   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-2      longhorn       <unset>                 4m
 pvc-ccee01bf-9551-4efc-8945-5a3d25c60c7b   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-1      longhorn       <unset>                 4m
-```
 
 You can see the PetSet has 1Gi storage, and the capacity of all the persistent volumes are also 1Gi.
 
@@ -151,9 +153,9 @@ During `Online` VolumeExpansion KubeDB expands volume without deleting the pods,
 Let's create the `QdrantOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/volume-expansion/ops-request.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-vol-exp created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/volume-expansion/ops-request.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-vol-exp created
 
 #### Verify Qdrant volume expanded successfully
 
@@ -162,15 +164,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `QdrantOpsRequest` to be `Successful`. Run the following command to watch `QdrantOpsRequest` CR,
 
 ```bash
-$ kubectl get qdrantopsrequest -n demo
+kubectl get qdrantopsrequest -n demo
+```
 NAME             TYPE              STATUS       AGE
 qdops-vol-exp    VolumeExpansion   Successful   10m
-```
 
 We can see from the above output that the `QdrantOpsRequest` has succeeded. If we describe the `QdrantOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe qdrantopsrequest qdops-vol-exp -n demo
+kubectl describe qdrantopsrequest qdops-vol-exp -n demo
+```
 Name:         qdops-vol-exp
 Namespace:    demo
 Labels:       <none>
@@ -286,20 +289,21 @@ Events:
   Normal   ReadyPetSets             10s    KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                 10s    KubeDB Ops-manager Operator  Resuming Qdrant database: demo/qdrant-sample
   Normal   Successful               10s    KubeDB Ops-manager Operator  Successfully resumed Qdrant database: demo/qdrant-sample for QdrantOpsRequest: qdops-vol-exp
-```
 
 Now, we are going to verify from the `PetSet` and `Persistent Volumes` whether the volume of the Qdrant database has expanded to meet the desired state:
 
 ```bash
-$ kubectl get petset -n demo qdrant-sample -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo qdrant-sample -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "3Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 pvc-0e300ccf-49f1-4e11-b630-bc3756baeaa0   3Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0      longhorn       <unset>                 5m
 pvc-20ab1d50-23d7-409a-ba2e-759250f9f758   3Gi        RWO            Delete           Bound    demo/data-qdrant-sample-2      longhorn       <unset>                 5m
 pvc-ccee01bf-9551-4efc-8945-5a3d25c60c7b   3Gi        RWO            Delete           Bound    demo/data-qdrant-sample-1      longhorn       <unset>                 5m
-```
 
 The above output verifies that we have successfully expanded the volume of the Qdrant database.
 
@@ -314,9 +318,11 @@ The above output verifies that we have successfully expanded the volume of the Q
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete qdrant -n demo qdrant-sample
+kubectl delete qdrant -n demo qdrant-sample
+```
 qdrant.kubedb.com "qdrant-sample" deleted
 
-$ kubectl delete qdrantopsrequest -n demo qdops-vol-exp
-qdrantopsrequest.ops.kubedb.com "qdops-vol-exp" deleted
+```bash
+kubectl delete qdrantopsrequest -n demo qdops-vol-exp
 ```
+qdrantopsrequest.ops.kubedb.com "qdops-vol-exp" deleted

@@ -64,9 +64,9 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
-Elasticsearch.kubedb.com/es created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
 ```
+Elasticsearch.kubedb.com/es created
 let's wait until all pods are in the `Running` state,
 
 ```shell
@@ -82,19 +82,24 @@ es-2   2/2     Running   0          6m28s
 To connect to our Elasticsearch cluster, let's port-forward the Elasticsearch service to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es 9200
+kubectl port-forward -n demo svc/es 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Keep it like that and switch to another terminal window:
 
 ```bash
-$ export ELASTIC_USER=$(kubectl get secret -n demo es-o jsonpath='{.data.username}' | base64 -d)
+export ELASTIC_USER=$(kubectl get secret -n demo es-o jsonpath='{.data.username}' | base64 -d)
+```
 
-$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo es-o jsonpath='{.data.password}' | base64 -d)
+```bash
+export ELASTIC_PASSWORD=$(kubectl get secret -n demo es-o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
+```bash
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
+```
 {
   "cluster_name" : "sample-es",
   "status" : "green",
@@ -112,12 +117,12 @@ $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_c
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 So, our cluster status is green. Let's create some indices with dummy data:
 
 ```bash
-$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d '
+curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d '
+```
 {
     "name": "KubeDB",
     "vendor": "AppsCode Inc.",
@@ -125,24 +130,25 @@ $ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/p
 }
 '
 
-$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_doc?pretty" -H 'Content-Type: application/json' -d '
+```bash
+curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_doc?pretty" -H 'Content-Type: application/json' -d '
+```
 {
     "name": "AppsCode Inc.",
     "mission": "Accelerate the transition to Containers by building a Kubernetes-native Data Platform",
     "products": ["KubeDB", "Stash", "KubeVault", "Kubeform", "ByteBuilders"]
 }
 '
-```
 
 Now, let’s verify that the indexes have been created successfully.
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases oiaZfJA8Q5CihQon0oR8hA   1   1         42            0     81.6mb         40.8mb
 green  open   companies        GuGisWJ8Tkqnq8vhREQ2-A   1   1          1            0     11.5kb          5.7kb
 green  open   products         wyu-fImDRr-Hk_GXVF7cDw   1   1          1            0     10.6kb          5.3kb
-```
 
 
 # Apply Restart opsRequest
@@ -174,9 +180,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/restart/yamls/restart.yaml
-ElasticsearchOpsRequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/restart/yamls/restart.yaml
 ```
+ElasticsearchOpsRequest.ops.kubedb.com/restart created
 
 In a Elasticsearch cluster, all pods act as primary nodes. When you apply a restart OpsRequest, the KubeDB operator will restart the pods sequentially, one by one, to maintain cluster availability.
 
@@ -203,12 +209,15 @@ es-2   2/2     Terminating   0          56m
 
 ```
 
-```shell
-$ kubectl get Elasticsearchopsrequest -n demo
+```bash
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   64m
 
-$ kubectl get Elasticsearchopsrequest -n demo restart -oyaml
+```bash
+kubectl get Elasticsearchopsrequest -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
 metadata:
@@ -299,31 +308,27 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 **Verify Data Persistence**
 
 After the restart, reconnect to the database and verify that the previously created database still exists:
 Let's port-forward the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es 9200
+kubectl port-forward -n demo svc/es 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-
-```
 
 
 Now let's check the data persistencyof our Elasticsearch database.
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index         uuid                   pri rep docs.count docs.deleted store.size pri.store.size dataset.size
 green  open   companies     02UKouHARfuMs2lZXMkVQQ   1   1          1            0     13.6kb          6.8kb        6.8kb
 green  open   kubedb-system 2Fr26ppkSyy7uJrkfIhzvg   1   1          1            6    433.3kb        191.1kb      191.1kb
 green  open   products      XxAYeIKOSLaOqp2rczCwFg   1   1          1            0     12.4kb          6.2kb        6.2kb
-
-```
 
 As you can see, the previously created indices `companies` and `products` are still present after the restart, confirming data persistence after the restart operation.
 

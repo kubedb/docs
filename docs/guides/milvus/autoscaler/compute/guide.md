@@ -26,10 +26,10 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
 - Install the **KubeDB Autoscaler** operator and a **metrics server** in your cluster — the VPA recommender needs metrics to produce recommendations.
 
   ```bash
-  $ kubectl get deploy metrics-server -n kube-system
+  kubectl get deploy metrics-server -n kube-system
+  ```
   NAME             READY   UP-TO-DATE   AVAILABLE   AGE
   metrics-server   1/1     1            1           5m
-  ```
 
 - An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
 
@@ -68,22 +68,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/compute/yamls/compute-standalone.yaml
-milvusautoscaler.autoscaling.kubedb.com/milvus-standalone-compute-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/compute/yamls/compute-standalone.yaml
 ```
+milvusautoscaler.autoscaling.kubedb.com/milvus-standalone-compute-autoscaler created
 
 The autoscaler creates a `VerticalPodAutoscaler` (VPA) object. Once the VPA recommender produces a recommendation that differs from the current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`.
 
 ```bash
-$ kubectl get milvusautoscaler -n demo
+kubectl get milvusautoscaler -n demo
+```
 NAME                                   AGE
 milvus-standalone-compute-autoscaler   59s
-```
 
 The autoscaler runs a VPA recommender (fed by the metrics server) and records the recommendation in its status. Once enough samples are collected, the `RecommendationProvided` condition becomes `True` and a target resource set is published:
 
 ```bash
-$ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo -o jsonpath='{.status}' | jq .
+kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo -o jsonpath='{.status}' | jq .
+```
 {
   "vpas": [
     {
@@ -104,19 +105,20 @@ $ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo -o j
     }
   ]
 }
-```
 
 Here the recommended `target` is `cpu: 143m` / `memory: 256Mi` (the standalone idles well below its `500m` request). Because the recommendation differs from the current request by more than `resourceDiffPercentage` (10%) and stays within `minAllowed`/`maxAllowed`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`. This is recorded in the autoscaler status as a `CreateOpsRequest` condition:
 
 ```bash
-$ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo \
+kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo \
     -o jsonpath='{.status.conditions[?(@.type=="CreateOpsRequest")].message}'
+```
 Successfully created MilvusOpsRequest demo/mvops-milvus-standalone-xqwkhv
 
-$ kubectl get milvusopsrequest -n demo
+```bash
+kubectl get milvusopsrequest -n demo
+```
 NAME                             TYPE              STATUS        AGE
 mvops-milvus-standalone-xqwkhv   VerticalScaling   Progressing   2s
-```
 
 The Ops-manager then applies the vertical scaling exactly as in the [vertical scaling guide](/docs/guides/milvus/scaling/vertical-scaling/guide.md), right-sizing the pod to the recommended resources.
 
@@ -163,9 +165,15 @@ The behavior is identical to standalone, except a VPA object and resource recomm
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusautoscaler -n demo --all
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusautoscaler -n demo --all
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

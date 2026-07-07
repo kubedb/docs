@@ -32,13 +32,15 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to rotate 
 Milvus authentication is enabled by default. When `spec.authSecret` is omitted, KubeDB creates a `kubernetes.io/basic-auth` secret named `<db>-auth` with a `root` user and a random password:
 
 ```bash
-$ kubectl get secret milvus-standalone-auth -n demo
+kubectl get secret milvus-standalone-auth -n demo
+```
 NAME                     TYPE                       DATA   AGE
 milvus-standalone-auth   kubernetes.io/basic-auth   2      92s
 
-$ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d
-root
+```bash
+kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d
 ```
+root
 
 There are two ways to rotate this credential.
 
@@ -78,21 +80,22 @@ spec:
 Here, `spec.authentication.secretRef.name` points at the user-created secret. To let the operator generate a random password instead, simply omit `spec.authentication`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/rotate-auth/yamls/rotate-auth-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/rotate-auth/yamls/rotate-auth-standalone.yaml
+```
 secret/milvus-new-auth1 created
 milvusopsrequest.ops.kubedb.com/milvus-rotate-auth-user-secret created
-```
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest milvus-rotate-auth-user-secret -n demo
+kubectl get milvusopsrequest milvus-rotate-auth-user-secret -n demo
+```
 NAME                             TYPE         STATUS       AGE
 milvus-rotate-auth-user-secret   RotateAuth   Successful   83s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest milvus-rotate-auth-user-secret -n demo
+kubectl describe milvusopsrequest milvus-rotate-auth-user-secret -n demo
+```
 ...
 Status:
   Conditions:
@@ -112,19 +115,20 @@ Status:
     Reason:   RestartNodes
     ...
   Phase:      Successful
-```
 
 ### Verify the Rotation
 
 The database now references the new secret:
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.authSecret.name}'
+kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.authSecret.name}'
+```
 milvus-new-auth1
 
-$ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.metadata.annotations.kubedb\.com/auth-active-from}'
-2026-06-30T17:19:33Z
+```bash
+kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.metadata.annotations.kubedb\.com/auth-active-from}'
 ```
+2026-06-30T17:19:33Z
 
 ## Rotate Distributed Milvus
 
@@ -160,19 +164,22 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/rotate-auth/yamls/rotate-auth-distributed.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/rotate-auth/yamls/rotate-auth-distributed.yaml
+```
 secret/milvus-new-auth1 created
 milvusopsrequest.ops.kubedb.com/milvus-rotate-auth-user-secret created
 
-$ kubectl get milvusopsrequest milvus-rotate-auth-user-secret -n demo
+```bash
+kubectl get milvusopsrequest milvus-rotate-auth-user-secret -n demo
+```
 NAME                             TYPE         STATUS       AGE
 milvus-rotate-auth-user-secret   RotateAuth   Successful   3m56s
-```
 
 The credential is updated dynamically and then every role is reconciled and restarted:
 
 ```bash
-$ kubectl describe milvusopsrequest milvus-rotate-auth-user-secret -n demo
+kubectl describe milvusopsrequest milvus-rotate-auth-user-secret -n demo
+```
 ...
 Status:
   Conditions:
@@ -187,9 +194,10 @@ Status:
     Type:     UpdatePetSets
   Phase:      Successful
 
-$ kubectl get milvuses.kubedb.com milvus-cluster -n demo -o jsonpath='{.spec.authSecret.name}'
-milvus-new-auth1
+```bash
+kubectl get milvuses.kubedb.com milvus-cluster -n demo -o jsonpath='{.spec.authSecret.name}'
 ```
+milvus-new-auth1
 
 ## Automatic Rotation Recommendations
 
@@ -203,10 +211,19 @@ See the [Recommendation Engine guide](/docs/guides/milvus/recommendation/guide.m
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo milvus-rotate-auth-user-secret
-$ kubectl delete secret -n demo milvus-new-auth1
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo milvus-rotate-auth-user-secret
+```
+
+```bash
+kubectl delete secret -n demo milvus-new-auth1
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

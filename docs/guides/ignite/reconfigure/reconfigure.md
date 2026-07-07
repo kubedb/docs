@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [examples](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -49,9 +49,9 @@ At first, we will create `node-configuration.xml` file containing required confi
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo ig-custom-config --from-file=./node-configuration.xml
-secret/ig-custom-config created
+kubectl create secret generic -n demo ig-custom-config --from-file=./node-configuration.xml
 ```
+secret/ig-custom-config created
 
 In this section, we are going to create a Ignite object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Ignite` CR that we are going to create,
 
@@ -78,37 +78,39 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/cluster/ig-custom-config.yaml
-ignite.kubedb.com/ig-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/cluster/ig-custom-config.yaml
 ```
+ignite.kubedb.com/ig-cluster created
 
 Now, wait until `ig-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 ig-cluster      kubedb.com/v1alpha2   2.17.0    Ready    79m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a Ignite instance,
 ```bash
-$ kubectl get secrets -n demo ig-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo ig-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+```
 ignite
 
-$ kubectl get secrets -n demo ig-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
-m6lXjZugrC4VEpB8
+```bash
+kubectl get secrets -n demo ig-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
 ```
+m6lXjZugrC4VEpB8
 
 ### Reconfigure using new secret
 
 Now, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./node-configuration.xml
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./node-configuration.xml
 ```
+secret/new-custom-config created
 
 #### Create IgniteOpsRequest
 
@@ -141,9 +143,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/ig-reconfigure-with-secret.yaml
-igniteopsrequest.ops.kubedb.com/reconfigure-ig-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/ig-reconfigure-with-secret.yaml
 ```
+igniteopsrequest.ops.kubedb.com/reconfigure-ig-cluster created
 
 #### Verify the new configuration is working 
 
@@ -152,16 +154,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ watch kubectl get igniteopsrequest -n demo
+watch kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 reconfigure-ig-cluster        Reconfigure   Successful   3m
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo reconfigure-ig-cluster
+kubectl describe igniteopsrequest -n demo reconfigure-ig-cluster
+```
 Name:         reconfigure-ig-cluster
 Namespace:    demo
 Labels:       <none>
@@ -238,7 +241,6 @@ Events:
   Normal   RestartNodes                                           5m40s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                               5m40s  KubeDB Ops-manager Operator  Resuming Ignite database: demo/ig-cluster
   Normal   Successful                                             5m39s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ig-cluster for IgniteOpsRequest: reconfigure-ig-cluster
-```
 
 ### Reconfigure using apply config
 
@@ -286,9 +288,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/ignite-reconfigure-apply.yaml
-igniteopsrequest.ops.kubedb.com/reconfigure-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/opsrequests/ignite-reconfigure-apply.yaml
 ```
+igniteopsrequest.ops.kubedb.com/reconfigure-apply created
 
 ## Cleaning Up
 

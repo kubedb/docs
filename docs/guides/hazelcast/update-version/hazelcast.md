@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](/docs/examples/hazelcast) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -75,17 +75,17 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/hazelcast.yaml
-hazelcast.kubedb.com/hz-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hz-prod created
 
 Now, wait until `hz-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hazelcast -n demo
+kubectl get hazelcast -n demo
+```
 NAME      TYPE                  VERSION   STATUS   AGE
 hz-prod   kubedb.com/v1alpha2   5.5.2     Ready    3h4m
-```
 
 We are now ready to apply the `HazelcastOpsRequest` CR to update this database.
 
@@ -120,9 +120,9 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/opsrequest-version-update.yaml
-hazelcastopsrequest.ops.kubedb.com/hzops-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/update-version/opsrequest-version-update.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hzops-update-version created
 
 #### Verify Hazelcast version updated successfully:
 
@@ -131,15 +131,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `HazelcastOpsRequest` to be `Successful`. Run the following command to watch `HazelcastOpsRequest` CR,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME                   TYPE            STATUS       AGE
 hzops-update-version   UpdateVersion   Successful   3m2s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to update the database.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hzops-update-version
+kubectl describe hazelcastopsrequest -n demo hzops-update-version
+```
 Name:         hzops-update-version
 Namespace:    demo
 Labels:       <none>
@@ -238,32 +239,31 @@ Events:
   Normal   RestartPods                                         15s    KubeDB Ops-manager Operator  Successfully Restarted Hazelcast nodes
   Normal   Starting                                            15s    KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                          15s    KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hzops-update-version
-```
 
 Now, we are going to verify whether the `Hazelcast` and the related `StatefulSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get hazelcast -n demo hz-prod -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get hazelcast -n demo hz-prod -o=jsonpath='{.spec.version}{"\n"}'
+```
 5.5.6
-```
 
 ```bash
-$ kubectl get statefulset -n demo hz-prod -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/hazelcast:5.5.6@sha256:abc123def456...
+kubectl get statefulset -n demo hz-prod -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/hazelcast:5.5.6@sha256:abc123def456...
 
 ```bash
-$ kubectl get pods -n demo hz-prod-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/hazelcast:5.5.6@sha256:abc123def456...
+kubectl get pods -n demo hz-prod-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/hazelcast:5.5.6@sha256:abc123def456...
 
 Let's also verify that the database is ready to take connections:
 
 ```bash
-$ kubectl get hazelcast -n demo hz-prod
+kubectl get hazelcast -n demo hz-prod
+```
 NAME      TYPE                  VERSION   STATUS   AGE
 hz-prod   kubedb.com/v1alpha2   5.5.6     Ready    3h14m
-```
 
 You can see from the above outputs that the `Hazelcast` object and related resources have been updated with the new version `5.5.6`.
 

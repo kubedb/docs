@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -72,21 +72,21 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast.yaml
-hazelcast.kubedb.com/hz-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hz-prod created
 
 Now, wait until `hz-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo -w
+kubectl get hz -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 hz-prod    kubedb.com/v1   5.2.2     Provisioning   0s
 hz-prod    kubedb.com/v1   5.2.2     Provisioning   9s
 .
 .
 hz-prod    kubedb.com/v1   5.2.2     Ready          2m10s
-```
 
 Now, we can exec one hazelcast pod and verify configuration that the TLS is disabled.
 
@@ -105,23 +105,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls hz-ca \
+kubectl create secret tls hz-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/hz-ca created
 ```
+secret/hz-ca created
 
 Now, Let's create an `Issuer` using the `hz-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -139,9 +139,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-issuer.yaml
-issuer.cert-manager.io/hz-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-issuer.yaml
 ```
+issuer.cert-manager.io/hz-issuer created
 
 ### Create HazelcastOpsRequest
 
@@ -183,24 +183,25 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-add-tls.yaml
-hazelcastopsrequest.ops.kubedb.com/hzops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-add-tls.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hzops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `HazelcastOpsRequest` to be `Successful`.  Run the following command to watch `HazelcastOpsRequest` CRO,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME            TYPE             STATUS       AGE
 hzops-add-tls   ReconfigureTLS   Successful   4m36s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hzops-add-tls 
+kubectl describe hazelcastopsrequest -n demo hzops-add-tls 
+```
 Name:         hzops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -374,8 +375,6 @@ Events:
   Normal   Starting                                              81s    KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                            81s    KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hzops-add-tls
 
-```
-
 Now, Let's exec into a hazelcast pod and verify the configuration that the TLS is enabled.
 
 ```bash
@@ -429,24 +428,25 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-rotate.yaml
-hazelcastopsrequest.ops.kubedb.com/hzops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-rotate.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hzops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `HazelcastOpsRequest` to be `Successful`.  Run the following command to watch `HazelcastOpsRequest` CRO,
 
 ```bash
-$ kubectl get hazelcastopsrequests -n demo hzops-rotate
+kubectl get hazelcastopsrequests -n demo hzops-rotate
+```
 NAME            TYPE             STATUS       AGE
 hzops-rotate    ReconfigureTLS   Successful   4m4s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hzops-rotate
+kubectl describe hazelcastopsrequest -n demo hzops-rotate
+```
 Name:         hzops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -610,18 +610,17 @@ Events:
   Normal   RestartNodes                                          62s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                              62s    KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                            62s    KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hzops-rotate
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -n demo hz-prod-0 -- /bin/sh -c '\
+kubectl exec -n demo hz-prod-0 -- /bin/sh -c '\
                                    openssl s_client -connect localhost:5701 -showcerts < /dev/null 2>/dev/null | \
                                    sed -ne "/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p" > /tmp/server.crt && \
                                    openssl x509 -in /tmp/server.crt -noout -enddate'
+```
 Defaulted container "hazelcast" out of: hazelcast, hazelcast-init (init)
 notAfter=Nov 17 06:10:38 2025 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -632,23 +631,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls hz-new-ca \
+kubectl create secret tls hz-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/hz-new-ca created
 ```
+secret/hz-new-ca created
 
 Now, Let's create a new `Issuer` using the `hz-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -666,9 +665,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-new-issuer.yaml
-issuer.cert-manager.io/hz-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-new-issuer.yaml
 ```
+issuer.cert-manager.io/hz-new-issuer created
 
 ### Create HazelcastOpsRequest
 
@@ -700,24 +699,25 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-update-tls-issuer.yaml
-Hazelcastopsrequest.ops.kubedb.com/hzops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-update-tls-issuer.yaml
 ```
+Hazelcastopsrequest.ops.kubedb.com/hzops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `HazelcastOpsRequest` to be `Successful`.  Run the following command to watch `HazelcastOpsRequest` CRO,
 
 ```bash
-$ kubectl get hazelcastopsrequests -n demo hzops-update-issuer
+kubectl get hazelcastopsrequests -n demo hzops-update-issuer
+```
 NAME                  TYPE             STATUS       AGE
 hzops-update-issuer   ReconfigureTLS   Successful   8m6s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hzops-update-issuer
+kubectl describe hazelcastopsrequest -n demo hzops-update-issuer
+```
 Name:         hzops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -888,7 +888,6 @@ Events:
   Normal   RestartNodes                                          2m32s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                              2m32s  KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                            2m32s  KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hzops-update-issuer
-```
 
 Now, Let's exec into a hazelcast server pod and find out the ca subject to see if it matches the one we have provided.
 
@@ -942,25 +941,24 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-remove-tls.yaml
-hazelcastopsrequest.ops.kubedb.com/hzops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/reconfigure-tls/hazelcast-remove-tls.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hzops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `HazelcastOpsRequest` to be `Successful`.  Run the following command to watch `HazelcastOpsRequest` CRO,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo hzops-remove
+kubectl get hazelcastopsrequest -n demo hzops-remove
+```
 NAME           TYPE             STATUS        AGE
 hzops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hzops-remove
-
+kubectl describe hazelcastopsrequest -n demo hzops-remove
 ```
 
 Now, Let's exec into one of the broker node and find out that TLS is disabled or not.

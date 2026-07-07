@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Pgpool while initializing the
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,22 +70,23 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-init-config.yaml
-pgpool.kubedb.com/pp-init-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-init-config.yaml
 ```
+pgpool.kubedb.com/pp-init-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-init-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo pp-init-config-0
+kubectl get pod -n demo pp-init-config-0
+```
 NAME               READY   STATUS    RESTARTS   AGE
 pp-init-config-0   1/1     Running   0          2m31s
-```
 Now check the config secret KubeDB operator has created and check out `pgpool.conf`.
 ```bash
-$  kubectl get secret -n demo pp-init-config-config -o yaml
+ kubectl get secret -n demo pp-init-config-config -o yaml
+```
 apiVersion: v1
 data:
   pgpool.conf: YmFja2VuZF9ob3N0bmFtZTAgPSAnaGEtcG9zdGdyZXMuZGVtby5zdmMnCmJhY2tlbmRfcG9ydDAgPSA1NDMyCmJhY2tlbmRfd2VpZ2h0MCA9IDEKYmFja2VuZF9mbGFnMCA9ICdBTFdBWVNfUFJJTUFSWXxESVNBTExPV19UT19GQUlMT1ZFUicKYmFja2VuZF9ob3N0bmFtZTEgPSAnaGEtcG9zdGdyZXMtc3RhbmRieS5kZW1vLnN2YycKYmFja2VuZF9wb3J0MSA9IDU0MzIKYmFja2VuZF93ZWlnaHQxID0gMQpiYWNrZW5kX2ZsYWcxID0gJ0RJU0FMTE9XX1RPX0ZBSUxPVkVSJwpudW1faW5pdF9jaGlsZHJlbiA9IDYKbWF4X3Bvb2wgPSA2NQpjaGlsZF9saWZlX3RpbWUgPSA0MDAKZW5hYmxlX3Bvb2xfaGJhID0gb24KbGlzdGVuX2FkZHJlc3NlcyA9ICoKcG9ydCA9IDk5OTkKc29ja2V0X2RpciA9ICcvdmFyL3J1bi9wZ3Bvb2wnCnBjcF9saXN0ZW5fYWRkcmVzc2VzID0gKgpwY3BfcG9ydCA9IDk1OTUKcGNwX3NvY2tldF9kaXIgPSAnL3Zhci9ydW4vcGdwb29sJwpsb2dfcGVyX25vZGVfc3RhdGVtZW50ID0gb24Kc3JfY2hlY2tfcGVyaW9kID0gMApoZWFsdGhfY2hlY2tfcGVyaW9kID0gMApiYWNrZW5kX2NsdXN0ZXJpbmdfbW9kZSA9ICdzdHJlYW1pbmdfcmVwbGljYXRpb24nCmNoaWxkX21heF9jb25uZWN0aW9ucyA9IDAKY29ubmVjdGlvbl9saWZlX3RpbWUgPSAwCmNsaWVudF9pZGxlX2xpbWl0ID0gMApjb25uZWN0aW9uX2NhY2hlID0gb24KbG9hZF9iYWxhbmNlX21vZGUgPSBvbgpzc2wgPSAnb2ZmJwpmYWlsb3Zlcl9vbl9iYWNrZW5kX2Vycm9yID0gJ29mZicKbG9nX21pbl9tZXNzYWdlcyA9ICd3YXJuaW5nJwpzdGF0ZW1lbnRfbGV2ZWxfbG9hZF9iYWxhbmNlID0gJ29mZicKbWVtb3J5X2NhY2hlX2VuYWJsZWQgPSAnb2ZmJwptZW1xY2FjaGVfb2lkZGlyID0gJy90bXAvb2lkZGlyLycKYWxsb3dfY2xlYXJfdGV4dF9mcm9udGVuZF9hdXRoID0gJ2ZhbHNlJwo=
@@ -111,7 +112,9 @@ metadata:
   uid: d27154e6-b843-4c1d-b2af-79a80af38ca0
 type: Opaque
 
-$ echo YmFja2VuZF9ob3N0bmFtZTAgPSAnaGEtcG9zdGdyZXMuZGVtby5zdmMnCmJhY2tlbmRfcG9ydDAgPSA1NDMyCmJhY2tlbmRfd2VpZ2h0MCA9IDEKYmFja2VuZF9mbGFnMCA9ICdBTFdBWVNfUFJJTUFSWXxESVNBTExPV19UT19GQUlMT1ZFUicKYmFja2VuZF9ob3N0bmFtZTEgPSAnaGEtcG9zdGdyZXMtc3RhbmRieS5kZW1vLnN2YycKYmFja2VuZF9wb3J0MSA9IDU0MzIKYmFja2VuZF93ZWlnaHQxID0gMQpiYWNrZW5kX2ZsYWcxID0gJ0RJU0FMTE9XX1RPX0ZBSUxPVkVSJwpudW1faW5pdF9jaGlsZHJlbiA9IDYKbWF4X3Bvb2wgPSA2NQpjaGlsZF9saWZlX3RpbWUgPSA0MDAKZW5hYmxlX3Bvb2xfaGJhID0gb24KbGlzdGVuX2FkZHJlc3NlcyA9ICoKcG9ydCA9IDk5OTkKc29ja2V0X2RpciA9ICcvdmFyL3J1bi9wZ3Bvb2wnCnBjcF9saXN0ZW5fYWRkcmVzc2VzID0gKgpwY3BfcG9ydCA9IDk1OTUKcGNwX3NvY2tldF9kaXIgPSAnL3Zhci9ydW4vcGdwb29sJwpsb2dfcGVyX25vZGVfc3RhdGVtZW50ID0gb24Kc3JfY2hlY2tfcGVyaW9kID0gMApoZWFsdGhfY2hlY2tfcGVyaW9kID0gMApiYWNrZW5kX2NsdXN0ZXJpbmdfbW9kZSA9ICdzdHJlYW1pbmdfcmVwbGljYXRpb24nCmNoaWxkX21heF9jb25uZWN0aW9ucyA9IDAKY29ubmVjdGlvbl9saWZlX3RpbWUgPSAwCmNsaWVudF9pZGxlX2xpbWl0ID0gMApjb25uZWN0aW9uX2NhY2hlID0gb24KbG9hZF9iYWxhbmNlX21vZGUgPSBvbgpzc2wgPSAnb2ZmJwpmYWlsb3Zlcl9vbl9iYWNrZW5kX2Vycm9yID0gJ29mZicKbG9nX21pbl9tZXNzYWdlcyA9ICd3YXJuaW5nJwpzdGF0ZW1lbnRfbGV2ZWxfbG9hZF9iYWxhbmNlID0gJ29mZicKbWVtb3J5X2NhY2hlX2VuYWJsZWQgPSAnb2ZmJwptZW1xY2FjaGVfb2lkZGlyID0gJy90bXAvb2lkZGlyLycKYWxsb3dfY2xlYXJfdGV4dF9mcm9udGVuZF9hdXRoID0gJ2ZhbHNlJwo= | base64 -d
+```bash
+echo YmFja2VuZF9ob3N0bmFtZTAgPSAnaGEtcG9zdGdyZXMuZGVtby5zdmMnCmJhY2tlbmRfcG9ydDAgPSA1NDMyCmJhY2tlbmRfd2VpZ2h0MCA9IDEKYmFja2VuZF9mbGFnMCA9ICdBTFdBWVNfUFJJTUFSWXxESVNBTExPV19UT19GQUlMT1ZFUicKYmFja2VuZF9ob3N0bmFtZTEgPSAnaGEtcG9zdGdyZXMtc3RhbmRieS5kZW1vLnN2YycKYmFja2VuZF9wb3J0MSA9IDU0MzIKYmFja2VuZF93ZWlnaHQxID0gMQpiYWNrZW5kX2ZsYWcxID0gJ0RJU0FMTE9XX1RPX0ZBSUxPVkVSJwpudW1faW5pdF9jaGlsZHJlbiA9IDYKbWF4X3Bvb2wgPSA2NQpjaGlsZF9saWZlX3RpbWUgPSA0MDAKZW5hYmxlX3Bvb2xfaGJhID0gb24KbGlzdGVuX2FkZHJlc3NlcyA9ICoKcG9ydCA9IDk5OTkKc29ja2V0X2RpciA9ICcvdmFyL3J1bi9wZ3Bvb2wnCnBjcF9saXN0ZW5fYWRkcmVzc2VzID0gKgpwY3BfcG9ydCA9IDk1OTUKcGNwX3NvY2tldF9kaXIgPSAnL3Zhci9ydW4vcGdwb29sJwpsb2dfcGVyX25vZGVfc3RhdGVtZW50ID0gb24Kc3JfY2hlY2tfcGVyaW9kID0gMApoZWFsdGhfY2hlY2tfcGVyaW9kID0gMApiYWNrZW5kX2NsdXN0ZXJpbmdfbW9kZSA9ICdzdHJlYW1pbmdfcmVwbGljYXRpb24nCmNoaWxkX21heF9jb25uZWN0aW9ucyA9IDAKY29ubmVjdGlvbl9saWZlX3RpbWUgPSAwCmNsaWVudF9pZGxlX2xpbWl0ID0gMApjb25uZWN0aW9uX2NhY2hlID0gb24KbG9hZF9iYWxhbmNlX21vZGUgPSBvbgpzc2wgPSAnb2ZmJwpmYWlsb3Zlcl9vbl9iYWNrZW5kX2Vycm9yID0gJ29mZicKbG9nX21pbl9tZXNzYWdlcyA9ICd3YXJuaW5nJwpzdGF0ZW1lbnRfbGV2ZWxfbG9hZF9iYWxhbmNlID0gJ29mZicKbWVtb3J5X2NhY2hlX2VuYWJsZWQgPSAnb2ZmJwptZW1xY2FjaGVfb2lkZGlyID0gJy90bXAvb2lkZGlyLycKYWxsb3dfY2xlYXJfdGV4dF9mcm9udGVuZF9hdXRoID0gJ2ZhbHNlJwo= | base64 -d
+```
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
 backend_weight0 = 1
@@ -146,13 +149,13 @@ statement_level_load_balance = 'off'
 memory_cache_enabled = 'off'
 memqcache_oiddir = '/tmp/oiddir/'
 allow_clear_text_frontend_auth = 'false'
-```
 Now, we will check if the pgpool has started with the init configuration we have provided.
 
 Now, you can exec into the pgpool pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo pp-init-config-0 -- bash
+kubectl exec -it -n demo pp-init-config-0 -- bash
+```
 pp-init-config-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -191,7 +194,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-init-config-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `num_init_children`, `max_pool` and `child_life_time` has been set to our desired value successfully.
 

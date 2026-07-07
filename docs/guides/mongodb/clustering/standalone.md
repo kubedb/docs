@@ -27,9 +27,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,9 +64,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/standalone.yaml
-mongodb.kubedb.com/mg-alone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/standalone.yaml
 ```
+mongodb.kubedb.com/mg-alone created
 
 Here,
 
@@ -77,7 +77,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
-$ kubectl dba describe mg -n demo mg-alone
+kubectl dba describe mg -n demo mg-alone
+```
 Name:               mg-alone
 Namespace:          demo
 CreationTimestamp:  Fri, 04 Nov 2022 10:30:07 +0600
@@ -192,9 +193,9 @@ Events:
   Normal  Successful    4s    MongoDB operator  Successfully patched PetSet demo/mg-alone
   Normal  Successful    4s    MongoDB operator  Successfully patched MongoDB
 
-
-
-$ kubectl get petset,svc,pvc,pv -n demo
+```bash
+kubectl get petset,svc,pvc,pv -n demo
+```
 NAME                        READY   AGE
 petset.apps/mg-alone   1/1     65s
 
@@ -207,8 +208,6 @@ persistentvolumeclaim/datadir-mg-alone-0   Bound    pvc-78328965-1210-4f7a-a508-
 
 NAME                                                        CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS   REASON   AGE
 persistentvolume/pvc-78328965-1210-4f7a-a508-2749b328a5ac   500Mi      RWO            Delete           Bound    demo/datadir-mg-alone-0   standard                62s
-
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -335,14 +334,18 @@ Now, you can connect to this database through [mg-alone](https://docs.mongodb.co
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mg-alone-auth -o jsonpath='{.data.password}' | base64 -d
+```
 5O4R2ze2bWXcWsdP
 
-$ kubectl exec -it mg-alone-0 -n demo bash
-
+```bash
+kubectl exec -it mg-alone-0 -n demo bash
+```
 mongodb@mg-alone-0:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -402,7 +405,6 @@ WriteResult({ "nInserted" : 1 })
 
 > exit
 bye
-```
 
 ## Data availability
 As this is a standalone database which doesn't have multiple replicas, It offers no redundancy & high availability of data. All the data are stored in one place, & deleting that will occur in data lost.
@@ -416,23 +418,24 @@ You can also keep the mongodb object and halt the database to resume it again la
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mg-alone -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-mongodb.kubedb.com/mg-alone patched
+kubectl patch -n demo mg/mg-alone -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+mongodb.kubedb.com/mg-alone patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":true}}' --type="merge"
-mongodb.kubedb.com/mg-alone patched
+kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":true}}' --type="merge"
 ```
+mongodb.kubedb.com/mg-alone patched
 
 After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                          VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-alone   4.4.26     Halted   2m4s
 
@@ -443,31 +446,29 @@ secret/mongo-ca        kubernetes.io/tls          2      15d
 NAME                                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/datadir-mg-alone-0   Bound    pvc-a1a873a6-4f6d-42eb-a38f-83d36fc44e1a   500Mi      RWO            standard       2m4s
 
-```
-
 
 ## Resume Halted Database
 
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":false}}' --type="merge"
-mongodb.kubedb.com/mg-alone patched
+kubectl patch -n demo mg/mg-alone -p '{"spec":{"halted":false}}' --type="merge"
 ```
+mongodb.kubedb.com/mg-alone patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME             VERSION   STATUS    AGE
 mg-alone   4.4.26     Ready     6m27s
-```
 
 Now, If you again exec into the primary `pod` and look for previous data, you will see that, all the data persists.
 
 ```bash
-$ kubectl exec -it mg-alone-1 -n demo bash
-
+kubectl exec -it mg-alone-1 -n demo bash
+```
 mongodb@mg-alone-1:/$ mongosh admin -u root -p 5O4R2ze2bWXcWsdP
 
 > use newdb
@@ -476,8 +477,6 @@ switched to db newdb
 movie
 > db.movie.find()
 { "_id" : ObjectId("6364af93b1ae8e7a8467058a"), "name" : "batman" }
-
-```
 
 ## Cleaning up
 

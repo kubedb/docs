@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/druid](/docs/examples/druid) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -52,19 +52,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -90,9 +96,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 ### Deploy Druid Cluster
 
@@ -119,26 +125,27 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 Now, wait until `druid-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get dr -n demo -w
+kubectl get dr -n demo -w
+```
 NAME             TYPE                  VERSION    STATUS         AGE
 druid-cluster    kubedb.com/v1aplha2   36.0.0     Provisioning   0s
 druid-cluster    kubedb.com/v1aplha2   36.0.0     Provisioning   24s
 .
 .
 druid-cluster    kubedb.com/v1aplha2   36.0.0     Ready          92s
-```
 
 Let's check the Pod containers resources for both `coordinators` and `historicals` of the Druid topology cluster. Run the following command to get the resources of the `coordinators` and `historicals` containers of the Druid topology cluster
 
 ```bash
-$ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -148,10 +155,10 @@ $ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.conta
     "memory": "1Gi"
   }
 }
-```
 
 ```bash
-$ kubectl get pod -n demo druid-cluster-historicals-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo druid-cluster-historicals-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -161,7 +168,6 @@ $ kubectl get pod -n demo druid-cluster-historicals-0 -o json | jq '.spec.contai
     "memory": "1Gi"
   }
 }
-```
 This is the default resources of the Druid topology cluster set by the `KubeDB` operator.
 
 We are now ready to apply the `DruidOpsRequest` CR to update the resources of this database.
@@ -221,9 +227,9 @@ Here,
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-vscale.yaml
-druidopsrequest.ops.kubedb.com/druid-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-vscale.yaml
 ```
+druidopsrequest.ops.kubedb.com/druid-vscale created
 
 #### Verify Druid cluster resources have been updated successfully
 
@@ -232,15 +238,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `DruidOpsRequest` to be `Successful`.  Run the following command to watch `DruidOpsRequest` CR,
 
 ```bash
-$ kubectl get druidopsrequest -n demo
+kubectl get druidopsrequest -n demo
+```
 NAME            TYPE              STATUS       AGE
 druid-vscale    VerticalScaling   Successful   3m56s
-```
 
 We can see from the above output that the `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe druidopsrequest -n demo druid-vscale
+kubectl describe druidopsrequest -n demo druid-vscale
+```
 Name:         druid-vscale
 Namespace:    demo
 Labels:       <none>
@@ -404,33 +411,35 @@ Events:
   Normal   RestartPods                                                                    39s   KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                                       39s   KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
   Normal   Successful                                                                     39s   KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: druid-vscale
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
-  }
-}
-$ kubectl get pod -n demo druid-cluster-historicals-1 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1181116006400m"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1181116006400m"
-  }
-}
+kubectl get pod -n demo druid-cluster-coordinators-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
+  }
+}
+
+```bash
+kubectl get pod -n demo druid-cluster-historicals-1 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1181116006400m"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1181116006400m"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the Druid topology cluster.
 

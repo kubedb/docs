@@ -24,10 +24,10 @@ KubeDB supports restarting the Hazelcast database via a HazelcastOpsRequest. Res
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -67,9 +67,9 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/restart/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/restart/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-quickstart created
 
 ## Apply Restart opsRequest
 
@@ -95,9 +95,9 @@ spec:
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/restart/ops.yaml
-hazelcastopsrequest.ops.kubedb.com/hazelcast-restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/restart/ops.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hazelcast-restart created
 
 Now the Ops-manager operator will restart the hazelcast members as per the request.
 

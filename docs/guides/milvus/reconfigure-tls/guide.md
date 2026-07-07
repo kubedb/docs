@@ -33,11 +33,17 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to add, ro
 
 All TLS operations need an `Issuer` (or `ClusterIssuer`). First create a CA secret, then an `Issuer` backed by it:
 
-```bash
 # generate a self-signed CA
-$ openssl genrsa -out ca.key 2048
-$ openssl req -x509 -new -nodes -key ca.key -subj "/CN=milvus-ca/O=kubedb" -days 3650 -out ca.crt
-$ kubectl create secret tls milvus-ca --cert=ca.crt --key=ca.key -n demo
+```bash
+openssl genrsa -out ca.key 2048
+```
+
+```bash
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=milvus-ca/O=kubedb" -days 3650 -out ca.crt
+```
+
+```bash
+kubectl create secret tls milvus-ca --cert=ca.crt --key=ca.key -n demo
 ```
 
 `issuer.yaml`
@@ -54,9 +60,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/issuer.yaml
-issuer.cert-manager.io/milvus-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/issuer.yaml
 ```
+issuer.cert-manager.io/milvus-issuer created
 
 ## Reconfigure TLS — Standalone Milvus
 
@@ -93,40 +99,46 @@ spec:
 - `spec.tls.internal.mode` controls inter-component traffic (`Disabled`/`TLS`).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-add-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-add-standalone.yaml
+```
 milvusopsrequest.ops.kubedb.com/mvops-add-tls created
 
-$ kubectl get milvusopsrequest mvops-add-tls -n demo
+```bash
+kubectl get milvusopsrequest mvops-add-tls -n demo
+```
 NAME            TYPE             STATUS       AGE
 mvops-add-tls   ReconfigureTLS   Successful   82s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest mvops-add-tls -n demo
+kubectl describe milvusopsrequest mvops-add-tls -n demo
+```
 ...
   Normal   CertificateSynced  Successfully synced all certificates
   Normal   UpdatePetSets      successfully reconciled the Milvus with tls configuration
   Normal   RestartNodes       Successfully restarted all nodes
   Normal   Successful         Successfully resumed Milvus database: demo/milvus-standalone for MilvusOpsRequest: mvops-add-tls
-```
 
 After adding TLS, the certificate secrets exist, the AppBinding scheme becomes `https`, and the certificates are mounted in the pod:
 
 ```bash
-$ kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
+kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
+```
 milvus-standalone-client-cert   kubernetes.io/tls   4   91s
 milvus-standalone-server-cert   kubernetes.io/tls   3   91s
 
-$ kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
+```bash
+kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
+```
 https
 
-$ kubectl exec -n demo milvus-standalone-0 -c milvus -- ls /milvus/tls
+```bash
+kubectl exec -n demo milvus-standalone-0 -c milvus -- ls /milvus/tls
+```
 ca.pem
 client.key
 client.pem
 server.key
 server.pem
-```
 
 ### 2. Rotate Certificates
 
@@ -149,13 +161,15 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-rotate-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-rotate-standalone.yaml
+```
 milvusopsrequest.ops.kubedb.com/mvops-rotate created
 
-$ kubectl get milvusopsrequest mvops-rotate -n demo
+```bash
+kubectl get milvusopsrequest mvops-rotate -n demo
+```
 NAME           TYPE             STATUS       AGE
 mvops-rotate   ReconfigureTLS   Successful   52s
-```
 
 The server certificate serial number changes, confirming the certificate was re-issued:
 
@@ -190,23 +204,25 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-add-new-issuer-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-add-new-issuer-standalone.yaml
+```
 milvusopsrequest.ops.kubedb.com/mv-change-issuer created
 
-$ kubectl get milvusopsrequest mv-change-issuer -n demo
+```bash
+kubectl get milvusopsrequest mv-change-issuer -n demo
+```
 NAME               TYPE             STATUS       AGE
 mv-change-issuer   ReconfigureTLS   Successful   62s
-```
 
 The database's issuer reference is updated and the new certificate chains to the new CA:
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.tls.issuerRef}'
+kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.tls.issuerRef}'
+```
 {"apiGroup":"cert-manager.io","kind":"Issuer","name":"mv-new-issuer"}
 
 # certificate issuer before:  issuer=CN=milvus-ca, O=kubedb
 # certificate issuer after:   issuer=CN=mvnew-ca, O=kubedb
-```
 
 ### 4. Remove TLS
 
@@ -229,26 +245,32 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-remove-standalone.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls/reconfigureTls-remove-standalone.yaml
+```
 milvusopsrequest.ops.kubedb.com/mvops-remove created
 
-$ kubectl get milvusopsrequest mvops-remove -n demo
+```bash
+kubectl get milvusopsrequest mvops-remove -n demo
+```
 NAME           TYPE             STATUS       AGE
 mvops-remove   ReconfigureTLS   Successful   82s
-```
 
 After removal, the `tls` block is gone, the certificate secrets are removed, and the AppBinding scheme reverts to `http`:
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.tls}'
+kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.tls}'
+```
 # (empty)
 
-$ kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
+```bash
+kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
+```
 http
 
-$ kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
-# (no cert secrets)
+```bash
+kubectl get secret -n demo | grep -E 'milvus-standalone-(server|client)-cert'
 ```
+# (no cert secrets)
 
 ## Reconfigure TLS — Distributed Milvus
 
@@ -286,31 +308,40 @@ On the distributed database the operator drives each flow exactly as for standal
 **Remove TLS** (distributed):
 
 ```bash
-$ kubectl get milvusopsrequest mvops-remove -n demo
+kubectl get milvusopsrequest mvops-remove -n demo
+```
 NAME           TYPE             STATUS       AGE
 mvops-remove   ReconfigureTLS   Successful   11m
 
 # after removal: certificate secrets are deleted and the AppBinding scheme reverts to http
-$ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
-http
-$ kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
-# (no cert secrets)
+```bash
+kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 ```
+http
+
+```bash
+kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
+```
+# (no cert secrets)
 
 **Add TLS** (distributed) — the `server`/`client` certificate secrets are recreated and mounted into every role's pods:
 
 ```bash
-$ kubectl get milvusopsrequest mvops-add-tls -n demo
+kubectl get milvusopsrequest mvops-add-tls -n demo
+```
 NAME            TYPE             STATUS       AGE
 mvops-add-tls   ReconfigureTLS   Successful   9m
 
-$ kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
+```bash
+kubectl get secret -n demo | grep -E 'milvus-cluster-(server|client)-cert'
+```
 milvus-cluster-client-cert   kubernetes.io/tls   4   2m
 milvus-cluster-server-cert   kubernetes.io/tls   3   2m
 
-$ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
-https
+```bash
+kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 ```
+https
 
 **Rotate certificates** and **Change issuer** behave identically to the standalone flows shown above — applying `reconfigureTls-rotate-distributed.yaml` re-issues the `server`/`client` certificates (the serial numbers change), and `reconfigureTls-add-new-issuer-distributed.yaml` repoints `spec.tls.issuerRef` to `mv-new-issuer` so new certificates chain to the new CA.
 
@@ -319,9 +350,15 @@ https
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo mvops-add-tls mvops-rotate mv-change-issuer mvops-remove
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo mvops-add-tls mvops-rotate mv-change-issuer mvops-remove
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

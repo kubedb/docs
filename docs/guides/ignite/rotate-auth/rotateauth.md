@@ -29,9 +29,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Create an Ignite database
 
@@ -56,17 +56,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/quickstart/examples/ignite-quickstart.yaml
-ignite.kubedb.com/ignite-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/quickstart/examples/ignite-quickstart.yaml
 ```
+ignite.kubedb.com/ignite-quickstart created
 
 Now, wait until ignite-quickstart has status Ready. i.e,
 
-```shell
-$ kubectl get ignite -n demo -w
+```bash
+kubectl get ignite -n demo -w
+```
 NAME            VERSION   STATUS   AGE
 ignite-quickstart   2.16.0    Ready    30m
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -106,19 +106,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Ignite.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/rotate-auth/overview/examples/Ignite-rotate-auth-generated.yaml
-igniteopsrequest.ops.kubedb.com/igops-rotate-auth-generated created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/rotate-auth/overview/examples/Ignite-rotate-auth-generated.yaml
 ```
+igniteopsrequest.ops.kubedb.com/igops-rotate-auth-generated created
 Let's wait for `IgniteOpsRequest` to be `Successful`. Run the following command to watch `IgniteOpsRequest` CRO
-```shell
-$ kubectl get igniteopsrequest -n demo
+```bash
+kubectl get igniteopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 igops-rotate-auth-generated   RotateAuth   Successful   7m7s
-```
 If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe igniteopsrequest -n demo igops-rotate-auth-generated
+```bash
+kubectl describe igniteopsrequest -n demo igops-rotate-auth-generated
+```
 Name:         igops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -242,25 +243,33 @@ Events:
   Normal   RestartNodes                                                    4m49s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                        4m49s  KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite-quickstart
   Normal   Successful                                                      4m49s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite-quickstart for IgniteOpsRequest: igops-rotate-auth-generated
-```
 
 **Verify Auth is rotated**
-```shell
-$ kubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
-"ignite-quickstart-auth"
-$ kubectl get secret -n demo ignite-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
-ignite⏎                                                                                    
-$ kubectl get secret -n demo ignite-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
-is0x8KNq6hGFfmvU⏎                
+```bash
+kubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
 ```
+"ignite-quickstart-auth"
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+ignite⏎                                                                                    
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
+```
+is0x8KNq6hGFfmvU⏎                
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo ignite-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-ignite⏎                                                                                    
-$ kubectl get secret -n demo ignite-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-EO3AhW7uypPxPsQQ⏎          
+```bash
+kubectl get secret -n demo ignite-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+ignite⏎                                                                                    
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+EO3AhW7uypPxPsQQ⏎          
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
 #### 2. Using user created credentials
@@ -269,13 +278,13 @@ At first, we need to create a secret with kubernetes.io/basic-auth type using cu
 
 > Note: You cannot change the database `username`, but you can update the `password` while keeping the existing `username`.
 
-```shell
-$ kubectl create secret generic ignite-quickstart-auth-user -n demo \
+```bash
+kubectl create secret generic ignite-quickstart-auth-user -n demo \
    --type=kubernetes.io/basic-auth \
    --from-literal=username=ignite \
    --from-literal=password=testpassword
-secret/ignite-quickstart-auth-user created
 ```
+secret/ignite-quickstart-auth-user created
 Now create an `IgniteOpsRequest` with `RotateAuth` type. Below is the YAML of the `IgniteOpsRequest` that we are going to create,
 
 ```shell
@@ -303,21 +312,22 @@ Here,
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/rotate-auth/overview/examples/rotate-auth-user.yaml
-igniteopsrequest.ops.kubedb.com/igops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/rotate-auth/overview/examples/rotate-auth-user.yaml
 ```
+igniteopsrequest.ops.kubedb.com/igops-rotate-auth-user created
 Let's wait for `IgniteOpsRequest` to be Successful. Run the following command to watch `IgniteOpsRequest` CRO:
 
-```shell
-$ kubectl get igniteopsrequest -n demo
+```bash
+kubectl get igniteopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 igops-rotate-auth-generated   RotateAuth   Successful   15m
 igops-rotate-auth-user        RotateAuth   Successful   4m34s
-```
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe igniteopsrequest -n demo igops-rotate-auth-user
+```bash
+kubectl describe igniteopsrequest -n demo igops-rotate-auth-user
+```
 Name:         igops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -446,24 +456,32 @@ Events:
   Normal   RestartNodes                                                    2m12s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                        2m12s  KubeDB Ops-manager Operator  Resuming Ignite database: demo/ignite-quickstart
   Normal   Successful                                                      2m12s  KubeDB Ops-manager Operator  Successfully resumed Ignite database: demo/ignite-quickstart for IgniteOpsRequest: igops-rotate-auth-user
-```
 
 **Verify auth is rotate**
-```shell
-$ kubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
+```bash
+kubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
+```
 "ignite-quickstart-auth-user"
-$ kubectl get secret -n demo ignite-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth-user -o=jsonpath='{.data.username}' | base64 -d
+```
 ignite⏎                                                                                    
-$ kubectl get secret -n demo ignite-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth-user -o=jsonpath='{.data.password}' | base64 -d
+```
 testpassword⏎                
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo ignite-quickstart-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
-ignite⏎
-$ kubectl get secret -n demo ignite-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-is0x8KNq6hGFfmvU⏎            
+```bash
+kubectl get secret -n demo ignite-quickstart-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+ignite⏎
+
+```bash
+kubectl get secret -n demo ignite-quickstart-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+is0x8KNq6hGFfmvU⏎            
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -472,15 +490,21 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete igniteopsrequest igops-rotate-auth-generated igops-rotate-auth-user -n demo
+```bash
+kubectl delete igniteopsrequest igops-rotate-auth-generated igops-rotate-auth-user -n demo
+```
 igniteopsrequest.ops.kubedb.com "igops-rotate-auth-generated" deleted
 igniteopsrequest.ops.kubedb.com "igops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo ignite-quickstart-auth-user
-secret "ignite-quickstart-auth-user" deleted
-$ kubectl delete secret -n demo ignite-quickstart-auth
-secret "ignite-quickstart-auth" deleted
+
+```bash
+kubectl delete secret -n demo ignite-quickstart-auth-user
 ```
+secret "ignite-quickstart-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo ignite-quickstart-auth
+```
+secret "ignite-quickstart-auth" deleted
 
 ## Next Steps
 

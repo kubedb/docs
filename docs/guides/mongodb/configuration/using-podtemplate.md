@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for MongoDB via [PodTemplate](/do
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -95,33 +95,37 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
-mongodb.kubedb.com/mgo-misc-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/mgo-misc-config.yaml
 ```
+mongodb.kubedb.com/mgo-misc-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-misc-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                READY     STATUS    RESTARTS   AGE
 mgo-misc-config-0   1/1       Running   0          14m
-```
 
 Now, check if the database has started with the custom configuration we have provided.
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mgo-misc-config-auth -o jsonpath='{.data.password}' | base64 -d
+```
 zyp5hDfRlVOWOyk9
 
-$ kubectl exec -it mgo-misc-config-0 -n demo sh
-
+```bash
+kubectl exec -it mgo-misc-config-0 -n demo sh
+```
 > mongosh admin
 
 > db.auth("root","zyp5hDfRlVOWOyk9")
@@ -162,7 +166,6 @@ $ kubectl exec -it mgo-misc-config-0 -n demo sh
 
 > exit
 bye
-```
 
 You can see the maximum connection is set to `100` in `parsed.net.maxIncomingConnections`.
 

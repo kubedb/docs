@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,22 +73,23 @@ spec:
 Let's create the `Memcached` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached.yaml
-Memcached.kubedb.com/mc-autoscaler-compute created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached.yaml
 ```
+Memcached.kubedb.com/mc-autoscaler-compute created
 
 Now, wait until `mc-autoscaler-compute` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME                    VERSION     STATUS    AGE
 mc-autoscaler-compute   1.6.40      Ready     2m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "100m",
@@ -99,11 +100,11 @@ $ kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers
     "memory": "100Mi"
   }
 }
-```
 
 Let's check the Memcached resources,
 ```bash
-$ kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "memcached") | .resources'
+kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "memcached") | .resources'
+```
 {
   "limits": {
     "cpu": "100m",
@@ -114,7 +115,6 @@ $ kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTem
     "memory": "100Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the Memcached.
 
@@ -171,20 +171,23 @@ Here,
 Let's create the `MemcachedAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached-autoscaler-compute.yaml
-Memcachedautoscaler.autoscaling.kubedb.com/mc-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached-autoscaler-compute.yaml
 ```
+Memcachedautoscaler.autoscaling.kubedb.com/mc-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `Memcachedautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get memcachedautoscaler -n demo
+kubectl get memcachedautoscaler -n demo
+```
 NAME            AGE
 mc-autoscaler   16m
 
-$ kubectl describe memcachedautoscaler mc-autoscaler -n demo
+```bash
+kubectl describe memcachedautoscaler mc-autoscaler -n demo
+```
 Name:         mc-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -271,7 +274,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      mc-autoscaler-compute
 Events:            <none>
-```
 So, the `Memcachedautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `Memcachedopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
@@ -279,26 +281,27 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `Memcachedopsrequest` in the demo namespace to see if any `Memcachedopsrequest` object is created. After some time you'll see that a `Memcachedopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                                 TYPE              STATUS       AGE
 mcops-mc-autoscaler-compute-p1usdl   VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                                 TYPE              STATUS       AGE
 mcops-mc-autoscaler-compute-p1usdl   VerticalScaling   Successful   1m
-```
 
 We can see from the above output that the `memcachedOpsRequest` has succeeded. 
 
 
 ```bash
-$ kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -310,7 +313,9 @@ $ kubectl get pod -n demo mc-autoscaler-compute-0 -o json | jq '.spec.containers
   }
 }
 
-$ kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "memcached") | .resources'
+```bash
+kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "memcached") | .resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -321,7 +326,6 @@ $ kubectl get Memcached -n demo mc-autoscaler-compute -o json | jq '.spec.podTem
     "memory": "400Mi"
   }
 }
-```
 
 The above output verifies that we have successfully auto-scaled the resources of the Memcached database.
 
@@ -330,12 +334,16 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mc/mc-autoscaler-compute -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/mc-autoscaler-compute -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/mc-autoscaler-compute patched
 
-$ kubectl delete mc -n demo mc-autoscaler-compute
+```bash
+kubectl delete mc -n demo mc-autoscaler-compute
+```
 memcached.kubedb.com "mc-autoscaler-compute" deleted
 
-$ kubectl delete memcachedautoscaler -n demo mc-autoscaler
-memcachedautoscaler.autoscaling.kubedb.com "mc-autoscaler" deleted
+```bash
+kubectl delete memcachedautoscaler -n demo mc-autoscaler
 ```
+memcachedautoscaler.autoscaling.kubedb.com "mc-autoscaler" deleted

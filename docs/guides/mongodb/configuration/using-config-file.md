@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for MongoDB. This tutorial will s
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,9 +60,9 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is 6
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
-secret/mg-configuration created
+kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
 ```
+secret/mg-configuration created
 
 Verify the secret has the configuration file.
 
@@ -108,33 +108,37 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/demo-1.yaml
-mongodb.kubedb.com/mgo-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/configuration/demo-1.yaml
 ```
+mongodb.kubedb.com/mgo-custom-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mgo-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo mgo-custom-config-0
+kubectl get pod -n demo mgo-custom-config-0
+```
 NAME                  READY     STATUS    RESTARTS   AGE
 mgo-custom-config-0   1/1       Running   0          1m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mgo-custom-config-auth -o jsonpath='{.data.password}' | base64 -d
+```
 ErialNojWParBFoP
 
-$ kubectl exec -it mgo-custom-config-0 -n demo sh
-
+```bash
+kubectl exec -it mgo-custom-config-0 -n demo sh
+```
 > mongosh admin
 
 > db.auth("root","ErialNojWParBFoP")
@@ -175,7 +179,6 @@ $ kubectl exec -it mgo-custom-config-0 -n demo sh
 
 > exit
 bye
-```
 
 As we can see from the configuration of running mongodb, the value of `maxIncomingConnections` has been set to 10000 successfully.
 

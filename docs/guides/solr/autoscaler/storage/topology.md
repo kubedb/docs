@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a solr 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/examples/solr/autoscaler/storage) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -46,13 +46,12 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get sc
+kubectl get sc
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  11d
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   7d22h
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   7d22h
-
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -106,36 +105,36 @@ spec:
 Let's create the `Solr` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/topology.yaml
-Solr.kubedb.com/es-topology created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/topology.yaml
 ```
+Solr.kubedb.com/es-topology created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
-```bash
- $ kubectl get sl -n demo
+ ```bash
+ kubectl get sl -n demo
+ ```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.6.1     Ready    83s
-
-```
 
 Let's check volume size from the data petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1Gi"
   }
 }
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          2m15s
 pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          2m17s
 pvc-aa75a15f-94cd-475a-a7ad-498023830020   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          2m19s
-
-```
 
 You can see that the data PetSet has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -178,20 +177,23 @@ Here,
 Let's create the `SolrAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/topology-scaler.yaml 
-solrautoscaler.autoscaling.kubedb.com/sl-storage-autoscaler-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/topology-scaler.yaml 
 ```
+solrautoscaler.autoscaling.kubedb.com/sl-storage-autoscaler-topology created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `solrautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get solrautoscaler -n demo
+kubectl get solrautoscaler -n demo
+```
 NAME                             AGE
 sl-storage-autoscaler-topology   70s
 
-$ kubectl describe solrautoscaler -n demo sl-storage-autoscaler-topology
+```bash
+kubectl describe solrautoscaler -n demo sl-storage-autoscaler-topology
+```
 Name:         sl-storage-autoscaler-topology
 Namespace:    demo
 Labels:       <none>
@@ -226,17 +228,15 @@ Spec:
       Usage Threshold:    60
 Events:                   <none>
 
-
-```
-
 So, the `solrautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up one of the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
 
 Let's exec into the data nodes and fill the database volume using the following commands:
 
-```bash
- $ kubectl exec -it -n demo solr-cluster-data-0 -- bash
+ ```bash
+ kubectl exec -it -n demo solr-cluster-data-0 -- bash
+ ```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-combined-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
@@ -249,30 +249,29 @@ solr@solr-cluster-data-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-aa75a15f-94cd-475a-a7ad-498023830020  974M  601M  358M  63% /var/solr/data
 
-```
-
 So, from the above output we can see that the storage usage is 69%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `solropsrequest` in the demo namespace to see if any `solropsrequest` object is created. After some time you'll see that an `solropsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                        TYPE              STATUS        AGE
 slops-solr-cluster-0s6kgw   VolumeExpansion   Progressing   95s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                        TYPE              STATUS       AGE
 slops-solr-cluster-0s6kgw   VolumeExpansion   Successful   2m58s
-```
 
 We can see from the above output that the `solrOpsRequest` has succeeded. If we describe the `solrOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe slops -n demo slops-solr-cluster-0s6kgw 
+kubectl describe slops -n demo slops-solr-cluster-0s6kgw 
+```
 Name:         slops-solr-cluster-0s6kgw
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -407,31 +406,32 @@ Events:
   Warning  delete petset; ConditionStatus:True      3m31s  KubeDB Ops-manager Operator  delete petset; ConditionStatus:True
   Warning  get petset; ConditionStatus:True         3m26s  KubeDB Ops-manager Operator  get petset; ConditionStatus:True
 
-```
-
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo solr-cluster-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "2041405440"
   }
 }
 
-
-$ kubectl get pvc -n demo 
+```bash
+kubectl get pvc -n demo 
+```
 NAME                                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 solr-cluster-data-solr-cluster-coordinator-0   Bound    pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            longhorn       <unset>                 18m
 solr-cluster-data-solr-cluster-data-0          Bound    pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            longhorn       <unset>                 18m
 solr-cluster-data-solr-cluster-overseer-0      Bound    pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            longhorn       <unset>                 18m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-24431af2-8df5-4ad2-a6cd-795dcbdc6355   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-coordinator-0   longhorn       <unset>                          18m
 pvc-5e3430da-545c-4234-a891-3385b100401d   1Gi        RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-overseer-0      longhorn       <unset>                          18m
 pvc-aa75a15f-94cd-475a-a7ad-498023830020   1948Mi     RWO            Delete           Bound    demo/solr-cluster-data-solr-cluster-data-0          longhorn       <unset>                          18m
-```
 
 The above output verifies that we have successfully autoscaler the volume of the data nodes of this Solr topology cluster.
 
@@ -440,6 +440,9 @@ The above output verifies that we have successfully autoscaler the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Solr -n demo solr-cluster
-$ kubectl delete solrautoscaler -n demo sl-storage-autoscaler-topology
+kubectl delete Solr -n demo solr-cluster
+```
+
+```bash
+kubectl delete solrautoscaler -n demo sl-storage-autoscaler-topology
 ```

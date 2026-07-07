@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -83,26 +83,27 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-topology.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-topology.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-prod    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check the Pod containers resources for both `broker` and `controller` of the Kafka topology cluster. Run the following command to get the resources of the `broker` and `controller` containers of the Kafka topology cluster
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-broker-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo kafka-prod-broker-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -112,10 +113,10 @@ $ kubectl get pod -n demo kafka-prod-broker-0 -o json | jq '.spec.containers[].r
     "memory": "1Gi"
   }
 }
-```
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-controller-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo kafka-prod-controller-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -125,7 +126,6 @@ $ kubectl get pod -n demo kafka-prod-controller-0 -o json | jq '.spec.containers
     "memory": "1Gi"
   }
 }
-```
 This is the default resources of the Kafka topology cluster set by the `KubeDB` operator.
 
 We are now ready to apply the `KafkaOpsRequest` CR to update the resources of this database.
@@ -178,9 +178,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-topology.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-vscale-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-topology.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-vscale-topology created
 
 #### Verify Kafka Topology cluster resources updated successfully
 
@@ -189,15 +189,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                     TYPE              STATUS       AGE
 kfops-vscale-topology    VerticalScaling   Successful   3m56s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-vscale-topology
+kubectl describe kafkaopsrequest -n demo kfops-vscale-topology
+```
 Name:         kfops-vscale-topology
 Namespace:    demo
 Labels:       <none>
@@ -345,33 +346,35 @@ Events:
   Normal   RestartPods                                                                2m18s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                                   2m18s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 2m18s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-vscale-topology
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo kafka-prod-broker-1 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1288490188800m"
-  }
-}
-$ kubectl get pod -n demo kafka-prod-controller-1 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1181116006400m"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1181116006400m"
-  }
-}
+kubectl get pod -n demo kafka-prod-broker-1 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1288490188800m"
+  }
+}
+
+```bash
+kubectl get pod -n demo kafka-prod-controller-1 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1181116006400m"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1181116006400m"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the Kafka topology cluster.
 

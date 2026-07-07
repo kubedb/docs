@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -80,26 +80,27 @@ spec:
 Let's create the `Kafka` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait until `kafka-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -109,11 +110,11 @@ $ kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources
     "memory": "1Gi"
   }
 }
-```
 
 Let's check the Kafka resources,
 ```bash
-$ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+kubectl get kafka -n demo kafka-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -123,7 +124,6 @@ $ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.podTemplate.spec.conta
     "memory": "1Gi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the kafka.
 
@@ -182,16 +182,17 @@ Here,
 Let's create the `KafkaAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/compute/kafka-combined-autoscaler.yaml
-kafkaautoscaler.autoscaling.kubedb.com/kf-combined-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/autoscaler/compute/kafka-combined-autoscaler.yaml
 ```
+kafkaautoscaler.autoscaling.kubedb.com/kf-combined-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `kafkaautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl describe kafkaautoscaler kf-combined-autoscaler -n demo
+kubectl describe kafkaautoscaler kf-combined-autoscaler -n demo
+```
 Name:         kf-combined-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -280,7 +281,6 @@ Status:
           Memory:  2Gi
     Vpa Name:      kafka-dev
 Events:            <none>
-```
 So, the `kafkaautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `kafkaopsrequest` based on the recommendations, if the database pods resources are needed to scaled up or down.
@@ -288,24 +288,25 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `kafkaopsrequest` in the demo namespace to see if any `kafkaopsrequest` object is created. After some time you'll see that a `kafkaopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 Every 2.0s: kubectl get kafkaopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 kfops-kafka-dev-z8d3l5       VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 kfops-kafka-dev-z8d3l5       VerticalScaling   Successful   3m2s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-kafka-dev-z8d3l5 
+kubectl describe kafkaopsrequests -n demo kfops-kafka-dev-z8d3l5 
+```
 Name:         kfops-kafka-dev-z8d3l5
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -417,34 +418,34 @@ Events:
   Normal   RestartPods                                                    3m35s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                       3m35s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     3m35s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-kafka-dev-z8d3l5
-```
 
 Now, we are going to verify from the Pod, and the Kafka yaml whether the resources of the topology database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1536Mi"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1536Mi"
-  }
-}
-
-
-$ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1536Mi"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1536Mi"
-  }
-}
+kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1536Mi"
+  }
+}
+
+```bash
+kubectl get kafka -n demo kafka-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+```
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1536Mi"
+  }
+}
 
 
 The above output verifies that we have successfully auto scaled the resources of the Kafka combined cluster.

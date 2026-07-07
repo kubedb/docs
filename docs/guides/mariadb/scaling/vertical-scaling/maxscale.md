@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Vertical Scaling on MaxScale Server
 
@@ -77,22 +77,23 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/md-replication.yaml
-mariadb.kubedb.com/md-replication created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/md-replication.yaml
 ```
+mariadb.kubedb.com/md-replication created
 
 Now, wait until `md-replication` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 md-replication   11.8.5   Ready    2m39s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "512Mi"
@@ -102,7 +103,6 @@ $ kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].r
     "memory": "256Mi"
   }
 }
-```
 
 You can see the Pod has the default resources which is assigned by KubeDB operator.
 
@@ -145,9 +145,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/vertical-scaling/mx-vscale.yaml
-mariadbopsrequest.ops.kubedb.com/maxscale-vertical-scale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/vertical-scaling/mx-vscale.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/maxscale-vertical-scale created
 
 #### Verify MaxScale server resources updated successfully
 
@@ -156,18 +156,18 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mariadbopsrequest -n demo
+watch kubectl get mariadbopsrequest -n demo
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo 
 
 NAME                      TYPE              STATUS       AGE
 maxscale-vertical-scale   VerticalScaling   Successful   3m8s
 
-```
-
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of maxscale server has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -178,7 +178,6 @@ $ kubectl get pod -n demo md-replication-mx-0 -o json | jq '.spec.containers[].r
     "memory": "512Mi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the MariaDB database.
 
@@ -187,7 +186,13 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo md-replication
-$ kubectl delete mariadbopsrequest -n demo maxscale-vertical-scale
-$ kubectl delete ns demo
+kubectl delete mariadb -n demo md-replication
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo maxscale-vertical-scale
+```
+
+```bash
+kubectl delete ns demo
 ```

@@ -27,9 +27,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/percona-xtradb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/percona-xtradb/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,12 +44,12 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=perconaxtradb/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=perconaxtradb/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
@@ -132,16 +132,17 @@ perconaxtradb.kubedb.com/sample-pxc created
 Now, wait for `PerconaXtraDB` going on `Running` state and also wait for `PetSet` and its pods to be created and going to `Running` state,
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc
+kubectl get perconaxtradb -n demo sample-pxc
+```
 NAME         VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    3m23s
 
-
-$ kubectl get pod -n demo | grep sample-pxc
+```bash
+kubectl get pod -n demo | grep sample-pxc
+```
 sample-pxc-0   2/2     Running   0          3m32s
 sample-pxc-1   2/2     Running   0          3m32s
 sample-pxc-2   2/2     Running   0          3m32s
-```
 
 **Verify tls-secrets created successfully :**
 
@@ -152,7 +153,8 @@ All tls-secret are created by `KubeDB` Ops Manager. Default tls-secret name form
 Let's check the tls-secrets have created,
 
 ```bash
-$ kubectl get secrets -n demo | grep sample-pxc
+kubectl get secrets -n demo | grep sample-pxc
+```
 sample-pxc-auth                    kubernetes.io/basic-auth              2      4m18s
 sample-pxc-client-cert             kubernetes.io/tls                     3      4m19s
 sample-pxc-metrics-exporter-cert   kubernetes.io/tls                     3      4m18s
@@ -161,8 +163,6 @@ sample-pxc-replication             kubernetes.io/basic-auth              2      
 sample-pxc-server-cert             kubernetes.io/tls                     3      4m18s
 sample-pxc-token-84hrj             kubernetes.io/service-account-token   3      4m19s
 
-```
-
 **Verify PerconaXtraDB Cluster configured with TLS/SSL:**
 
 Now, we are going to connect to the database for verifying the `PerconaXtraDB` server has configured with TLS/SSL encryption.
@@ -170,7 +170,8 @@ Now, we are going to connect to the database for verifying the `PerconaXtraDB` s
 Let's exec into the first pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ ls /etc/mysql/certs/client
 ca.crt	tls.crt  tls.key
@@ -234,12 +235,11 @@ mysql> show variables like '%require_secure_transport%';
 mysql> quit;
 Bye
 
-```
-
 Now let's check for the second database server,
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-1 -- bash
+kubectl exec -it -n demo sample-pxc-1 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ ls /etc/mysql/certs/client
 ca.crt	tls.crt  tls.key
@@ -302,7 +302,6 @@ mysql> show variables like '%require_secure_transport%';
 
 mysql> quit;
 Bye
-```
 
 The above output shows that the `PerconaXtraDB` server is configured to TLS/SSL. You can also see that the `.crt` and `.key` files are stored in `/etc/mysql/certs/client/` and `/etc/mysql/certs/server/` directory for client and server respectively.
 
@@ -313,7 +312,8 @@ Now, you can create an SSL required user that will be used to connect to the dat
 Let's connect to the database server with a secure connection,
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$ mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -361,7 +361,6 @@ switching ssl off as it does not make connection via unix socket
 any more secure.
 mysql> exit
 Bye
-```
 
 From the above output, you can see that only using client certificate we can access the database securely, otherwise, it shows "Access denied". Our client certificate is stored in `/etc/mysql/certs/client/` directory.
 
@@ -370,8 +369,11 @@ From the above output, you can see that only using client certificate we can acc
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-perconaxtradb.kubedb.com "sample-pxc" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo sample-pxc
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

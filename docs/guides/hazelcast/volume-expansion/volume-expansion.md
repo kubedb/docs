@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,28 +70,30 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/volume-expansion/hazelcast.yaml
-hazelcast.kubedb.com/hz-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/volume-expansion/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hz-prod created
 
 Now, wait until `hz-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo
+kubectl get hz -n demo
+```
 NAME             TYPE            VERSION   STATUS   AGE
 hz-prod    kubedb.com/v1alpha2   5.2.2     Ready    3m
-```
 
 Let's check volume size from statefulset, and from the persistent volume,
 
 ```bash
-$ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -o json | jq '.items[].spec.capacity.storage'
-"1Gi"
-"1Gi"
+```bash
+kubectl get pv -o json | jq '.items[].spec.capacity.storage'
 ```
+"1Gi"
+"1Gi"
 
 You can see the statefulset has 1Gi storage, and the capacity of all the persistent volumes are 1Gi.
 
@@ -129,9 +131,9 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/volume-expansion/ops.yaml
-hazelcastopsrequest.ops.kubedb.com/hz-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/volume-expansion/ops.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hz-volume-expansion created
 
 #### Verify Hazelcast volume expanded successfully
 
@@ -140,15 +142,16 @@ If everything goes well, `KubeDB` Ops-manager operator will expand the volume of
 Let's wait for `HazelcastOpsRequest` to be `Successful`. Run the following command to watch `HazelcastOpsRequest` CR,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME                  TYPE              STATUS       AGE
 hz-volume-expansion   VolumeExpansion   Successful   3m2s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to expand the database volume.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hz-volume-expansion
+kubectl describe hazelcastopsrequest -n demo hz-volume-expansion
+```
 Name:         hz-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -239,18 +242,19 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, we are going to verify from the `statefulset`, and the `PersistentVolume` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get statefulset -n demo hz-prod -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -o json | jq '.items[].spec.capacity.storage'
-"2Gi"
-"2Gi"
+```bash
+kubectl get pv -o json | jq '.items[].spec.capacity.storage'
 ```
+"2Gi"
+"2Gi"
 
 The above output verifies that we have successfully expanded the volume of the Hazelcast database.
 

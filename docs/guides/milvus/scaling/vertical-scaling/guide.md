@@ -32,9 +32,9 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
 Deploy a standalone Milvus and wait until it is `Ready`. By default the standalone workload requests `cpu: 500m` / `memory: 1Gi`:
 
 ```bash
-$ kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
-{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
+kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
 ```
+{"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
 
 ### Apply the VerticalScaling OpsRequest
 
@@ -66,20 +66,21 @@ spec:
 Here, `spec.verticalScaling.node` carries the new resources for the **standalone** workload (use the `node` key for standalone).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-standalone.yaml
-milvusopsrequest.ops.kubedb.com/vertical-scaling-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-standalone.yaml
 ```
+milvusopsrequest.ops.kubedb.com/vertical-scaling-standalone created
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest vertical-scaling-standalone -n demo
+kubectl get milvusopsrequest vertical-scaling-standalone -n demo
+```
 NAME                          TYPE              STATUS       AGE
 vertical-scaling-standalone   VerticalScaling   Successful   56s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest vertical-scaling-standalone -n demo
+kubectl describe milvusopsrequest vertical-scaling-standalone -n demo
+```
 ...
 Status:
   Conditions:
@@ -98,19 +99,20 @@ Status:
     Reason:   Successful
     Type:     Successful
   Phase:      Successful
-```
 
 ### Verify the New Resources
 
 Both the `Milvus` spec and the PetSet pod template now carry the new resources:
 
 ```bash
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.podTemplate.spec.containers[0].resources}'
+kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.podTemplate.spec.containers[0].resources}'
+```
 {"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
-$ kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
-{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
+```bash
+kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
 ```
+{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
 ## Vertical Scaling Distributed Milvus
 
@@ -152,30 +154,40 @@ spec:
 The same approach applies to `datanode`, `querynode` and `streamingnode`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-distributed.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-distributed.yaml
+```
 milvusopsrequest.ops.kubedb.com/vertical-scaling created
 
-$ kubectl get milvusopsrequest vertical-scaling -n demo
+```bash
+kubectl get milvusopsrequest vertical-scaling -n demo
+```
 NAME               TYPE              STATUS       AGE
 vertical-scaling   VerticalScaling   Successful   36s
-```
 
 Both the `mixcoord` and `proxy` PetSets now carry the new resources (other roles are unchanged):
 
 ```bash
-$ kubectl get petset milvus-cluster-mixcoord -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
+kubectl get petset milvus-cluster-mixcoord -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
+```
 {"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
-$ kubectl get petset milvus-cluster-proxy -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
-{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
+```bash
+kubectl get petset milvus-cluster-proxy -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
 ```
+{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo vertical-scaling-standalone
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo vertical-scaling-standalone
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

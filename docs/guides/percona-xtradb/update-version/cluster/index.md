@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare PerconaXtraDB Cluster
 
@@ -69,17 +69,17 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/update-version/cluster/examples/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/update-version/cluster/examples/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo                                                                                                                                             
+kubectl get perconaxtradb -n demo                                                                                                                                             
+```
 NAME             VERSION    STATUS     AGE
 sample-pxc   8.0.40    Ready     3m15s
-```
 
 We are now ready to apply the `PerconaXtraDBOpsRequest` CR to update this database.
 
@@ -114,9 +114,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/update-version/cluster/examples/pxops-update.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/update-version/cluster/examples/pxops-update.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-update created
 
 #### Verify PerconaXtraDB version updated successfully 
 
@@ -125,26 +125,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CR,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME              TYPE            STATUS       AGE
 pxops-update      UpdateVersion   Successful    84s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `PerconaXtraDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'
+```
 8.4.3
 
-$ kubectl get petset -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/percona-xtradb-cluster:8.4.3
 
-$ kubectl get pods -n demo sample-pxc-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/percona-xtradb-cluster:8.4.3
+```bash
+kubectl get pods -n demo sample-pxc-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/percona-xtradb-cluster:8.4.3
 
 You can see from above, our `PerconaXtraDB` cluster database has been updated with the new version. So, the update process is successfully completed.
 
@@ -153,6 +157,9 @@ You can see from above, our `PerconaXtraDB` cluster database has been updated wi
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-$ kubectl delete perconaxtradbopsrequest -n demo pxops-update
+kubectl delete perconaxtradb -n demo sample-pxc
+```
+
+```bash
+kubectl delete perconaxtradbopsrequest -n demo pxops-update
 ```

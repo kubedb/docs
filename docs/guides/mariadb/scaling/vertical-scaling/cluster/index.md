@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Vertical Scaling on Cluster
 
@@ -71,22 +71,23 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION    STATUS     AGE
 sample-mariadb    11.8.5     Ready     3m46s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -97,7 +98,6 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has the default resources which is assigned by KubeDB operator.
 
@@ -141,9 +141,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/mdops-vscale.yaml
-mariadbopsrequest.ops.kubedb.com/mdops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/mdops-vscale.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/mdops-vscale created
 
 #### Verify MariaDB Cluster resources updated successfully 
 
@@ -152,16 +152,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME                     TYPE              STATUS       AGE
 mdops-vscale        VerticalScaling      Successful    3m56s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -172,7 +173,6 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
     "memory": "1288490188800m"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the MariaDB database.
 
@@ -181,6 +181,9 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo mdops-vscale
+kubectl delete mariadb -n demo sample-mariadb
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo mdops-vscale
 ```

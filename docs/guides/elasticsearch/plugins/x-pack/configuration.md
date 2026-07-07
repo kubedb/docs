@@ -25,13 +25,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -103,9 +105,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/config-elasticsearch.yaml
-elasticsearch.kubedb.com/config-elasticsearch created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/config-elasticsearch.yaml
 ```
+elasticsearch.kubedb.com/config-elasticsearch created
 
 The deployed elasticsearch object specs, after the mutation is done by kubedb:
 
@@ -156,8 +158,11 @@ As we can see, KubeDB has created a secret named `config-elasticsearch-auth`, wh
 If you want to provide your own password, you need to create a secret that contains two keys: `ADMIN_USERNAME`, `ADMIN_PASSWORD`.
 
 ```bash
-$ export ADMIN_PASSWORD=admin-password
-$ kubectl create secret generic -n demo config-elasticsearch-auth \
+export ADMIN_PASSWORD=admin-password
+```
+
+```bash
+kubectl create secret generic -n demo config-elasticsearch-auth \
                 --from-literal=ADMIN_USERNAME=elastic \
                 --from-literal=ADMIN_PASSWORD=harderPASSWORD \
 secret/config-elasticsearch-auth created
@@ -170,18 +175,18 @@ secret/config-elasticsearch-auth created
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
 ```bash
-$ kubectl get es -n demo config-elasticsearch -o wide
+kubectl get es -n demo config-elasticsearch -o wide
+```
 NAME                   VERSION   STATUS    AGE
 config-elasticsearch   xpack-9.2.3     Running   2m8s
-```
 
 To connect to the elasticsearch node, we are going to use port forward to the elasticsearch pod. Run following command on a separate terminal,
 
 ```bash
-$ kubectl port-forward -n demo config-elasticsearch-0 9200
+kubectl port-forward -n demo config-elasticsearch-0 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 **Connection information:**
 
@@ -189,21 +194,21 @@ Forwarding from [::1]:9200 -> 9200
 - Username: Run following command to get *username*
 
   ```bash
-  $ kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
-    elastic
+  kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_USERNAME}' | base64 -d
   ```
+    elastic
 
 - Password: Run following command to get *password*
 
   ```bash
-  $ kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
-    ruobj2eo
+  kubectl get secrets -n demo config-elasticsearch-auth -o jsonpath='{.data.\ADMIN_PASSWORD}' | base64 -d
   ```
+    ruobj2eo
 
 Firstly, try to connect to this database without providing any authentication. You will face the following error:
 
 ```bash
-$ curl "localhost:9200/_cluster/health?pretty"
+curl "localhost:9200/_cluster/health?pretty"
 ```
 
 ```json

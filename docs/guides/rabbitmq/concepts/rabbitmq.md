@@ -135,11 +135,11 @@ AuthSecret contains a `user` key and a `password` key which contains the `userna
 Example:
 
 ```bash
-$ kubectl create secret generic -n demo rabbit-auth \
+kubectl create secret generic -n demo rabbit-auth \
   --from-literal=username=rabbit-admin \
   --from-literal=password=mypassword
-secret/rabbit-auth created
 ```
+secret/rabbit-auth created
 
 ```yaml
 apiVersion: v1

@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. `add, remove, update and rotation of TLS/SSL ce
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -57,28 +57,31 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/memcached.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/memcached.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get mc -n demo
+watch kubectl get mc -n demo
+```
 Every 2.0s: kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    26s
-```
 
 Now, we can connect to this database through `telnet` to verify that the `TLS` is disabled.
 
 ```bash
-$ kc port-forward -n demo memcd-quickstart-0 11211
+kc port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 Handling connection for 11211
 
-$ telnet 127.0.0.1 11211
+```bash
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -110,7 +113,6 @@ ssl_ca_cert NULL
 END
 
 quit
-```
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -121,23 +123,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memcached/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memcached/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now, we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls memcached-ca \
+kubectl create secret tls memcached-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/memcached-ca created
 ```
+secret/memcached-ca created
 
 Now, Let's create an `Issuer` using the `memcached-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -155,9 +157,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/memcached-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/memcached-ca-issuer created
 
 ### Create MemcachedOpsRequest
 
@@ -197,25 +199,26 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-add-tls.yaml
-Memcachedopsrequest.ops.kubedb.com/mc-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-add-tls.yaml
 ```
+Memcachedopsrequest.ops.kubedb.com/mc-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CRO,
 
 ```bash
-$ kubectl get Memcachedopsrequest -n demo
+kubectl get Memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get Memcachedopsrequest -n demo
 NAME             TYPE             STATUS       AGE
 mc-add-tls       ReconfigureTLS   Successful   79s
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mcops -n demo mc-add-tls 
+kubectl describe mcops -n demo mc-add-tls 
+```
 Name:         mc-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -304,12 +307,11 @@ Status:
   Phase:                   Successful
 Events:                    <none>
 
-```
-
 Now, let's describe the client.crt of running Memcached database.
 
 ```bash
-$ kubectl describe secret -n demo memcd-quickstart-client-cert
+kubectl describe secret -n demo memcd-quickstart-client-cert
+```
 Name:         memcd-quickstart-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -336,17 +338,19 @@ ca.crt:            1159 bytes
 tls-combined.pem:  2868 bytes
 tls.crt:           1188 bytes
 tls.key:           1679 bytes
-```
 
 Now, we can connect using tls-certs to connect to the Memcached and write some data
 
 ```bash
-$ kc port-forward -n demo memcd-quickstart-0 11211
+kc port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 Handling connection for 11211
 
-$ telnet 127.0.0.1 11211
+```bash
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -378,19 +382,20 @@ ssl_ca_cert /usr/certs/ca.crt
 END
 
 quit
-```
 
 ## Rotate Certificate
 
 Now, we are going to rotate the certificate of this database. First let’s check the current expiration date of the certificate:
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 
-$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
-notAfter=Feb 16 04:58:37 2025 GMT
+```bash
+openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
 ```
+notAfter=Feb 16 04:58:37 2025 GMT
 So, the certificate will expire on Feb 16 04:58:37 2025 GMT.
 
 ### Create MemcachedOpsRequest
@@ -419,25 +424,26 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-rotate.yaml
-memcachedopsrequest.ops.kubedb.com/mc-ops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-rotate.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/mc-ops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME             TYPE             STATUS        AGE
 mc-ops-rotate    ReconfigureTLS   Successful    5m5s
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mcops -n demo mc-ops-rotate
+kubectl describe mcops -n demo mc-ops-rotate
+```
 Name:         mc-ops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -522,17 +528,17 @@ Status:
   Phase:                   Successful
 Events:                    <none>
 
-```
-
 Now, let’s check the expiration date of the certificate:
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 
-$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
-notAfter=Feb 16 06:46:16 2025 GMT
+```bash
+openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -noout -enddate
 ```
+notAfter=Feb 16 06:46:16 2025 GMT
 As we can see from the above output, the certificate has been rotated successfully as the expire time got updated.
 
 ## Change Issuer/ClusterIssuer
@@ -542,23 +548,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=memcached-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memcached-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=memcached-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls memcached-new-ca \
+kubectl create secret tls memcached-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/memcached-new-ca created
 ```
+secret/memcached-new-ca created
 
 Now, Let's create a new `Issuer` using the `memcached-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -576,9 +582,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-new-issuer.yaml
-issuer.cert-manager.io/mc-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-new-issuer.yaml
 ```
+issuer.cert-manager.io/mc-new-issuer created
 
 ### Create MemcachedOpsRequest
 
@@ -610,25 +616,26 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-change-issuer.yaml
-Memcachedopsrequest.ops.kubedb.com/mc-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-change-issuer.yaml
 ```
+Memcachedopsrequest.ops.kubedb.com/mc-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CRO,
 
 ```bash
-$ kubectl get memcachedopsrequest -n demo
+kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 mc-change-issuer      ReconfigureTLS   Successful    4m65s
-```
 
 We can see from the above output that the `MemcachedlOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mcops -n demo mc-change-issuer
+kubectl describe mcops -n demo mc-change-issuer
+```
 Name:         mc-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -744,18 +751,19 @@ Events:
   Warning  is pod ready; ConditionStatus:False                             15m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:False
   Warning  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0  15m   KubeDB Ops-manager Operator  is pod ready; ConditionStatus:True; PodName:memcd-quickstart-0
   Normal   RestartPods                                                     15m   KubeDB Ops-manager Operator  Successfully restarted pods
-```
 
 Now, let’s port-forward the database pod and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 
-$ openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -inform PEM -issuer -nameopt RFC2253 -noout
-issuer=O=kubedb-updated,CN=memcached-updated
+```bash
+openssl x509 -in <(openssl s_client -connect 127.0.0.1:11211 -showcerts < /dev/null 2>/dev/null | sed -ne '/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p') -inform PEM -issuer -nameopt RFC2253 -noout
 ```
+issuer=O=kubedb-updated,CN=memcached-updated
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
 ## Remove TLS from the Database
@@ -789,25 +797,26 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-tls-remove.yaml
-memcachedopsrequest.ops.kubedb.com/mc-ops-tls-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-tls-remove.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/mc-ops-tls-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CRO,
 
 ```bash
-$ kubectl get memcachedopsrequest -n demo
+kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                TYPE             STATUS        AGE
 mc-ops-tls-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mcops -n demo mc-ops-tls-remove
+kubectl describe mcops -n demo mc-ops-tls-remove
+```
 Name:         mc-ops-tls-remove
 Namespace:    demo
 Labels:       <none>
@@ -864,16 +873,18 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 Now, Lets check Memcached TLS is disabled or not.
 
 ```bash
-$ kc port-forward -n demo memcd-quickstart-0 11211
+kc port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 Handling connection for 11211
 
-$ telnet 127.0.0.1 11211
+```bash
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -894,7 +905,6 @@ ssl_ca_cert NULL
 END
 
 quit
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 
@@ -903,22 +913,28 @@ So, we can see from the above that, output that tls is disabled successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo memcached/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo memcached/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete memcached -n demo memcd-quickstart
+```bash
+kubectl delete memcached -n demo memcd-quickstart
+```
 memcached.kubedb.com/memcd-quickstart deleted
 
-$ kubectl delete issuer -n demo memcached-ca-issuer mc-new-issuer
+```bash
+kubectl delete issuer -n demo memcached-ca-issuer mc-new-issuer
+```
 issuer.cert-manager.io "memcached-ca-issuer" deleted
 issuer.cert-manager.io "mc-new-issuer" deleted
 
-$ kubectl delete memcachedopsrequest -n demo mc-add-tls mc-ops-tls-remove mc-ops-rotate mc-change-issuer
+```bash
+kubectl delete memcachedopsrequest -n demo mc-add-tls mc-ops-tls-remove mc-ops-rotate mc-change-issuer
+```
 memcachedopsrequest.ops.kubedb.com "mc-add-tls" deleted
 memcachedopsrequest.ops.kubedb.com "mc-ops-tls-remove" deleted
 memcachedopsrequest.ops.kubedb.com "mc-ops-rotate" deleted
 memcachedopsrequest.ops.kubedb.com "mc-change-issuer" deleted
-```
 
 ## Next Steps
 

@@ -25,11 +25,11 @@ This guide will show you how to use the `KubeDB` Ops Manager to expand the volum
 - You need a `StorageClass` that supports volume expansion. Verify with:
 
   ```bash
-  $ kubectl get storageclass
+  kubectl get storageclass
+  ```
   NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  38h
   longhorn               driver.longhorn.io      Delete          Immediate              true                   30m
-  ```
 
   Here, the `longhorn` StorageClass has `ALLOWVOLUMEEXPANSION` set to `true`.
 
@@ -40,9 +40,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to expand the volum
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/volume-expansion](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/volume-expansion) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -73,12 +73,12 @@ spec:
 Let's create the `Weaviate` CR and wait for it to become `Ready`. Then check the PVCs:
 
 ```bash
-$ kubectl get pvc -n demo
+kubectl get pvc -n demo
+```
 NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-weaviate-sample-0   Bound    pvc-b8b6d9e6-634f-4ead-b1fd-1bfe549976e4   1Gi        RWO            longhorn       <unset>                 5m
 data-weaviate-sample-1   Bound    pvc-4e9329c0-8a3d-4402-919c-afa4fe2144c9   1Gi        RWO            longhorn       <unset>                 5m
 data-weaviate-sample-2   Bound    pvc-a846947c-212f-4aea-92a7-c8f88ae7f463   1Gi        RWO            longhorn       <unset>                 5m
-```
 
 Each PVC has `1Gi` of storage.
 
@@ -108,22 +108,23 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/volume-expansion/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/wv-volume-expansion-offline created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/volume-expansion/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/wv-volume-expansion-offline created
 
 The Ops Manager will expand the PVCs and reconcile the cluster.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo wv-volume-expansion-offline
+kubectl get weaviateopsrequest -n demo wv-volume-expansion-offline
+```
 NAME                          TYPE              STATUS       AGE
 wv-volume-expansion-offline   VolumeExpansion   Successful   2m
-```
 
 Let's check the `status.conditions` of the `WeaviateOpsRequest`:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo wv-volume-expansion-offline -o yaml
+kubectl get weaviateopsrequest -n demo wv-volume-expansion-offline -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: WeaviateOpsRequest
 metadata:
@@ -181,20 +182,21 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 Now, let's verify that the PVCs have been expanded to `3Gi`:
 
 ```bash
-$ kubectl get pvc -n demo
+kubectl get pvc -n demo
+```
 NAME                     STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-weaviate-sample-0   Bound    pvc-b8b6d9e6-634f-4ead-b1fd-1bfe549976e4   3Gi        RWO            longhorn       <unset>                 14m
 data-weaviate-sample-1   Bound    pvc-4e9329c0-8a3d-4402-919c-afa4fe2144c9   3Gi        RWO            longhorn       <unset>                 10m
 data-weaviate-sample-2   Bound    pvc-a846947c-212f-4aea-92a7-c8f88ae7f463   3Gi        RWO            longhorn       <unset>                 10m
 
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
-3Gi
+```bash
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
 ```
+3Gi
 
 The volume has been expanded successfully.
 
@@ -209,7 +211,13 @@ The volume has been expanded successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo wv-volume-expansion-offline
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo wv-volume-expansion-offline
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

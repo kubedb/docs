@@ -35,9 +35,9 @@ You have to be familiar with following custom resources:
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create the `demo` namespace if you haven't created it already.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Backup Redis
 
@@ -72,9 +72,9 @@ spec:
 Create the above `Redis` crd,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/redis.yaml
-redis.kubedb.com/sample-redis created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/redis.yaml
 ```
+redis.kubedb.com/sample-redis created
 
 KubeDB will deploy a Redis database according to the above specification. It will also create the necessary secrets and services to access the database.
 
@@ -166,12 +166,12 @@ In this section, we are going to prepare the necessary resources (i.e. database 
 When you install the Stash, it automatically installs all the official database addons. Verify that it has installed the Redis addons using the following command.
 
 ```bash
-$ kubectl get tasks.stash.appscode.com | grep redis
+kubectl get tasks.stash.appscode.com | grep redis
+```
 redis-backup-5.0.13            1h
 redis-backup-6.2.5             1h
 redis-restore-5.0.13           1h
 redis-restore-6.2.5            1h
-```
 
 ### Ensure AppBinding
 Stash needs to know how to connect with the database. An `AppBinding` exactly provides this information. It holds the Service and Secret information of the database. You have to point to the respective `AppBinding` as a target of backup instead of the database itself.
@@ -239,15 +239,24 @@ We are going to store our backed up data into a GCS bucket. So, we need to creat
 At first, let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create Repository:**
 
@@ -270,9 +279,9 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/repository.yaml
-repository.stash.appscode.com/gcs-repo created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/repository.yaml
 ```
+repository.stash.appscode.com/gcs-repo created
 
 Now, we are ready to backup our database into our GCS bucket.
 
@@ -315,19 +324,19 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/backupconfiguration.yaml
-backupconfiguration.stash.appscode.com/sample-redis-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/backupconfiguration.yaml
 ```
+backupconfiguration.stash.appscode.com/sample-redis-backup created
 
 #### Verify Backup Setup Successful
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                  TASK                 SCHEDULE      PAUSED   PHASE      AGE
 sample-redis-backup   redis-backup-6.2.5   */5 * * * *            Ready      11s
-```
 
 #### Verify CronJob
 
@@ -362,10 +371,10 @@ Here, the phase `Succeeded` means that the backup process has been completed suc
 Now, we are going to verify whether the backed up data is present in the backend or not. Once a backup is completed, Stash will update the respective `Repository` object to reflect the backup completion. Check that the repository `gcs-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-repo
+kubectl get repository -n demo gcs-repo
+```
 NAME       INTEGRITY   SIZE        SNAPSHOT-COUNT   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-repo   true        1.327 MiB   1                60s                      8m
-```
 
 Now, if we navigate to the GCS bucket, we will see the backed up data has been stored in `demo/redis/sample-redis` directory as specified by `.spec.backend.gcs.prefix` field of the `Repository` object.
 <figure align="center">
@@ -468,9 +477,9 @@ Here,
 Let's create the `RestoreSession` object object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/restoresession.yaml
-restoresession.stash.appscode.com/sample-redis-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/redis/backup/standalone/examples/restoresession.yaml
 ```
+restoresession.stash.appscode.com/sample-redis-restore created
 
 Once, you have created the `RestoreSession` object, Stash will create a restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 

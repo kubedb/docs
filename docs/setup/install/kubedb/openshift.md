@@ -21,7 +21,7 @@ KubeDB supports OpenShift in three different ways. Pick the one that best matche
 The standard `kubedb` chart can be deployed on OpenShift by enabling the OpenShift distro flags. The `openshift` flag is also auto-detected when the cluster exposes the `project.openshift.io/v1` API, so you can leave it `false` and only switch the image flavor to UBI.
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -46,10 +46,15 @@ AppsCode publishes a Red Hat OpenShift Certified Helm chart, [`kubedb-certified`
 **Step 1 — Install the CRDs:**
 
 ```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
+helm repo add appscode https://charts.appscode.com/stable/
+```
 
-$ helm upgrade -i kubedb-certified-crds appscode/kubedb-certified-crds \
+```bash
+helm repo update
+```
+
+```bash
+helm upgrade -i kubedb-certified-crds appscode/kubedb-certified-crds \
   -n kubedb --create-namespace \
   --version={{< param "info.version" >}}
 ```
@@ -57,7 +62,7 @@ $ helm upgrade -i kubedb-certified-crds appscode/kubedb-certified-crds \
 **Step 2 — Install the operator:**
 
 ```bash
-$ helm upgrade -i kubedb-certified appscode/kubedb-certified \
+helm upgrade -i kubedb-certified appscode/kubedb-certified \
   -n kubedb --create-namespace \
   --version={{< param "info.version" >}} \
   --set-file global.license=/path/to/the/license.txt
@@ -121,7 +126,7 @@ spec:
 Apply it with:
 
 ```bash
-$ oc apply -f kubedb.yaml
+oc apply -f kubedb.yaml
 ```
 
 Next: [enable database engines and verify the installation](/docs/setup/install/kubedb/configuration.md).

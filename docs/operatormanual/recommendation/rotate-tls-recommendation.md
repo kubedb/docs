@@ -36,7 +36,7 @@ We will create a self-signed CA and an `Issuer` to back the demo. In production,
 Generate a CA with openssl:
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout ./ca.key -out ./ca.crt \
     -subj "/CN=es/O=kubedb"
 ```
@@ -44,7 +44,7 @@ $ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
 Create a TLS secret in the target namespace:
 
 ```bash
-$ kubectl create secret tls es-ca \
+kubectl create secret tls es-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
@@ -64,9 +64,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f issuer.yaml
-issuer.cert-manager.io/es-issuer created
+kubectl apply -f issuer.yaml
 ```
+issuer.cert-manager.io/es-issuer created
 
 ## Deploy Elasticsearch with short-lived certificates
 
@@ -106,24 +106,24 @@ spec:
 Wait until the cluster reports `Ready`:
 
 ```bash
-$ kubectl get elasticsearch,pods -n demo
+kubectl get elasticsearch,pods -n demo
+```
 NAME                              VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-tls   xpack-9.1.9   Ready    4m39s
 
 NAME           READY   STATUS    RESTARTS   AGE
 pod/es-tls-0   1/1     Running   0          4m34s
 pod/es-tls-1   1/1     Running   0          4m28s
-```
 
 ## A rotate-tls Recommendation appears
 
 Once one of the certificates crosses the threshold (about two-thirds of its lifespan, given the very short durations we set), the Ops-manager creates a `Recommendation`. With the durations above, the first one shows up roughly 35–40 minutes after the cluster comes up — and another every time another certificate nears expiry.
 
 ```bash
-$ kubectl get recommendation -n demo
+kubectl get recommendation -n demo
+```
 NAME                                             STATUS      OUTDATED   AGE
 es-tls-x-elasticsearch-x-rotate-tls-w3j40x       Succeeded   false      37m
-```
 
 The Recommendation name follows the pattern `<DB-name>-x-<DB-type>-x-<recommendation-type>-<random-suffix>`. Let's look at the full manifest:
 
@@ -206,17 +206,17 @@ What this manifest tells you:
 ## Watching the OpsRequest
 
 ```bash
-$ kubectl get elasticsearchopsrequest -n demo es-tls-1780935896-rotate-tls-auto
+kubectl get elasticsearchopsrequest -n demo es-tls-1780935896-rotate-tls-auto
+```
 NAME                                TYPE             STATUS       AGE
 es-tls-1780935896-rotate-tls-auto   ReconfigureTLS   Successful   25m
-```
 
 The `ReconfigureTLS` operation re-issues the affected certificates via cert-manager, reloads each Elasticsearch pod in a controlled order, and finishes with no client-visible downtime when the cluster has more than one replica.
 
 You can re-check the Recommendation status as JSON:
 
 ```bash
-$ kubectl get recommendation es-tls-x-elasticsearch-x-rotate-tls-w3j40x \
+kubectl get recommendation es-tls-x-elasticsearch-x-rotate-tls-w3j40x \
      -n demo -o json | jq '.status'
 ```
 
@@ -227,13 +227,13 @@ You will see `phase: Succeeded` and `reason: SuccessfullyExecutedOperation`.
 If you ever need to skip a rotation (for example, because you're about to swap issuers), reject it:
 
 ```bash
-$ kubectl patch recommendation es-tls-x-elasticsearch-x-rotate-tls-w3j40x \
+kubectl patch recommendation es-tls-x-elasticsearch-x-rotate-tls-w3j40x \
      -n demo \
      --type merge \
      --subresource='status' \
      -p '{"status":{"approvalStatus":"Rejected"}}'
-recommendation.supervisor.appscode.com/es-tls-x-elasticsearch-x-rotate-tls-w3j40x patched
 ```
+recommendation.supervisor.appscode.com/es-tls-x-elasticsearch-x-rotate-tls-w3j40x patched
 
 ## Automating execution with a maintenance window
 

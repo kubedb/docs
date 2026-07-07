@@ -34,12 +34,14 @@ The following diagram shows how KubeDB Provisioner operator monitor `Memcached` 
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -50,11 +52,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v2.54.1   1         1       True         True        3m
-
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -216,27 +217,27 @@ Here,
 Let's create the Memcached object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/memcached.yaml
-memcached.kubedb.com/memcached created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/monitoring/memcached.yaml
 ```
+memcached.kubedb.com/memcached created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get mc -n demo memcached
+kubectl get mc -n demo memcached
+```
 NAME        VERSION   STATUS   AGE
 memcached   1.6.40    Ready    2m
-```
 
 KubeDB will create a separate stats service with name `{Memcached crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=memcached"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=memcached"
+```
 NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
 memcached         ClusterIP   10.96.91.51   <none>        11211/TCP   3m9s
 memcached-pods    ClusterIP   None          <none>        11211/TCP   3m9s
 memcached-stats   ClusterIP   10.96.50.21   <none>        56790/TCP   3m9s
-```
 
 Here, `memcached-stats` service has been created for monitoring purpose.
 
@@ -270,10 +271,10 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `memcached-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME              AGE
 memcached-stats   5m
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Memcached crd.
 
@@ -327,20 +328,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   0          16m
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `memcached-stats` service as one of the targets.
 

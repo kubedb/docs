@@ -27,12 +27,12 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For memcached, push `DB_IMAGE`, `EXPORTER_IMAGE` of following MemcachedVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get memcachedversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  kubectl get memcachedversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  ```
   NAME     VERSION   DB_IMAGE                                          EXPORTER_IMAGE                                          DEPRECATED
   1.5.22   1.5.22    ghcr.io/appscode-images/memcached:1.5.22-alpine   prom/memcached-exporter:v0.14.2                         <none>
   1.6.40   1.6.40    ghcr.io/appscode-images/memcached:1.6.40-alpine   ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac   <none>
   1.6.29   1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine   ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac   <none>
-  ```
 
   Docker hub repositories:
 
@@ -62,9 +62,9 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-   ```
 
 ## Create ImagePullSecret
 
@@ -73,13 +73,13 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -121,14 +121,15 @@ spec:
 Now run the command to deploy this `Memcached` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/private-registry/demo-2.yaml
-memcached.kubedb.com/memcd-pvt-reg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/private-registry/demo-2.yaml
 ```
+memcached.kubedb.com/memcd-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `Memcached` is in running state:
 
 ```bash
-$ kubectl get pods -n demo -w
+kubectl get pods -n demo -w
+```
 NAME                             READY     STATUS              RESTARTS   AGE
 memcd-pvt-reg-694d4d44df-bwtk8   0/1       ContainerCreating   0          18s
 memcd-pvt-reg-694d4d44df-tkqc4   0/1       ContainerCreating   0          17s
@@ -137,28 +138,35 @@ memcd-pvt-reg-694d4d44df-bwtk8   1/1       Running             0          25s
 memcd-pvt-reg-694d4d44df-zhj4l   1/1       Running             0          26s
 memcd-pvt-reg-694d4d44df-tkqc4   1/1       Running             0          27s
 
-$ kubectl get mc -n demo
+```bash
+kubectl get mc -n demo
+```
 NAME            VERSION    STATUS    AGE
 memcd-pvt-reg   1.6.40     Running   59s
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-pvt-reg patched
 
-$ kubectl delete -n demo mc/memcd-pvt-reg
+```bash
+kubectl delete -n demo mc/memcd-pvt-reg
+```
 memcached.kubedb.com "memcd-pvt-reg" deleted
 
-$ kubectl delete -n demo secret myregistrykey
+```bash
+kubectl delete -n demo secret myregistrykey
+```
 secret "myregistrykey" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Next Steps
 

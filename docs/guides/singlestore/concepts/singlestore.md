@@ -211,11 +211,11 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 Example:
 
 ```bash
-$ kubectl create secret generic sdb-cred -n demo \
+kubectl create secret generic sdb-cred -n demo \
 --from-literal=user=root \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "sdb-cred" created
 ```
+secret "sdb-cred" created
 
 ```yaml
 apiVersion: v1

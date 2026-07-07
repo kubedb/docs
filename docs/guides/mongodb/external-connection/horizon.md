@@ -27,9 +27,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prerequisites
@@ -104,9 +104,9 @@ spec:
 > If you want to use `NodePort` service. Update `.spec.provider.kubernetes.envoyService.type` to `NodePort` in the above YAML.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/envoyproxy.yaml
-envoyproxy.gateway.envoyproxy.io/ace created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/envoyproxy.yaml
 ```
+envoyproxy.gateway.envoyproxy.io/ace created
 
 > Before creating `GatewayClass`, create a certificate secret named `ace-gw-cert` in ace namespace.
 
@@ -142,16 +142,16 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/gatewayclass.yaml
-gatewayclass.gateway.networking.k8s.io/ace created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/gatewayclass.yaml
 ```
+gatewayclass.gateway.networking.k8s.io/ace created
 
 Check the `GatewayClass` status `True`.
 ```bash
-$ kubectl get gatewayclass 
+kubectl get gatewayclass 
+```
 NAME   CONTROLLER                                      ACCEPTED   AGE
 ace    gateway.envoyproxy.io/gatewayclass-controller   True       16s
-```
 
 ### Install `FluxCD` in your cluster
 Install `FluxCD` in your cluster using the following command:
@@ -167,16 +167,20 @@ helm upgrade -i flux2 \
 
 Install `Keda` in your cluster using the following command:
 ```bash
-$ kubectl create ns kubeops
+kubectl create ns kubeops
+```
 namespace/kubeops created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helmrepo.yaml
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/helmrepo.yaml
+```
 helmrepository.source.toolkit.fluxcd.io/appscode-charts-oci created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/keda.yaml
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/keda.yaml
+```
 helmrelease.helm.toolkit.fluxcd.io/keda created
 helmrelease.helm.toolkit.fluxcd.io/keda-add-ons-http created
-```
 
 ### Install `Catalog Manager`
 
@@ -238,9 +242,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/issuer.yaml
-issuer.cert-manager.io/mongo-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/issuer.yaml
 ```
+issuer.cert-manager.io/mongo-ca-issuer created
 
 ## MongoDB Replicaset with Horizons
 
@@ -308,18 +312,18 @@ Here,
 ### Deploy MongoDB Replicaset Horizons
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/mongodb.yaml
-mongodb.kubedb.com/mongodb-horizons created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/mongodb.yaml
 ```
+mongodb.kubedb.com/mongodb-horizons created
 
 Now, wait until `mongodb-horizons` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get mg -n demo
+watch kubectl get mg -n demo
+```
 Every 2.0s: kubectl get mg -n demo
 NAME               VERSION     STATUS    AGE
 mongodb-horizons   7.0.16      Ready     4m10s
-```
 
 Now, create `MongoDBBinding` object to configure the whole process.
 ```yaml
@@ -335,20 +339,20 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/binding.yaml
-mongodbbinding.catalog.appscode.com/mongodb-bind created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/horizons/binding.yaml
 ```
+mongodbbinding.catalog.appscode.com/mongodb-bind created
 
 Now, check the status of `mongodbbinding` objects and ops requests.
 
 ```bash
-$ kubectl get mongodbbinding,mongodbopsrequest -n demo
+kubectl get mongodbbinding,mongodbopsrequest -n demo
+```
 NAME                                               SRC_NS   SRC_NAME           STATUS   AGE
 mongodbbinding.catalog.appscode.com/mongodb-bind   demo     mongodb-horizons   Current  3m28s
 
 NAME                                                       TYPE       STATUS       AGE
 mongodbopsrequest.ops.kubedb.com/mongodb-horizons-jddiql   Horizons   Successful   2m58s
-```
 
 ### Connect to MongoDB as Replicaset
 
@@ -356,16 +360,18 @@ To connect to the MongoDB replica set, you can use the following command:
 
 Collect the replicas from the `mongodb-horizons` object:
 ```bash
-$ kubectl get mongodb -n demo mongodb-horizons -ojson | jq .spec.replicaSet.horizons.pods
+kubectl get mongodb -n demo mongodb-horizons -ojson | jq .spec.replicaSet.horizons.pods
+```
 [
   "mongo-0.kubedb.cloud:10000",
   "mongo-1.kubedb.cloud:10001",
   "mongo-2.kubedb.cloud:10002"
 ]
 
-$ mongosh "mongodb://root:<password>@mongo-0.kubedb.cloud:10000,mongo-1.kubedb.cloud:10001,mongo-2.kubedb.cloud:10002/admin?authSource=admin&tls=true&tlsCAFile=<ca.crt-path>"
-rs0 [primary] admin>
+```bash
+mongosh "mongodb://root:<password>@mongo-0.kubedb.cloud:10000,mongo-1.kubedb.cloud:10001,mongo-2.kubedb.cloud:10002/admin?authSource=admin&tls=true&tlsCAFile=<ca.crt-path>"
 ```
+rs0 [primary] admin>
 
 ## Connect Using MongoDB `SRV`
 To connect to the MongoDB replica set using `mongodb+srv`, you need to create `srv` records with the `A/CNAME` records you created earlier like,
@@ -384,9 +390,9 @@ You can keep it empty.
 Now, you can connect to the MongoDB replica set using the following command:
 
 ```bash
-$ mongosh "mongodb+srv://root:<password>@kubedb.cloud/admin?tls=true&tlsCAFile=<ca.crt-path>"
-rs0 [primary] admin>
+mongosh "mongodb+srv://root:<password>@kubedb.cloud/admin?tls=true&tlsCAFile=<ca.crt-path>"
 ```
+rs0 [primary] admin>
 
 > You can use `ca.crt` from default path.
 ```bash
@@ -397,9 +403,9 @@ sudo update-ca-certificates
 Now, you can connect without specifying `tlsCAFile` in the connection string.
 
 ```bash
-$ mongosh "mongodb+srv://root:<password>@kubedb.cloud/admin"
-rs0 [primary] admin>
+mongosh "mongodb+srv://root:<password>@kubedb.cloud/admin"
 ```
+rs0 [primary] admin>
 
 ## Cleaning up
 

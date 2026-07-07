@@ -29,12 +29,14 @@ This tutorial will show you how to monitor PgBouncer database using builtin [Pro
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -74,32 +76,33 @@ Here,
 Let's create the PgBouncer crd we have shown above.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/builtin-prom-pb.yaml
-pgbouncer.kubedb.com/builtin-prom-pb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/monitoring/builtin-prom-pb.yaml
 ```
+pgbouncer.kubedb.com/builtin-prom-pb created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get pb -n demo builtin-prom-pb
+kubectl get pb -n demo builtin-prom-pb
+```
 NAME              TYPE                  VERSION   STATUS   AGE
 builtin-prom-pb   kubedb.com/v1         1.18.0    Ready    65s
-```
 
 KubeDB will create a separate stats service with name `{PgBouncer cr name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-pb"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-pb"
+```
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 builtin-prom-pb         ClusterIP   10.96.210.2     <none>        5432/TCP    86s
 builtin-prom-pb-pods    ClusterIP   None            <none>        5432/TCP    86s
 builtin-prom-pb-stats   ClusterIP   10.96.215.193   <none>        56790/TCP   74s
-```
 
 Here, `builtin-prom-pb-stats` service has been created for monitoring purpose. Let's describe the service.
 
 ```bash
-$ kubectl describe svc -n demo builtin-prom-pb-stats
+kubectl describe svc -n demo builtin-prom-pb-stats
+```
 Name:              builtin-prom-pb-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/component=connection-pooler
@@ -122,7 +125,6 @@ TargetPort:        metrics/TCP
 Endpoints:         10.244.0.28:56790
 Session Affinity:  None
 Events:            <none>
-```
 
 You can see that the service contains following annotations.
 
@@ -286,20 +288,20 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
-configmap/prometheus-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 ```
+configmap/prometheus-config created
 
 **Create RBAC:**
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+```
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
-```
 
 >YAML for the RBAC resources created above can be found [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/rbac.yaml).
 
@@ -310,9 +312,9 @@ Now, we are ready to deploy Prometheus server. We are going to use following [de
 Let's deploy the Prometheus server.
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
-deployment.apps/prometheus created
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/deployment.yaml
 ```
+deployment.apps/prometheus created
 
 ### Verify Monitoring Metrics
 
@@ -321,18 +323,18 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+kubectl get pod -n monitoring -l=app=prometheus
+```
 NAME                         READY   STATUS    RESTARTS   AGE
 prometheus-d64b668fb-4khbg   1/1     Running   0          21s
-```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-d64b668fb-4khbg` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-d64b668fb-4khbg 9090
+kubectl port-forward -n monitoring prometheus-d64b668fb-4khbg 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see the endpoint of `builtin-prom-pb-stats` service as one of the targets.
 

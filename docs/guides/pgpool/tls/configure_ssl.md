@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `clientAuthMode
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -104,9 +104,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/tls/issuer.yaml
-issuer.cert-manager.io/pgpool-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/tls/issuer.yaml
 ```
+issuer.cert-manager.io/pgpool-ca-issuer created
 
 ## Prepare Postgres
 Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
@@ -150,25 +150,26 @@ spec:
 ### Deploy Pgpool
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/tls/pgpool-ssl.yaml
-pgpool.kubedb.com/pp-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/tls/pgpool-ssl.yaml
 ```
+pgpool.kubedb.com/pp-tls created
 
 Now, wait until `pp-tls created` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get pp -n demo
+watch kubectl get pp -n demo
+```
 Every 2.0s: kubectl get pgpool -n demo
 NAME     TYPE                  VERSION   STATUS   AGE
 pp-tls   kubedb.com/v1alpha2   4.5.0     Ready    60s
-```
 
 ### Verify TLS/SSL in Pgpool
 
 Now, connect to this database through [psql](https://www.postgresql.org/docs/current/app-psql.html) and verify if `SSLMode` has been set up as intended (i.e, `require`).
 
 ```bash
-$ kubectl describe secret -n demo pp-tls-client-cert
+kubectl describe secret -n demo pp-tls-client-cert
+```
 Name:         pp-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=connection-pooler
@@ -192,13 +193,16 @@ Data
 tls.key:  1675 bytes
 ca.crt:   1151 bytes
 tls.crt:  1131 bytes
-```
 
 Now, Lets save the client cert and key to two different files:
 
 ```bash
-$ kubectl get secrets -n demo pp-tls-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
-$ cat client.crt
+kubectl get secrets -n demo pp-tls-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
+```
+
+```bash
+cat client.crt
+```
 -----BEGIN CERTIFICATE-----
 MIIDFjCCAf6gAwIBAgIRAO9tAQn/9lqHN4Pfi+UCe2IwDQYJKoZIhvcNAQELBQAw
 IjEPMA0GA1UEAwwGcGdwb29sMQ8wDQYDVQQKDAZrdWJlZGIwHhcNMjQwNzE2MTAz
@@ -218,8 +222,14 @@ rMQCOKGt8R0JJUXR0fcuDEGKv+jpz5P+n5dBtPQ40CrE34mhpa3m00Y64X4PVDI6
 RusaLKyNGkaU+15WErg44/zM3LayvMImRnnoIttO7NkOe/9ige8C3hgEjZoivZKM
 0Jc7koXlrnszBH2K/MOst9kHRTPk0VVmxBo=
 -----END CERTIFICATE-----
-$ kubectl get secrets -n demo pp-tls-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
-$ cat client.key
+
+```bash
+kubectl get secrets -n demo pp-tls-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+```
+
+```bash
+cat client.key
+```
 -----BEGIN RSA PRIVATE KEY-----
 MIIEowIBAAKCAQEAyjtaKShzxcwBiiss7eVEltx5uI77yKNwj3pRnRIzN/t53IFs
 7W9WuWsF5qf22gJxbxZ/jej5D6NGe9knPNWd9XYLuAt5psKjUj+DQlSYd1PGcg4u
@@ -247,25 +257,24 @@ kg89+QKBgAQDWZkq2mPZMmb+ltW1TZO2HqmEXBP9plgYGfrSjpofTjsBzykoaHnA
 J/ocHs2cNkW8arrhiZQzDyokZRc1j5+PIYLfXZ1gSK7WfOe6HO/667eCNuoEcfDv
 w8MtuCJgbYP8J0BXun982+EnLkuyDAoyX9GvEqyGQagme1ENiwFm
 -----END RSA PRIVATE KEY-----
-```
 
 Now, if you see the common name of the client.crt you can see,
 ```bash
-$ openssl x509 -in client.crt -inform PEM -subject -nameopt RFC2253 -noout
-subject=CN=postgres
+openssl x509 -in client.crt -inform PEM -subject -nameopt RFC2253 -noout
 ```
+subject=CN=postgres
 Here common name of the client certificate is important if you want to connect with the client certificate, the `username must match the common name of the certificate`. Here, we can see the common name(CN) is, `postgres`. So, we will use postgres user to connect with Pgpool.
 
 Now, we can connect using `subject=CN=postgres` to connect to the psql,
 
 ```bash
-$ psql "sslmode=require port=9999 host=localhost dbname=postgres user=postgres sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"
+psql "sslmode=require port=9999 host=localhost dbname=postgres user=postgres sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
 Type "help" for help.
 
 postgres=# 
-```
 
 We are connected to the postgres database. Let's run some command to verify the sslMode and the user,
 
@@ -299,9 +308,9 @@ User can update `sslMode` & `clientAuthMode` if needed. Some changes may be inva
 The good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the Pgpool object.** i.e.,
 
 ```bash
-$ kubectl patch -n demo pp/pp-tls -p '{"spec":{"sslMode": "disabled","clientAuthMode": "cert"}}' --type="merge"
-The Pgpool "pp-tls" is invalid: spec.sslMode: Unsupported value: "disabled": supported values: "disable", "allow", "prefer", "require", "verify-ca", "verify-full"
+kubectl patch -n demo pp/pp-tls -p '{"spec":{"sslMode": "disabled","clientAuthMode": "cert"}}' --type="merge"
 ```
+The Pgpool "pp-tls" is invalid: spec.sslMode: Unsupported value: "disabled": supported values: "disable", "allow", "prefer", "require", "verify-ca", "verify-full"
 
 > Note: There is no official support for Pgpool with the Postgres cluster having `clientAuthMode` as `cert`. Check [here](https://www.pgpool.net/docs/42/en/html/auth-methods.html#:~:text=Note%3A%20The%20certificate%20authentication%20works%20between%20only%20client%20and%20Pgpool%2DII.%20The%20certificate%20authentication%20does%20not%20work%20between%20Pgpool%2DII%20and%20PostgreSQL.%20For%20backend%20authentication%20you%20can%20use%20any%20other%20authentication%20method.).
 

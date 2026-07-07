@@ -30,9 +30,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/backup/logical](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,32 +73,34 @@ spec:
 Create the above `Qdrant` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 KubeDB will deploy a Qdrant database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME            VERSION   STATUS    AGE
 qdrant-sample   1.17.0    Ready     4m22s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=qdrant-sample
+kubectl get secret -n demo -l=app.kubernetes.io/instance=qdrant-sample
+```
 NAME                  TYPE     DATA   AGE
 qdrant-sample-auth    Opaque   2      4m58s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=qdrant-sample
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=qdrant-sample
+```
 NAME                  TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 qdrant-sample         ClusterIP   10.96.55.61      <none>        6333/TCP   97s
 qdrant-sample-pods    ClusterIP   None             <none>        6333/TCP   97s
-```
 
 KubeDB creates an AppBinding CR that holds the necessary information to connect with the database.
 
@@ -107,15 +109,15 @@ KubeDB creates an AppBinding CR that holds the necessary information to connect 
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME            AGE
 qdrant-sample   9m24s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo qdrant-sample -o yaml
+kubectl get appbindings -n demo qdrant-sample -o yaml
 ```
 
 ```yaml
@@ -169,28 +171,36 @@ KubeStash uses the `AppBinding` CR to connect with the target database. It requi
 
 Now, let's get the API key and port-forward to create a collection with sample data:
 
-```bash
 # Get the API key from the auth secret
-$ export API_KEY=$(kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```bash
+export API_KEY=$(kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```
 
 # Port-forward to the Qdrant service
-$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+```bash
+kubectl port-forward -n demo svc/qdrant-sample 6333:6333 &
+```
+
 # Create a collection
-$ curl -X PUT 'http://localhost:6333/collections/demo_collection' \
+```bash
+curl -X PUT 'http://localhost:6333/collections/demo_collection' \
   -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{"vectors": {"size": 4, "distance": "Cosine"}}'
+```
+
 # Insert points
-$ curl -X PUT 'http://localhost:6333/collections/demo_collection/points' \
+```bash
+curl -X PUT 'http://localhost:6333/collections/demo_collection/points' \
   -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
+```
     "points": [
       { "id": 1, "vector": [0.1, 0.2, 0.3, 0.4], "payload": {"label": "a"} },
       { "id": 2, "vector": [0.5, 0.6, 0.7, 0.8], "payload": {"label": "b"} }
     ]
   }'
-```
 
 Now, we are ready to backup the database.
 
@@ -203,11 +213,11 @@ We are going to store our backed up data into a MinIO bucket. We have to create 
 Let's create a secret called `storage-secret` with access credentials to our desired MinIO backend,
 
 ```bash
-$ kubectl create secret generic -n demo storage-secret \
+kubectl create secret generic -n demo storage-secret \
     --from-literal=AWS_ACCESS_KEY_ID=minioadmin \
     --from-literal=AWS_SECRET_ACCESS_KEY=minioadmin
-secret/storage-secret created
 ```
+secret/storage-secret created
 
 **Create BackupStorage:**
 
@@ -239,9 +249,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backup-storage.yaml
-backupstorage.storage.kubestash.com/minio-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backup-storage.yaml
 ```
+backupstorage.storage.kubestash.com/minio-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -269,9 +279,9 @@ spec:
 Let's create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/retention-policy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/retention-policy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -284,11 +294,14 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 **Create BackupConfiguration:**
 
@@ -342,27 +355,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backup-configuration.yaml
-backupconfiguration.core.kubestash.com/qdrant-sample-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/backup-configuration.yaml
 ```
+backupconfiguration.core.kubestash.com/qdrant-sample-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                    PHASE   PAUSED   AGE
 qdrant-sample-backup    Ready            54s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 minio-qdrant-repo   true        3                8.613 KiB   Ready   48s                      58s
-```
 
 **Verify CronJob:**
 
@@ -371,21 +384,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                           SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-qdrant-sample-backup-frequent-backup   */5 * * * *   <none>     False     0        <none>          51s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                              INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
 qdrant-sample-backup-frequent-backup-1779330454   BackupConfiguration   qdrant-sample-backup   Succeeded   7s         51s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -394,18 +406,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `minio-qdrant-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo minio-qdrant-repo
+kubectl get repository -n demo minio-qdrant-repo
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 minio-qdrant-repo   true        3                8.613 KiB   Ready   48s                      58s
-```
 
 Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=minio-qdrant-repo
+kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=minio-qdrant-repo
+```
 NAME                                                                              REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 minio-qdrant-repo-qdrant-sample-ckup-frequent-backup-1779330454                 minio-qdrant-repo   frequent-backup   2026-05-21T02:27:44Z   Delete            Succeeded   51s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -450,17 +462,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant-restore.yaml
-qdrant.kubedb.com/qdrant-sample-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/qdrant-restore.yaml
 ```
+qdrant.kubedb.com/qdrant-sample-restore created
 
 Check the database status,
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample-restore
+kubectl get qdrant -n demo qdrant-sample-restore
+```
 NAME              VERSION   STATUS   AGE
 qdrant-sample-restore   1.17.0    Ready    48s
-```
 
 #### Create RestoreSession:
 
@@ -501,18 +513,17 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/restore-session.yaml
-restoresession.core.kubestash.com/restore-qdrant-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/backup/logical/restore-session.yaml
 ```
+restoresession.core.kubestash.com/restore-qdrant-sample created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ kubectl get restoresession -n demo -w
-
+kubectl get restoresession -n demo -w
+```
 NAME                    REPOSITORY          PHASE    DURATION   AGE
 restore-qdrant-sample   minio-qdrant-repo   Succeeded   3s         53s
-```
 
 Now, let's verify the restored data.
 
@@ -523,28 +534,33 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample-restore
+kubectl get qdrant -n demo qdrant-sample-restore
+```
 NAME               VERSION   STATUS  AGE
 qdrant-sample-restore    1.17.0    Ready   34m
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=qdrant-sample-restore"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=qdrant-sample-restore"
+```
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-restore-0   1/1     Running   0          39m
-```
 
 Now, let's get the API key and port-forward to verify the restored data,
 
-```bash
 # Get the API key from the restored auth secret
-$ export API_KEY=$(kubectl get secret -n demo qdrant-sample-restore-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```bash
+export API_KEY=$(kubectl get secret -n demo qdrant-sample-restore-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```
 
-$ kubectl port-forward -n demo svc/qdrant-sample-restore 6333:6333 &
+```bash
+kubectl port-forward -n demo svc/qdrant-sample-restore 6333:6333 &
+```
+
 # Scroll points to verify the restored data
-$ curl -X POST 'http://localhost:6333/collections/demo_collection/points/scroll' \
+```bash
+curl -X POST 'http://localhost:6333/collections/demo_collection/points/scroll' \
   -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{"limit": 10, "with_payload": true, "with_vector": true}'

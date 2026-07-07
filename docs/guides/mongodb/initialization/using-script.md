@@ -25,9 +25,9 @@ This tutorial will show you how to use KubeDB to initialize a MongoDB database w
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
   In this tutorial we will use .js script stored in GitHub repository [kubedb/mongodb-init-scripts](https://github.com/kubedb/mongodb-init-scripts).
 
@@ -44,10 +44,10 @@ At first, we will create a ConfigMap from `init.js` file. Then, we will provide 
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo mg-init-script \
+kubectl create configmap -n demo mg-init-script \
 --from-literal=init.js="$(curl -fsSL https://github.com/kubedb/mongodb-init-scripts/raw/master/init.js)"
-configmap/mg-init-script created
 ```
+configmap/mg-init-script created
 
 ## Create a MongoDB database with Init-Script
 
@@ -75,9 +75,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/demo-1.yaml
-mongodb.kubedb.com/mgo-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/demo-1.yaml
 ```
+mongodb.kubedb.com/mgo-init-script created
 
 Here,
 
@@ -86,7 +86,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MongoDB object name. KubeDB operator will also create a governing service for PetSets with the name `<mongodb-crd-name>-gvr`, if one is not already present. No MongoDB specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
-$ kubectl dba describe mg -n demo mgo-init-script
+kubectl dba describe mg -n demo mgo-init-script
+```
 Name:               mgo-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Feb 2021 10:58:22 +0600
@@ -194,23 +195,30 @@ Events:
   Normal  Successful  27s   MongoDB operator  Successfully patched PetSet demo/mgo-init-script
   Normal  Successful  27s   MongoDB operator  Successfully patched MongoDB
 
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME              READY   AGE
 mgo-init-script   1/1     30s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                        STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mgo-init-script-0   Bound     pvc-a10d636b-c08c-11e8-b4a9-0800272618ed   1Gi        RWO            standard       11m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                            STORAGECLASS   REASON    AGE
 pvc-a10d636b-c08c-11e8-b4a9-0800272618ed   1Gi        RWO            Delete           Bound     demo/datadir-mgo-init-script-0   standard                 12m
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 mgo-init-script       ClusterIP   10.107.34.91   <none>        27017/TCP   52s
 mgo-init-script-pods  ClusterIP   None           <none>        27017/TCP   52s
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -350,7 +358,8 @@ Please note that KubeDB operator has created a new Secret called `mgo-init-scrip
 If you want to use an existing secret please specify that when creating the MongoDB object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
 
 ```bash
-$ kubectl get secrets -n demo mgo-init-script-auth -o yaml
+kubectl get secrets -n demo mgo-init-script-auth -o yaml
+```
 apiVersion: v1
 data:
   password: eGtBaTRmRVpmSVFrNmczVw==
@@ -367,19 +376,22 @@ metadata:
   selfLink: /api/v1/namespaces/demo/secrets/mgo-init-script-auth
   uid: b7cf2369-29f3-11e9-aebf-080027875192
 type: Opaque
-```
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.password}' | base64 -d
+```
 oEwk7IGxCPM5OWo5
 
-$ kubectl exec -it mgo-init-script-0 -n demo sh
-
+```bash
+kubectl exec -it mgo-init-script-0 -n demo sh
+```
 > mongosh admin
 MongoDB shell version v3.4.10
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -408,7 +420,6 @@ switched to db kubedb
 
 > exit
 bye
-```
 
 As you can see here, the initial script has successfully created a database named `kubedb` and inserted data into that database successfully.
 

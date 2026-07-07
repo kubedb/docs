@@ -25,12 +25,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -45,10 +47,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME         AGE
 monitoring   prometheus   18m
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -125,26 +127,26 @@ Here,
 Let's create the Redis object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/coreos-prom-redis.yaml
-redis.kubedb.com/coreos-prom-redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/coreos-prom-redis.yaml
 ```
+redis.kubedb.com/coreos-prom-redis created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ kubectl get rd -n demo coreos-prom-redis
+kubectl get rd -n demo coreos-prom-redis
+```
 NAME                VERSION   STATUS    AGE
 coreos-prom-redis   4.0-v1    Running   15s
-```
 
 KubeDB will create a separate stats service with name `{Redis crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-redis"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-redis"
+```
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-redis         ClusterIP   10.110.70.53   <none>        6379/TCP    35s
 coreos-prom-redis-stats   ClusterIP   10.99.161.76   <none>        56790/TCP   31s
-```
 
 Here, `coreos-prom-redis-stats` service has been created for monitoring purpose.
 
@@ -172,15 +174,15 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 KubeDB will also create a `ServiceMonitor` crd in `monitoring` namespace that select the endpoints of `coreos-prom-redis-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                            AGE
 kubedb-demo-coreos-prom-redis   1m
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of Redis crd.
 
 ```bash
-$ kubectl get servicemonitor -n demo kubedb-demo-coreos-prom-redis -o yaml
+kubectl get servicemonitor -n demo kubedb-demo-coreos-prom-redis -o yaml
 ```
 
 ```yaml
@@ -221,20 +223,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+kubectl get pod -n monitoring -l=app=prometheus
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          63m
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-redis-stats` service as one of the targets.
 

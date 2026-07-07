@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -79,18 +79,21 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure-tls/pb.yaml
-pgbouncer.kubedb.com/pb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure-tls/pb.yaml
 ```
+pgbouncer.kubedb.com/pb created
 
 Now, wait until `pb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME   VERSION   STATUS   AGE
 pb     1.18.0    Ready    131m
 
-$ kubectl dba describe pgbouncer pb -n demo
+```bash
+kubectl dba describe pgbouncer pb -n demo
+```
 Name:         pb
 Namespace:    demo
 Labels:       <none>
@@ -186,7 +189,6 @@ Status:
   Observed Generation:     2
   Phase:                   Ready
 Events:                    <none>
-```
 
 Now, we can verify that the TLS is disabled.
 

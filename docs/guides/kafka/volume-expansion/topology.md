@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a `Kafka` topology using a supported version by `Ku
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -95,38 +95,42 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/volume-expansion/kafka-topology.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/volume-expansion/kafka-topology.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   9s
 .
 .
 kafka-prod    kubedb.com/v1   3.9.0     Ready          2m10s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo                                       
+```bash
+kubectl get pv -n demo                                       
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
 pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    longhorn                106s
 pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        longhorn                78s
 pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    longhorn                75s
 pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        longhorn                106s
-```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -168,9 +172,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/volume-expansion/kafka-volume-expansion-topology.yaml
-kafkaopsrequest.ops.kubedb.com/kf-volume-exp-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/volume-expansion/kafka-volume-expansion-topology.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kf-volume-exp-topology created
 
 #### Verify Kafka Topology volume expanded successfully
 
@@ -179,15 +183,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                     TYPE              STATUS       AGE
 kf-volume-exp-topology   VolumeExpansion   Successful   3m1s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to expand the volume of kafka.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kf-volume-exp-topology   
+kubectl describe kafkaopsrequest -n demo kf-volume-exp-topology   
+```
 Name:         kf-volume-exp-topology
 Namespace:    demo
 Labels:       <none>
@@ -316,24 +321,27 @@ Events:
   Normal   ReadyPetSets                             26s   KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                 26s   KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                               26s   KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kf-volume-exp-topology
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "3Gi"
 
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo                                       
+```bash
+kubectl get pv -n demo                                       
+```
 NAME                   CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS     CLAIM                                           STORAGECLASS   REASON   AGE
 pvc-3f177a92721440bb   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-0    longhorn                5m25s
 pvc-86ff354122324b1c   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-1        longhorn                4m51s
 pvc-9fa35d773aa74bd0   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-controller-1    longhorn                5m1s
 pvc-ccf50adf179e4162   1Gi        RWO            Delete           Bound      demo/kafka-prod-data-kafka-prod-broker-0        longhorn                5m30s
-```
 
 The above output verifies that we have successfully expanded the volume of the Kafka.
 

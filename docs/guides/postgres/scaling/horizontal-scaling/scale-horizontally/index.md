@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to increase/decrease th
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a Cluster server with 3 members. Then, we are g
 When you have installed `KubeDB`, it has created `PostgresVersion` CR for all supported `Postgres` versions. Let's check the supported Postgres versions,
 
 ```bash
-$ kubectl get postgresversion
+kubectl get postgresversion
+```
 NAME                       VERSION   DISTRIBUTION   DB_IMAGE                               DEPRECATED   AGE
 10.16                      10.16     Official       postgres:10.16-alpine                               63s
 10.16-debian               10.16     Official       postgres:10.16                                      63s
@@ -81,7 +82,6 @@ timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-
 timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                63s
 timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                63s
 timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a Postgres Cluster using `Postgres` `18.3`.
 
@@ -113,9 +113,9 @@ spec:
 Let's create the `Postgres` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/postgres.yaml
-postgres.kubedb.com/pg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/postgres.yaml
 ```
+postgres.kubedb.com/pg created
 
 **Wait for the cluster to be ready:**
 
@@ -123,22 +123,24 @@ postgres.kubedb.com/pg created
 Now, watch `Postgres` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get postgres -n demo pg
+watch -n 3 kubectl get postgres -n demo pg
+```
 Every 3.0s: kubectl get postgres -n demo pg                        emon-r7: Thu Dec  2 15:31:16 2021
 
 NAME   VERSION   STATUS   AGE
 pg     18.3      Ready    4h40m
 
-
-$ watch -n 3 kubectl get petset -n demo pg
+```bash
+watch -n 3 kubectl get petset -n demo pg
+```
 Every 3.0s: kubectl get petset -n demo pg                             emon-r7: Thu Dec  2 15:31:38 2021
 
 NAME   READY   AGE
 pg     3/3     4h41m
 
-
-
-$ watch -n 3 kubectl get pods -n demo
+```bash
+watch -n 3 kubectl get pods -n demo
+```
 Every 3.0s: kubectl get pod -n demo                                emon-r7: Thu Dec  2 15:33:24 2021
 
 NAME   READY   STATUS    RESTARTS   AGE
@@ -146,18 +148,17 @@ pg-0   2/2     Running   0          4h25m
 pg-1   2/2     Running   0          4h26m
 pg-2   2/2     Running   0          4h26m
 
-```
-
 Let's verify that the PetSet's pods have joined into cluster,
 
 ```bash
-$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo pg-auth -o jsonpath='{.data.username}' | base64 -d
+```
 postgres
 
-$ kubectl get secrets -n demo pg-auth -o jsonpath='{.data.password}' | base64 -d
-b3b5838EhjwsiuFU
-
+```bash
+kubectl get secrets -n demo pg-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+b3b5838EhjwsiuFU
 
 So, we can see that our cluster has 3 members. Now, we are ready to apply the horizontal scale to this Postgres cluster.
 
@@ -192,9 +193,9 @@ Here,
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/pg-scale-up.yaml
-postgresopsrequest.ops.kubedb.com/pg-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/pg-scale-up.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pg-scale-up created
 
 **Verify Scale-Up Succeeded:**
 
@@ -203,13 +204,12 @@ If everything goes well, `KubeDB` Ops Manager will scale up the PetSet's `Pod`. 
 First, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
 ```bash
-$ watch kubectl get postgresopsrequest -n demo pg-scale-up
+watch kubectl get postgresopsrequest -n demo pg-scale-up
+```
 Every 2.0s: kubectl get postgresopsrequest -n demo pg-scale-up     emon-r7: Thu Dec  2 17:57:36 2021
 
 NAME          TYPE                STATUS       AGE
 pg-scale-up   HorizontalScaling   Successful   8m23s
-
-```
 
 You can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest`, we will see that the `Postgres` cluster is scaled up.
 
@@ -299,7 +299,8 @@ Events:
 Now, we are going to verify whether the number of members has increased to meet up the desired state. So let's check the new pods logs to see if they have joined in the cluster as new replica.
 
 ```bash
-$ kubectl logs   -n demo                 pg-4  -c postgres -f
+kubectl logs   -n demo                 pg-4  -c postgres -f
+```
 waiting for the role to be decided ...
 running the initial script ...
 Running as Replica
@@ -318,8 +319,6 @@ take base basebackup...
 2021-12-02 11:50:11.157 UTC [30] LOG:  consistent recovery state reached at 0/8000100
 2021-12-02 11:50:11.157 UTC [17] LOG:  database system is ready to accept read only connections
 2021-12-02 11:50:11.162 UTC [35] LOG:  started streaming WAL from primary at 0/9000000 on timeline 2
-
-```
 
 You can see above that this pod is streaming wal from primary as replica. It verifies that we have successfully scaled up.
 
@@ -348,9 +347,9 @@ spec:
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/pg-scale-down.yaml
-postgresopsrequest.ops.kubedb.com/pg-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/horizontal-scaling/scale-horizontally/yamls/pg-scale-down.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pg-scale-down created
 
 **Verify Scale-down Succeeded:**
 
@@ -359,19 +358,18 @@ If everything goes well, `KubeDB` Ops Manager will scale down the PetSet's `Pod`
 Now, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
 ```bash
-$ watch kubectl get postgresopsrequest -n demo pg-scale-down
+watch kubectl get postgresopsrequest -n demo pg-scale-down
+```
 Every 2.0s: kubectl get postgresopsrequest -n demo pg-scale-down    emon-r7: Thu Dec  2 18:15:37 2021
 
 NAME            TYPE                STATUS       AGE
 pg-scale-down   HorizontalScaling   Successful   115s
 
-
-```
-
 You can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest`, we shall see that the `Postgres` cluster is scaled down.
 
 ```bash
-$ kubectl describe  postgresopsrequest -n demo pg-scale-down
+kubectl describe  postgresopsrequest -n demo pg-scale-down
+```
 Name:         pg-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -451,18 +449,16 @@ Events:
   Normal  ResumeDatabase  91s    KubeDB Enterprise Operator  Resuming PostgreSQL demo/pg
   Normal  ResumeDatabase  91s    KubeDB Enterprise Operator  Successfully resumed PostgreSQL demo/pg
   Normal  Successful      91s    KubeDB Enterprise Operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify whether the number of members has decreased to meet up the desired state, Let's check, the postgres status if it's ready then the scale-down is successful.
 
 ```bash
-$ kubectl get postgres -n demo pg
+kubectl get postgres -n demo pg
+```
 Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu Dec  2 18:16:39 2021
 
 NAME   VERSION   STATUS   AGE
 pg     18.3      Ready    7h26m
-
-```
 
 You can see above that our `Postgres` cluster now has a total of 4 members. It verifies that we have successfully scaled down.
 

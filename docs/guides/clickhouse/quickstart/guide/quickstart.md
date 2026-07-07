@@ -39,9 +39,9 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available ClickHouseVersion
 
@@ -77,9 +77,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/clickhouse/quickstart/yamls/quickstart-v1alpha2.yaml
-clickhouse.kubedb.com/clickhouse-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/clickhouse/quickstart/yamls/quickstart-v1alpha2.yaml
 ```
+clickhouse.kubedb.com/clickhouse-quickstart created
 
 Here,
 

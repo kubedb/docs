@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to auto-scale compute resources i.e
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Autoscaling of Database
 
@@ -79,22 +79,23 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME            VERSION   STATUS   AGE
 qdrant-sample   1.17.0    Ready    51s
-```
 
 Let's check the Pod container resources:
 
 ```bash
-$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -105,7 +106,6 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resou
     "memory": "512Mi"
   }
 }
-```
 
 We are now ready to apply the `QdrantAutoscaler` CRD to set up autoscaling for this database.
 
@@ -160,20 +160,23 @@ Here,
 Let's create the `QdrantAutoscaler` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant-as-compute.yaml
-qdrantautoscaler.autoscaling.kubedb.com/qdrant-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/autoscaler/compute/qdrant-as-compute.yaml
 ```
+qdrantautoscaler.autoscaling.kubedb.com/qdrant-as-compute created
 
 #### Verify Autoscaler is set up successfully
 
 Let's check that the `QdrantAutoscaler` resource is created successfully:
 
 ```bash
-$ kubectl get qdrantautoscaler -n demo
+kubectl get qdrantautoscaler -n demo
+```
 NAME                AGE
 qdrant-as-compute   0s
 
-$ kubectl describe qdrantautoscaler qdrant-as-compute -n demo
+```bash
+kubectl describe qdrantautoscaler qdrant-as-compute -n demo
+```
 Name:         qdrant-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -206,22 +209,22 @@ Status:
   Vpas:
     Vpa Name:  qdrant-sample
 Events:        <none>
-```
 
 So, the `QdrantAutoscaler` resource is created successfully. The operator will now watch the resource usage of the Qdrant pods and create `QdrantOpsRequest` resources to scale when needed.
 
 After some time, you can observe that the autoscaler has created a `QdrantOpsRequest` with type `VerticalScaling`:
 
 ```bash
-$ kubectl get qdrantopsrequest -n demo
+kubectl get qdrantopsrequest -n demo
+```
 NAME                           TYPE              STATUS       AGE
 qdops-qdrant-sample-829lnp     VerticalScaling   Successful   45s
-```
 
 You can then verify the updated resources on the pods:
 
 ```bash
-$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -232,7 +235,6 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[].resou
     "memory": "400Mi"
   }
 }
-```
 
 The above output verifies that we have successfully autoscaled the resources of the Qdrant database.
 

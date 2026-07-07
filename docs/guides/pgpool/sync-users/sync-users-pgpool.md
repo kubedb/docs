@@ -25,9 +25,9 @@ KubeDB supports providing a way to add/update users to Pgpool in runtime simply 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -90,17 +90,17 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/sync-users/pgpool-sync.yaml
-pgpool.kubedb.com/pgpool-sync created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/sync-users/pgpool-sync.yaml
 ```
+pgpool.kubedb.com/pgpool-sync created
 
 Now, wait until `pgpool-sync` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
 NAME          TYPE                  VERSION   STATUS   AGE
 pgpool-sync   kubedb.com/v1alpha2   4.5.0     Ready    41s
-```
 
 ### Sync Users
 
@@ -123,52 +123,58 @@ stringData:
 Now, create the secret by applying the yaml above.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/sync-users/secret.yaml
-secret/sync-secret created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/sync-users/secret.yaml
 ```
+secret/sync-secret created
 
 Now, after `10 seconds` you can exec into the pgpool pod and find if the new user is there,
 
 ```bash
-$ kubectl exec -it -n demo pgpool-sync-0 -- bash
+kubectl exec -it -n demo pgpool-sync-0 -- bash
+```
 pgpool-sync-0:/$ cat opt/pgpool-II/etc/pool_passwd 
 postgres:AESOmAkfj+zX8zXLm92d6Vup6a5yASiiGScoHNDTIgBwH8=
 john:AEScbLKDSMb+KVrILhh7XEmyQ==
 pgpool-sync-0:/$ exit
 exit
-```
 We can see that the user is there in Pgpool. So, now let's create this user and try to use this user through Pgpool.
 Now, you can connect to this pgpool through [psql](https://www.postgresql.org/docs/current/app-psql.html). Before that we need to port-forward to the primary service of pgpool.
 
 ```bash
-$ kubectl port-forward -n demo svc/pgpool-sync 9999
-Forwarding from 127.0.0.1:9999 -> 9999
+kubectl port-forward -n demo svc/pgpool-sync 9999
 ```
+Forwarding from 127.0.0.1:9999 -> 9999
 We will use the root Postgres user to create the user, so let's get the password for the root user, so that we can use it.
 ```bash
-$ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
-qEeuU6cu5aH!O9CI⏎ 
+kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+qEeuU6cu5aH!O9CI⏎ 
 We can use this password now,
 ```bash
-$ export PGPASSWORD='qEeuU6cu5aH!O9CI'
-$ psql --host=localhost --port=9999 --username=postgres postgres
+export PGPASSWORD='qEeuU6cu5aH!O9CI'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=postgres postgres
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 Type "help" for help.
 
 postgres=# CREATE USER john WITH PASSWORD '12345';
 CREATE ROLE
 postgres=# exit
-```
 Now, let's use this john user.
 ```bash
-$ export PGPASSWORD='12345'
-$ psql --host=localhost --port=9999 --username=john postgres
+export PGPASSWORD='12345'
+```
+
+```bash
+psql --host=localhost --port=9999 --username=john postgres
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 Type "help" for help.
 
 postgres=> exit
-```
 So, we can successfully verify that the user is registered in Pgpool and also we can use it.
 
 ## Cleaning up

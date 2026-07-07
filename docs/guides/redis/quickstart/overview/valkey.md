@@ -29,21 +29,23 @@ This tutorial will show you how to use KubeDB to run a Valkey server.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY       VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION              AGE
   standard (default)   rancher.io/local-path      Delete          WaitForFirstConsumer           false                      4h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create namespace demo
+  kubectl create namespace demo
+  ```
   namespace/demo created
 
-  $ kubectl get namespaces
+  ```bash
+  kubectl get namespaces
+  ```
   NAME          STATUS    AGE
   demo          Active    10s
-  ```
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -52,7 +54,8 @@ This tutorial will show you how to use KubeDB to run a Valkey server.
 When you have installed KubeDB, it has created `RedisVersion` crd for all supported Redis and Valkey versions. Check:
 
 ```bash
-$ kubectl get redisversions
+kubectl get redisversions
+```
 NAME           VERSION   DB_IMAGE                                        DEPRECATED   AGE
 4.0.11         4.0.11    ghcr.io/kubedb/redis:4.0.11                                  14d
 5.0.14         5.0.14    ghcr.io/appscode-images/redis:5.0.14-bullseye                14d
@@ -70,7 +73,6 @@ valkey-7.2.5   7.2.5     ghcr.io/appscode-images/valkey:7.2.5                   
 valkey-7.2.9   7.2.9     ghcr.io/appscode-images/valkey:7.2.9                         14d
 valkey-8.0.3   8.0.3     ghcr.io/appscode-images/valkey:8.0.3                         14d
 valkey-8.1.1   8.1.1     ghcr.io/appscode-images/valkey:8.1.1                         14d
-```
 `Note`: RedisVersion which contains valkey database image, will have `spec.distribution` as `valkey`
 
 ## Create a Valkey server
@@ -99,9 +101,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1.yaml
-redis.kubedb.com/valkey-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1.yaml
 ```
+redis.kubedb.com/valkey-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -123,9 +125,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1alpha2.yaml
-redis.kubedb.com/valkey-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-valkey-v1alpha2.yaml
 ```
+redis.kubedb.com/valkey-quickstart created
 
 Here,
 
@@ -139,11 +141,14 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME               VERSION        STATUS   AGE
 valkey-quickstart  valkey-8.1.1   Ready    6m16s
 
-$ kubectl describe rd -n demo valkey-quickstart
+```bash
+kubectl describe rd -n demo valkey-quickstart
+```
 Name:         valkey-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -263,12 +268,12 @@ Events:
   Normal  Successful  6m29s  KubeDB Operator  Successfully created governing service
   Normal  Successful  6m29s  KubeDB Operator  Successfully created Service
   Normal  Successful  6m27s  KubeDB Operator  Successfully created appbinding
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```bash
-$ kubectl get rd -n demo valkey-quickstart -o yaml
+kubectl get rd -n demo valkey-quickstart -o yaml
+```
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
@@ -383,12 +388,12 @@ status:
     type: Provisioned
   observedGeneration: 2
   phase: Ready
-```
 
 Now, you can connect to this database through [redis-cli](https://redis.io/topics/rediscli). In this tutorial, we are connecting to the Redis server from inside of pod.
 
 ```bash
-$ kubectl exec -it -n demo valkey-quickstart-0 -- sh
+kubectl exec -it -n demo valkey-quickstart-0 -- sh
+```
 /data $ valkey-cli
 127.0.0.1:6379> ping
 PONG
@@ -398,7 +403,6 @@ OK
 "hello"
 127.0.0.1:6379> exit
 /data $ exit
-```
 
 ## DoNotTerminate Property
 Learn details of all `DeletionPolicy` [here](/docs/guides/redis/concepts/redis.md#specdeletionpolicy)
@@ -414,21 +418,22 @@ You can also keep the redis object and halt the database to resume it again late
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-redis.kubedb.com/valkey-quickstart patched
+kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+redis.kubedb.com/valkey-quickstart patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":true}}' --type="merge"
-redis.kubedb.com/valkey-quickstart patched
+kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":true}}' --type="merge"
 ```
+redis.kubedb.com/valkey-quickstart patched
 After that, kubedb will delete the petsets and services, and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all redis resources in demo namespaces,
 ```bash
-$ kubectl get redis,secret,pvc -n demo
+kubectl get redis,secret,pvc -n demo
+```
 NAME                                VERSION        STATUS   AGE
 redis.kubedb.com/valkey-quickstart  valkey-8.1.1   Halted   19m
 
@@ -438,29 +443,28 @@ secret/valkey-quickstart-config   Opaque                     1      19m
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-valkey-quickstart-0   Bound    pvc-c7d0fc32-c863-42eb-a7db-23a7852fbfac   1Gi        RWO            standard       <unset>                 19m
-```
 
 ## Resume Halted Redis
 
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":false}}' --type="merge"
-redis.kubedb.com/valkey-quickstart patched
+kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"halted":false}}' --type="merge"
 ```
+redis.kubedb.com/valkey-quickstart patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME                VERSION        STATUS   AGE
 valkey-quickstart   valkey-8.1.1   Ready    20m
-```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
 ```bash
-$ kubectl exec -it -n demo valkey-quickstart-0 -- sh
-
+kubectl exec -it -n demo valkey-quickstart-0 -- sh
+```
 /data > valkey-cli
 
 127.0.0.1:6379> ping
@@ -473,22 +477,24 @@ PONG
 127.0.0.1:6379> exit
 
 /data > exit
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-
-$ kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/valkey-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/valkey-quickstart patched
 
-$ kubectl delete -n demo rd/valkey-quickstart
+```bash
+kubectl delete -n demo rd/valkey-quickstart
+```
 redis.kubedb.com "valkey-quickstart" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

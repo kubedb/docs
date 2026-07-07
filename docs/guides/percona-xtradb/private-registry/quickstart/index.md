@@ -27,11 +27,11 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For perconaxtradb, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following PerconaXtraDBVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
-$ kubectl get perconaxtradbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+kubectl get perconaxtradbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+```
 NAME     VERSION   DB_IMAGE                                EXPORTER_IMAGE                 INITCONTAINER_IMAGE                DEPRECATED
 8.0.40   8.0.40    percona/percona-xtradb-cluster:8.0.40   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
 8.0.28   8.0.28    percona/percona-xtradb-cluster:8.0.28   prom/mysqld-exporter:v0.13.0   kubedb/percona-xtradb-init:0.2.0   <none>
-```
 
 Docker hub repositories:
 
@@ -63,9 +63,9 @@ Docker hub repositories:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-   ```
 
 ## Create ImagePullSecret
 
@@ -74,13 +74,13 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo pxregistrykey \
+kubectl create secret docker-registry -n demo pxregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/pxregistrykey created
 ```
+secret/pxregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -120,25 +120,28 @@ spec:
 Now run the command to deploy this `PerconaXtraDB` object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/private-registry/quickstart/examples/demo.yaml
-perconaxtradb.kubedb.com/px-pvt-reg created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/private-registry/quickstart/examples/demo.yaml
 ```
+perconaxtradb.kubedb.com/px-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `PerconaXtraDB` is in running state:
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME              READY     STATUS    RESTARTS   AGE
 px-pvt-reg-0   1/1       Running   0          56s
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo px-pvt-reg
-perconaxtradb.kubedb.com "px-pvt-reg" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo px-pvt-reg
 ```
+perconaxtradb.kubedb.com "px-pvt-reg" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

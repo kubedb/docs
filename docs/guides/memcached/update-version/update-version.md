@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -71,17 +71,17 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/update-version/memcached.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/update-version/memcached.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.33    Ready    3m
-```
 
 We are now ready to apply the `MemcachedOpsRequest` CR to update this database.
 
@@ -116,9 +116,9 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/update-version/opsrequest-version-update.yaml
-memcachedopsrequest.ops.kubedb.com/update-memcd created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/update-version/opsrequest-version-update.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/update-memcd created
 
 #### Verify Memcached version updated successfully :
 
@@ -127,26 +127,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME           TYPE            STATUS       AGE
 update-memcd   UpdateVersion   Successful   7m
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `Memcached` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+```
 1.6.40
 
-$ kubectl get petset -n demo memcd-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo memcd-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/memcached:1.6.40-alpine
 
-$ kubectl get pods -n demo memcd-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/memcached:1.6.40-alpine
+```bash
+kubectl get pods -n demo memcd-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/memcached:1.6.40-alpine
 
 You can see from above, our `Memcached` database has been updated with the new version. So, the UpdateVersion process is successfully completed.
 
@@ -155,12 +159,16 @@ You can see from above, our `Memcached` database has been updated with the new v
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete -n demo Memcached memcd-quickstart
+```bash
+kubectl delete -n demo Memcached memcd-quickstart
+```
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete -n demo memcachedopsrequest update-memcd
-memcachedopsrequest.ops.kubedb.com "update-memcd" deleted
+```bash
+kubectl delete -n demo memcachedopsrequest update-memcd
 ```
+memcachedopsrequest.ops.kubedb.com "update-memcd" deleted

@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Prepare MySQL backend
 
@@ -62,17 +62,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's wait for the MySQL to be Ready. 
 
 ```bash
-$ kubectl get mysql -n demo 
+kubectl get mysql -n demo 
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8    Ready    3m51s
-```
 
 ### Prepare ProxySQL Cluster
 
@@ -93,17 +93,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/sample-proxysql.yaml 
-proxysql.kubedb.com/proxy-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/sample-proxysql.yaml 
 ```
+proxysql.kubedb.com/proxy-server created
 
 Let's wait for the ProxySQL to be Ready.
 
 ```bash
-$ kubectl get proxysql -ndemo               
+kubectl get proxysql -ndemo               
+```
 NAME           VERSION        STATUS   AGE
 proxy-server   3.0.1-debian   Ready    98s
-```
 
 ## Reconfigure MYSQL USERS
 
@@ -114,7 +114,8 @@ With `KubeDB` `ProxySQL` ops-request you can reconfigure `mysql_users` table. Yo
 Let's first create two users in the backend mysql server. 
 
 ```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash
+kubectl exec -it -n demo mysql-server-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -150,14 +151,14 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql> exit
 Bye
-```
 
 ### Check current mysql_users table in ProxySQL
 
 Let's check the current mysql_users table in the proxysql server. Make sure that the spec.syncUsers field was not set to true when the proxysql was deployed. Otherwise it will fetch all the users from the mysql backend and we won't be able to see the effects of reconfigure users ops requests. 
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash
+kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 71
@@ -169,7 +170,6 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 ProxySQLAdmin > select * from mysql_users;
 Empty set (0.001 sec)
-```
 
 ### Add Users
 
@@ -200,17 +200,17 @@ spec:
 Let's applly the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-users.yaml
-proxysqlopsrequest.ops.kubedb.com/add-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-users.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/add-user created
 
 Let's wait for the ops-request to be Successful. 
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo     
+kubectl get proxysqlopsrequest -n demo     
+```
 NAME       TYPE          STATUS       AGE
 add-user   Reconfigure   Successful   20s
-```
 
 Now let's check the `mysql_users` table in the proxysql server.
 
@@ -258,18 +258,18 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-update-users.yaml 
-proxysqlopsrequest.ops.kubedb.com/update-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-update-users.yaml 
 ```
+proxysqlopsrequest.ops.kubedb.com/update-user created
 
 Now wait for the ops-request to be Successful.
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo     
+kubectl get proxysqlopsrequest -n demo     
+```
 NAME          TYPE          STATUS       AGE
 add-user      Reconfigure   Successful   2m36s
 update-user   Reconfigure   Successful   6s
-```
 
 Let's check the `mysql_users` table from the admin interface. 
 
@@ -309,18 +309,18 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-remove-users.yaml 
-proxysqlopsrequest.ops.kubedb.com/delete-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-remove-users.yaml 
 ```
+proxysqlopsrequest.ops.kubedb.com/delete-user created
 Let's wait for the ops-request to be successful. 
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo    
+kubectl get proxysqlopsrequest -n demo    
+```
 NAME          TYPE          STATUS       AGE
 add-user      Reconfigure   Successful   5m29s
 delete-user   Reconfigure   Successful   12s
 update-user   Reconfigure   Successful   2m59s
-```
 
 Now check the `mysql_users` table in the proxysql server.
 
@@ -386,16 +386,16 @@ spec:
 Let's apply the ops-request yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-rules.yaml  
-proxysqlopsrequest.ops.kubedb.com/add-rule created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-rules.yaml  
 ```
+proxysqlopsrequest.ops.kubedb.com/add-rule created
 
 Wait for the ops-request to be successful. 
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo | grep rule
-add-rule      Reconfigure   Successful   59s
+kubectl get proxysqlopsrequest -n demo | grep rule
 ```
+add-rule      Reconfigure   Successful   59s
 Now let's check the mysql_query_rules table in the proxysql server.
 
 ```bash
@@ -437,16 +437,16 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-update-rules.yaml 
-proxysqlopsrequest.ops.kubedb.com/update-rule created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-update-rules.yaml 
 ```
+proxysqlopsrequest.ops.kubedb.com/update-rule created
 Now wait for the ops-request to be successful.
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo | grep rule
+kubectl get proxysqlopsrequest -n demo | grep rule
+```
 add-rule      Reconfigure   Successful   3m10s
 update-rule   Reconfigure   Successful   71s
-```
 Let's check the `mysql_query_rules` table from the admin interface. 
 
 ```bash
@@ -486,17 +486,17 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-remove-rules.yaml
-proxysqlopsrequest.ops.kubedb.com/delete-rule created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-remove-rules.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/delete-rule created
 Let's wait for the ops-request to be Successful. 
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo | grep rule
+kubectl get proxysqlopsrequest -n demo | grep rule
+```
 add-rule      Reconfigure   Successful   4m13s
 delete-rule   Reconfigure   Successful   12s
 update-rule   Reconfigure   Successful   2m14s
-```
 
 Now check the `mysql_query_rules` table in the proxysql server.
 
@@ -563,16 +563,16 @@ spec:
 Let's apply the yaml.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-recon-vars.yaml
-proxysqlopsrequest.ops.kubedb.com/recofigure-vars created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-recon-vars.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/recofigure-vars created
 
 Wait for the ops-request to be successful.
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo | grep reco
-reconfigure-vars   Reconfigure   Successful   30s
+kubectl get proxysqlopsrequest -n demo | grep reco
 ```
+reconfigure-vars   Reconfigure   Successful   30s
 
 Now let's check the variables we wanted to reconfigure. 
 
@@ -598,8 +598,17 @@ From the above output we can see the variables has been successfuly updated with
 
 ### Clean-up
 ```bash
-$ kubectl delete proxysql -n demo proxy-server
-$ kubectl delete proxysqlopsrequest -n demo --all 
-$ kubectl delete mysql -n demo mysql-server
-$ kubectl delete ns demo 
+kubectl delete proxysql -n demo proxy-server
+```
+
+```bash
+kubectl delete proxysqlopsrequest -n demo --all 
+```
+
+```bash
+kubectl delete mysql -n demo mysql-server
+```
+
+```bash
+kubectl delete ns demo 
 ```

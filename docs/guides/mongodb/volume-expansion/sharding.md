@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +48,10 @@ Here, we are going to deploy a `MongoDB` Sharded Database using a supported vers
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -92,28 +92,33 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mg-shard.yaml
-mongodb.kubedb.com/mg-sharding created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mg-shard.yaml
 ```
+mongodb.kubedb.com/mg-sharding created
 
 Now, wait until `mg-sharding` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME          VERSION    STATUS    AGE
 mg-sharding   4.4.26      Ready     2m45s
-```
 
 Let's check volume size from petset, and from the persistent volume of shards and config servers,
 
 ```bash
-$ kubectl get petset -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get petset -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                  STORAGECLASS   REASON   AGE
 pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      longhorn                68s
 pvc-390b6343-f97e-4761-a516-e3c9607c55d6   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      longhorn                2m26s
@@ -123,7 +128,6 @@ pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   1Gi        RWO            Delete     
 pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      longhorn                44s
 pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      longhorn                3m7s
 pvc-87634059-0f95-4595-ae8a-121944961103   1Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   longhorn                3m7s
-```
 
 You can see the petsets have 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -164,9 +168,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mops-volume-exp-shard.yaml
-mongodbopsrequest.ops.kubedb.com/mops-volume-exp-shard created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/volume-expansion/mops-volume-exp-shard.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-volume-exp-shard created
 
 #### Verify MongoDB shard volumes expanded successfully
 
@@ -175,15 +179,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `MongoDBOpsRequest` to be `Successful`. Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 NAME                    TYPE              STATUS       AGE
 mops-volume-exp-shard   VolumeExpansion   Successful   3m49s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-volume-exp-shard
+kubectl describe mongodbopsrequest -n demo mops-volume-exp-shard
+```
 Name:         mops-volume-exp-shard
 Namespace:    demo
 Labels:       <none>
@@ -245,18 +250,22 @@ Events:
   Normal  ResumeDatabase               50s    KubeDB Ops-manager operator  Resuming MongoDB
   Normal  ResumeDatabase               50s    KubeDB Ops-manager operator  Successfully Resumed mongodb
   Normal  Successful                   50s    KubeDB Ops-manager operator  Successfully Expanded Volume
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-sharding-configsvr -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get petset -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo mg-sharding-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                  STORAGECLASS   REASON   AGE
 pvc-194f6e9c-b9a7-4d00-a125-a6c01273468c   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-0      longhorn                3m38s
 pvc-390b6343-f97e-4761-a516-e3c9607c55d6   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard1-1      longhorn                4m56s
@@ -266,7 +275,6 @@ pvc-5be2ab13-e12c-4053-8680-7c5588dff8eb   2Gi        RWO            Delete     
 pvc-7e11502d-13e0-4a84-9ebe-29bc2b15f026   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard0-1      longhorn                3m14s
 pvc-7e20906c-462d-47b7-b4cf-ba0ef69ba26e   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-shard2-0      longhorn                5m37s
 pvc-87634059-0f95-4595-ae8a-121944961103   2Gi        RWO            Delete           Bound    demo/datadir-mg-sharding-configsvr-0   longhorn                5m37s
-```
 
 The above output verifies that we have successfully expanded the volume of the shard nodes and configServer nodes of the MongoDB database.
 

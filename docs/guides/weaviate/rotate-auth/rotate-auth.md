@@ -29,9 +29,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to rotate the API-k
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/rotate-auth](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/rotate-auth) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -40,19 +40,22 @@ namespace/demo created
 Deploy a Weaviate cluster and wait for it to become `Ready`. By default, KubeDB generates an API key and stores it in the `weaviate-sample-auth` Secret:
 
 ```bash
-$ kubectl get secret -n demo weaviate-sample-auth -o jsonpath='{.data.AUTHENTICATION_APIKEY_ALLOWED_KEYS}' | base64 -d
-vzWSjiRGNNEZEytR
+kubectl get secret -n demo weaviate-sample-auth -o jsonpath='{.data.AUTHENTICATION_APIKEY_ALLOWED_KEYS}' | base64 -d
 ```
+vzWSjiRGNNEZEytR
 
 You can confirm this key works through a port-forward:
 
 ```bash
-$ kubectl port-forward -n demo svc/weaviate-sample 8080:8080
-# in another terminal
-$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
-  -H "Authorization: Bearer vzWSjiRGNNEZEytR"
-200
+kubectl port-forward -n demo svc/weaviate-sample 8080:8080
 ```
+
+# in another terminal
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
+  -H "Authorization: Bearer vzWSjiRGNNEZEytR"
+```
+200
 
 ## Rotate Auth with a User-provided Secret
 
@@ -72,9 +75,9 @@ type: Opaque
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/rotate-auth/weaviate-rotate-auth.yaml
-secret/weaviate-rotate-auth created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/rotate-auth/weaviate-rotate-auth.yaml
 ```
+secret/weaviate-rotate-auth created
 
 Now, create the `RotateAuth` OpsRequest referencing that Secret:
 
@@ -100,22 +103,23 @@ spec:
 - `spec.authentication.secretRef.name` references the Secret holding the new API key. If you omit this field, the Ops Manager generates a brand-new random key instead.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/rotate-auth/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/weaviate-rotate-auth-generated created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/rotate-auth/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/weaviate-rotate-auth-generated created
 
 The Ops Manager updates the credentials and restarts the pods one by one.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo weaviate-rotate-auth-generated
+kubectl get weaviateopsrequest -n demo weaviate-rotate-auth-generated
+```
 NAME                             TYPE         STATUS       AGE
 weaviate-rotate-auth-generated   RotateAuth   Successful   70s
-```
 
 Let's check the `status.conditions` of the `WeaviateOpsRequest`:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo weaviate-rotate-auth-generated -o yaml
+kubectl get weaviateopsrequest -n demo weaviate-rotate-auth-generated -o yaml
+```
 ...
 status:
   conditions:
@@ -159,36 +163,42 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Verify Authentication Rotated
 
 After the rotation, the `Weaviate` object now references the provided Secret, and the Ops Manager has enriched it with the previous key (under `*-PREV`), the enabled flag, and the bound user:
 
 ```bash
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.authSecret}'
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.authSecret}'
+```
 {"activeFrom":"2026-06-30T17:47:20Z","apiGroup":"","externallyManaged":true,"kind":"","name":"weaviate-rotate-auth"}
 
-$ kubectl get secret -n demo weaviate-rotate-auth -o go-template='{{ range $k, $v := .data }}{{ $k }}: {{ $v | base64decode }}{{ "\n" }}{{ end }}'
+```bash
+kubectl get secret -n demo weaviate-rotate-auth -o go-template='{{ range $k, $v := .data }}{{ $k }}: {{ $v | base64decode }}{{ "\n" }}{{ end }}'
+```
 AUTHENTICATION_APIKEY_ALLOWED_KEYS: U1UzvrTvnz5Mw9c4
 AUTHENTICATION_APIKEY_ALLOWED_KEYS-PREV: vzWSjiRGNNEZEytR
 AUTHENTICATION_APIKEY_ENABLED: true
 AUTHENTICATION_APIKEY_USERS: admin
-```
 
 Let's confirm that the new key works and the old key is rejected:
 
 ```bash
-$ kubectl port-forward -n demo svc/weaviate-sample 8080:8080
+kubectl port-forward -n demo svc/weaviate-sample 8080:8080
+```
+
 # in another terminal
-$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
   -H "Authorization: Bearer U1UzvrTvnz5Mw9c4"
+```
 200
 
-$ curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
+```bash
+curl -s -o /dev/null -w "%{http_code}\n" http://localhost:8080/v1/schema \
   -H "Authorization: Bearer vzWSjiRGNNEZEytR"
-401
 ```
+401
 
 The new key returns `200` while the old key now returns `401` — the authentication has been rotated successfully.
 
@@ -205,7 +215,13 @@ The new key returns `200` while the old key now returns `401` — the authentica
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo weaviate-rotate-auth-generated
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo weaviate-rotate-auth-generated
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to increase/decrease th
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a group replication server with 3 members. Then
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -65,7 +66,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `9.6.0`.
@@ -123,9 +123,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/group-replication.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/group-replication.yaml
 ```
+mysql.kubedb.com/my-group created
 
   </div>
 
@@ -164,9 +164,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/innodb.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/innodb.yaml
 ```
+mysql.kubedb.com/my-group created
 
   </div>
 
@@ -206,9 +206,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/semi-sync.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/semi-sync.yaml
 ```
+mysql.kubedb.com/my-group created
 
 
   </div>
@@ -222,37 +222,46 @@ Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its 
 
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-group
+watch -n 3 kubectl get my -n demo my-group
+```
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get petset -n demo my-group
+```bash
+watch -n 3 kubectl get petset -n demo my-group
+```
 Every 3.0s: kubectl get petset -n demo my-group                     Every 3.0s: kubectl get petset -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
 
 NAME       READY   AGE
 my-group   3/3     16m
 
-$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+```bash
+watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+```
 Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com  suaas-appscode: Tue Jun 30 22:45:33 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   0          17m
 my-group-1   2/2     Running   0          14m
 my-group-2   2/2     Running   0          11m
-```
 
 Let's verify that the PetSet's pods have joined into a group replication cluster,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```
 sWfUMoqRpOJyomgb
 
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```bash
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
@@ -261,7 +270,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_applier | 815974c2-baef-11ea-bd7e-a695cbdbd6cc | my-group-2.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
 | group_replication_applier | ec61cef2-baee-11ea-adb0-9a02630bae5d | my-group-0.my-group-pods.demo |        3306 | ONLINE       | PRIMARY     | 8.0.23         |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
-```
 
 So, we can see that our group replication cluster has 3 members. Now, we are ready to apply the horizontal scale to this group replication.
 
@@ -296,9 +304,9 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_up.yaml
-mysqlopsrequest.ops.kubedb.com/my-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_up.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-scale-up created
 
 **Verify Scale-Up Succeeded:**
 
@@ -316,8 +324,12 @@ my-scale-up     HorizontalScaling   Successful   2m55s
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is scaled up.
 
 ```bash
-$ kubectl describe myops -n demo my-scale-up
-$ Name:         my-scale-up
+kubectl describe myops -n demo my-scale-up
+```
+
+```bash
+Name:         my-scale-up
+```
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -378,18 +390,22 @@ Events:
   Normal  Starting    26m   KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
   Normal  Successful  26m   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
   Normal  Successful  26m   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
-```
 
 Now, we are going to verify whether the number of members has increased to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```
 Y28qkWFQ8QHVzq2h
 
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=Y28qkWFQ8QHVzq2h --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```bash
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=Y28qkWFQ8QHVzq2h --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
@@ -400,7 +416,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_applier | c9d82f09-bafd-11ea-ab3a-764d326534a6 | my-group-1.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
 | group_replication_applier | eff81073-bafd-11ea-9f3d-ca1e99c33106 | my-group-2.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
-```
 
 You can see above that our `MySQL` group replication now has a total of 5 members. It verifies that we have successfully scaled up.
 
@@ -429,9 +444,9 @@ spec:
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_down.yaml
-mysqlopsrequest.ops.kubedb.com/my-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/horizontal-scaling/cluster/yamls/scale_down.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-scale-down created
 
 **Verify Scale-down Succeeded:**
 
@@ -449,7 +464,8 @@ my-scale-down   HorizontalScaling   Successful   2m55s
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the `MySQL` group replication is scaled down.
 
 ```bash
-$ kubectl describe myops -n demo my-scale-down
+kubectl describe myops -n demo my-scale-down
+```
 Name:         my-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -511,18 +527,22 @@ Events:
   Normal  Starting    61s   KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
   Normal  Successful  61s   KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
   Normal  Successful  61s   KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
-```
 
 Now, we are going to verify whether the number of members has decreased to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
+```
 Y28qkWFQ8QHVzq2h
 
-$ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```bash
+kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
+```
 mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                  | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION |
@@ -532,7 +552,6 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | group_replication_applier | c498302f-ce5b-11ea-96a3-72980d437abc | my-group-3.my-group-pods.demo |        3306 | ONLINE       | SECONDARY   | 8.0.23         |
 | group_replication_applier | dfb1633a-ce5a-11ea-a9c8-6e4ef86119d0 | my-group-0.my-group-pods.demo |        3306 | ONLINE       | PRIMARY     | 8.0.23         |
 +---------------------------+--------------------------------------+------------------------------+-------------+--------------+-------------+----------------+
-```
 
 You can see above that our `MySQL` group replication now has a total of 4 members. It verifies that we have successfully scaled down.
 

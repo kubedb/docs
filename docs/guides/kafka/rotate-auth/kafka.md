@@ -29,9 +29,9 @@ This tutorial will show you how to use KubeDB to rotate authentication credentia
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -73,52 +73,55 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-prod.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-prod.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   9s
 .
 .
 kafka-prod    kubedb.com/v1   3.9.0     Ready          2m10s
-```
 
 Now, we can exec one kafka broker pod and verify configuration that authentication is enabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep sasl.enabled.mechanism
-
-  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
-  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
-  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
-  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep sasl.enabled.mechanism
 ```
+  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  listener.name.local.sasl.enabled.mechanisms=PLAIN sensitive=false synonyms={STATIC_BROKER_CONFIG:listener.name.local.sasl.enabled.mechanisms=PLAIN, STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
+  sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256 sensitive=false synonyms={STATIC_BROKER_CONFIG:sasl.enabled.mechanisms=PLAIN,SCRAM-SHA-256, DEFAULT_CONFIG:sasl.enabled.mechanisms=GSSAPI}
 
 We can verify from the above output that authentication is enabled for this cluster. By default, KubeDB operator create default credentials for the Kafka cluster. The default credentials are stored in a secret named `<kafka-name>-auth` in the same namespace as the Kafka cluster. You can find the secret by running the following command:
 
 ```bash
-$ kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+```
 "kafka-prod-auth"
 
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 admin
 
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-zvrFXkStB~9A!NTC
+```bash
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+zvrFXkStB~9A!NTC
 
 You will find a new field `.spec.authSecret.activeFrom` in the `Kafka` CR. This field is used to track the active credentials. The value of this field is set the time when the secret (`.spec.authSecret.name`) is active for kafka cluster. The value of this field is updated when the authentication is rotated.
 
 ```bash
-$ kubectl get kf -n demo kafka-prod -ojsonpath='{.spec.authSecret.activeFrom}'
-2025-04-03T08:42:05Z
+kubectl get kf -n demo kafka-prod -ojsonpath='{.spec.authSecret.activeFrom}'
 ```
+2025-04-03T08:42:05Z
 
 > **Note:** There is another field `.spec.authSecret.rotateAfter` in the `Kafka` CR. This field is used to track the time when the authentication will be rotated. When a user set this field, Recommendation Engine will generate a recommendation `RotateAuth` Ops Request after this time from `.spec.authSecret.activeFrom`(i.e. `activeFrom + rotateAfter`). You need `Recommendation Engine` to be installed in order to use this feature.
 
@@ -152,22 +155,23 @@ Let's create the `KafkaOpsRequest` CR we have shown above,
 > **Note:** For combined kafka, you just need to refer kafka combined object in `databaseRef` field. To learn more about combined kafka, please visit [here](/docs/guides/kafka/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-rotate-auth-generated.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-generated created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-rotate-auth-generated.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-generated created
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 kfops-rotate-auth-generated   RotateAuth   Successful   3m18s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-rotate-auth-generated 
+kubectl describe kafkaopsrequest -n demo kfops-rotate-auth-generated 
+```
 Name:         kfops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -305,31 +309,37 @@ Events:
   Normal   RestartNodes                                                               55s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   55s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 55s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-generated
-```
 
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+```
 "kafka-prod-auth"
 
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 admin
 
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | base64 -d
-al9jY2xvYW5pbmc=
+```bash
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+al9jY2xvYW5pbmc=
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username.prev}' | base64 -d
-admin
-$ kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password.prev}' | base64 -d
-zvrFXkStB~9A!NTC
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.username.prev}' | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo kafka-prod-auth -o=jsonpath='{.data.password.prev}' | base64 -d
+```
+zvrFXkStB~9A!NTC
 
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 
@@ -338,12 +348,12 @@ The above output shows that the password has been changed successfully. The prev
 At first, we need to create a secret with `kubernetes.io/basic-auth` type using custom `username` and `password`. Below is the command to create a secret with `kubernetes.io/basic-auth` type,
 
 ```bash
-$ kubectl create secret generic kafka-user-auth -n demo \
+kubectl create secret generic kafka-user-auth -n demo \
           --type=kubernetes.io/basic-auth \
           --from-literal=username=kafka \
           --from-literal=password=kafka-secret
-secret/kafka-user-auth created
 ```
+secret/kafka-user-auth created
 
 Now create a Kafka Ops Request with `RotateAuth` type. Below is the YAML of the `KafkaOpsRequest` that we are going to create,
 
@@ -376,23 +386,24 @@ Let's create the `KafkaOpsRequest` CR we have shown above,
 > **Note:** For combined kafka, you just need to refer kafka combined object in `databaseRef` field. To learn more about combined kafka, please visit [here](/docs/guides/kafka/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-rotate-auth-user.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/rotate-auth/kafka-rotate-auth-user.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-rotate-auth-user created
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 kfops-rotate-auth-generated   RotateAuth   Successful   83m
 kfops-rotate-auth-user        RotateAuth   Successful   2m58s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-rotate-auth-user 
+kubectl describe kafkaopsrequest -n demo kfops-rotate-auth-user 
+```
 Name:         kfops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -533,31 +544,37 @@ Events:
   Normal   RestartNodes                                                               21s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   21s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 21s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate-auth-user
-```
 
 #### Verify Password is changed
 
 Now, We can verify that the password has been changed. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+kubectl get kf -n demo kafka-prod -ojson | jq .spec.authSecret.name
+```
 "kafka-user-auth"
 
-$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 kafka
 
-$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password}' | base64 -d
-kafka-secret
+```bash
+kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password}' | base64 -d
 ```
+kafka-secret
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
 ```bash
-$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username.prev}' | base64 -d
-admin
-$ kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password.prev}' | base64 -d
-al9jY2xvYW5pbmc=
+kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.username.prev}' | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo kafka-user-auth -o=jsonpath='{.data.password.prev}' | base64 -d
+```
+al9jY2xvYW5pbmc=
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 

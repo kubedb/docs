@@ -27,9 +27,9 @@ This guide deploys a HanaDB with the `prometheus.io/operator` agent so the
   note the label its `Prometheus` uses to select `ServiceMonitor`s (often `release: prometheus`):
 
 ```bash
-$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'; echo
-{}
+kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'; echo
 ```
+{}
 
 > An empty `serviceMonitorSelector` (`{}`) means this Prometheus selects **all** `ServiceMonitor`s in the
 > namespaces it watches. If your Prometheus uses a non-empty selector, set
@@ -67,9 +67,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/prometheus-operator.yaml
-hanadb.kubedb.com/hanadb-prometheus-operator created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/prometheus-operator.yaml
 ```
+hanadb.kubedb.com/hanadb-prometheus-operator created
 
 Wait until the database is `Ready`.
 
@@ -79,23 +79,28 @@ KubeDB creates a `ServiceMonitor` carrying the `release: prometheus` label so th
 selects it:
 
 ```bash
-$ kubectl get servicemonitor -n demo -l app.kubernetes.io/instance=hanadb-prometheus-operator
+kubectl get servicemonitor -n demo -l app.kubernetes.io/instance=hanadb-prometheus-operator
+```
 NAME                               AGE
 hanadb-prometheus-operator-stats   17m
 
-$ kubectl get servicemonitor -n demo hanadb-prometheus-operator-stats \
+```bash
+kubectl get servicemonitor -n demo hanadb-prometheus-operator-stats \
   -o jsonpath='port={.spec.endpoints[0].port} interval={.spec.endpoints[0].interval}{"\n"}selector={.spec.selector.matchLabels}{"\n"}'
+```
 port=metrics interval=10s
 selector={"app.kubernetes.io/instance":"hanadb-prometheus-operator","app.kubernetes.io/managed-by":"kubedb.com","app.kubernetes.io/name":"hanadbs.kubedb.com","kubedb.com/role":"stats"}
-```
 
 Once Prometheus reloads, the HanaDB target appears in its **Status → Targets** page.
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-prometheus-operator
-$ kubectl delete ns demo
+kubectl delete hanadb.kubedb.com -n demo hanadb-prometheus-operator
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

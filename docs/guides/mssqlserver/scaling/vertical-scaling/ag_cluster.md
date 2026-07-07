@@ -33,9 +33,9 @@ This guide will show you how to use `kubeDB-Ops-Manager` to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver/scaling/vertical-scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -48,11 +48,11 @@ Here, we are going to deploy a `MSSQLServer` instance using a supported version 
 When you have installed `KubeDB`, it has created `MSSQLServerVersion` CR for all supported `MSSQLServer` versions. Let's check the supported MSSQLServer versions,
 
 ```bash
-$ kubectl get mssqlserverversion
+kubectl get mssqlserverversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                3d21h
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                3d21h
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a mssqlserver using non-deprecated `MSSQLServer` version `2025-cu0`.
 
@@ -70,9 +70,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -142,9 +142,9 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mssql-ag-cluster.yaml
-mssqlserver.kubedb.com/mssql-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mssql-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssql-ag-cluster created
 
 
 **Check mssqlserver Ready to Scale:**
@@ -154,7 +154,8 @@ Now, watch `MSSQLServer` is going to be in `Running` state and also watch `PetSe
 
 
 ```bash
-$ watch kubectl get ms,petset,pods -n demo
+watch kubectl get ms,petset,pods -n demo
+```
 Every 2.0s: kubectl get ms,petset,pods -n demo
 
 NAME                                      VERSION     STATUS   AGE
@@ -167,12 +168,12 @@ NAME                     READY   STATUS    RESTARTS   AGE
 pod/mssql-ag-cluster-0   2/2     Running   0          3m57s
 pod/mssql-ag-cluster-1   2/2     Running   0          3m51s
 pod/mssql-ag-cluster-2   2/2     Running   0          3m46s
-```
 
 Let's check pod's `mssql` container's resources, `mssql` container is the first container So it's index will be 0.
 
 ```bash
-$ kubectl get pod -n demo mssql-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mssql-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -183,7 +184,10 @@ $ kubectl get pod -n demo mssql-ag-cluster-0 -o json | jq '.spec.containers[0].r
     "memory": "1536Mi"
   }
 }
-$ kubectl get pod -n demo mssql-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
+
+```bash
+kubectl get pod -n demo mssql-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -194,7 +198,10 @@ $ kubectl get pod -n demo mssql-ag-cluster-1 -o json | jq '.spec.containers[0].r
     "memory": "1536Mi"
   }
 } 
-$ kubectl get pod -n demo mssql-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
+
+```bash
+kubectl get pod -n demo mssql-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -205,7 +212,6 @@ $ kubectl get pod -n demo mssql-ag-cluster-2 -o json | jq '.spec.containers[0].r
     "memory": "1536Mi"
   }
 }
-```
 
 Now, We are ready to apply a vertical scale on this mssqlserver database.
 
@@ -248,9 +254,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mops-vscale-ag-cluster.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-vscale-ag-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mops-vscale-ag-cluster.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/mops-vscale-ag-cluster created
 
 **Verify MSSQLServer resources updated successfully:**
 
@@ -259,17 +265,18 @@ If everything goes well, `KubeDB-Ops-Manager` will update the resources of the P
 First, we will wait for `MSSQLServerOpsRequest` to be successful. Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo mops-vscale-ag-cluster
+watch kubectl get mssqlserveropsrequest -n demo mops-vscale-ag-cluster
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo mops-vscale-ag-cluster
 
 NAME                     TYPE              STATUS       AGE
 mops-vscale-ag-cluster   VerticalScaling   Successful   7m17s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest`, we will see that the mssqlserver resources are updated.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo mops-vscale-ag-cluster
+kubectl describe mssqlserveropsrequest -n demo mops-vscale-ag-cluster
+```
 Name:         mops-vscale-ag-cluster
 Namespace:    demo
 Labels:       <none>
@@ -396,45 +403,50 @@ Events:
   Normal   RestartPods                                                           5m38s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                              5m38s  KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssql-ag-cluster
   Normal   Successful                                                            5m38s  KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssql-ag-cluster for MSSQLServerOpsRequest: mops-vscale-ag-cluster
-```
 
 Now, we are going to verify whether the resources of the mssqlserver instance has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mssql-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "2",
-    "memory": "4Gi"
-  },
-  "requests": {
-    "cpu": "700m",
-    "memory": "1825361100800m"
-  }
-}
-$ kubectl get pod -n demo mssql-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "2",
-    "memory": "4Gi"
-  },
-  "requests": {
-    "cpu": "700m",
-    "memory": "1825361100800m"
-  }
-}
-$ kubectl get pod -n demo mssql-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "2",
-    "memory": "4Gi"
-  },
-  "requests": {
-    "cpu": "700m",
-    "memory": "1825361100800m"
-  }
-}
+kubectl get pod -n demo mssql-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
 ```
+{
+  "limits": {
+    "cpu": "2",
+    "memory": "4Gi"
+  },
+  "requests": {
+    "cpu": "700m",
+    "memory": "1825361100800m"
+  }
+}
+
+```bash
+kubectl get pod -n demo mssql-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
+```
+{
+  "limits": {
+    "cpu": "2",
+    "memory": "4Gi"
+  },
+  "requests": {
+    "cpu": "700m",
+    "memory": "1825361100800m"
+  }
+}
+
+```bash
+kubectl get pod -n demo mssql-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
+```
+{
+  "limits": {
+    "cpu": "2",
+    "memory": "4Gi"
+  },
+  "requests": {
+    "cpu": "700m",
+    "memory": "1825361100800m"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the MSSQLServer.
 

@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -57,9 +57,9 @@ Here, `maxIncomingConnections` is set to `10000`, whereas the default value is `
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
-secret/mg-custom-config created
+kubectl create secret generic -n demo mg-custom-config --from-file=./mongod.conf
 ```
+secret/mg-custom-config created
 
 In this section, we are going to create a MongoDB object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MongoDB` CR that we are going to create,
 
@@ -89,33 +89,36 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mg-replicaset-config.yaml
-mongodb.kubedb.com/mg-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mg-replicaset-config.yaml
 ```
+mongodb.kubedb.com/mg-replicaset created
 
 Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo                                                                                                                                            
+kubectl get mg -n demo                                                                                                                                            
+```
 NAME            VERSION   STATUS   AGE
 mg-replicaset   4.4.26     Ready    19m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
+```
 root
 
-$ kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
-nrKuxni0wDSMrgwy
+```bash
+kubectl get secrets -n demo mg-replicaset-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 ```
+nrKuxni0wDSMrgwy
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet                        
+```
 {
 	"argv" : [
 		"mongod",
@@ -163,7 +166,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 	},
 	"operationTime" : Timestamp(1614668500, 1)
 }
-```
 
 As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been set to `10000`.
 
@@ -182,9 +184,9 @@ net:
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./mongod.conf
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./mongod.conf
 ```
+secret/new-custom-config created
 
 #### Create MongoDBOpsRequest
 
@@ -222,9 +224,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-replicaset created
 
 #### Verify the new configuration is working 
 
@@ -233,16 +235,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 mops-reconfigure-replicaset   Reconfigure   Successful   113s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset 
+kubectl describe mongodbopsrequest -n demo mops-reconfigure-replicaset 
+```
 Name:         mops-reconfigure-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -350,12 +353,12 @@ Events:
   Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase         65s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful             65s    KubeDB Ops-manager operator  Successfully Reconfigured Database
-```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+```
 {
 	"argv" : [
 		"mongod",
@@ -403,7 +406,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 	},
 	"operationTime" : Timestamp(1614668887, 1)
 }
-```
 
 As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `10000` to `20000`. So the reconfiguration of the database is successful.
 
@@ -450,9 +452,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-apply-replicaset.yaml
-mongodbopsrequest.ops.kubedb.com/mops-reconfigure-apply-replicaset created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure/mops-reconfigure-apply-replicaset.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-reconfigure-apply-replicaset created
 
 #### Verify the new configuration is working 
 
@@ -461,16 +463,17 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                               TYPE          STATUS       AGE
 mops-reconfigure-apply-replicaset   Reconfigure   Successful   109s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-reconfigure-apply-replicaset
+kubectl describe mongodbopsrequest -n demo mops-reconfigure-apply-replicaset
+```
 Name:         mops-reconfigure-apply-replicaset
 Namespace:    demo
 Labels:       <none>
@@ -577,12 +580,12 @@ Events:
   Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase         7m45s  KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful             7m45s  KubeDB Ops-manager operator  Successfully Reconfigured Database
-```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDSMrgwy --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+```
 {
 	"argv" : [
 		"mongod",
@@ -630,7 +633,6 @@ $ kubectl exec -n demo  mg-replicaset-0  -- mongosh admin -u root -p nrKuxni0wDS
 	},
 	"operationTime" : Timestamp(1614669580, 1)
 }
-```
 
 As we can see from the configuration of ready mongodb, the value of `maxIncomingConnections` has been changed from `20000` to `30000`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

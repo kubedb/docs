@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Prepare Backend
 
@@ -51,13 +51,19 @@ We are going to store our backed up data into a GCS bucket. We have to create a 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -86,9 +92,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 **Create RetentionPolicy:**
 
@@ -117,9 +123,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 **Create Secret:**
 
@@ -128,11 +134,14 @@ We also need to create a secret with a `Restic` password for backup data encrypt
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 ## Auto-backup with default configurations
 
@@ -192,9 +201,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/default-backupblueprint.yaml
-backupblueprint.core.kubestash.com/druid-default-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/default-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/druid-default-backup-blueprint created
 
 Now, we are ready to backup our `Druid` databases using a few annotations.
 
@@ -208,19 +217,25 @@ One of the external dependency of Druid is deep storage where the segments are s
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -246,9 +261,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Let's deploy a sample `Druid` database and insert some data into it.
 
@@ -284,24 +299,24 @@ Here,
 Create the above `Druid` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/sample-druid.yaml
-druid.kubedb.com/sample-druid created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/sample-druid.yaml
 ```
+druid.kubedb.com/sample-druid created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our Druid in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                      PHASE   PAUSED   AGE
 appbinding-sample-druid   Ready            8m48s
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-druid  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-druid  -o yaml
 ```
 
 ```yaml
@@ -380,13 +395,12 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                                 INVOKER-TYPE          INVOKER-NAME              PHASE       DURATION   AGE
 appbinding-sample-druid-frequent-backup-1726741846   BackupConfiguration   appbinding-sample-druid   Succeeded   28s        10m
 appbinding-sample-druid-frequent-backup-1726742101   BackupConfiguration   appbinding-sample-druid   Succeeded   35s        6m37s
 appbinding-sample-druid-frequent-backup-1726742400   BackupConfiguration   appbinding-sample-druid   Succeeded   29s        98s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -395,20 +409,20 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `default-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo default-blueprint
+kubectl get repository -n demo default-blueprint
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 default-blueprint   true        3                1.757 MiB   Ready   2m23s                    11m
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=default-blueprint
+```
 NAME                                                              REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 default-blueprint-appbinding-samruid-frequent-backup-1726741846   default-blueprint   frequent-backup   2024-09-19T10:30:56Z   Delete            Succeeded   11m
 default-blueprint-appbinding-samruid-frequent-backup-1726742101   default-blueprint   frequent-backup   2024-09-19T10:35:01Z   Delete            Succeeded   7m49s
 default-blueprint-appbinding-samruid-frequent-backup-1726742400   default-blueprint   frequent-backup   2024-09-19T10:40:00Z   Delete            Succeeded   2m50s
-```
 
 > **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -421,7 +435,7 @@ default-blueprint-appbinding-samruid-frequent-backup-1726742400   default-bluepr
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo default-blueprint-appbinding-samruid-frequent-backup-1726741846 -oyaml
+kubectl get snapshots -n demo default-blueprint-appbinding-samruid-frequent-backup-1726741846 -oyaml
 ```
 
 ```yaml
@@ -556,9 +570,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/customize-backupblueprint.yaml
-backupblueprint.core.kubestash.com/druid-customize-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/customize-backupblueprint.yaml
 ```
+backupblueprint.core.kubestash.com/druid-customize-backup-blueprint created
 
 Now, we are ready to backup our `Druid` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
@@ -603,24 +617,24 @@ Notice the `metadata.annotations` field, where we have defined the annotations r
 Let's create the `Druid` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/sample-druid-2.yaml
-druid.kubedb.com/sample-druid-2 created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/auto-backup/examples/sample-druid-2.yaml
 ```
+druid.kubedb.com/sample-druid-2 created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our Druid in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                        PHASE   PAUSED   AGE
 appbinding-sample-druid-2   Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-sample-druid-2  -o yaml
+kubectl get backupconfiguration -n demo appbinding-sample-druid-2  -o yaml
 ```
 
 ```yaml
@@ -701,11 +715,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                                   INVOKER-TYPE          INVOKER-NAME                PHASE       DURATION   AGE
 appbinding-sample-druid-2-frequent-backup-1726743656   BackupConfiguration   appbinding-sample-druid-2   Succeeded   30s        2m32s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -714,18 +727,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `customize-blueprint` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo customize-blueprint
+kubectl get repository -n demo customize-blueprint
+```
 NAME                         INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 customize-blueprint          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=customize-blueprint
+```
 NAME                                                              REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 customize-blueprint-appbinding-sid-2-frequent-backup-1726743656   customize-blueprint   frequent-backup   2024-09-19T11:01:06Z   Delete            Succeeded   2m56s
-```
 
 > **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -738,7 +751,7 @@ customize-blueprint-appbinding-sid-2-frequent-backup-1726743656   customize-blue
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo customize-blueprint-appbinding-sid-2-frequent-backup-1726743656 -oyaml
+kubectl get snapshots -n demo customize-blueprint-appbinding-sid-2-frequent-backup-1726743656 -oyaml
 ```
 
 ```yaml

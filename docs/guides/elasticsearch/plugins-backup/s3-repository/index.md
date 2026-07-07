@@ -28,13 +28,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/plugins-backup/s3-repository/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs)
 
@@ -71,9 +73,9 @@ stringData:
 Let's create the k8s secret with secure settings:
 
 ```bash
-$ kubectl apply -f secure-settings-secret.yaml
-secret/es-secure-settings created
+kubectl apply -f secure-settings-secret.yaml
 ```
+secret/es-secure-settings created
 
 In [S3 Client Settings](https://www.elastic.co/guide/en/elasticsearch/plugins/7.14/repository-s3-client.html), If you do not configure the `endpoint`, it default to `s3.amazonaws.com`. Since we are using Linode Bucket instead of AWS S3, we need to configure the endpoint too. Let's create another secret with custom client configurations:
 
@@ -93,9 +95,9 @@ stringData:
 Let's create the k8s secret with custom configurations:
 
 ```bash
-$ kubectl apply -f custom-configuration.yaml
-secret/es-custom-config created
+kubectl apply -f custom-configuration.yaml
 ```
+secret/es-custom-config created
 
 ### Deploy Elasticsearch Cluster
 
@@ -131,36 +133,41 @@ spec:
 Let's deploy the Elasticsearch and wait for it to become ready to use:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/plugins-backup/s3-repository/yamls/elasticsearch.yaml
-elasticsearch.kubedb.com/sample-es created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/plugins-backup/s3-repository/yamls/elasticsearch.yaml
 ```
+elasticsearch.kubedb.com/sample-es created
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME        VERSION               STATUS   AGE
 sample-es   xpack-9.2.3            0s
 sample-es   xpack-9.2.3   Provisioning   19s
 sample-es   xpack-9.2.3   Ready          41s
-```
 
 ### Populate Data
 
 To connect to our Elasticsearch cluster, let's port-forward the Elasticsearch service to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/sample-es 9200
+kubectl port-forward -n demo svc/sample-es 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Keep it like that and switch to another terminal window:
 
 ```bash
-$ export ELASTIC_USER=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d)
+export ELASTIC_USER=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d)
+```
 
-$ export ELASTIC_PASSWORD=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d)
+```bash
+export ELASTIC_PASSWORD=$(kubectl get secret -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
+```bash
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cluster/health?pretty"
+```
 {
   "cluster_name" : "sample-es",
   "status" : "green",
@@ -178,12 +185,12 @@ $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_c
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 So, our cluster status is green. Let's create some indices with dummy data:
 
 ```bash
-$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d '
+curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_doc?pretty" -H 'Content-Type: application/json' -d '
+```
 {
     "name": "KubeDB",
     "vendor": "AppsCode Inc.",
@@ -191,24 +198,25 @@ $ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/p
 }
 '
 
-$ curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_doc?pretty" -H 'Content-Type: application/json' -d '
+```bash
+curl -XPOST -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_doc?pretty" -H 'Content-Type: application/json' -d '
+```
 {
     "name": "AppsCode Inc.",
     "mission": "Accelerate the transition to Containers by building a Kubernetes-native Data Platform",
     "products": ["KubeDB", "Stash", "KubeVault", "Kubeform", "ByteBuilders"]
 }
 '
-```
 
 Now, let’s verify that the indexes have been created successfully.
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases oiaZfJA8Q5CihQon0oR8hA   1   1         42            0     81.6mb         40.8mb
 green  open   companies        GuGisWJ8Tkqnq8vhREQ2-A   1   1          1            0     11.5kb          5.7kb
 green  open   products         wyu-fImDRr-Hk_GXVF7cDw   1   1          1            0     10.6kb          5.3kb
-```
 
 ### Repository Settings
 
@@ -217,7 +225,8 @@ The s3 repository type supports a [number of settings](https://www.elastic.co/gu
 Let's create the `_snapshot` repository `sample_s3_repo` with our bucket name `sample-s3-bucket`:
 
 ```bash
-$ curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_snapshot/sample_s3_repo?pretty" -H 'Content-Type: application/json' -d'
+curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_snapshot/sample_s3_repo?pretty" -H 'Content-Type: application/json' -d'
+```
 {
   "type": "s3",
   "settings": {
@@ -228,7 +237,6 @@ $ curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_
 {
   "acknowledged" : true
 }
-```
 
 We've successfully created our repository. Ready to take our first snapshot.
 
@@ -237,8 +245,8 @@ We've successfully created our repository. Ready to take our first snapshot.
 A repository can contain multiple snapshots of the same cluster. Snapshots are identified by unique names within the cluster. For more details, visit [Create a snapshot](https://www.elastic.co/guide/en/elasticsearch/reference/7.14/snapshots-take-snapshot.html).
 
 ```bash
-$ curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_snapshot/sample_s3_repo/snapshot_1?wait_for_completion=true&pretty"
-
+curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_snapshot/sample_s3_repo/snapshot_1?wait_for_completion=true&pretty"
+```
 {
   "snapshot" : {
     "snapshot" : "snapshot_1",
@@ -275,7 +283,6 @@ $ curl -k -X PUT -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_
     ]
   }
 }
-```
 
 We've successfully taken our first snapshot.
 
@@ -284,26 +291,27 @@ We've successfully taken our first snapshot.
 Let's delete all the indices:
 
 ```bash
-$ curl -k -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X DELETE "https://localhost:9200/_all?pretty"
+curl -k -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X DELETE "https://localhost:9200/_all?pretty"
+```
 {
   "acknowledged" : true
 }
-```
 
 List and varify the deletion:
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases oiaZfJA8Q5CihQon0oR8hA   1   1         42            0     81.6mb         40.8mb
-```
 
 For more details about restore, visit [Restore a snapshot](https://www.elastic.co/guide/en/elasticsearch/reference/7.14/snapshots-restore-snapshot.html#snapshots-restore-snapshot).
 
 Let's restore the data from our `snapshot_1`:
 
 ```bash
-$ curl -k -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X POST "https://localhost:9200/_snapshot/sample_s3_repo/snapshot_1/_restore?pretty" -H 'Content-Type: application/json' -d'
+curl -k -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X POST "https://localhost:9200/_snapshot/sample_s3_repo/snapshot_1/_restore?pretty" -H 'Content-Type: application/json' -d'
+```
 {
   "indices": "companies,products"
 }
@@ -312,7 +320,6 @@ $ curl -k -u "$ELASTIC_USER:$ELASTIC_PASSWORD" -X POST "https://localhost:9200/_
 {
   "accepted" : true
 }
-```
 
 We've successfully restored our indices.
 
@@ -323,17 +330,18 @@ We've successfully restored our indices.
 To varify our data, let's list the indices:
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases oiaZfJA8Q5CihQon0oR8hA   1   1         42            0     81.6mb         40.8mb
 green  open   companies        drsv-5tvQwCcte7bkUT0uQ   1   1          1            0     11.7kb          5.8kb
 green  open   products         7TXoXy5kRFiVgZDuyqffQA   1   1          1            0     10.6kb          5.3kb
-```
 
 Check the content inside:
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_search?pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/products/_search?pretty"
+```
 {
   "took" : 3,
   "timed_out" : false,
@@ -364,10 +372,10 @@ $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/pr
     ]
   }
 }
-```
 
 ```bash
-$ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_search?pretty"
+curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/companies/_search?pretty"
+```
 {
   "took" : 3,
   "timed_out" : false,
@@ -404,6 +412,5 @@ $ curl -XGET -k -u  "$ELASTIC_USER:$ELASTIC_PASSWORD" "https://localhost:9200/co
     ]
   }
 }
-```
 
 So, we have successfully retored our data from the snapshot.

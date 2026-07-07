@@ -34,11 +34,11 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to horizon
 Deploy the distributed database (`milvus-cluster`) and wait until it is `Ready` (see the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md)). By default each role runs a single replica.
 
 ```bash
-$ kubectl get petset milvus-cluster-proxy milvus-cluster-streamingnode -n demo -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas
+kubectl get petset milvus-cluster-proxy milvus-cluster-streamingnode -n demo -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas
+```
 NAME                           REPLICAS
 milvus-cluster-proxy           1
 milvus-cluster-streamingnode   1
-```
 
 ## Apply the HorizontalScaling OpsRequest
 
@@ -65,20 +65,21 @@ spec:
 Here, `spec.horizontalScaling.topology` carries the desired replica count per role. The API also accepts `mixcoord`, `querynode` and `dataNode`; this sample only scales `proxy` and `streamingnode`, but the other roles are scaled the same way.
 
 ```bash
-$ kubectl apply -f horizontal-scaling-distributed.yaml
-milvusopsrequest.ops.kubedb.com/milvus-hscale-up created
+kubectl apply -f horizontal-scaling-distributed.yaml
 ```
+milvusopsrequest.ops.kubedb.com/milvus-hscale-up created
 
 ## Watch Progress and Verify
 
 ```bash
-$ kubectl get milvusopsrequest milvus-hscale-up -n demo
+kubectl get milvusopsrequest milvus-hscale-up -n demo
+```
 NAME               TYPE                STATUS       AGE
 milvus-hscale-up   HorizontalScaling   Successful   57s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest milvus-hscale-up -n demo
+kubectl describe milvusopsrequest milvus-hscale-up -n demo
+```
 ...
 Status:
   Conditions:
@@ -94,31 +95,38 @@ Status:
     Reason:   ScaleUpStreamingNode
     Type:     ScaleUpStreamingNode
   Phase:      Successful
-```
 
 Both roles now run two replicas:
 
 ```bash
-$ kubectl get petset milvus-cluster-proxy milvus-cluster-streamingnode -n demo -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas
+kubectl get petset milvus-cluster-proxy milvus-cluster-streamingnode -n demo -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas
+```
 NAME                           REPLICAS
 milvus-cluster-proxy           2
 milvus-cluster-streamingnode   2
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-cluster | grep -E 'proxy|streamingnode'
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-cluster | grep -E 'proxy|streamingnode'
+```
 milvus-cluster-proxy-0           1/1     Running   0          70s
 milvus-cluster-proxy-1           1/1     Running   0          39s
 milvus-cluster-streamingnode-0   1/1     Running   0          119s
 milvus-cluster-streamingnode-1   1/1     Running   0          18s
-```
 
 > Scaling **down** works the same way — set lower replica counts in `spec.horizontalScaling.topology`.
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo milvus-hscale-up
-$ kubectl delete milvus.kubedb.com -n demo milvus-cluster
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo milvus-hscale-up
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

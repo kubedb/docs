@@ -31,9 +31,9 @@ existing secret with the new credential The KubeDB operator automatically genera
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Create a MongoDB database
 KubeDB implements a MongoDB CRD to define the specification of a MongoDB database.
@@ -64,25 +64,25 @@ spec:
 
 Command:
 
-```shell
-$ kubectl apply -f mongodb.yaml
-mongodb.kubedb.com/mgo-quickstart created
+```bash
+kubectl apply -f mongodb.yaml
 ```
+mongodb.kubedb.com/mgo-quickstart created
 
 Or, you can deploy by using command:
 
-```shell
-$  kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
-mongodb.kubedb.com/mgo-quickstart created
+```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/quickstart/replicaset-v1alpha2.yaml
 ```
+mongodb.kubedb.com/mgo-quickstart created
 
 Now, wait until mgo-quickstart has status Ready. i.e,
 
-```shell
-$ kubectl get mg -n demo -w
+```bash
+kubectl get mg -n demo -w
+```
 NAME             VERSION   STATUS   AGE
 mgo-quickstart   4.4.26    Ready      8m1s
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
@@ -95,8 +95,9 @@ $ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.password}' 
 eR*W_mz6bjyZxeiG⏎                                                                                                                
 ````
 Now, you can exec into the pod `mgo-quickstart` and connect to database using `username` and `password`
-```shell
-$ kubectl exec -it -n demo mgo-quickstart-0 -- bash
+```bash
+kubectl exec -it -n demo mgo-quickstart-0 -- bash
+```
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mgo-quickstart-0:/$ mongosh -u root -p $MONGO_INITDB_ROOT_PASSWORD 
 MongoDB shell version v4.4.26
@@ -115,8 +116,6 @@ The server generated these startup warnings when booting:
 ---
 rs1:SECONDARY> use Mohiniyattam
 switched to db Mohiniyattam
-
-```
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MongoDBOpsRequest
 
@@ -142,19 +141,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on MongoDB.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-generated.yaml
+ ```
  mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-generated created
-```
 Let's wait for `MongoDBOpsrequest` to be `Successful`. Run the following command to watch `MongoDBOpsrequest` CRO
-```shell
- $kubectl get mongodbopsrequest -n demo
+ ```bash
+ kubectl get mongodbopsrequest -n demo
+ ```
 NAME                          TYPE         STATUS       AGE
 mgops-rotate-auth-generated   RotateAuth   Successful   45m
-```
 If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe mongodbopsrequest -n demo mgops-rotate-auth-generated 
+```bash
+kubectl describe mongodbopsrequest -n demo mgops-rotate-auth-generated 
+```
 Name:         mgops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -291,37 +291,44 @@ Events:
   Normal   ResumeDatabase                                                    43m   KubeDB Ops-manager Operator  Resuming MongoDB demo/mgo-quickstart
   Normal   ResumeDatabase                                                    43m   KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mgo-quickstart
   Normal   Successful                                                        43m   KubeDB Ops-manager Operator  Successfully Rotate Auth
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
-"mgo-quickstart-auth"
-$ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
-root⏎                                                               
-$ kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
-09wZM.)t8kpwKF5z⏎                      
+```bash
+kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mgo-quickstart-auth"
+
+```bash
+kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+root⏎                                                               
+
+```bash
+kubectl get secret -n demo mgo-quickstart-auth -o=jsonpath='{.data.password}' | base64 -d
+```
+09wZM.)t8kpwKF5z⏎                      
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo mgo-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                                          
-$ kubectl get secret -n demo mgo-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-eR*W_mz6bjyZxeiG⏎                        
+```bash
+kubectl get secret -n demo mgo-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo mgo-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+eR*W_mz6bjyZxeiG⏎                        
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: `Username` must be `root`
-```shell
-$  kubectl create secret generic quick-mg-user-auth -n demo \
+```bash
+ kubectl create secret generic quick-mg-user-auth -n demo \
             --type=kubernetes.io/basic-auth \
             --from-literal=username=root \
             --from-literal=password=mongodb-secret
-secret/quick-mg-user-auth created
 ```
+secret/quick-mg-user-auth created
 Now create a `MongoDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `MongoDBOpsRequest` that we are going to create,
 
 ```shell
@@ -349,21 +356,22 @@ Here,
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-user.yaml
-mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mongodb/rotate-auth/rotate-auth-user.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mgops-rotate-auth-user created
 Let’s wait for `MongoDBOpsRequest` to be Successful. Run the following command to watch `MongoDBOpsRequest` CRO:
 
-```shell
-$ kubectl get mongodbopsrequest -n demo
+```bash
+kubectl get mongodbopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 mgops-rotate-auth-generated   RotateAuth   Successful   153m
 mgops-rotate-auth-user        RotateAuth   Successful   59m
-```
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe mgops -n demo mgops-rotate-auth-user
+```bash
+kubectl describe mgops -n demo mgops-rotate-auth-user
+```
 Name:         mgops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -501,24 +509,31 @@ Events:
   Normal   ResumeDatabase                                                    5m21s  KubeDB Ops-manager Operator  Resuming MongoDB demo/mgo-quickstart
   Normal   ResumeDatabase                                                    5m21s  KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mgo-quickstart
   Normal   Successful                                                        5m21s  KubeDB Ops-manager Operator  Successfully Rotate Auth
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+```bash
+kubectl get mg -n demo mgo-quickstart -ojson | jq .spec.authSecret.name
+```
 "quick-mg-user-auth"
-$ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 root⏎                                                                    
-$ kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo quick-mg-user-auth -o=jsonpath='{.data.password}' | base64 -d
+```
 mongodb-secret⏎                                                                                    
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                                          
-$ kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-09wZM.)t8kpwKF5z⏎                                              
+```bash
+kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                                          
+
+```bash
+kubectl get secret -n demo quick-mg-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+09wZM.)t8kpwKF5z⏎                                              
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -527,14 +542,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete mongodbopsrequest mgops-rotate-auth-generated mgops-rotate-auth-user -n demo
-mongodbopsrequest.ops.kubedb.com "mgops-rotate-auth-generated" "mgops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  quick-mg-user-auth
-secret "quick-mg-user-auth" deleted
-$ kubectl delete secret -n demo  mgo-quickstart-auth
-secret "mgo-quickstart-auth" deleted
+```bash
+kubectl delete mongodbopsrequest mgops-rotate-auth-generated mgops-rotate-auth-user -n demo
 ```
+mongodbopsrequest.ops.kubedb.com "mgops-rotate-auth-generated" "mgops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  quick-mg-user-auth
+```
+secret "quick-mg-user-auth" deleted
+
+```bash
+kubectl delete secret -n demo  mgo-quickstart-auth
+```
+secret "mgo-quickstart-auth" deleted
 
 
 ## Next Steps

@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,14 +46,15 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo px-custom-serviceaccount
-serviceaccount/px-custom-serviceaccount created
+kubectl create serviceaccount -n demo px-custom-serviceaccount
 ```
+serviceaccount/px-custom-serviceaccount created
 
 It should create a service account.
 
 ```bash
-$ kubectl get serviceaccount -n demo px-custom-serviceaccount -o yaml
+kubectl get serviceaccount -n demo px-custom-serviceaccount -o yaml
+```
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -65,14 +66,13 @@ metadata:
   uid: 788bd6c6-3eae-4797-b6ca-5722ef64c9dc
 secrets:
 - name: px-custom-serviceaccount-token-jnhvd
-```
 
 Now, we need to create a role that has necessary access permissions for the PerconaXtraDB instance named `sample-pxc`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-role.yaml
-role.rbac.authorization.k8s.io/px-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/px-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -98,16 +98,17 @@ This permission is required for PerconaXtraDB pods running on PSP enabled cluste
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding px-custom-rolebinding --role=px-custom-role --serviceaccount=demo:px-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding created
+kubectl create rolebinding px-custom-rolebinding --role=px-custom-role --serviceaccount=demo:px-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding created
 
 It should bind `px-custom-role` and `px-custom-serviceaccount` successfully.
 
 SO, All required resources for RBAC are created.
 
 ```bash
-$ kubectl get serviceaccount,role,rolebindings -n demo
+kubectl get serviceaccount,role,rolebindings -n demo
+```
 NAME                                      SECRETS   AGE
 serviceaccount/default                    1         38m
 serviceaccount/px-custom-serviceaccount   1         36m
@@ -117,14 +118,13 @@ role.rbac.authorization.k8s.io/px-custom-role   2021-03-18T05:13:27Z
 
 NAME                                                          ROLE                  AGE
 rolebinding.rbac.authorization.k8s.io/px-custom-rolebinding   Role/px-custom-role   79s
-```
 
 Now, create a PerconaXtraDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `px-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-db.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-db.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Below is the YAML for the PerconaXtraDB crd we just created.
 
@@ -156,13 +156,12 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME           READY   STATUS    RESTARTS   AGE
 sample-pxc-0   2/2     Running   0          84m
 sample-pxc-1   2/2     Running   0          84m
 sample-pxc-2   2/2     Running   0          84m
-
-```
 
 Check the PerconaXtraDB custom resource to see if the database cluster is ready:
 
@@ -179,9 +178,9 @@ An existing service account can be reused in another PerconaXtraDB instance. No 
 Now, create PerconaXtraDB crd `another-perconaxtradb` using the existing service account name `px-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-db-2.yaml
-perconaxtradb.kubedb.com/another-perconaxtradb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/custom-rbac/using-custom-rbac/examples/px-custom-db-2.yaml
 ```
+perconaxtradb.kubedb.com/another-perconaxtradb created
 
 Below is the YAML for the PerconaXtraDB crd we just created.
 
@@ -213,10 +212,10 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo another-perconaxtradb-0
+kubectl get pod -n demo another-perconaxtradb-0
+```
 NAME                READY   STATUS    RESTARTS   AGE
 another-perconaxtradb-0   2/2     Running   0          37s
-```
 
 Check the PerconaXtraDB custom resource to see if the database cluster is ready:
 
@@ -231,18 +230,33 @@ demo        another-perconaxtradb   8.4.3    Ready    83m
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-perconaxtradb.kubedb.com "sample-pxc" deleted
-$ kubectl delete perconaxtradb -n demo another-perconaxtradb
-perconaxtradb.kubedb.com "another-perconaxtradb" deleted
-$ kubectl delete -n demo role px-custom-role
-role.rbac.authorization.k8s.io "px-custom-role" deleted
-$ kubectl delete -n demo rolebinding px-custom-rolebinding
-rolebinding.rbac.authorization.k8s.io "px-custom-rolebinding" deleted
-$ kubectl delete sa -n demo px-custom-serviceaccount
-serviceaccount "px-custom-serviceaccount" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo sample-pxc
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
+
+```bash
+kubectl delete perconaxtradb -n demo another-perconaxtradb
+```
+perconaxtradb.kubedb.com "another-perconaxtradb" deleted
+
+```bash
+kubectl delete -n demo role px-custom-role
+```
+role.rbac.authorization.k8s.io "px-custom-role" deleted
+
+```bash
+kubectl delete -n demo rolebinding px-custom-rolebinding
+```
+rolebinding.rbac.authorization.k8s.io "px-custom-rolebinding" deleted
+
+```bash
+kubectl delete sa -n demo px-custom-serviceaccount
+```
+serviceaccount "px-custom-serviceaccount" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted
 
 

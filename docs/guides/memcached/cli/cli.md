@@ -23,16 +23,16 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Memcached object as specified in `memcached.yaml`.
 
 ```bash
-$ kubectl create -f memcached-demo.yaml
-memcached.kubedb.com/memcached-demo created
+kubectl create -f memcached-demo.yaml
 ```
+memcached.kubedb.com/memcached-demo created
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f memcached-demo.yaml --namespace=kube-system
-memcached.kubedb.com/memcached-demo created
+kubectl create -f memcached-demo.yaml --namespace=kube-system
 ```
+memcached.kubedb.com/memcached-demo created
 
 `kubectl create` command also considers `stdin` as input.
 
@@ -45,13 +45,13 @@ cat memcached-demo.yaml | kubectl create -f -
 `kubectl get` command allows users to list or find any KubeDB object. To list all Memcached objects in `default` namespace, run the following command:
 
 ```bash
-$ kubectl get memcached
+kubectl get memcached
+```
 NAME             VERSION    STATUS    AGE
 memcached-demo   1.6.40     Running   40s
 memcached-dev    1.6.40     Running   40s
 memcached-prod   1.6.40     Running   40s
 memcached-qa     1.6.40     Running   40s
-```
 
 To get YAML of an object, use `--output=yaml` flag.
 
@@ -102,13 +102,13 @@ kubectl get memcached memcached-demo --output=json
 To list all KubeDB objects, use following command:
 
 ```bash
-$ kubectl get all -o wide
+kubectl get all -o wide
+```
 NAME                    VERSION     STATUS    AGE
 mc/memcached-demo       1.6.40      Running   3h
 mc/memcached-dev        1.6.40      Running   3h
 mc/memcached-prod       1.6.40      Running   3h
 mc/memcached-qa         1.6.40      Running   3h
-```
 
 Flag `--output=wide` is used to print additional information.
 
@@ -119,27 +119,28 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Memcached with their corresponding labels.
 
 ```bash
-$ kubectl get mc --show-labels
+kubectl get mc --show-labels
+```
 NAME             VERSION    STATUS    AGE       LABELS
 memcached-demo   1.6.40     Running   2m        kubedb=cli-demo
-```
 
 To print only object name, run the following command:
 
 ```bash
-$ kubectl get all -o name
+kubectl get all -o name
+```
 memcached/memcached-demo
 memcached/memcached-dev
 memcached/memcached-prod
 memcached/memcached-qa
-```
 
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Memcached server `memcached-demo` with relevant information.
 
 ```bash
-$ kubectl dba describe mc memcached-demo
+kubectl dba describe mc memcached-demo
+```
 Name:               memcached-demo
 Namespace:          default
 CreationTimestamp:  Thu, 04 Oct 2018 11:58:57 +0600
@@ -180,7 +181,6 @@ Events:
   Normal  Successful  2m    Memcached operator  Successfully created Memcached
   Normal  Successful  2m    Memcached operator  Successfully patched PetSet
   Normal  Successful  2m    Memcached operator  Successfully patched Memcached
-```
 
 `kubectl dba describe` command provides following basic information about a Memcached server.
 
@@ -223,14 +223,13 @@ To learn about various options of `describe` command, please visit [here](/docs/
 Let's edit an existing running Memcached object to setup [Monitoring](/docs/guides/memcached/monitoring/using-builtin-prometheus.md). The following command will open Memcached `memcached-demo` in editor.
 
 ```bash
-$ kubectl edit mc memcached-demo
-
+kubectl edit mc memcached-demo
+```
 #spec:
 #  monitor:
 #    agent: prometheus.io/builtin
 
 memcached "memcached-demo" edited
-```
 
 #### Edit Restrictions
 
@@ -253,16 +252,16 @@ If Deployment exists for a Memcached server, following fields can't be modified 
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Memcached `memcached-dev` in default namespace
 
 ```bash
-$ kubectl delete memcached memcached-dev
-memcached.kubedb.com "memcached-dev" deleted
+kubectl delete memcached memcached-dev
 ```
+memcached.kubedb.com "memcached-dev" deleted
 
 You can also use YAML files to delete objects. The following command will delete a memcached using the type and name specified in `memcached.yaml`.
 
 ```bash
-$ kubectl delete -f memcached-demo.yaml
-memcached.kubedb.com "memcached-dev" deleted
+kubectl delete -f memcached-demo.yaml
 ```
+memcached.kubedb.com "memcached-dev" deleted
 
 `kubectl delete` command also takes input from `stdin`.
 
@@ -280,13 +279,18 @@ kubectl delete memcached -l memcached.app.kubernetes.io/instance=memcached-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```bash
 # List objects
-$ kubectl get memcached
-$ kubectl get memcached.kubedb.com
+```bash
+kubectl get memcached
+```
+
+```bash
+kubectl get memcached.kubedb.com
+```
 
 # Delete objects
-$ kubectl delete memcached <name>
+```bash
+kubectl delete memcached <name>
 ```
 
 ## Next Steps

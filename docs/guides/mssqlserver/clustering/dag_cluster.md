@@ -21,11 +21,11 @@ This tutorial will show you how to use KubeDB to run a Microsoft SQL Server Dist
 - Each cluster must have KubeDB installed. Follow the steps [here](/docs/setup/README.md), ensuring you enable the MSSQLServer feature gate: `--set global.featureGates.MSSQLServer=true`.
 - To configure TLS/SSL in `MSSQLServer`, `KubeDB` uses `cert-manager` to issue certificates. - Each cluster must have `cert-manager` installed. Follow the steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in both clusters.
-```bash
-  $ kubectl get storageclasses
+  ```bash
+  kubectl get storageclasses
+  ```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4h48m
-```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -44,13 +44,13 @@ local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsu
 When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
-$ kubectl get msversion
+kubectl get msversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                161m
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                161m
 2022-cu16   2022      mcr.microsoft.com/mssql/server:2022-CU16-ubuntu-22.04                161m
 2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                161m
-```
 
 
 ## Deploy Microsoft SQL Server Distributed Availability Group Cluster 
@@ -72,9 +72,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -90,9 +90,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Configuring Environment Variables for SQL Server on Linux
 You can use environment variables to configure SQL Server on Linux containers.
@@ -218,20 +218,22 @@ spec:
 Deploy `ag1` primary service to your first cluster:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1-primary-svc.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1-primary-svc.yaml
+```
 service/ag1 created created
 
-$ kubectl get svc -n demo ag1
+```bash
+kubectl get svc -n demo ag1
+```
 NAME   TYPE           CLUSTER-IP    EXTERNAL-IP   PORT(S)                         AGE
 ag1    LoadBalancer   10.43.117.2   10.2.0.236    1433:31485/TCP,5022:32511/TCP   122m
-```
 
 Deploy `ag1` to your first cluster:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1.yaml
-mssqlserver.kubedb.com/ag1 created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/dag-cluster/ag1.yaml
 ```
+mssqlserver.kubedb.com/ag1 created
 
 
 

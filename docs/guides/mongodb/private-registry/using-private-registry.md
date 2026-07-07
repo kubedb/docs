@@ -27,7 +27,8 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images into your private registry. For mongodb, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following MongoDBVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get mongodbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+  kubectl get mongodbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+  ```
   NAME             VERSION   INITCONTAINER_IMAGE            DB_IMAGE                                 EXPORTER_IMAGE
   3.4.17-v1        3.4.17    kubedb/mongodb-init:4.1-v7     mongo:3.4.17                             kubedb/mongodb_exporter:v0.20.4
   3.4.22-v1        3.4.22    kubedb/mongodb-init:4.1-v7     mongo:3.4.22                             kubedb/mongodb_exporter:v0.32.0
@@ -47,7 +48,6 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   percona-4.0.10   4.0.10    kubedb/mongodb-init:4.1-v7     percona/percona-server-mongodb:4.0.10    kubedb/mongodb_exporter:v0.32.0
   percona-4.2.7    4.2.7     kubedb/mongodb-init:4.2-v7     percona/percona-server-mongodb:4.2.7-7   kubedb/mongodb_exporter:v0.32.0
   percona-4.4.10   4.4.10    kubedb/mongodb-init:4.2-v7     percona/percona-server-mongodb:4.4.10    kubedb/mongodb_exporter:v0.32.0
-  ```
 
   Docker hub repositories:
 
@@ -95,13 +95,13 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 DOCKER_REGISTRY_SERVER value will be `docker.io` for docker hub.
 
@@ -114,9 +114,9 @@ NB: If you are using `kubectl` 1.9.0, update to 1.9.1 or later to avoid this [is
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Deploy MongoDB
 
@@ -147,22 +147,23 @@ spec:
 Now run the command to deploy this `MongoDB` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/replicaset.yaml
-mongodb.kubedb.com/mgo-pvt-reg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/private-registry/replicaset.yaml
 ```
+mongodb.kubedb.com/mgo-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `MongoDB` is in running state:
 
 ```bash
-$ kubectl get pods -n demo 
+kubectl get pods -n demo 
+```
 NAME            READY     STATUS              RESTARTS   AGE
 mgo-pvt-reg-0   1/1       Running             0          5m
 
-
-$ kubectl get mg -n demo
+```bash
+kubectl get mg -n demo
+```
 NAME          VERSION   STATUS    AGE
 mgo-pvt-reg   4.4.26     Ready     38s
-```
 
 ## Cleaning up
 

@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the S
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -72,27 +72,29 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/combined/solr.yaml
-solr.kubedb.com/solr-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/combined/solr.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 Now, wait until `solr-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.4.1     Ready    65m
-```
 
 Let's check the number of replicas has from Solr object, number of pods the petset have,
 
 ```bash
-$ kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
-2
-$ kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
+kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
+```
 2
 
+```bash
+kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
 ```
+2
 
 We can see from both command that the cluster has 2 replicas.
 
@@ -133,9 +135,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/combined/scaling.yaml
-Solropsrequest.ops.kubedb.com/kfops-hscale-up-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal/combined/scaling.yaml
 ```
+Solropsrequest.ops.kubedb.com/kfops-hscale-up-combined created
 
 #### Verify Combined cluster replicas scaled up successfully
 
@@ -144,15 +146,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `SolrOpsRequest` to be `Successful`. Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ watch kubectl get Solropsrequest -n demo
+watch kubectl get Solropsrequest -n demo
+```
 NAME                        TYPE                STATUS       AGE
 slops-hscale-up-combined    HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-hscale-up-combined 
+kubectl describe slops -n demo slops-hscale-up-combined 
+```
 Name:         slops-hscale-up-combined
 Namespace:    demo
 Labels:       <none>
@@ -218,16 +221,18 @@ Events:
   Normal   HorizontalScaleCombinedNode                31s   KubeDB Ops-manager Operator  ScaleUp solr-combined nodes
   Normal   Starting                                   31s   KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-combined
   Normal   Successful                                 31s   KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-combined for SolrOpsRequest: slops-hscale-up-combined
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Solr object, number of pods the petset have,
 
 ```bash
-$ kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
-4
-$ kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
-4
+kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
 ```
+4
+
+```bash
+kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
+```
+4
 
 ### Scale Down Replicas
 
@@ -260,9 +265,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal-scaling/solr-hscale-down-combined.yaml
-solropsrequest.ops.kubedb.com/slops-hscale-down-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/horizontal-scaling/solr-hscale-down-combined.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-hscale-down-combined created
 
 #### Verify Combined cluster replicas scaled down successfully
 
@@ -271,15 +276,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `SolrOpsRequest` to be `Successful`. Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ watch kubectl get Solropsrequest -n demo
+watch kubectl get Solropsrequest -n demo
+```
 NAME                          TYPE                STATUS       AGE
 slops-hscale-down-combined    HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-hscale-down-combined 
+kubectl describe slops -n demo slops-hscale-down-combined 
+```
 Name:         slops-hscale-down-combined
 Namespace:    demo
 Labels:       <none>
@@ -372,16 +378,18 @@ Events:
   Normal   HorizontalScaleCombinedNode                6m9s   KubeDB Ops-manager Operator  ScaleDown solr-combined nodes
   Normal   Starting                                   6m9s   KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-combined
   Normal   Successful                                 6m9s   KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-combined for SolrOpsRequest: slops-hscale-down-combined
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Solr object, number of pods the petset have,
 
 ```bash
-$ kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
-2
-$ kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
-2
+kubectl get solr -n demo solr-combined -o json | jq '.spec.replicas'
 ```
+2
+
+```bash
+kubectl get petset -n demo solr-combined -o json | jq '.spec.replicas'
+```
+2
 
 From all the above outputs we can see that the replicas of the combined cluster is `2`. That means we have successfully scaled down the replicas of the Solr combined cluster.
 

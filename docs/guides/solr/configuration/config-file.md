@@ -29,9 +29,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -75,9 +75,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/configuration/sl-custom-config.yaml
-secret/sl-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/configuration/sl-custom-config.yaml
 ```
+secret/sl-custom-config created
 
 In this section, we are going to create a Solr object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
 
@@ -107,23 +107,24 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/configuration/solr.yaml
-solr.kubedb.com/solr created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/configuration/solr.yaml
 ```
+solr.kubedb.com/solr created
 
 Now, wait until `solr` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 solr     kubedb.com/v1alpha2   9.6.1     Ready    10m
-```
 
 Now, we will check if the Solr has started with the custom configuration we have provided.
 
 Exec into the Solr pod and execute the following commands to see the configurations:
 ```bash
-$ kubectl exec -it -n demo solr-0 -- bash
+kubectl exec -it -n demo solr-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -157,8 +158,6 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   </solrcloud>
   <metrics enabled="${metricsEnabled:true}"/>
 </solr>
-
-```
 
 ## Cleaning up
 

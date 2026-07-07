@@ -28,8 +28,11 @@ Before using KubeDB Recommendations, ensure that:
 * A demo namespace exists for examples:
 
   ```bash
-  $ kubectl create namespace demo
-  $ kubectl get namespace
+  kubectl create namespace demo
+  ```
+
+  ```bash
+  kubectl get namespace
   ```
 
 ### Install the Supervisor CRDs first

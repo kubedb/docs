@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Redis
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,11 +48,11 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  9h
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   9h
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -85,28 +85,30 @@ spec:
 Let's create the `Redis` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/storage/rd-standalone.yaml
-redis.kubedb.com/rd-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/storage/rd-standalone.yaml
 ```
+redis.kubedb.com/rd-standalone created
 
 Now, wait until `rd-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME            VERSION    STATUS    AGE
 rd-standalone   6.2.14      Ready     2m53s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS          REASON   AGE
 pvc-cf469ed8-a89a-49ca-bf7c-8c76b7889428   1Gi        RWO            Delete           Bound    demo/datadir-rd-standalone-0   topolvm-provisioner            7m41s
-```
 
 You can see the petset has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
@@ -151,20 +153,23 @@ Here,
 Let's create the `RedisAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/storage/rd-as.yaml
-redisautoscaler.autoscaling.kubedb.com/rd-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/storage/rd-as.yaml
 ```
+redisautoscaler.autoscaling.kubedb.com/rd-as created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `redisautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get redisautoscaler -n demo
+kubectl get redisautoscaler -n demo
+```
 NAME    AGE
 rd-as   102s
 
-$ kubectl describe redisautoscaler rd-as -n demo
+```bash
+kubectl describe redisautoscaler rd-as -n demo
+```
 Name:         rd-as
 Namespace:    demo
 Labels:       <none>
@@ -209,7 +214,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    60
 Events:                   <none>
-```
 So, the `redisautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
@@ -217,7 +221,8 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Lets exec into the database pod and fill the database volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo rd-standalone-0 -- bash
+kubectl exec -it -n demo rd-standalone-0 -- bash
+```
 root@rd-standalone-0:/# df -h /data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/1df4ee9e-b900-4c0f-9d2c-8493fb30bdc0 1014M  334M  681M  33% /data/db
@@ -228,39 +233,41 @@ root@rd-standalone-0:/# dd if=/dev/zero of=/data/file.img bs=500M count=1
 root@rd-standalone-0:/# df -h /data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/1df4ee9e-b900-4c0f-9d2c-8493fb30bdc0 1014M  835M  180M  83% /data/db
-```
 
 So, from the above output we can see that the storage usage is 84%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `redisopsrequest` in the demo namespace to see if any `redisopsrequest` object is created. After some time you'll see that a `redisopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                         TYPE              STATUS        AGE
 rdops-rd-standalone-p27c11   VolumeExpansion   Progressing   26s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                         TYPE              STATUS        AGE
 rdops-rd-standalone-p27c11   VolumeExpansion   Successful    73s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo rd-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS          REASON   AGE
 pvc-cf469ed8-a89a-49ca-bf7c-8c76b7889428   2Gi        RWO            Delete           Bound    demo/datadir-rd-standalone-0   topolvm-provisioner            26m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the Redis standalone database.
 
@@ -269,12 +276,16 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-standalone patched
 
-$ kubectl delete rd -n demo rd-standalone
+```bash
+kubectl delete rd -n demo rd-standalone
+```
 redis.kubedb.com "rd-standalone" deleted
 
-$ kubectl delete redisautoscaler -n demo rd-as
-redisautoscaler.autoscaling.kubedb.com "rd-as" deleted
+```bash
+kubectl delete redisautoscaler -n demo rd-as
 ```
+redisautoscaler.autoscaling.kubedb.com "rd-as" deleted

@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/reconfigure) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -59,9 +59,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -77,9 +77,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 Now, we will create `mssql.conf` file containing required configuration settings.
 
@@ -93,9 +93,9 @@ Here, `memorylimitmb` is set to `2048`, whereas the default value is `12280`.
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
-secret/ms-custom-config created
+kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
 ```
+secret/ms-custom-config created
 
 In this section, we are going to create a MSSQLServer object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
@@ -139,33 +139,36 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/ms-standalone.yaml
-MSSQLServer.kubedb.com/ms-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/ms-standalone.yaml
 ```
+MSSQLServer.kubedb.com/ms-standalone created
 
 Now, wait until `ms-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ms -n demo
+kubectl get ms -n demo
+```
 NAME            VERSION    STATUS    AGE
 ms-standalone   4.4.26      Ready     23s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a MSSQLServer instance,
 ```bash
-$ kubectl get secrets -n demo ms-standalone-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo ms-standalone-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secrets -n demo ms-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
-SERtEyH1RMMEsvE0
+```bash
+kubectl get secrets -n demo ms-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+SERtEyH1RMMEsvE0
 
 Now let's connect to the SQL Server instance and run internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+```
 mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
@@ -180,7 +183,6 @@ physical_memory_mb
 
 (1 rows affected)
 1> 
-```
 
 As we can see from the configuration of running MSSQLServer, the value of `physical_memory_mb` has been set to `2048`.
 
@@ -199,9 +201,9 @@ memorylimitmb = 2560
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./mssql.conf
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./mssql.conf
 ```
+secret/new-custom-config created
 
 #### Create MSSQLServerOpsRequest
 
@@ -234,9 +236,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-standalone.yaml
-MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-standalone.yaml
 ```
+MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-standalone created
 
 #### Verify the new configuration is working 
 
@@ -245,17 +247,18 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get MSSQLServeropsrequest -n demo
+watch kubectl get MSSQLServeropsrequest -n demo
+```
 Every 2.0s: kubectl get MSSQLServeropsrequest -n demo
 
 NAME                           TYPE          STATUS       AGE
 msops-reconfigure-standalone   Reconfigure   Successful   2m42s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-standalone
+kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-standalone
+```
 Name:         msops-reconfigure-standalone
 Namespace:    demo
 Labels:       <none>
@@ -333,12 +336,12 @@ Events:
   Normal   RestartPods                                                        2m41s  KubeDB Ops-manager Operator  Successfully Restarted Pods after reconfiguration
   Normal   Starting                                                           2m41s  KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/ms-standalone
   Normal   Successful                                                         2m41s  KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/ms-standalone for MSSQLServerOpsRequest: msops-reconfigure-standalone
-```
 
 Now let's connect to SQL Server instance and run a internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+```
 mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
@@ -353,7 +356,6 @@ physical_memory_mb
 
 (1 rows affected)
 1> 
-```
 
 As we can see from the configuration of running SQL Server, the value of `physical_memory_mb` has been changed from `2048` to `2560`. So the reconfiguration of the database is successful.
 
@@ -394,9 +396,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-standalone-apply.yaml
-MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-standalone-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-standalone-apply.yaml
 ```
+MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-standalone-apply created
 
 #### Verify the new configuration is working 
 
@@ -405,17 +407,18 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get MSSQLServeropsrequest -n demo
+watch kubectl get MSSQLServeropsrequest -n demo
+```
 Every 2.0s: kubectl get MSSQLServeropsrequest -n demo
 
 NAME                                 TYPE          STATUS       AGE
 msops-reconfigure-standalone-apply   Reconfigure   Successful   2m2s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-standalone-apply
+kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-standalone-apply
+```
 Name:         msops-reconfigure-standalone-apply
 Namespace:    demo
 Labels:       <none>
@@ -500,12 +503,12 @@ Events:
   Normal   RestartPods                                                        107s   KubeDB Ops-manager Operator  Successfully Restarted Pods after reconfiguration
   Normal   Starting                                                           107s   KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/ms-standalone
   Normal   Successful                                                         107s   KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/ms-standalone for MSSQLServerOpsRequest: msops-reconfigure-standalone-apply
-```
 
 Now let's connect to the SQL Server instance and run a internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+kubectl exec -it -n demo ms-standalone-0 -c mssql -- bash
+```
 mssql@ms-standalone-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
@@ -520,7 +523,6 @@ physical_memory_mb
 
 (1 rows affected)
 1> 
-```
 
 As we can see from the configuration of running SQL Server, the value of `physical_memory_mb` has been changed from `2560` to `3072`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

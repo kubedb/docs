@@ -151,11 +151,11 @@ AuthSecret contains a `user` key and a `password` key which contains the `userna
 Example:
 
 ```bash
-$ kubectl create secret generic pgpool-auth -n demo \
+kubectl create secret generic pgpool-auth -n demo \
 --from-literal=username=jhon \
 --from-literal=password=O9xE1mZZDAdBTbrV
-secret "pgpool-auth" created
 ```
+secret "pgpool-auth" created
 
 ```yaml
 apiVersion: v1

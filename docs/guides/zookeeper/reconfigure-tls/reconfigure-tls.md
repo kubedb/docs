@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/zookeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,22 +64,23 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get zookeeper -n demo
+watch kubectl get zookeeper -n demo
+```
 NAME              TYPE                    VERSION   STATUS    AGE
 zk-quickstart     kubedb.com/v1alpha2     3.9.1     Ready     60s
-```
 
 Now, we can exec one zookeeper broker pod and verify configuration that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
@@ -106,7 +107,6 @@ reconfigEnabled=true
 standaloneEnabled=false
 dynamicConfigFile=/data/zoo.cfg.dynamic
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
-```
 
 We can verify from the above output that TLS is disabled for this Ensemble.
 
@@ -117,23 +117,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls zookeeper-ca \
+kubectl create secret tls zookeeper-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/zookeeper-ca created
 ```
+secret/zookeeper-ca created
 
 Now, Let's create an `Issuer` using the `zookeeper-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -151,9 +151,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-issuer.yaml
-issuer.cert-manager.io/zk-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-issuer.yaml
 ```
+issuer.cert-manager.io/zk-issuer created
 
 ### Create ZooKeeperOpsRequest
 
@@ -195,24 +195,25 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-add-tls.yaml
-zookeeperopsrequest.ops.kubedb.com/zkops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-add-tls.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zkops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CRO,
 
 ```bash
-$ kubectl get zookeeperopsrequest -n demo
+kubectl get zookeeperopsrequest -n demo
+```
 NAME            TYPE             STATUS       AGE
 zkops-add-tls   ReconfigureTLS   Successful   4m36s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zkops-add-tls 
+kubectl describe zookeeperopsrequest -n demo zkops-add-tls 
+```
 Name:         zkops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -319,12 +320,12 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, Let's exec into a zookeeper ensemble pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
@@ -364,7 +365,6 @@ ssl.quorum.trustStore.location=/var/private/ssl/server.truststore.jks
 ssl.quorum.trustStore.password=fdjk2dgffqn9
 ssl.quorum.hostnameVerification=false
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
-```
 
 We can see from the above output that, keystore location is `/var/private/ssl/server.keystore.jks` which means that TLS is enabled.
 
@@ -373,11 +373,11 @@ We can see from the above output that, keystore location is `/var/private/ssl/se
 Now we are going to rotate the certificate of this cluster. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb  2 12:53:30 2025 GMT
-```
 
 So, the certificate will expire on this time `Feb 2 12:53:30 2025 GMT`.
 
@@ -408,24 +408,25 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zkops-rotate.yaml
-zookeeperopsrequest.ops.kubedb.com/zkops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zkops-rotate.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zkops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CRO,
 
 ```bash
-$ kubectl get zookeeperopsrequests -n demo zkops-rotate
+kubectl get zookeeperopsrequests -n demo zkops-rotate
+```
 NAME            TYPE             STATUS       AGE
 zkops-rotate    ReconfigureTLS   Successful   4m4s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zkops-rotate
+kubectl describe zookeeperopsrequest -n demo zkops-rotate
+```
 Name:         zkops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -559,16 +560,15 @@ Events:
   Normal   RestartNodes                                              18s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  18s    KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                18s    KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: zkops-rotate
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ openssl x509 -in /var/private/ssl/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Feb 2 13:12:42 2025 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -579,23 +579,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls zookeeper-new-ca \
+kubectl create secret tls zookeeper-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/zookeeper-new-ca created
 ```
+secret/zookeeper-new-ca created
 
 Now, Let's create a new `Issuer` using the `zookeeper-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -613,9 +613,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-new-issuer.yaml
-issuer.cert-manager.io/zk-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-new-issuer.yaml
 ```
+issuer.cert-manager.io/zk-new-issuer created
 
 ### Create ZooKeeperOpsRequest
 
@@ -647,24 +647,25 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-update-tls-issuer.yaml
-zookeeperopsrequest.ops.kubedb.com/zkops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zookeeper-update-tls-issuer.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zkops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CRO,
 
 ```bash
-$ kubectl get zookeeperopsrequests -n demo zkops-update-issuer
+kubectl get zookeeperopsrequests -n demo zkops-update-issuer
+```
 NAME                  TYPE             STATUS       AGE
 zkops-update-issuer   ReconfigureTLS   Successful   8m6s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zkops-update-issuer
+kubectl describe zookeeperopsrequest -n demo zkops-update-issuer
+```
 Name:         zkops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -799,17 +800,16 @@ Events:
   Normal   RestartNodes                                              18s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  18s    KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                18s    KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: zkops-update-issuer
-```
 
 Now, Let's exec into a zookeeper node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass fdjk2dgffqn9 | grep 'Issuer'
 Issuer: O=kubedb-updated, CN=ca-updated
 Issuer: O=kubedb-updated, CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -844,24 +844,25 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zkops-remove.yaml
-zookeeperopsrequest.ops.kubedb.com/zkops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/reconfigure-tls/zkops-remove.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zkops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CRO,
 
 ```bash
-$ kubectl get zookeeperopsrequest -n demo zkops-remove
+kubectl get zookeeperopsrequest -n demo zkops-remove
+```
 NAME           TYPE             STATUS        AGE
 zkops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo zkops-remove
+kubectl describe zookeeperopsrequest -n demo zkops-remove
+```
 Name:         zkops-remove
 Namespace:    demo
 Labels:       <none>
@@ -960,12 +961,12 @@ Events:
   Normal   RestartNodes                                              3s     KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  3s     KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                3s     KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: zkops-remove
-```
 
 Now, Let's exec into one of the broker node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cat ../conf/zoo.cfg
 4lw.commands.whitelist=*
@@ -992,7 +993,6 @@ reconfigEnabled=true
 standaloneEnabled=false
 dynamicConfigFile=/data/zoo.cfg.dynamic
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ 
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

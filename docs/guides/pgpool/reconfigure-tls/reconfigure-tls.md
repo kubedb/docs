@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,18 +62,21 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/pgpool.yaml
-pgpool.kubedb.com/pgpool created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/pgpool.yaml
 ```
+pgpool.kubedb.com/pgpool created
 
 Now, wait until `pgpool` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 pgpool   kubedb.com/v1alpha2   4.5.0     Ready    21s
 
-$ kubectl dba describe pgpool pgpool -n demo
+```bash
+kubectl dba describe pgpool pgpool -n demo
+```
 Name:         pgpool
 Namespace:    demo
 Labels:       <none>
@@ -211,13 +214,13 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 Now, we let exec into a pgpool pod and verify that the TLS is disabled.
 
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash
+kubectl exec -it -n demo pgpool-0 -- bash
+```
 pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -256,7 +259,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pgpool-0:/$ exit
 exit
-```
 We can see from the above output that `ssl='off'` so we can verify that TLS is disabled for this pgpool.
 
 ### Create Issuer/ ClusterIssuer
@@ -266,23 +268,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls pgpool-ca \
+kubectl create secret tls pgpool-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/pgpool-ca created
 ```
+secret/pgpool-ca created
 
 Now, Let's create an `Issuer` using the `pgpool-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -300,9 +302,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/pgpool-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/pgpool-issuer created
 
 ### Create PgpoolOpsRequest
 
@@ -349,25 +351,26 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-add-tls.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-add-tls.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME            TYPE             STATUS       AGE
 ppops-add-tls   ReconfigureTLS   Successful   107s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-add-tls 
+kubectl describe pgpoolopsrequest -n demo ppops-add-tls 
+```
 Name:         ppops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -509,12 +512,12 @@ Events:
   Normal   RestartPods                                                 66s    KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
   Normal   Starting                                                    57s    KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
   Normal   Successful                                                  57s    KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-add-tls
-```
 
 Now, we let exec into a pgpool pod and verify that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash
+kubectl exec -it -n demo pgpool-0 -- bash
+```
 pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
@@ -558,19 +561,21 @@ ssl_cert = '/opt/pgpool-II/tls/tls.crt'
 failover_on_backend_error = 'off'
 pgpool-0:/$ exit
 exit
-```
 We can see from the above output that `ssl='on'` so we can verify that TLS is enabled for this pgpool.
 
 Now, let's connect with just client certificate using psql. For that first save the `tls.crt` and `tls.key` from the secret named `pgpool-client-cert`.
 ```bash
-$ kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt                                    master ⬆ ⬇ ✱ ◼
-$ kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt                                    master ⬆ ⬇ ✱ ◼
+```
+
+```bash
+kubectl get secrets -n demo pgpool-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
 ```
 Now let's port forward to the main service of the pgpool:
 ```bash
-$ kubectl port-forward -n demo svc/pgpool 9999                                                                                                                                         pgpool ✱ ◼
-Forwarding from 127.0.0.1:9999 -> 9999
+kubectl port-forward -n demo svc/pgpool 9999                                                                                                                                         pgpool ✱ ◼
 ```
+Forwarding from 127.0.0.1:9999 -> 9999
 Now connect with `psql`:
 ```bash
 psql "sslmode=require port=9999 host=localhost dbname=postgres user=postgres sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"     master ⬆ ⬇ ✱ ◼
@@ -586,10 +591,10 @@ So, here we have connected using the client certificate and now password was nee
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+```
 pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Oct 27 06:47:28 2024 GMT
-```
 
 So, the certificate will expire on this time `27 06:47:28 2024 GMT`. 
 
@@ -620,25 +625,26 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-rotate.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-rotate.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME           TYPE             STATUS       AGE
 ppops-rotate   ReconfigureTLS   Successful   113s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-rotate
+kubectl describe pgpoolopsrequest -n demo ppops-rotate
+```
 Name:         ppops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -773,15 +779,14 @@ Events:
   Normal   RestartPods                                                 66s    KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
   Normal   Starting                                                    66s    KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
   Normal   Successful                                                  66s    KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-rotate
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+kubectl exec -it -n demo pgpool-0 -- bash                                                                                                 master ⬆ ⬇ ✱ ◼
+```
 pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Oct 27 07:10:20 2024 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -792,23 +797,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls pgpool-new-ca \
+kubectl create secret tls pgpool-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/pgpool-new-ca created
 ```
+secret/pgpool-new-ca created
 
 Now, Let's create a new `Issuer` using the `pgpool-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -826,9 +831,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/pp-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/pp-new-issuer created
 
 ### Create PgpoolOpsRequest
 
@@ -860,25 +865,26 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-change-issuer.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-change-issuer.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                  TYPE             STATUS       AGE
 ppops-change-issuer   ReconfigureTLS   Successful   87s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-change-issuer
+kubectl describe pgpoolopsrequest -n demo ppops-change-issuer
+```
 Name:         ppops-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -1010,15 +1016,14 @@ Events:
   Normal   RestartPods                                                 2m33s  KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
   Normal   Starting                                                    2m32s  KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
   Normal   Successful                                                  2m32s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-change-issuer
-```
 
 Now, Let's exec pgpool and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash
+kubectl exec -it -n demo pgpool-0 -- bash
+```
 pgpool-0:/$ openssl x509 -in /opt/pgpool-II/tls/ca.pem -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -1053,25 +1058,26 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-remove.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure-tls/ppops-remove.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CRO,
 
 ```bash
-$ wacth kubectl get pgpoolopsrequest -n demo
+wacth kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME           TYPE             STATUS       AGE
 ppops-remove   ReconfigureTLS   Successful   65s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo ppops-remove
+kubectl describe pgpoolopsrequest -n demo ppops-remove
+```
 Name:         ppops-remove
 Namespace:    demo
 Labels:       <none>
@@ -1159,12 +1165,12 @@ Events:
   Normal   RestartPods                                                 29s   KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
   Normal   Starting                                                    29s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pgpool
   Normal   Successful                                                  28s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pgpool for PgpoolOpsRequest: ppops-remove
-```
 
 Now, Let's exec into pgpool and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- bash
+kubectl exec -it -n demo pgpool-0 -- bash
+```
 pgpool-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -1201,7 +1207,6 @@ memory_cache_enabled = 'off'
 memqcache_oiddir = '/tmp/oiddir/'
 allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
-```
 
 We can see from the above output that `ssl='off'` so we can verify that TLS is disabled successfully for this pgpool.
 

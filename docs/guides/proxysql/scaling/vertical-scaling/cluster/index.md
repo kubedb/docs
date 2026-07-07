@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml.
 
@@ -60,9 +60,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created 
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created 
 
 After applying the above yaml wait for the MySQL to be Ready.
 
@@ -105,22 +105,23 @@ spec:
 Let's create the `ProxySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 Now, wait until `proxy-server` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get proxysql -n demo
+kubectl get proxysql -n demo
+```
 NAME             VERSION         STATUS     AGE
 proxy-server    3.0.1-debian     Ready     3m46s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -131,7 +132,6 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has the default resources which is assigned by KubeDB operator.
 
@@ -175,9 +175,9 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/proxyops-vscale.yaml
-proxysqlopsrequest.ops.kubedb.com/proxyops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/proxyops-vscale.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/proxyops-vscale created
 
 #### Verify ProxySQL Cluster resources updated successfully
 
@@ -186,16 +186,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo
+kubectl get proxysqlopsrequest -n demo
+```
 Every 2.0s: kubectl get proxysqlopsrequest -n demo
 NAME                       TYPE              STATUS       AGE
 proxyops-vscale        VerticalScaling      Successful    3m56s
-```
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -206,7 +207,6 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
     "memory": "1288490188800m"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the ProxySQL instance.
 
@@ -215,6 +215,9 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete proxysql -n demo proxy-server
-$ kubectl delete proxysqlopsrequest -n demo proxyops-vscale
+kubectl delete proxysql -n demo proxy-server
+```
+
+```bash
+kubectl delete proxysqlopsrequest -n demo proxyops-vscale
 ```

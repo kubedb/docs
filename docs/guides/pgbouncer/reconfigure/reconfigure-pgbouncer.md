@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -59,9 +59,9 @@ Here, `auth_type` is set to `scram-sha-256`, whereas the default value is `md5`.
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pb-custom-config --from-file=./pgbouncer.ini
-secret/pb-custom-config created
+kubectl create secret generic -n demo pb-custom-config --from-file=./pgbouncer.ini
 ```
+secret/pb-custom-config created
 
 In this section, we are going to create a PgBouncer object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `PgBouncer` CR that we are going to create,
 
@@ -95,24 +95,25 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pb-custom-config.yaml
-pgbouncer.kubedb.com/pb-custom created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pb-custom-config.yaml
 ```
+pgbouncer.kubedb.com/pb-custom created
 
 Now, wait until `pb-custom` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME        TYPE                  VERSION   STATUS   AGE
 pb-custom   kubedb.com/v1         1.18.0    Ready    112s
-```
 
 Now, we will check if the pgbouncer has started with the custom configuration we have provided.
 
 Now, you can exec into the pgbouncer pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+```
 pb-custom-0:/$ cat etc/config/pgbouncer.ini
 [databases]
 postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
@@ -137,7 +138,6 @@ max_user_connections = 2
 stats_period = 60
 pb-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgbouncer, the value of `auth_type` has been set to `scram-sha-256`.
 
@@ -155,9 +155,9 @@ auth_type=md5
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./pgbouncer.ini
-secret/new-custom-config created
+kubectl create secret generic -n demo new-custom-config --from-file=./pgbouncer.ini
 ```
+secret/new-custom-config created
 
 #### Create PgBouncerOpsRequest
 
@@ -191,9 +191,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pbops-reconfigure.yaml
-pgbounceropsrequest.ops.kubedb.com/pbops-reconfigure created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pbops-reconfigure.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pbops-reconfigure created
 
 #### Verify the new configuration is working 
 
@@ -202,16 +202,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                TYPE          STATUS       AGE
 pbops-reconfigure   Reconfigure   Successful   63s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pbops-reconfigure
+kubectl describe pgbounceropsrequest -n demo pbops-reconfigure
+```
 Name:         pbops-reconfigure
 Namespace:    demo
 Labels:       <none>
@@ -315,12 +316,12 @@ Events:
   Normal   Starting                                                        12s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
   Normal   Successful                                                      12s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom
   Normal   Successful                                                      12s   KubeDB Ops-manager Operator  Controller has Successfully Reconfigured PgBouncer databases: demo/pb-custom
-```
 
 Now let's exec into the pgbouncer pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+kubectl exec -it -n demo pb-custom-0  -- /bin/sh
+```
 pb-custom-0:/$ cat etc/config/pgbouncer.ini
 [databases]
 postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
@@ -345,7 +346,6 @@ reserve_pool_size = 5
 reserve_pool_timeout = 5
 pb-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgbouncer, the value of `auth_type` has been changed from `scram-sha-256` to `md5`. So the reconfiguration of the pgbouncer is successful.
 
@@ -386,9 +386,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pbops-reconfigure-apply.yaml
-pgbounceropsrequest.ops.kubedb.com/pbops-reconfigure-apply created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/reconfigure/pbops-reconfigure-apply.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pbops-reconfigure-apply created
 
 #### Verify the new configuration is working 
 
@@ -397,17 +397,18 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                      TYPE          STATUS       AGE
 pbops-reconfigure         Reconfigure   Successful   9m15s
 pbops-reconfigure-apply   Reconfigure   Successful   53s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to reconfigure the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pbops-reconfigure-apply
+kubectl describe pgbounceropsrequest -n demo pbops-reconfigure-apply
+```
 Name:         pbops-reconfigure-apply
 Namespace:    demo
 Labels:       <none>
@@ -508,12 +509,12 @@ Events:
   Normal   Starting                                                       41s   KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-custom
   Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-custom
   Normal   Successful                                                     41s   KubeDB Ops-manager Operator  Controller has Successfully Reconfigured PgBouncer databases: demo/pb-custom
-```
 
 Now let's exec into the pgbouncer pod and check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo pb-custom-0  -- /bin/sh 
+kubectl exec -it -n demo pb-custom-0  -- /bin/sh 
+```
 pb-custom-0:/$ cat etc/config/pgbouncer.ini
 [databases]
 postgres= host=ha-postgres.demo.svc port=5432 dbname=postgres
@@ -538,7 +539,6 @@ listen_port = 5432
 reserve_pool_size = 5
 pb-custom-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgbouncer, the value of `auth_type` has been changed from `md5` to `scram-sha-256`. So the reconfiguration of the pgbouncer using the `applyConfig` field is successful.
 

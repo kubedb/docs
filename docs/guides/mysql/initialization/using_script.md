@@ -28,29 +28,38 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. This tutorial will also use a phpMyAdmin to connect and test MySQL database, once it is running. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-  
-  $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/phpmyadmin.yaml
+
+  ```bash
+  kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/phpmyadmin.yaml
+  ```
   deployment.extensions/myadmin created
   service/myadmin created
-  
-  $ kubectl get pods -n demo 
+
+  ```bash
+  kubectl get pods -n demo 
+  ```
   NAME                       READY   STATUS    RESTARTS   AGE
   myadmin-66cc8d4c77-wkwht   1/1     Running   0          5m20s
-  
-  $ kubectl get service -n demo
+
+  ```bash
+  kubectl get service -n demo
+  ```
   NAME      TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
   myadmin   LoadBalancer   10.104.142.213   <pending>     80:31529/TCP     3m14s
-  ```
 
   Then, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
   ```bash
-  $ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+  kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+  ```
   31529
-  
-  $ kubectl get node -o json | jq '.items[].status.addresses[].address'
+
+  ```bash
+  kubectl get node -o json | jq '.items[].status.addresses[].address'
+  ```
   "172.18.0.3"
   "kind-control-plane"
   "172.18.0.4"
@@ -60,7 +69,6 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/mys
   
   # expected url will be:
   url: http://172.18.0.4:31529
-  ```
   
 ## Prepare Initialization Scripts
 
@@ -73,10 +81,10 @@ At first, we will create a ConfigMap from `init.sql` file. Then, we will provide
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo my-init-script \
+kubectl create configmap -n demo my-init-script \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/mysql-init-scripts/raw/master/init.sql)"
-configmap/my-init-script created
 ```
+configmap/my-init-script created
 
 ## Create a MySQL database with Init-Script
 
@@ -131,9 +139,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-gr.yaml
-mysql.kubedb.com/mysql-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-gr.yaml
 ```
+mysql.kubedb.com/mysql-init-script created
 
   </div>
 
@@ -168,9 +176,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-innodb.yaml
-mysql.kubedb.com/mysql-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-innodb.yaml
 ```
+mysql.kubedb.com/mysql-init-script created
   </div>
 
   <div class="tab-pane fade " id="semisync" role="tabpanel" aria-labelledby="sc-tab">
@@ -205,9 +213,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-semi-sync.yaml
-mysql.kubedb.com/mysql-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-semi-sync.yaml
 ```
+mysql.kubedb.com/mysql-init-script created
 
   </div>
 
@@ -235,9 +243,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-standalone.yaml
-mysql.kubedb.com/mysql-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-standalone.yaml
 ```
+mysql.kubedb.com/mysql-init-script created
   </div>
 
 </div>
@@ -250,7 +258,8 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present. No MySQL specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
-$ kubectl dba describe my -n demo mysql-init-scrip
+kubectl dba describe my -n demo mysql-init-scrip
+```
 Name:               mysql-init-script
 Namespace:          demo
 CreationTimestamp:  Thu, 30 Jun 2022 12:21:15 +0600
@@ -371,25 +380,31 @@ Events:
   Normal   Successful  10s   KubeDB operator  Successfully created MySQL
   Normal   Successful  10s   KubeDB operator  Successfully created appbinding
 
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME                READY   AGE
 mysql-init-script   1/1     2m24s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-mysql-init-script-0   Bound    pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            standard       3m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                           STORAGECLASS   REASON   AGE
 pvc-32a59975-2972-4122-9635-22fe19483145   1Gi        RWO            Delete           Bound    demo/data-mysql-init-script-0   standard                3m25s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                    TYPE           CLUSTER-IP       EXTERNAL-IP   PORT(S)        AGE
 myadmin                 LoadBalancer   10.104.142.213   <pending>     80:31529/TCP   23m
 mysql-init-script       ClusterIP      10.103.202.117   <none>        3306/TCP       3m49s
 mysql-init-script-pods   ClusterIP      None             <none>        3306/TCP       3m49s
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
@@ -464,16 +479,20 @@ If you want to use an existing secret please specify that when creating the MySQ
 Now, you can connect to this database from the phpMyAdmin dashboard using the database pod IP and `mysql` user password.
 
 ```bash
-$ kubectl get pods mysql-init-script-0 -n demo -o yaml | grep IP
+kubectl get pods mysql-init-script-0 -n demo -o yaml | grep IP
+```
   hostIP: 10.0.2.15
   podIP: 10.244.2.9
 
-$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.password}' | base64 -d
-1Pc7bwSygrv1MX1Q
+```bash
+kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+1Pc7bwSygrv1MX1Q
 
 ---
 Note: In MySQL: `8.0.14-v1` connection to phpMyAdmin may give error as it is using `caching_sha2_password` and `sha256_password` authentication plugins over `mysql_native_password`. If the error happens do the following for work around. But, It's not recommended to change authentication plugins. See [here](https://stackoverflow.com/questions/49948350/phpmyadmin-on-mysql-8-0) for alternative solutions.

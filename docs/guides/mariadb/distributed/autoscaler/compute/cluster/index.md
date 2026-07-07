@@ -38,9 +38,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Autoscaling of Distributed Cluster Database
 
@@ -85,9 +85,9 @@ Here,
 Apply the `PlacementPolicy` on the hub (`demo-controller`) cluster:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/placement-policy.yaml --context demo-controller
-placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/placement-policy.yaml --context demo-controller
 ```
+placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
@@ -132,35 +132,38 @@ spec:
 Let's create the `MariaDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/sample-mariadb.yaml --context demo-controller
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/sample-mariadb.yaml --context demo-controller
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo --context demo-controller
+kubectl get mariadb -n demo --context demo-controller
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.5.2   Ready    14m
-```
 
 The pods are distributed across clusters as defined by the `PlacementPolicy`:
 
 ```bash
-$ kubectl get pod -n demo --context demo-controller
+kubectl get pod -n demo --context demo-controller
+```
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   3/3     Running   0          14m
 sample-mariadb-2   3/3     Running   0          14m
 
-$ kubectl get pod -n demo --context demo-worker
+```bash
+kubectl get pod -n demo --context demo-worker
+```
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-1   3/3     Running   0          14m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -171,11 +174,11 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the MariaDB resources,
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
+kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -186,7 +189,6 @@ $ kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller |
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the mariadb.
 
@@ -248,20 +250,23 @@ If a step doesn't finish within the specified timeout, the ops request will resu
 Let's create the `MariaDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/mdas-compute.yaml --context demo-controller
-mariadbautoscaler.autoscaling.kubedb.com/md-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/mdas-compute.yaml --context demo-controller
 ```
+mariadbautoscaler.autoscaling.kubedb.com/md-as-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `mariadbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mariadbautoscaler -n demo --context demo-controller
+kubectl get mariadbautoscaler -n demo --context demo-controller
+```
 NAME            AGE
 md-as-compute   5m56s
 
-$ kubectl describe mariadbautoscaler md-as-compute -n demo --context demo-controller
+```bash
+kubectl describe mariadbautoscaler md-as-compute -n demo --context demo-controller
+```
 Name:         md-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -364,8 +369,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      sample-mariadb
 Events:            <none>
-
-```
 So, the `mariadbautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -375,23 +378,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `mariadbopsrequest` in the demo namespace to see if any `mariadbopsrequest` object is created. After some time you'll see that a `mariadbopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo --context demo-controller
+kubectl get mariadbopsrequest -n demo --context demo-controller
+```
 NAME                          TYPE              STATUS       AGE
 mdops-sample-mariadb-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo --context demo-controller
+kubectl get mariadbopsrequest -n demo --context demo-controller
+```
 NAME                              TYPE              STATUS       AGE
 mdops-vpa-sample-mariadb-z43wc8   VerticalScaling   Successful   3m32s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo mdops-vpa-sample-mariadb-z43wc8 --context demo-controller
+kubectl describe mariadbopsrequest -n demo mdops-vpa-sample-mariadb-z43wc8 --context demo-controller
+```
 Name:         mdops-sample-mariadb-6xc1kc
 Namespace:    demo
 ...
@@ -420,12 +424,12 @@ Status:
     Type:                  VerticalScaling
     ...
   Phase:  Successful
-```
 
 Now, we are going to verify from the Pod, and the MariaDB yaml whether the resources of the distributed cluster database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -437,7 +441,9 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json --context demo-worker | jq '.
   }
 }
 
-$ kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
+```bash
+kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller | jq '.spec.podTemplate.spec.containers[] | select(.name == "mariadb") | .resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -448,7 +454,6 @@ $ kubectl get mariadb -n demo sample-mariadb -o json --context demo-controller |
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the distributed MariaDB cluster.

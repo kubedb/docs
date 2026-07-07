@@ -209,11 +209,11 @@ AuthSecret contains a `username` key and a `password` key which contains the `us
 Example:
 
 ```bash
-$ kubectl create secret generic druid-auth -n demo \
+kubectl create secret generic druid-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "druid-auth" created
 ```
+secret "druid-auth" created
 
 ```yaml
 apiVersion: v1

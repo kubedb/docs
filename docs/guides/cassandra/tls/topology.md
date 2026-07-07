@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Cassandra. This tutorial will s
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -83,9 +83,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/tls/cas-issuer.yaml
-issuer.cert-manager.io/cassandra-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/tls/cas-issuer.yaml
 ```
+issuer.cert-manager.io/cassandra-ca-issuer created
 
 ## TLS/SSL encryption in Cassandra Topology Cluster
 
@@ -130,26 +130,27 @@ spec:
 ### Deploy Cassandra Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/tls/cassandra-prod-tls.yaml
-cassandra.kubedb.com/cassandra-prod-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/tls/cassandra-prod-tls.yaml
 ```
+cassandra.kubedb.com/cassandra-prod-tls created
 
 Now, wait until `cassandra-prod-tls created` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cassandra -n demo -w
+kubectl get cassandra -n demo -w
+```
 NAME                 TYPE                  VERSION   STATUS         AGE
 cassandra-prod-tls   kubedb.com/v1alpha2   5.0.3     Provisioning   20s
 cassandra-prod-tls   kubedb.com/v1alpha2   5.0.3     Provisioning   81s
 .
 .
 cassandra-prod-tls   kubedb.com/v1alpha2   5.0.3     Ready          104s
-```
 
 ### Verify TLS/SSL in Cassandra Topology Cluster
 
 ```bash
-$  kubectl describe secret cassandra-prod-tls-client-cert -n demo
+ kubectl describe secret cassandra-prod-tls-client-cert -n demo
+```
 Name:         cassandra-prod-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -174,12 +175,12 @@ Data
 ca.crt:   1159 bytes
 tls.crt:  1578 bytes
 tls.key:  1704 bytes
-```
 
 Now, Let's exec into a cassandra pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$  kubectl exec -it -n demo cassandra-prod-tls-rack-r0-0 -- cqlsh -u admin -p qAbFK0B8gtUgj3Gp
+ kubectl exec -it -n demo cassandra-prod-tls-rack-r0-0 -- cqlsh -u admin -p qAbFK0B8gtUgj3Gp
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -197,7 +198,6 @@ Connected to Test Cluster at 127.0.0.1:9042
 [cqlsh 6.2.0 | Cassandra 5.0.3 | CQL spec 3.4.7 | Native protocol v5]
 Use HELP for help.
 admin@cqlsh> 
-```
 
 We can see from the above output that, cqlsh can only be accessed through --ssl flag  which means that TLS is enabled.
 

@@ -25,13 +25,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,10 +50,10 @@ We will use a ConfigMap as the script source. You can use any Kubernetes support
 Let's create a ConfigMap with the initialization script:
 
 ```bash
-$ kubectl create configmap -n demo pb-init-script \
+kubectl create configmap -n demo pb-init-script \
 --from-literal=init.sh="$(curl -fsSL https://raw.githubusercontent.com/kubedb/pgbouncer-pgpool-init-scripts/master/pgbouncer/init.sh)"
-configmap/pb-init-script created
 ```
+configmap/pb-init-script created
 > **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully.
 ## Create PgBouncer with Script Source
 
@@ -92,17 +94,17 @@ VolumeSource provided in `init.script` will be mounted in the Pod and executed w
 Now, let's create the PgBouncer CRD using the YAML shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/script-pgbouncer.yaml
-pgbouncer.kubedb.com/script-pgbouncer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/initialization/script-pgbouncer.yaml
 ```
+pgbouncer.kubedb.com/script-pgbouncer created
 
 Now, wait until PgBouncer goes in `Ready` state. Verify that it is in `Ready` state using the following command:
 
 ```bash
-$ kubectl get pgbouncer -n demo script-pgbouncer
+kubectl get pgbouncer -n demo script-pgbouncer
+```
 NAME               VERSION   STATUS   AGE
 script-pgbouncer   1.24.0    Ready    2m
-```
 
 ## Verify Initialization
 
@@ -118,22 +120,23 @@ Now let's connect to our PgBouncer instance to verify that it has been initializ
 - Username: Run the following command to get the *username*:
 
   ```bash
-  $ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
-  postgres
+  kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  postgres
 
 - Password: Run the following command to get the *password*:
 
   ```bash
-  $ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
-  S3cur3P@ssw0rd
+  kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  S3cur3P@ssw0rd
 
 Connect to PgBouncer and verify that it is successfully proxying connections to PostgreSQL:
 
 ```bash
-$ kubectl exec -it -n demo script-pgbouncer-0 -- \
+kubectl exec -it -n demo script-pgbouncer-0 -- \
                                   psql -h localhost -p 5432 -U postgres -d postgres
+```
 Password for user postgres: 
 psql (16.14, server 17.5)
 WARNING: psql major version 16, server major version 17.
@@ -147,7 +150,6 @@ postgres=# \dt
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
 (2 rows)
-```
 
 We can see that PgBouncer is running and proxying connections to the PostgreSQL backend through the initialized connection pool.
 
@@ -156,11 +158,19 @@ We can see that PgBouncer is running and proxying connections to the PostgreSQL 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pgbouncer/script-pgbouncer -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pgbouncer/script-pgbouncer
+kubectl patch -n demo pgbouncer/script-pgbouncer -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo configmap/pb-init-script
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo pgbouncer/script-pgbouncer
+```
+
+```bash
+kubectl delete -n demo configmap/pb-init-script
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

@@ -26,9 +26,9 @@ see [Reconfigure](/docs/guides/hanadb/reconfigure/reconfigure.md).
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Overview
 
@@ -54,9 +54,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/hanadb-configuration.yaml
-secret/hanadb-configuration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/hanadb-configuration.yaml
 ```
+secret/hanadb-configuration created
 
 The key inside the secret **must** be `global.ini`. Here `global_allocation_limit = 8589934592` caps the
 HANA global allocation at 8 GiB.
@@ -88,33 +88,35 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/standalone-cus-conf.yaml
-hanadb.kubedb.com/hanadb-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/configuration/standalone-cus-conf.yaml
 ```
+hanadb.kubedb.com/hanadb-custom-config created
 
 Wait for the database to become `Ready`:
 
 ```bash
-$ kubectl get hanadb.kubedb.com -n demo hanadb-custom-config
+kubectl get hanadb.kubedb.com -n demo hanadb-custom-config
+```
 NAME                   VERSION   STATUS   AGE
 hanadb-custom-config   2.0.82    Ready    24m
-```
 
 ## Verify the Configuration
 
 Read the password and query `M_INIFILE_CONTENTS` to confirm HANA picked up the custom value:
 
 ```bash
-$ HANA_PASSWORD="$(kubectl get secret hanadb-custom-config-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+HANA_PASSWORD="$(kubectl get secret hanadb-custom-config-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+```
 
-$ kubectl exec -n demo hanadb-custom-config-0 -c hanadb -- /bin/sh -lc \
+```bash
+kubectl exec -n demo hanadb-custom-config-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' \
   \"SELECT LAYER_NAME, VALUE FROM M_INIFILE_CONTENTS WHERE FILE_NAME='global.ini' AND SECTION='memorymanager' AND KEY='global_allocation_limit'\""
+```
 LAYER_NAME,VALUE
 "SYSTEM","8589934592"
 "DEFAULT","0"
 2 rows selected
-```
 
 The `SYSTEM` layer shows the custom value `8589934592` (8 GiB) merged into `global.ini` from the
 configuration secret, overriding the `DEFAULT` layer.
@@ -122,9 +124,15 @@ configuration secret, overriding the `DEFAULT` layer.
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-custom-config
-$ kubectl delete secret -n demo hanadb-configuration
-$ kubectl delete ns demo
+kubectl delete hanadb.kubedb.com -n demo hanadb-custom-config
+```
+
+```bash
+kubectl delete secret -n demo hanadb-configuration
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

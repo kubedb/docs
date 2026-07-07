@@ -25,9 +25,9 @@ KubeDB supports restarting the Oracle database via an `OracleOpsRequest`. Restar
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/restart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/restart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -66,17 +66,17 @@ spec:
 Let's create the `Oracle` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/standalone-minimal.yaml
-oracle.kubedb.com/oracle-sa-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/standalone-minimal.yaml
 ```
+oracle.kubedb.com/oracle-sa-sample created
 
 Now, wait until `oracle-sa-sample` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get oracle -n demo
+kubectl get oracle -n demo
+```
 NAME               VERSION   MODE         STATUS   AGE
 oracle-sa-sample   21.3.0    Standalone   Ready    8m49s
-```
 
 ## Apply Restart opsRequest
 
@@ -104,22 +104,23 @@ Here,
 Let's create the `OracleOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/standalone-restart.yaml
-oracleopsrequest.ops.kubedb.com/standalone-restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/standalone-restart.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-restart created
 
 Now the Ops-manager operator will restart the pods one by one (in a reconciliation-safe rolling manner). Let's wait until the `OracleOpsRequest` becomes `Successful`,
 
 ```bash
-$ kubectl get oracleopsrequest -n demo
+kubectl get oracleopsrequest -n demo
+```
 NAME                 TYPE      STATUS       AGE
 standalone-restart   Restart   Successful   2m
-```
 
 We can see from the above output that the `OracleOpsRequest` has succeeded. Let's check the details with `kubectl describe`,
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo standalone-restart
+kubectl describe oracleopsrequest -n demo standalone-restart
+```
 Name:         standalone-restart
 Namespace:    demo
 ...
@@ -174,38 +175,41 @@ Events:
   Warning  evict pod; ConditionStatus:True; PodName:oracle-sa-sample-0     55s   KubeDB Ops-manager Operator  evict pod; ConditionStatus:True; PodName:oracle-sa-sample-0
   Warning  running pod; ConditionStatus:False; PodName:oracle-sa-sample-0  51s   KubeDB Ops-manager Operator  running pod; ConditionStatus:False; PodName:oracle-sa-sample-0
   Warning  running pod; ConditionStatus:True; PodName:oracle-sa-sample-0   45s   KubeDB Ops-manager Operator  running pod; ConditionStatus:True; PodName:oracle-sa-sample-0
-```
 
 After the ops request succeeds, the database pod is freshly recreated. Oracle then re-opens the existing database; while it is opening, the `Oracle` object may briefly report the `Critical` phase before settling back to `Ready`,
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=oracle-sa-sample
+kubectl get pods -n demo -l app.kubernetes.io/instance=oracle-sa-sample
+```
 NAME                 READY   STATUS    RESTARTS   AGE
 oracle-sa-sample-0   1/1     Running   0          24s
 
-$ kubectl get oracle -n demo oracle-sa-sample
+```bash
+kubectl get oracle -n demo oracle-sa-sample
+```
 NAME               VERSION   MODE         STATUS   AGE
 oracle-sa-sample   21.3.0    Standalone   Ready    12m
-```
 
 ## Restarting a DataGuard cluster
 
 The same `OracleOpsRequest` works for a DataGuard cluster — just point `spec.databaseRef.name` at the DataGuard database. A DataGuard cluster (`mode: DataGuard`, `replicas: 3`) consists of 3 database pods (each running an `oracle` and an `oracle-coordinator` container) plus a single observer pod:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=oracle-dg-sample -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=oracle-dg-sample -L kubedb.com/role
+```
 NAME                          READY   STATUS    RESTARTS   AGE   ROLE
 oracle-dg-sample-0            2/2     Running   0          18m   primary
 oracle-dg-sample-1            2/2     Running   0          18m   standby
 oracle-dg-sample-2            2/2     Running   0          18m   standby
 oracle-dg-sample-observer-0   1/1     Running   0          18m
 
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=oracle-dg-sample
+```bash
+kubectl get svc -n demo -l app.kubernetes.io/instance=oracle-dg-sample
+```
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 oracle-dg-sample           ClusterIP   10.43.232.240   <none>        1521/TCP   18m
 oracle-dg-sample-pods      ClusterIP   None            <none>        1521/TCP   18m
 oracle-dg-sample-standby   ClusterIP   10.43.50.35     <none>        1521/TCP   18m
-```
 
 Here, the `kubedb.com/role` label marks pod `oracle-dg-sample-0` as the `primary` and the other two as `standby`. The `oracle-dg-sample` service always routes to the live primary, while `oracle-dg-sample-standby` routes to the read-only standbys.
 
@@ -227,18 +231,21 @@ spec:
 For a DataGuard cluster the operator restarts the pods one at a time (a reconciliation-safe rolling restart). The KubeDB coordinator keeps the `kubedb.com/role` label (`primary`/`standby`) in sync, and the observer drives Fast-Start Failover, so a standby is promoted if the primary pod is restarted — the primary service (`oracle-dg-sample`) always points at the live primary.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/dataguard-restart.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/restart/dataguard-restart.yaml
+```
 oracleopsrequest.ops.kubedb.com/dataguard-restart created
 
-$ kubectl get oracleopsrequest -n demo dataguard-restart
+```bash
+kubectl get oracleopsrequest -n demo dataguard-restart
+```
 NAME                TYPE      STATUS       AGE
 dataguard-restart   Restart   Successful   2m42s
-```
 
 The `kubectl describe` output shows the pods being evicted and restarted one at a time (the standby pods `oracle-dg-sample-1` and `oracle-dg-sample-2`, then the primary), each verified healthy before moving to the next,
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo dataguard-restart
+kubectl describe oracleopsrequest -n demo dataguard-restart
+```
 ...
 Status:
   Conditions:
@@ -266,7 +273,6 @@ Status:
     Status:                True
     Type:                  Successful
   Phase:                   Successful
-```
 
 ## Cleaning up
 

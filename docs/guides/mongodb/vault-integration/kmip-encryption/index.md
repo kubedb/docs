@@ -34,9 +34,9 @@ To demonstrate how to configure KubeDB MongoDB with [HashiCorp Vault KMIP secret
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Setup Hashicorp Vault KMIP secret engine
 
@@ -45,42 +45,66 @@ For this demo we will use [Hashicorp Cloud Provider(HCP)](https://portal.cloud.h
 
 So First we created a `Vault Plus` cluster in HCP. Then we need to configure Vault KMIP according to [this](https://developer.hashicorp.com/vault/tutorials/adp/kmip-engine?variants=vault-deploy%3Ahcp) documentation step by step.
 
-```bash
 # setup vault environment
-$ export VAULT_ADDR=<Public_Cluster_URL>
-$ export VAULT_TOKEN=<Generated_Vault_Token>
-$ export VAULT_NAMESPACE=admin
+```bash
+export VAULT_ADDR=<Public_Cluster_URL>
+```
+
+```bash
+export VAULT_TOKEN=<Generated_Vault_Token>
+```
+
+```bash
+export VAULT_NAMESPACE=admin
+```
 
 # configure kmip secret engine
-$ vault secrets enable kmip
+```bash
+vault secrets enable kmip
+```
 Success! Enabled the kmip secrets engine at: kmip/
 
-$ vault write kmip/config \
+```bash
+vault write kmip/config \
      listen_addrs=0.0.0.0:5696 \
      server_hostnames=$(echo ${VAULT_ADDR:8} | rev | cut -c6- | rev)
+```
 Success! Data written to: kmip/config
 
 # create scope
-$ vault write -f kmip/scope/finance
+```bash
+vault write -f kmip/scope/finance
+```
 Success! Data written to: kmip/scope/finance
 
 # create role
-$ vault write kmip/scope/finance/role/accounting operation_all=true
+```bash
+vault write kmip/scope/finance/role/accounting operation_all=true
+```
 Success! Data written to: kmip/scope/finance/role/accounting
 
 # store vault-ca.pem
-$ vault read kmip/ca -format=json | jq -r '.data | .ca_pem' >> vault-ca.pem
+```bash
+vault read kmip/ca -format=json | jq -r '.data | .ca_pem' >> vault-ca.pem
+```
 
 # generate and store client.pem
-$ vault write -format=json \
+```bash
+vault write -format=json \
     kmip/scope/finance/role/accounting/credential/generate \
     format=pem > credential.json
+```
 
-$ jq -r .data.certificate < credential.json > cert.pem
+```bash
+jq -r .data.certificate < credential.json > cert.pem
+```
 
-$ jq -r .data.private_key < credential.json > key.pem
+```bash
+jq -r .data.private_key < credential.json > key.pem
+```
 
-$ cat cert.pem key.pem > client.pem
+```bash
+cat cert.pem key.pem > client.pem
 ```
 We will use this `client.pem` and `vault-ca.pem` files to configure KMIP in MongoDB.
 
@@ -89,7 +113,8 @@ We will use this `client.pem` and `vault-ca.pem` files to configure KMIP in Mong
 Now we need to make a `mongod.conf` file to use it as configuration folder for our `MongoDB`.
 
 ```bash
-$ cat mongod.conf
+cat mongod.conf
+```
 security:
   enableEncryption: true
   kmip:
@@ -97,7 +122,6 @@ security:
     port: 5696
     clientCertificateFile: /etc/certs/client.pem
     serverCAFile: /etc/certs/ca.pem
-```
 
 Here,
 - `serverName` is the public address of our HCP Vault Plus cluster without port
@@ -112,13 +136,14 @@ Here `/etc/certs/client.pem` and `/etc/certs/ca.pem` will be mounted by secret i
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
-secret/mg-configuration created
+kubectl create secret generic -n demo mg-configuration --from-file=./mongod.conf
 ```
+secret/mg-configuration created
 
 Verify the secret has the configuration file.
 ```bash
-$ kubectl get secret -n demo mg-configuration -o yaml
+kubectl get secret -n demo mg-configuration -o yaml
+```
 apiVersion: v1
 data:
   mongod.conf: c2VjdXJpdHk6CiAgZW5hYmxlRW5jcnlwdGlvbjogdHJ1ZQogIGttaXA6CiAgICBzZXJ2ZXJOYW1lOiB2YXVsdC1jbHVzdGVyLWRvYy1wdWJsaWMtdmF1bHQtYTMzYmI3NjEuMzcxMzFkZDEuejEuaGFzaGljb3JwLmNsb3VkCiAgICBwb3J0OiA1Njk2CiAgICBjbGllbnRDZXJ0aWZpY2F0ZUZpbGU6IC9ldGMvY2VydHMvY2xpZW50LnBlbQogICAgc2VydmVyQ0FGaWxlOiAvZXRjL2NlcnRzL2NhLnBlbQ==
@@ -130,17 +155,16 @@ metadata:
   resourceVersion: "322831"
   uid: 005f0cac-6bbb-4fb6-a728-87b0ca55785a
 type: Opaque
-```
 
 ### Create MongoDB
 
 Before creating `MongoDB`, we need to create a secret with `client.pem` and `vault-ca.pem` to use as volume for our `MongoDB`
 ```bash
-$ kubectl create secret generic vault-tls-secret -n demo \
+kubectl create secret generic vault-tls-secret -n demo \
         --from-file=client.pem=client.pem \
         --from-file=ca.pem=vault-ca.pem
-secret/vault-tls-secret created
 ```
+secret/vault-tls-secret created
 
 Now lets create KubeDB MongoDB. Currently, we have KMIP encryption support for `percona-4.2.24`,`percona-4.2.26`,`percona-5.0.23`, , `percona-5.0.31` ,`percona-6.0.12` and `percona-7.0.4` version of KubeDB managed MongoDB.
 
@@ -178,19 +202,19 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guids/mongodb/vault-integration/kmip-enryption/examples/mg.yaml
-mongodb.kubedb.com/mg-kmip created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guids/mongodb/vault-integration/kmip-enryption/examples/mg.yaml
 ```
+mongodb.kubedb.com/mg-kmip created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we will see that a pod with the name `mg-kmip-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo mg-kmip-0
+kubectl get pod -n demo mg-kmip-0
+```
 NAME                  READY     STATUS    RESTARTS   AGE
 mg-kmip-0             1/1       Running   0          1m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
@@ -210,14 +234,18 @@ We should see these logs which confirm that this `MongoDB` is setup with KMIP
 Now, we can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mg-kmip-auth -o jsonpath='{.data.password}' | base64 -d
+```
 bJI!1H!)V7!2U.wJ
 
-$ kubectl exec -it mg-kmip-0 -n demo -- bash
-
+```bash
+kubectl exec -it mg-kmip-0 -n demo -- bash
+```
 > mongosh admin
 
 > db.auth("root","bJI!1H!)V7!2U.wJ")
@@ -264,7 +292,6 @@ $ kubectl exec -it mg-kmip-0 -n demo -- bash
 }
 > exit
 bye
-```
 
 We can see that in `parsed.security` field, encryption is enabled.
 

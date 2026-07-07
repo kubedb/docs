@@ -101,7 +101,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+kubectl apply -f https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
 ```
 
 When applied:
@@ -112,16 +112,18 @@ When applied:
 4. Once the quorum is established, `status.phase` moves to `Ready`.
 
 ```bash
-$ kubectl get neo4j -n demo neo4j-test
+kubectl get neo4j -n demo neo4j-test
+```
 NAME         VERSION     STATUS   AGE
 neo4j-test   2025.12.1   Ready    3m
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
 NAME           READY   STATUS    RESTARTS   AGE
 neo4j-test-0   1/1     Running   0          3m
 neo4j-test-1   1/1     Running   0          2m
 neo4j-test-2   1/1     Running   0          2m
-```
 
 ## Failover Behavior
 
@@ -144,13 +146,15 @@ When a Neo4j pod becomes unavailable (node failure, eviction, rolling update), t
 Once the cluster is ready, connect via `cypher-shell` and inspect the cluster topology:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -n demo neo4j-test-0 -- \
+```bash
+kubectl exec -n demo neo4j-test-0 -- \
     cypher-shell -u neo4j -p "$PASS" \
     "SHOW SERVERS YIELD serverId, name, address, state, health, hosting
-     RETURN serverId, name, address, state, health, hosting;"
 ```
+     RETURN serverId, name, address, state, health, hosting;"
 
 Expected output (3-server cluster, all `Enabled` and `Available`):
 
@@ -167,12 +171,12 @@ Expected output (3-server cluster, all `Enabled` and `Available`):
 Check database allocation and current leaders:
 
 ```bash
-$ kubectl exec -n demo neo4j-test-0 -- \
+kubectl exec -n demo neo4j-test-0 -- \
     cypher-shell -u neo4j -p "$PASS" \
     "SHOW DATABASES YIELD name, role, writer, currentStatus, address
+```
      RETURN name, role, writer, currentStatus, address
      ORDER BY name, role;"
-```
 
 ## Next Steps
 

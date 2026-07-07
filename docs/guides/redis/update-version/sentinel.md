@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -68,17 +68,17 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/sentinel.yaml
-redissentinel.kubedb.com/sen-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-sample created
 
 Now, wait until `sen-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME         VERSION   STATUS   AGE
 sen-sample   6.2.14     Ready    5m20s
-```
 
 ### Deploy Redis :
 
@@ -111,17 +111,17 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/rd-sentinel.yaml
-redis.kubedb.com/rd-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/rd-sentinel.yaml
 ```
+redis.kubedb.com/rd-sample created
 
 Now, wait until `rd-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME        VERSION   STATUS   AGE
 rd-sample   6.2.14     Ready    2m11s
-```
 
 We are now ready to apply the `RedisSentinelOpsRequest` CR to update the sentinel version and `RedisOpsRequest` CR to update the database version.
 
@@ -156,9 +156,9 @@ Here,
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-sentinel.yaml
-redissentinelopsrequest.ops.kubedb.com/update-sen-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-sentinel.yaml
 ```
+redissentinelopsrequest.ops.kubedb.com/update-sen-version created
 
 #### Verify RedisSentinel version updated successfully :
 
@@ -167,26 +167,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME                  TYPE            STATUS       AGE
 update-sen-version    UpdateVersion   Successful   3m30s
-```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `RedisSentinel` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get redissentinel -n demo sen-sample -o=jsonpath='{.spec.version}{"\n"}'
+```
 7.0.14
 
-$ kubectl get petset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo sen-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
-$ kubectl get pods -n demo sen-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
+```bash
+kubectl get pods -n demo sen-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57c763
 
 You can see from above, our `RedisSentinel` sen-demo has been updated with the new version. So, the UpdateVersion process is successfully completed.
 ### Update Redis Version
@@ -220,9 +224,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-redis-sentinel.yaml
-redisopsrequest.ops.kubedb.com/update-rd-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/update-version/update-redis-sentinel.yaml
 ```
+redisopsrequest.ops.kubedb.com/update-rd-version created
 
 #### Verify Redis version updated successfully :
 
@@ -231,26 +235,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                 TYPE            STATUS       AGE
 update-rd-version    UpdateVersion   Successful   5m40s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `Redis` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get redis -n demo rd-sample -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get redis -n demo rd-sample -o=jsonpath='{.spec.version}{"\n"}'
+```
 7.0.4
 
-$ kubectl get petset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
+```bash
+kubectl get petset -n demo rd-sample -o=jsonpath='{.spec.template.spec.containers[1].image}{"\n"}'
+```
 redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c3f4
 
-$ kubectl get pods -n demo rd-sample-0 -o=jsonpath='{.spec.containers[1].image}{"\n"}'
-redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c3f4
+```bash
+kubectl get pods -n demo rd-sample-0 -o=jsonpath='{.spec.containers[1].image}{"\n"}'
 ```
+redis:7.0.4@sha256:091a7b5de688f283b30a4942280b64cf822bbdab0abfb2d2ce6db989f2d3c3f4
 
 You can see from above, our `Redis` standalone database has been updated with the new version. So, the UpdateVersion process is successfully completed.
 
@@ -260,24 +268,34 @@ You can see from above, our `Redis` standalone database has been updated with th
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-sample patched
 
-$ kubectl delete -n demo redis rd-sample
+```bash
+kubectl delete -n demo redis rd-sample
+```
 redis.kubedb.com "rd-sample" deleted
 
-$ kubectl delete -n demo redisopsrequest update-rd-version
+```bash
+kubectl delete -n demo redisopsrequest update-rd-version
+```
 redisopsrequest.ops.kubedb.com "update-rd-version" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-sample patched
 
-$ kubectl delete -n demo redissentinel sen-sample
+```bash
+kubectl delete -n demo redissentinel sen-sample
+```
 redissentinel.kubedb.com "sen-sample" deleted
 
-$ kubectl delete -n demo redissentinelopsrequests update-sen-version
-redissentinelopsrequest.ops.kubedb.com "update-sen-version" deleted
+```bash
+kubectl delete -n demo redissentinelopsrequests update-sen-version
 ```
+redissentinelopsrequest.ops.kubedb.com "update-sen-version" deleted

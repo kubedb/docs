@@ -27,9 +27,9 @@ KubeDB supports providing custom configuration for MSSQLServer. This tutorial wi
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -72,13 +72,13 @@ Here we have set
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
-secret/ms-custom-config created
+kubectl create secret generic -n demo ms-custom-config --from-file=./mssql.conf
 ```
+secret/ms-custom-config created
 
 Verify the secret has the configuration file.
 ```bash
-$ kubectl get secret -n demo ms-custom-config -oyaml
+kubectl get secret -n demo ms-custom-config -oyaml
 ```
 
 ```yaml
@@ -110,9 +110,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -128,9 +128,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 
 
@@ -174,32 +174,37 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/mssql-custom-config.yaml
-mssqlserver.kubedb.com/mssql-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/mssql-custom-config.yaml
 ```
+mssqlserver.kubedb.com/mssql-custom-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, services, secrets etc. If everything goes well, we will see that a pod with the name `mssql-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo mssql-custom-config-0
+kubectl get pod -n demo mssql-custom-config-0
+```
 NAME                    READY   STATUS    RESTARTS   AGE
 mssql-custom-config-0   1/1     Running   0          94s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 Now, Let's connect to the MSSQLServer from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\password}' | base64 -d
+```bash
+kubectl get secrets -n demo mssql-custom-config-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 AqRe6WIuqwKXLaWc
 
-$ kubectl exec -it mssql-custom-config-0 -n demo -c mssql -- bash
+```bash
+kubectl exec -it mssql-custom-config-0 -n demo -c mssql -- bash
+```
 mssql@mssql-custom-config-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1036
@@ -230,7 +235,6 @@ physical_memory_mb
 2304
 (1 rows affected)
 1> 
-```
 
 
 As we can see from the configuration of running sql server, the configuration given in the config secret has been set successfully.
@@ -240,16 +244,20 @@ As we can see from the configuration of running sql server, the configuration gi
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo ms/mssql-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo ms/mssql-custom-config -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo ms/mssql-custom-config
+```bash
+kubectl delete -n demo ms/mssql-custom-config
+```
 mssqlserver.kubedb.com "mssql-custom-config" deleted
 
-$ kubectl delete -n demo secret ms-custom-config
+```bash
+kubectl delete -n demo secret ms-custom-config
+```
 mssqlserver.kubedb.com "mssql-custom-config" deleted
 
 kubectl delete ns demo
-```
 
 ## Next Steps
 

@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/backup/kubestash/logical/examples](docs/guides/mysql/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -86,33 +86,35 @@ Here,
 Create the above `MySQL` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/sample-mysql.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 
 KubeDB will deploy a MySQL database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get mysqls.kubedb.com -n demo
+kubectl get mysqls.kubedb.com -n demo
+```
 NAME           VERSION   STATUS    AGE
 sample-mysql   8.2.0     Ready     4m22s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mysql 
+kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-mysql 
+```
 NAME                TYPE     DATA   AGE
 sample-mysql-auth   Opaque   2      4m58s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mysql
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mysql
+```
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 sample-mysql           ClusterIP   10.96.55.61     <none>        3306/TCP   97s
 sample-mysql-pods      ClusterIP   None            <none>        3306/TCP   97s
 sample-mysql-standby   ClusterIP   10.96.211.186   <none>        3306/TCP   97
-```
 
 Here, we have to use service `sample-mysql` and secret `sample-mysql-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
@@ -121,15 +123,15 @@ Here, we have to use service `sample-mysql` and secret `sample-mysql-auth` to co
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME           AGE
 sample-mysql   9m24s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-mysql -o yaml
+kubectl get appbindings -n demo sample-mysql -o yaml
 ```
 
 ```yaml
@@ -184,27 +186,30 @@ KubeStash uses the `AppBinding` CR to connect with the target database. It requi
 Now, we are going to exec into the database pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mysql"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mysql"
+```
 NAME             READY   STATUS    RESTARTS   AGE
 sample-mysql-0   2/2     Running   0          2m41s
 sample-mysql-1   2/2     Running   0          2m35s
 sample-mysql-2   2/2     Running   0          2m29s
-```
 
 And copy the username and password of the `root` user to access into `mysql` shell.
 
 ```bash
-$ kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.username}'| base64 -d
+```
 root⏎
 
-$ kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.password}'| base64 -d
-DZfmUZd14fNEEOU4⏎
+```bash
+kubectl get secret -n demo  sample-mysql-auth -o jsonpath='{.data.password}'| base64 -d
 ```
+DZfmUZd14fNEEOU4⏎
 
 Now, Lets exec into the `Pod` to enter into `mysql` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- mysql --user=root --password=DZfmUZd14fNEEOU4
+kubectl exec -it -n demo sample-mysql-0 -- mysql --user=root --password=DZfmUZd14fNEEOU4
+```
 Defaulted container "mysql" out of: mysql, mysql-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -258,7 +263,6 @@ mysql> SELECT * FROM playground.equipment;
 
 mysql> exit
 Bye
-```
 
 Now, we are ready to backup the database.
 
@@ -271,13 +275,19 @@ We are going to store our backed up data into a GCS bucket. We have to create a 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -306,9 +316,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -339,9 +349,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -354,11 +364,14 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 **Create BackupConfiguration:**
 
@@ -409,27 +422,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-mysql-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-mysql-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                  PHASE   PAUSED   AGE
 sample-mysql-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME               INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mysql-repo                 0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/mysql` directory.
 
@@ -440,21 +453,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                          SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-mysql-backup-frequent-backup   */5 * * * *             0        2m45s           3m25s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                             INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
 sample-mysql-backup-frequent-backup-1724065200   BackupConfiguration   sample-mysql-backup    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -463,18 +475,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-mysql-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-mysql-repo
+kubectl get repository -n demo gcs-mysql-repo
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mysql-repo          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-mysql-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-mysql-repo
+```
 NAME                                                            REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-mysql-repo-sample-mysql-backup-frequent-backup-1724065200   gcs-mysql-repo        frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -487,7 +499,7 @@ gcs-mysql-repo-sample-mysql-backup-frequent-backup-1724065200   gcs-mysql-repo  
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo gcs-mysql-repo-sample-mysql-backup-frequent-backup-1724065200 -oyaml
+kubectl get snapshots -n demo gcs-mysql-repo-sample-mysql-backup-frequent-backup-1724065200 -oyaml
 ```
 
 ```yaml
@@ -591,17 +603,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restored-mysql.yaml
-mysql.kubedb.com/restored-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restored-mysql.yaml
 ```
+mysql.kubedb.com/restored-mysql created
 
 If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```bash
-$ kubectl get my -n demo restored-mysql
+kubectl get my -n demo restored-mysql
+```
 NAME             VERSION   STATUS         AGE
 restored-mysql   8.2.0     Provisioning   61s
-```
 
 #### Create RestoreSession:
 
@@ -642,19 +654,19 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-mysql-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-mysql-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 
 NAME             REPOSITORY        FAILURE-POLICY   PHASE       DURATION   AGE
 sample-restore   gcs-demo-repo                      Succeeded   3s         53s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -666,33 +678,36 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get my -n demo restored-mysql
+kubectl get my -n demo restored-mysql
+```
 NAME             VERSION   STATUS  AGE
 restored-mysql   8.2.0     Ready   34m
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mysql"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mysql"
+```
 NAME               READY   STATUS    RESTARTS   AGE
 restored-mysql-0   1/1     Running   0          39m
-```
 
 And then copy the user name and password of the `root` user to access into `mysql` shell.
 
 ```bash
-$ kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.username}'| base64 -d
+```
 root
 
-$ kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.password}'| base64 -d
-QMm1hi0T*7QFz_yh
+```bash
+kubectl get secret -n demo  restored-mysql-auth -o jsonpath='{.data.password}'| base64 -d
 ```
+QMm1hi0T*7QFz_yh
 
 Now, let's exec into the Pod to enter into `mysql` shell and verify restored data,
 
 ```bash
-$ kubectl exec -it -n demo restored-mysql-0 -- mysql --user=root --password='QMm1hi0T*7QFz_yh'
+kubectl exec -it -n demo restored-mysql-0 -- mysql --user=root --password='QMm1hi0T*7QFz_yh'
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -737,7 +752,6 @@ mysql> SELECT * FROM playground.equipment;
 
 mysql> exit
 Bye
-```
 
 So, from the above output, we can see that the `playground` database and the `equipment` table we have created earlier in the original database and now, they are restored successfully.
 

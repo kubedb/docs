@@ -30,20 +30,23 @@ existing secretwith the new credential, and does not provide the secretdetails d
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME      STATUS    AGE
 demo      Active    1s
-```
 
 ## Find Available MemcachedVersion
 
 When you have installed KubeDB, it has created `MemcachedVersion` crd for all supported Memcached versions. Check 0
 
 ```bash
-$ kubectl get memcachedversions
+kubectl get memcachedversions
+```
 NAME       VERSION   DB_IMAGE                                          DEPRECATED   AGE
 1.5        1.5       ghcr.io/kubedb/memcached:1.5                      true         5d19h
 1.5-v1     1.5       ghcr.io/kubedb/memcached:1.5-v1                   true         5d19h
@@ -53,7 +56,6 @@ NAME       VERSION   DB_IMAGE                                          DEPRECATE
 1.6.40     1.6.40    ghcr.io/appscode-images/memcached:1.6.40-alpine                5d19h
 1.6.29     1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine                5d19h
 1.6.33     1.6.33    ghcr.io/appscode-images/memcached:1.6.33-alpine                5d19h
-```
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached/rotate-auth](/docs/examples/memcached/rotate-auth) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -87,17 +89,17 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until memcd-quickstart has status Ready. i.e,
 
-```shell
-$  kubectl get mc -n demo -w
+```bash
+ kubectl get mc -n demo -w
+```
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    17h
-```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -114,10 +116,10 @@ Here, `username`is `user` and `password` is `ikbkjbodeewenrgj`
 Here, we will connect to Memcached server from local-machine through port-forwarding.
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding and it must be running in separate terminal.
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 Now, you can connect to this database using `telnet`.Connect to Memcached from local-machine through telnet.
 ```shell
 
@@ -173,19 +175,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Memcached.
 
 Let's create the `MemcachedOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/memcached/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/memcached/rotate-auth/rotate-auth-generated.yaml
+ ```
  Memcachedopsrequest.ops.kubedb.com/mcops-rotate-auth-generated created
-```
 Let's wait for `MemcachedOpsrequest` to be `Successful`. Run the following command to watch `MemcachedOpsrequest` CRO
-```shell
- $ kubectl get Memcachedopsrequest -n demo
+ ```bash
+ kubectl get Memcachedopsrequest -n demo
+ ```
  NAME                          TYPE         STATUS       AGE
  mcops-rotate-auth-generated   RotateAuth   Successful   7m47s
-```
 If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe MemcachedopsRequest -n demo mcops-rotate-auth-generated
+```bash
+kubectl describe MemcachedopsRequest -n demo mcops-rotate-auth-generated
+```
 Name:         mcops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -265,28 +268,29 @@ Events:
   Normal   ResumeDatabase                                                  98s   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
   Normal   ResumeDatabase                                                  98s   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
   Normal   Successful                                                      98s   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth secretfor demo/memcd-quickstart
-```
 
 **Verify Auth is rotated**
-```shell
-$ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
-"memcd-quickstart-auth"
-$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
-user:yjf3Oc;ZlSs.iMVO                    
+```bash
+kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 ```
+"memcd-quickstart-auth"
+
+```bash
+kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+```
+user:yjf3Oc;ZlSs.iMVO                    
 **Let's verify whether the credential is working or not:**
 
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding and it must be running in separate terminal.
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-
-```
 Now, you can connect to this database using `telnet`.Connect to Memcached from local-machine through telnet.
-```shell
-
-$ telnet 127.0.0.1 11211
+```bash
+telnet 127.0.0.1 11211
+```
 #Output
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
@@ -308,14 +312,13 @@ VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.
-```
 Your credentials have been rotated successfully, so everything’s working.
 Also, there will be two more new keys in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
-user:ikbkjbodeewenrgj
+```bash
+kubectl get secret -n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 ```
+user:ikbkjbodeewenrgj
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using User Created Credentials
 
@@ -368,20 +371,21 @@ Here,
 
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/memcached/rotate-auth/rotate-auth-user.yaml
-Memcachedopsrequest.ops.kubedb.com/mcops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/memcached/rotate-auth/rotate-auth-user.yaml
 ```
+Memcachedopsrequest.ops.kubedb.com/mcops-rotate-auth-user created
 Let’s wait for `MemcachedOpsRequest` to be Successful. Run the following command to watch `MemcachedOpsRequest` CRO:
 
-```shell
-$ kubectl get Memcachedopsrequest -n demo
+```bash
+kubectl get Memcachedopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 mcops-rotate-auth-user        RotateAuth   Successful   7m44s
-```
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Memcachedopsrequest -n demo mcops-rotate-auth-user
+```bash
+kubectl describe Memcachedopsrequest -n demo mcops-rotate-auth-user
+```
 Name:         mcops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -463,28 +467,28 @@ Events:
   Normal   ResumeDatabase                                                  13m   KubeDB Ops-manager Operator  Resuming Memcached demo/memcd-quickstart
   Normal   ResumeDatabase                                                  13m   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
   Normal   Successful                                                      13m   KubeDB Ops-manager Operator  Successfully Rotated Memcached Auth secretfor demo/memcd-quickstart
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
-"mc-new-auth"
-$  kubectl get secret -n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
-user:pass                                                                                   
+```bash
+kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mc-new-auth"
+
+```bash
+ kubectl get secret -n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
+```
+user:pass                                                                                   
 **Let's verify whether the credential is working or not:**
 
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding and it must be running in separate terminal.
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-
-```
 Now, you can connect to this database using `telnet`.Connect to Memcached from local-machine through telnet.
-```shell
-
-$ telnet 127.0.0.1 11211
+```bash
+telnet 127.0.0.1 11211
+```
 #Output
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
@@ -506,15 +510,13 @@ VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.
-```
 Your credentials have been rotated successfully, so everything’s working.
 
 Also, there will be a new key in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
-```shell
-$ kubectl get secret -n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
-user:yjf3Oc;ZlSs.iMVO
-                  
+```bash
+kubectl get secret -n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 ```
+user:yjf3Oc;ZlSs.iMVO
 
 The above output shows that the password has been updated successfully. The previous username & password is stored in the secretfor rollback purpose.
 
@@ -523,17 +525,26 @@ The above output shows that the password has been updated successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete memcachedopsrequest -n demo mcops-rotate-auth-generated mcops-rotate-auth-user
+```bash
+kubectl delete memcachedopsrequest -n demo mcops-rotate-auth-generated mcops-rotate-auth-user
+```
 memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" deleted
 memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo mc-new-auth
-secret "mc-new-auth" deleted
-$ kubectl delete secret -n demo memcd-quickstart-auth
-secret "memcd-quickstart-auth" deleted
-$ kubectl delete memcached -n demo memcd-quickstart
-memcached.kubedb.com "memcd-quickstart" deleted
+
+```bash
+kubectl delete secret -n demo mc-new-auth
 ```
+secret "mc-new-auth" deleted
+
+```bash
+kubectl delete secret -n demo memcd-quickstart-auth
+```
+secret "memcd-quickstart-auth" deleted
+
+```bash
+kubectl delete memcached -n demo memcd-quickstart
+```
+memcached.kubedb.com "memcd-quickstart" deleted
 
 ## Next Steps
 
