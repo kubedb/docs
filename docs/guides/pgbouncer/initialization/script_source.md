@@ -52,7 +52,7 @@ $ kubectl create configmap -n demo pb-init-script \
 --from-literal=init.sh="$(curl -fsSL https://raw.githubusercontent.com/kubedb/pgbouncer-pgpool-init-scripts/master/pgbouncer/init.sh)"
 configmap/pb-init-script created
 ```
-> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully.
+> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully. After deploying PgBouncer with this ConfigMap, the initialization script runs automatically, and any database created or registered by the script will be available and can be verified after the deployment completes.
 ## Create PgBouncer with Script Source
 
 Following YAML describes the PgBouncer object with `init.script`:
