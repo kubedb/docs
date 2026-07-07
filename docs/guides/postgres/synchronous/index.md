@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -35,9 +35,9 @@ namespace/demo created
 Now, create Postgres crd specifying `spec.streamingMode` with `Synchronous` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/synchronous/postgres.yaml
-postgres.kubedb.com/demo-pg created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/synchronous/postgres.yaml
 ```
+postgres.kubedb.com/demo-pg created
 
 Below is the YAML for the Postgres crd we just created.
 
@@ -68,7 +68,8 @@ All participating replicas therefore report `sync_state` as `quorum`.
 
 Let's check in the postgres cluster that we have deployed. Now, exec into the current primary, in our case it is Pod `demo-pg-0`.
 ```bash
-$ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
+kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
+```
 bash-5.1$ psql
 psql (18.3)
 Type "help" for help.
@@ -78,8 +79,6 @@ postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flu
 ------------------+-------------+-----------+-----------+-----------+-----------+------------+------------
  demo-pg-1        | 10.244.0.22 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | quorum
  demo-pg-2        | 10.244.0.24 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | quorum
-
-```
 But Users can also configure a Synchronous replication cluster where all the replica are in `sync` with current primary. 
 Let's see how a user can do so, Users need to provide `custom configuration` with setting the config for `synchronous_standby_names`. 
 
@@ -88,7 +87,8 @@ In this scenario, We can set all the 2 replicas server as synchronous replica wi
 We need to provide `synchronous_standby_names = 'FIRST 2 (*)'` inside custom configuration.
 That`s all, Then you can see that all the replicas are configured as synchronous replica.
 ```bash
-$ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
+kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
+```
 bash-5.1$ psql
 psql (18.3)
 Type "help" for help.
@@ -98,8 +98,6 @@ postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flu
 ------------------+-------------+-----------+-----------+-----------+-----------+------------+------------
  demo-pg-1        | 10.244.0.22 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | sync
  demo-pg-2        | 10.244.0.24 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | sync
-
-```
 To know how to set custom configuration for postgres please check [here](/docs/guides/postgres/configuration/using-config-file.md).
 
 ### synchronous_commit

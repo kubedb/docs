@@ -28,12 +28,14 @@ This guide will show you how to use `KubeDB` GitOps operator to create MariaDB d
 - You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/mariadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -92,11 +94,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── MariaDB.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is created in your cluster.
 
@@ -104,18 +106,19 @@ Our `gitops` operator will create an actual `MariaDB` database CR in the cluster
 
 
 ```bash
-$ kubectl get mariaDB.gitops.kubedb.com,mariaDB.kubedb.com -n demo
+kubectl get mariaDB.gitops.kubedb.com,mariaDB.kubedb.com -n demo
+```
 NAME                                       AGE
 mariadb.gitops.kubedb.com/mariadb-gitops   22m
 
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    22m
-```
 
 List the resources created by `kubedb` operator created for `kubedb.com/v1` MariaDB.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+```
 NAME                                          AGE
 petset.apps.k8s.appscode.com/mariadb-gitops   22m
 
@@ -133,7 +136,6 @@ service/mariadb-gitops-pods   ClusterIP   None            <none>        3306/TCP
 
 NAME                                                TYPE                 VERSION   AGE
 appbinding.appcatalog.appscode.com/mariadb-gitops   kubedb.com/mariadb   11.8.5    22m
-```
 
 ## Update MariaDB Database using GitOps
 
@@ -141,8 +143,9 @@ appbinding.appcatalog.appscode.com/mariadb-gitops   kubedb.com/mariadb   11.8.5 
 
 Before scaling database resouces:
 
-```shell
-$ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
+```bash
+kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -152,7 +155,6 @@ $ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].res
     "memory": "1Gi"
   }
 }
-```
 Update the `MariaDB.yaml` with the following,
 ```yaml
 apiVersion: gitops.kubedb.com/v1alpha1
@@ -190,17 +192,18 @@ Resource Requests and Limits are updated to `600m` CPU and `1.2Gi` Memory. Commi
 Now, `gitops` operator will detect the resource changes and create a `MariaDBOpsRequest` to update the `MariaDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    39m
 
 NAME                                                                     TYPE              STATUS       AGE
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268   VerticalScaling   Successful   9m17s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -211,7 +214,6 @@ $ kubectl get pod -n demo mariadb-gitops-0 -o json | jq '.spec.containers[0].res
     "memory": "1288490188800m"
   }
 }
-```
 
 ### Scale MariaDB Replicas
 Update the `MariaDB.yaml` with the following,
@@ -250,25 +252,25 @@ Update the `replicas` to `5`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MariaDBOpsRequest to update the `MariaDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    107m
 
 NAME                                                                       TYPE                STATUS       AGE
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-m7iex7   HorizontalScaling   Successful   63m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   76m
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+```
 NAME               READY   STATUS    RESTARTS   AGE
 mariadb-gitops-0   2/2     Running   0          76m
 mariadb-gitops-1   2/2     Running   0          75m
 mariadb-gitops-2   2/2     Running   0          73m
 mariadb-gitops-3   2/2     Running   0          63m
 mariadb-gitops-4   2/2     Running   0          62m
-```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
@@ -311,7 +313,8 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MariaDBOpsRequest to update the `MariaDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    111m
 
@@ -319,18 +322,17 @@ NAME                                                                       TYPE 
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-m7iex7   HorizontalScaling   Successful   68m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   81m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   115s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mariadb-gitops'
+```
 NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-mariadb-gitops-0   Bound    pvc-f1a49c53-d095-43a7-b62f-e91a5a9f5496   2Gi        RWO            longhorn       <unset>                 116m
 data-mariadb-gitops-1   Bound    pvc-79d99636-e0d7-413f-a6a6-559e908ed817   2Gi        RWO            longhorn       <unset>                 116m
 data-mariadb-gitops-2   Bound    pvc-f66ccf56-63b6-4ac6-a7f9-09f573466266   2Gi        RWO            longhorn       <unset>                 116m
 data-mariadb-gitops-3   Bound    pvc-b7744652-611a-4c10-a06f-c93f030fb90f   2Gi        RWO            longhorn       <unset>                 72m
 data-mariadb-gitops-4   Bound    pvc-dee1c10d-0456-4935-9306-0d86c3db54d0   2Gi        RWO            longhorn       <unset>                 71m
-```
 
 ## Reconfigure MariaDB
 
@@ -353,12 +355,12 @@ type: Opaque
 Now, we will add this file to `kubedb/md-configuration.yaml`.
 
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── md-configuration.yaml
 │ └── mariadb.yaml
 1 directories, 2 files
-```
 
 Update the `MariaDB.yaml` with the following,
 ```yaml
@@ -399,7 +401,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MariaDBOpsRequest to update the `MariaDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    17h
 
@@ -408,7 +411,6 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-m7iex7   Horiz
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-reconfigure-1leaj8         Reconfigure         Successful   17h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   19h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   18h
-```
 
 
 ### Rotate MariaDB Auth
@@ -431,13 +433,13 @@ stringData:
 
 Let's add that to our `kubedb/md-auth.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── md-configuration.yaml
 │ ├── md-auth.yaml
 │ └── MariaDB.yaml
 1 directories, 3 files
-```
 
 
 
@@ -484,7 +486,8 @@ Change the `authSecret` field to `mdauth`. Commit the changes and push to your G
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MariaDBOpsRequest to update the `MariaDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    18h
 
@@ -494,7 +497,6 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-reconfigure-1leaj8         Recon
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-rotate-auth-1xy3d7         RotateAuth          Successful   12m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   19h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   18h
-```
 
 
 ### TLS configuration
@@ -506,17 +508,17 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mariadb/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mariadb/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls md-ca \
+kubectl create secret tls md-ca \
   --cert=ca.crt \
   --key=ca.key \
   -n demo
@@ -544,7 +546,8 @@ issuer.cert-manager.io/md-issuer created
 
 Let's add that to our `kubedb/md-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── md-configuration.yaml
 │ ├── md-auth.yaml
@@ -552,7 +555,6 @@ $ tree .
 │ ├── md-issuer.yaml
 │ └── MariaDB.yaml
 1 directories, 5 files
-```
 
 Update the `MariaDB.yaml` with the following,
 ```yaml
@@ -611,7 +613,8 @@ Add `requireSSL` as `true` and `tls` fields in the spec. Commit the changes and 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` MariaDBOpsRequest to update the `MariaDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get md,mariadbopsrequest -n demo
+ kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   11.8.5    Ready    18h
 
@@ -622,7 +625,6 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-reconfiguretls-ftyfdq      Recon
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-rotate-auth-1xy3d7         RotateAuth          Successful   35m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   20h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   18h
-```
 
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MariaDB.
@@ -690,7 +692,8 @@ Update the `version` field to `12.1.2`. Commit the changes and push to your Git 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MariaDBOpsRequest to update the `MariaDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   12.1.2    Ready    18h
 
@@ -702,19 +705,24 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-rotate-auth-1xy3d7         Rotat
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-versionupdate-ksli15       UpdateVersion       Successful   10m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   20h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   19h
-```
 
 
 Now, we are going to verify whether the `MariaDB`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get MariaDB -n demo mariadb-gitops -o=jsonpath='{.spec.version}{"\n"}'
-12.1.2
-$ kubectl get petset -n demo mariadb-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
-$ kubectl get pod -n demo mariadb-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
+kubectl get MariaDB -n demo mariadb-gitops -o=jsonpath='{.spec.version}{"\n"}'
 ```
+12.1.2
+
+```bash
+kubectl get petset -n demo mariadb-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
+
+```bash
+kubectl get pod -n demo mariadb-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
 
 ### Enable Monitoring
 
@@ -783,7 +791,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MariaDBOpsRequest to add the `MariaDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get md,mariadbopsrequest -n demo
+kubectl get md,mariadbopsrequest -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   12.1.2    Ready    19h
 
@@ -796,7 +805,6 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-rotate-auth-1xy3d7         Rotat
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-versionupdate-ksli15       UpdateVersion       Successful   26m
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-verticalscaling-rjs268     VerticalScaling     Successful   20h
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     VolumeExpansion     Successful   19h
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 

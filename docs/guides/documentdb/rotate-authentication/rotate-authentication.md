@@ -47,18 +47,21 @@ Postgres, which has a single auth secret):
 ## Credentials before rotation
 
 ```bash
-$ kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d
-EY1imAac)vqps)Ez
-$ kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d
-DQShSsn0Dqq7Uf*F
+kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+EY1imAac)vqps)Ez
+
+```bash
+kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d
+```
+DQShSsn0Dqq7Uf*F
 
 The `-admin-auth` secret has no `password.prev` key yet (nothing has been rotated):
 
 ```bash
-$ kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password\.prev}'
-       # (empty)
+kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password\.prev}'
 ```
+       # (empty)
 
 ## Create the RotateAuth OpsRequest
 
@@ -75,20 +78,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-rotate-auth.yaml
+kubectl apply -f cluster-rotate-auth.yaml
+```
 documentdbopsrequest.ops.kubedb.com/documentdb-cls-rotate-auth created
 
-$ kubectl get dcops -n demo documentdb-cls-rotate-auth
+```bash
+kubectl get dcops -n demo documentdb-cls-rotate-auth
+```
 NAME                         TYPE         STATUS       AGE
 documentdb-cls-rotate-auth   RotateAuth   Successful   3m34s
-```
 
 The status conditions show the new credential being generated, applied to the primary, written
 into the PetSet, and then a rolling restart so all replicas pick it up:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-rotate-auth \
+kubectl get dcops -n demo documentdb-cls-rotate-auth \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 RotateAuth=True :: DocumentDB ops request has started to rotate auth for documentdb
 UpdateCredential=True :: Successfully generated new credentials
 ApplyNewCredential=True :: Successfully applied rotated credential to the database primary
@@ -99,7 +105,6 @@ RestartNodes=True :: Successfully restarted all the nodes
 RestartReadReplicas=True :: Successfully Restarted Read Replicas
 Successful=True :: Successfully Rotated DocumentDB Auth Secret
 UnsetRaftKeyOpsRequestProgressing=True :: Successfully Unset Raft Key OpsRequestProgressing
-```
 
 ## Credentials after rotation
 
@@ -107,32 +112,41 @@ The admin password has changed, and the **old admin password is retained under
 `password.prev`**:
 
 ```bash
-$ kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d
-ELKnwAUT.I85QJ4g
-$ kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password\.prev}' | base64 -d
-EY1imAac)vqps)Ez
+kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+ELKnwAUT.I85QJ4g
+
+```bash
+kubectl get secret -n demo documentdb-cls-sample-admin-auth -o jsonpath='{.data.password\.prev}' | base64 -d
+```
+EY1imAac)vqps)Ez
 
 The application `-auth` secret is **unchanged** — same password as before, and no
 `password.prev` was written:
 
 ```bash
-$ kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d
-DQShSsn0Dqq7Uf*F          # identical to the "before" value
-$ kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password\.prev}'
-       # (empty)
+kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+DQShSsn0Dqq7Uf*F          # identical to the "before" value
+
+```bash
+kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password\.prev}'
+```
+       # (empty)
 
 Because the application credential did not change, existing MongoDB-wire clients keep working
 with no reconfiguration:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-1 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-1 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 ## Summary
 

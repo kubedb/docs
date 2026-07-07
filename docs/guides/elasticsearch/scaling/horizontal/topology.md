@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the E
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -92,28 +92,34 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/topology.yaml
-Elasticsearch.kubedb.com/es-hscale-topology created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/clustering/topology.yaml
 ```
+Elasticsearch.kubedb.com/es-hscale-topology created
 
 Now, wait until `es-hscale-topology` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo
+kubectl get es -n demo
+```
 NAME                    VERSION       STATUS   AGE
 es-hscale-topology     xpack-9.2.3   Ready    3m53s
-```
 
 Let's check the number of replicas has from Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
-3
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
-3
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
-3
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
 ```
+3
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
+```
+3
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
+```
+3
 
 We can see from both command that the cluster has 3 replicas.
 
@@ -122,7 +128,8 @@ Also, we can verify the replicas of the Topology from an internal Elasticsearch 
 Now lets check the number of replicas,
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-hscale-topology'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-hscale-topology'
+```
 NAME                              READY   STATUS    RESTARTS   AGE
 pod/es-hscale-topology-data-0     1/1     Running   0          27m
 pod/es-hscale-topology-data-1     1/1     Running   0          25m
@@ -165,8 +172,6 @@ persistentvolumeclaim/data-es-hscale-topology-ingest-2   Bound    pvc-4540c342-8
 persistentvolumeclaim/data-es-hscale-topology-master-0   Bound    pvc-902a0ebb-b6fb-4106-8220-f137972a84be   1Gi        RWO            standard     <unset>                 27m
 persistentvolumeclaim/data-es-hscale-topology-master-1   Bound    pvc-f97215e6-1a91-4e77-8bfb-78d907828e51   1Gi        RWO            standard     <unset>                 25m
 persistentvolumeclaim/data-es-hscale-topology-master-2   Bound    pvc-a9160094-c08e-4d40-b4ea-ec5681f8be30   1Gi        RWO            standard     <unset>                 24m
-
-```
 
 We can see from the above output that the Elasticsearch has 3 nodes.
 
@@ -213,9 +218,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-down-Topology.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-down-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-down-Topology.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-down-topology created
 
 #### Verify Topology cluster replicas scaled down successfully
 
@@ -224,15 +229,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                         TYPE                STATUS       AGE
 esops-hscale-down-Topology   HorizontalScaling   Successful   76s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequests -n demo esops-hscale-down-topology
+kubectl describe Elasticsearchopsrequests -n demo esops-hscale-down-topology
+```
 Name:         esops-hscale-down-topology
 Namespace:    demo
 Labels:       <none>
@@ -393,18 +399,23 @@ Events:
   Normal   ResumeDatabase                                          33s   KubeDB Ops-manager Operator  Resuming Elasticsearch demo/es-hscale-topology
   Normal   ResumeDatabase                                          33s   KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es-hscale-topology
   Normal   Successful                                              33s   KubeDB Ops-manager Operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
-2
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
-2
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
-2
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
 ```
+2
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
+```
+2
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
+```
+2
 From all the above outputs we can see that the replicas of the Topology cluster is `2`. That means we have successfully scaled down the replicas of the Elasticsearch Topology cluster.
 
 Only one node can be scaling down at a time. So we are scaling down the `ingest` node.
@@ -464,9 +475,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-up-Topology.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-up-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-up-Topology.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-up-topology created
 
 #### Verify Topology cluster replicas scaled up successfully
 
@@ -475,15 +486,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$  kubectl get Elasticsearchopsrequest -n demo
+ kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                       TYPE                STATUS       AGE
 esops-hscale-up-topology   HorizontalScaling   Successful   13m
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequests -n demo esops-hscale-up-topology
+kubectl describe Elasticsearchopsrequests -n demo esops-hscale-up-topology
+```
 Name:         esops-hscale-up-topology
 Namespace:    demo
 Labels:       <none>
@@ -575,18 +587,23 @@ Events:
   Normal   ResumeDatabase                             4m52s  KubeDB Ops-manager Operator  Resuming Elasticsearch demo/es-hscale-topology
   Normal   ResumeDatabase                             4m52s  KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es-hscale-topology
   Normal   Successful                                 4m51s  KubeDB Ops-manager Operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
-3
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
-3
-$ kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
-3
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.master.replicas'
 ```
+3
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.data.replicas'
+```
+3
+
+```bash
+kubectl get elasticsearch -n demo es-hscale-topology -o json | jq '.spec.topology.ingest.replicas'
+```
+3
 
 From all the above outputs we can see that the brokers of the Topology Elasticsearch is `3`. That means we have successfully scaled up the replicas of the Elasticsearch Topology cluster.
 

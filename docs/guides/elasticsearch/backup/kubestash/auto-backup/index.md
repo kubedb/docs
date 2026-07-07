@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/elasticsearch/backup/kubestash/auto-backup/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -53,13 +53,19 @@ We are going to store our backed up data into a `S3` bucket. We have to create a
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-access-key>' > AWS_ACCESS_KEY_ID
-$ echo -n '<your-secret-key>' > AWS_SECRET_ACCESS_KEY
-$ kubectl create secret generic -n demo s3-secret \
+echo -n '<your-access-key>' > AWS_ACCESS_KEY_ID
+```
+
+```bash
+echo -n '<your-secret-key>' > AWS_SECRET_ACCESS_KEY
+```
+
+```bash
+kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_ACCESS_KEY_ID \
     --from-file=./AWS_SECRET_ACCESS_KEY
-secret/s3-secret created
 ```
+secret/s3-secret created
 
 **Create BackupStorage:**
 
@@ -90,9 +96,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -123,9 +129,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 **Create Secret:**
 
@@ -134,8 +140,11 @@ We also need to create a secret with a `Restic` password for backup data encrypt
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -197,9 +206,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backup-blueprint.yaml
-backupblueprint.core.kubestash.com/es-quickstart-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backup-blueprint.yaml
 ```
+backupblueprint.core.kubestash.com/es-quickstart-backup-blueprint created
 
 Now, we are ready to backup our `Elasticsearch` databases using few annotations.
 
@@ -241,24 +250,25 @@ Here,
 Let's create the `Elasticsearch` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es.yaml
-elasticsearch.kubedb.com/es-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart created
 
 **Verify BackupConfiguration**
 
 If everything goes well, KubeStash should create a `BackupConfiguration` for our Elasticsearch in demo namespace and the phase of that `BackupConfiguration` should be `Ready`. Verify the `BackupConfiguration` object by the following command,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                         PHASE   PAUSED   AGE
 appbinding-es-quickstart     Ready            2m50m
-```
 
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get backupconfiguration -n demo appbinding-es-quickstart -oyaml
+kubectl get backupconfiguration -n demo appbinding-es-quickstart -oyaml
+```
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
@@ -353,7 +363,6 @@ status:
       type: InitialBackupTriggered
     name: frequent-backup
   targetFound: true
-```
 
 Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStash automatically resolved those info from the `BackupBluePrint` and created above `BackupConfiguration`.
 
@@ -362,10 +371,10 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo
+kubectl get backupsession -n demo
+```
 NAME                                                  INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
 appbinding-es-quickstart-frequent-backup-1726722240   BackupConfiguration   appbinding-es-quickstart   Running                12s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -374,10 +383,10 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `s3-elasticsearch-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-elasticsearch-repo   true        8                6.836 KiB   Ready   64s                      15m
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
@@ -399,7 +408,8 @@ s3-elasticsearch-repo-appbindingtart-frequent-backup-1726722361   s3-elasticsear
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo s3-elasticsearch-repo-appbindingtart-frequent-backup-1726722361 -oyaml
+kubectl get snapshots -n demo s3-elasticsearch-repo-appbindingtart-frequent-backup-1726722361 -oyaml
+```
 apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -468,7 +478,6 @@ status:
   size: 7.790 KiB
   snapshotTime: "2024-09-19T05:06:01Z"
   totalComponents: 1
-```
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
@@ -541,9 +550,9 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/custom-backup-blueprint.yaml
-backupblueprint.core.kubestash.com/es-quickstart-custom-backup-blueprint created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/custom-backup-blueprint.yaml
 ```
+backupblueprint.core.kubestash.com/es-quickstart-custom-backup-blueprint created
 
 Now, we are ready to backup our `Elasticsearch` databases using few annotations. You can check available auto-backup annotations for a databases from [here](https://kubestash.com/docs/latest/concepts/crds/backupblueprint/).
 
@@ -586,9 +595,9 @@ Notice the `metadata.annotations` field, where we have defined the annotations r
 Let's create the `Elasticsearch` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es-2.yaml
-elasticsearch.kubedb.com/es-quickstart-2 created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/sample-es-2.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart-2 created
 
 **Verify BackupConfiguration**
 
@@ -603,7 +612,8 @@ appbinding-es-quickstart-2   Ready            8s
 Now, let’s check the YAML of the `BackupConfiguration`.
 
 ```bash
-$ kubectl get bacupconfiguration -n demo appbinding-es-quickstart-2 -oyaml
+kubectl get bacupconfiguration -n demo appbinding-es-quickstart-2 -oyaml
+```
 apiVersion: core.kubestash.com/v1alpha1
 kind: BackupConfiguration
 metadata:
@@ -700,7 +710,6 @@ status:
       type: InitialBackupTriggered
     name: frequent-backup
   targetFound: true
-```
 
 Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStash automatically resolved those info from the `BackupBluePrint` and created above `BackupConfiguration`.
 
@@ -709,7 +718,8 @@ Notice the `spec.backends`, `spec.sessions` and `spec.target` sections, KubeStas
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo
+kubectl get backupsession -n demo
+```
 NAME                                                  INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
 appbinding-es-quickstart-2-frequent-backup-1726726553   BackupConfiguration   appbinding-es-quickstart-2   Succeeded   19s        2m51s
 
@@ -718,8 +728,6 @@ We can see from the above output that the backup session has succeeded. Now, we 
 **Verify Backup:**
 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `s3-elasticsearch-repo` has been updated by the following command,
-
-```bash
 $ kubectl get repo -n demo s3-elasticsearch-repo
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE         PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-elasticsearch-repo   true        10               15.974 KiB   Ready   17s                      100m

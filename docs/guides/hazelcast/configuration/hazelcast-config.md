@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast/configuration/
 ) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -41,10 +43,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Hazelcast CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -83,9 +85,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/configuration/configsecret.yaml
-secret/hz created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/configuration/configsecret.yaml
 ```
+secret/hz created
 Before deploying hazelcast we need to create license secret since we are running enterprise version of hazelcast.
 
 ```bash
@@ -121,21 +123,21 @@ spec:
 Now, create the Hazelcast object by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/configuration/hazelcast-config.yaml
-hazelcast.kubedb.com/hazelcast-dev created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/configuration/hazelcast-config.yaml
 ```
+hazelcast.kubedb.com/hazelcast-dev created
 
 Now, wait for the Hazelcast to become ready:
 
 ```bash
-$ kubectl get hz -n demo -w
+kubectl get hz -n demo -w
+```
 NAME            TYPE            VERSION   STATUS         AGE
 hazelcast-dev   kubedb.com/v1alpha2   5.5.2     Provisioning   0s
 hazelcast-dev   kubedb.com/v1alpha2   5.5.2     Provisioning   24s
 .
 .
 hazelcast-dev   kubedb.com/v1alpha2   5.5.2     Ready          92s
-```
 
 ## Verify Configuration
 
@@ -144,9 +146,9 @@ Let's exec into one of the hazelcast pod that we have created and check the conf
 Exec into the Hazelcast pod:
 
 ```bash
-$ kubectl exec -it -n demo hazelcast-dev-0 -- bash
-hazelcast@hazelcast-dev-0:~$ 
+kubectl exec -it -n demo hazelcast-dev-0 -- bash
 ```
+hazelcast@hazelcast-dev-0:~$ 
 
 Now, execute the following commands to see the configurations:
 ```bash
@@ -166,9 +168,15 @@ Here, we can see that our given persistence configuration is applied to the Haze
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete hz -n demo hazelcast-dev 
-$ kubectl delete secret -n demo hz 
-$ kubectl delete namespace demo
+kubectl delete hz -n demo hazelcast-dev 
+```
+
+```bash
+kubectl delete secret -n demo hz 
+```
+
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

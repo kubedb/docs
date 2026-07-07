@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/scaling/vertical-scaling/cluster/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -49,7 +49,8 @@ At first, we are going to deploy a cluster using a supported `MySQL` version. Th
 When you have installed `KubeDB`, it has created `MySQLVersion` CR for all supported `MySQL` versions.  Let's check the supported MySQL versions,
 
 ```bash
-$ kubectl get mysqlversion
+kubectl get mysqlversion
+```
 NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                45h
 5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                45h
@@ -65,7 +66,6 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using non-deprecated `MySQL` version `9.6.0`.
 
@@ -119,9 +119,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
 ```
+mysql.kubedb.com/my-group created
   </div>
 
   <div class="tab-pane fade" id="innodbCluster" role="tabpanel" aria-labelledby="sc-tab">
@@ -155,9 +155,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/innodb.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/innodb.yaml
 ```
+mysql.kubedb.com/my-group created
 
   </div>
 
@@ -194,9 +194,9 @@ spec:
 Let's create the `MySQL` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
-mysql.kubedb.com/my-group created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/group-replication.yaml
 ```
+mysql.kubedb.com/my-group created
 
   </div>
 
@@ -210,33 +210,37 @@ mysql.kubedb.com/my-group created
 Now, watch `MySQL` is going to  `Running` state and also watch `PetSet` and its pod is created and going to `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get my -n demo my-group
+watch -n 3 kubectl get my -n demo my-group
+```
 Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: Tue Jun 30 22:43:57 2020
 
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get petset -n demo my-group
+```bash
+watch -n 3 kubectl get petset -n demo my-group
+```
 Every 3.0s: kubectl get petset -n demo my-group                     Every 3.0s: kubectl get petset -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
 
 NAME       READY   AGE
 my-group   3/3     16m
 
-$ watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+```bash
+watch -n 3 kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group
+```
 Every 3.0s: kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com  suaas-appscode: Tue Jun 30 22:45:33 2020
 
 NAME         READY   STATUS    RESTARTS   AGE
 my-group-0   2/2     Running   0          17m
 my-group-1   2/2     Running   0          14m
 my-group-2   2/2     Running   0          11m
-```
 
 Let's check one of the PetSet's pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
-{}
+kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
 ```
+{}
 
 You can see that the Pod has empty resources that mean the scheduler will choose a random node to place the container of the Pod on by default. Now, we are ready to apply the vertical scale on this group replication.
 
@@ -278,9 +282,9 @@ Here,
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/my-scale-group.yaml
-mysqlopsrequest.ops.kubedb.com/my-scale-group created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/scaling/vertical-scaling/cluster/yamls/my-scale-group.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/my-scale-group created
 
 **Verify MySQL Group Replication resources updated successfully:**
 
@@ -289,17 +293,18 @@ If everything goes well, `KubeDB` Ops Manager will update the resources of the P
 First, we will wait for `MySQLOpsRequest` to be successful.  Run the following command to watch `MySQlOpsRequest` cr,
 
 ```bash
-$ watch -n 3 kubectl get myops -n demo my-scale-group
+watch -n 3 kubectl get myops -n demo my-scale-group
+```
 Every 3.0s: kubectl get myops -n demo my-sc...  suaas-appscode: Wed Aug 12 16:49:21 2020
 
 NAME             TYPE              STATUS       AGE
 my-scale-group   VerticalScaling   Successful   4m53s
-```
 
 You can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest`, we shall see that the resources of the members of the `MySQL` group replication are updated.
 
 ```bash
-$ kubectl describe myops -n demo my-scale-group
+kubectl describe myops -n demo my-scale-group
+```
 Name:         my-scale-group
 Namespace:    demo
 Labels:       <none>
@@ -375,12 +380,12 @@ Events:
   Normal  Starting    5m51s  KubeDB Enterprise Operator  Resuming MySQL database: demo/my-group
   Normal  Successful  5m51s  KubeDB Enterprise Operator  Successfully resumed MySQL database: demo/my-group
   Normal  Successful  5m51s  KubeDB Enterprise Operator  Controller has Successfully scaled the MySQL database: demo/my-group
-```
 
 Now, we are going to verify whether the resources of the members of the cluster have updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
+kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources'
+```
 {
   "limits": {
     "cpu": "700m",
@@ -391,7 +396,6 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources
     "memory": "1200Mi"
   }
 }
-```
 
 The above output verifies that we have successfully updated the resources of the `MySQL` group replication.
 

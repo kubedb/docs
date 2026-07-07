@@ -25,9 +25,9 @@ This tutorial will show you how to use KubeDB to initialize a Redis and Valkey d
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -42,9 +42,9 @@ At first, we will create a ConfigMap from `init.sh` file. Then, we will provide 
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo redis-init-script --from-literal=init.sh="redis-cli set hello world"
-configmap/redis-init-script created
+kubectl create configmap -n demo redis-init-script --from-literal=init.sh="redis-cli set hello world"
 ```
+configmap/redis-init-script created
 
 ## Create a Redis database with Init-Script
 
@@ -77,9 +77,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/demo-1.yaml
-redis.kubedb.com/rd-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/initialization/demo-1.yaml
 ```
+redis.kubedb.com/rd-init-script created
 
 Here,
 
@@ -88,7 +88,8 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets with the name `<redis-crd-name>-gvr`, if one is not already present. No Redis specific RBAC roles are required for [RBAC enabled clusters](/docs/setup/README.md#using-yaml).
 
 ```bash
-$ kubectl  describe rd -n demo rd-init-script
+kubectl  describe rd -n demo rd-init-script
+```
 Name:         rd-init-script
 Namespace:    demo
 Labels:       <none>
@@ -186,31 +187,36 @@ Events:
   Normal  Successful  82s   KubeDB Operator  Successfully created Service
   Normal  Successful  79s   KubeDB Operator  Successfully created appbinding
 
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME              READY   AGE
 rd-init-script   1/1     30s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                    STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-rd-init-script-0   Bound    pvc-31dbab22-09af-4eeb-b032-1df287d9e579   1Gi        RWO            standard       2m17s
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS   REASON   AGE
 pvc-31dbab22-09af-4eeb-b032-1df287d9e579   1Gi        RWO            Delete           Bound    demo/data-rd-init-script-0   standard                2m37s
 
-
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                  TYPE        CLUSTER-IP   EXTERNAL-IP   PORT(S)    AGE
 rd-init-script        ClusterIP   10.96.3.28   <none>        6379/TCP   3m11s
 rd-init-script-pods   ClusterIP   None         <none>        6379/TCP   3m11s
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```bash
-$ kubectl get rd -n demo rd-init-script -o yaml
+kubectl get rd -n demo rd-init-script -o yaml
+```
 apiVersion: kubedb.com/v1alpha2
 kind: Redis
 metadata:
@@ -302,13 +308,13 @@ status:
     type: Provisioned
   observedGeneration: 2
   phase: Ready
-```
 
 Please note that KubeDB operator has created a new Secret called `rd-init-script-auth` *(format: {redis-object-name}-auth)* for storing the password for Redis superuser. This secret contains a `username` key which contains the *username* for Redis superuser and a `password` key which contains the *password* for Redis superuser.
 If you want to use an existing secret please specify that when creating the Redis object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password`.
 
 ```bash
-$ kubectl get secrets -n demo rd-init-script-auth -o yaml
+kubectl get secrets -n demo rd-init-script-auth -o yaml
+```
 apiVersion: v1
 data:
   password: STRMTl9fVjJuaDlsdndhcg==
@@ -326,26 +332,28 @@ metadata:
   resourceVersion: "133291"
   uid: ece22594-6c5f-4428-ac0f-5f2d2690785f
 type: kubernetes.io/basic-auth
-```
 
 Now, you can connect to this database through redis cli. In this tutorial, we are connecting to the Redis server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.username}' | base64 -d
+```
 default
 
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.password}' | base64 -d
+```
 I4LN__V2nh9lvwar
 
-$ kubectl exec -it rd-init-script-0 -n demo -- bash
-
+```bash
+kubectl exec -it rd-init-script-0 -n demo -- bash
+```
 Defaulted container "redis" out of: redis, redis-init (init)
 redis@rd-init-script-0:/data$ 
 redis@rd-init-script-0:/data$ redis-cli get hello
 "world"
 redis@rd-init-script-0:/data$ exit
 exit
-```
 
 As you can see here, the initial script has successfully created a database named `kubedb` and inserted data into that database successfully.
 

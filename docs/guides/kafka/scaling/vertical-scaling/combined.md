@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -72,26 +72,27 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait until `kafka-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -101,7 +102,6 @@ $ kubectl get pod -n demo kafka-dev-0 -o json | jq '.spec.containers[].resources
     "memory": "1Gi"
   }
 }
-```
 This is the default resources of the Kafka combined cluster set by the `KubeDB` operator.
 
 We are now ready to apply the `KafkaOpsRequest` CR to update the resources of this database.
@@ -146,9 +146,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-combined.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-vscale-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-combined.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-vscale-combined created
 
 #### Verify Kafka Combined cluster resources updated successfully
 
@@ -157,15 +157,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                     TYPE              STATUS       AGE
 kfops-vscale-combined    VerticalScaling   Successful   3m56s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-vscale-combined 
+kubectl describe kafkaopsrequest -n demo kfops-vscale-combined 
+```
 Name:         kfops-vscale-combined
 Namespace:    demo
 Labels:       <none>
@@ -268,12 +269,12 @@ Events:
   Normal   RestartPods                                                    40s    KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                       40s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     40s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-vscale-combined
-```
 
 Now, we are going to verify from one of the Pod yaml whether the resources of the combined cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo kafka-dev-1 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo kafka-dev-1 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -284,7 +285,6 @@ $ kubectl get pod -n demo kafka-dev-1 -o json | jq '.spec.containers[].resources
     "memory": "1288490188800m"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the Kafka combined cluster.
 

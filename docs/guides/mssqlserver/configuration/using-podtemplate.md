@@ -27,9 +27,9 @@ KubeDB supports providing custom configuration for MSSQLServer via [PodTemplate]
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mssqlserver](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -92,9 +92,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -110,9 +110,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Create MSSQLServer CR with Custom Configuration using PodTemplate
 
@@ -163,24 +163,25 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/custom-config-podtemplate.yaml
-mssqlserver.kubedb.com/custom-config-podtemplate created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/configuration/custom-config-podtemplate.yaml
 ```
+mssqlserver.kubedb.com/custom-config-podtemplate created
 
 Now, wait a few minutes. KubeDB operator will create necessary Petset, PVCs, Services, Secrets etc. If everything goes well, we will see that a pod with the name `custom-config-podtemplate-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                          READY   STATUS    RESTARTS   AGE
 custom-config-podtemplate-0   1/1     Running   0          16m
-```
 
 Now, check if the database has started with the custom configuration we have provided.
 
 ```bash
-$ kubectl get pod -n demo custom-config-podtemplate-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo custom-config-podtemplate-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "3",
@@ -192,14 +193,19 @@ $ kubectl get pod -n demo custom-config-podtemplate-0 -o json | jq '.spec.contai
   }
 }
 
-
-$ kubectl get secrets -n demo custom-config-podtemplate-auth -o jsonpath='{.data.\username}' | base64 -d
+```bash
+kubectl get secrets -n demo custom-config-podtemplate-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secrets -n demo custom-config-podtemplate-auth -o jsonpath='{.data.\password}' | base64 -d
+```bash
+kubectl get secrets -n demo custom-config-podtemplate-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 3K7lJibYg3y6ICXc
 
-$ kubectl exec -it custom-config-podtemplate-0 -n demo -c mssql -- bash
+```bash
+kubectl exec -it custom-config-podtemplate-0 -n demo -c mssql -- bash
+```
 mssql@custom-config-podtemplate-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P 3K7lJibYg3y6ICXc -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
@@ -224,7 +230,6 @@ Microsoft SQL Server 2022 (RTM-CU12) (KB5033663) - 16.0.4115.5 (X64)
 	Enterprise Evaluation Edition (64-bit) on Linux (Ubuntu 22.04.4 LTS) <X64>                                                                                          
 
 (1 rows affected)
-```
 
 You can see that our desired configuration is applied successfully. 
 

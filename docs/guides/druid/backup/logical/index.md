@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/druid/backup/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -60,19 +60,25 @@ One of the external dependency of Druid is deep storage where the segments are s
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -98,9 +104,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Let's deploy a sample `Druid` database and insert some data into it.
 
@@ -129,34 +135,36 @@ spec:
 Create the above `Druid` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/sample-druid.yaml
-druid.kubedb.com/sample-druid created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/sample-druid.yaml
 ```
+druid.kubedb.com/sample-druid created
 
 KubeDB will deploy a Druid database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database along with `MySQL` and `ZooKeeper` instance as druid dependencies.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get druids.kubedb.com -n demo
+kubectl get druids.kubedb.com -n demo
+```
 NAME               TYPE                  VERSION   STATUS         AGE
 sample-druid       kubedb.com/v1alpha2   36.0.0    Ready          113s
-```
 
 The database is `Ready`. Verify that KubeDB has created the necessary `Secrets` and `Services` to access the database along with `MySQL` and `ZooKeeper` instance for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-druid 
+kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-druid 
+```
 NAME                      TYPE                       DATA   AGE
 sample-druid-auth   kubernetes.io/basic-auth   2      48s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-druid
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-druid
+```
 NAME                        TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                 AGE
 sample-druid-brokers        ClusterIP   10.128.189.77    <none>        8082/TCP                                                72s
 sample-druid-coordinators   ClusterIP   10.128.175.228   <none>        8081/TCP                                                72s
 sample-druid-pods           ClusterIP   None             <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   72s
 sample-druid-routers        ClusterIP   10.128.95.51     <none>        8888/TCP                                                72s
-```
 
 Here, we have to use service `sample-druid-routers` and secret `sample-druid-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/druid/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
@@ -165,17 +173,17 @@ Here, we have to use service `sample-druid-routers` and secret `sample-druid-aut
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME                          TYPE                   VERSION   AGE
 sample-druid                  kubedb.com/druid       36.0.0    2m26s
 sample-druid-mysql-metadata   kubedb.com/mysql       9.1.0    5m40s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     5m43s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-druid -o yaml
+kubectl get appbindings -n demo sample-druid -o yaml
 ```
 
 ```yaml
@@ -243,16 +251,16 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
-  DqG5E63NtklAkxqC
+  kubectl get secret -n demo sample-druid-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  DqG5E63NtklAkxqC
 
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
@@ -293,13 +301,19 @@ We are going to store our backed up data into a GCS bucket. We have to create a 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -328,9 +342,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -361,9 +375,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -376,8 +390,11 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -432,27 +449,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-druid-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-druid-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                  PHASE   PAUSED   AGE
 sample-druid-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME             INTEGRITY   SNAPSHOT-COUNT   SIZE          PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-druid-repo   true        1                712.822 KiB   Ready   5m                       4m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/druid` directory.
 
@@ -463,21 +480,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                          SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-druid-backup-frequent-backup   */5 * * * *             0        2m45s           3m25s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                             INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
 sample-druid-backup-frequent-backup-1724065200   BackupConfiguration   sample-druid-backup    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -486,18 +502,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-druid-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo sample-druid-backup
+kubectl get repository -n demo sample-druid-backup
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 sample-druid-backup     true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-druid-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-druid-repo
+```
 NAME                                                            REPOSITORY       SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835   gcs-druid-repo   frequent-backup   2024-09-18T10:54:07Z   Delete            Succeeded   11m
-```
 
 > **Note**: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -510,7 +526,7 @@ gcs-druid-repo-sample-druid-backup-frequent-backup-1726656835   gcs-druid-repo  
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo gcs-druid-repo-sample-druid-backup-frequent-backup-1724065200 -oyaml
+kubectl get snapshots -n demo gcs-druid-repo-sample-druid-backup-frequent-backup-1724065200 -oyaml
 ```
 
 ```yaml
@@ -614,17 +630,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/restored-druid.yaml
-druid.kubedb.com/restored-druid created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/restored-druid.yaml
 ```
+druid.kubedb.com/restored-druid created
 
 If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```bash
-$ kubectl get druid -n demo restored-druid
+kubectl get druid -n demo restored-druid
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 restored-druid   kubedb.com/v1alpha2   36.0.0    Provisioning   22s
-```
 
 #### Create RestoreSession:
 
@@ -667,19 +683,19 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-druid-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-druid-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 
 NAME             REPOSITORY        FAILURE-POLICY   PHASE       DURATION   AGE
 sample-restore   gcs-demo-repo                      Succeeded   3s         53s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -691,22 +707,22 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get druid -n demo restored-druid
+kubectl get druid -n demo restored-druid
+```
 NAME             VERSION   STATUS  AGE
 restored-druid   36.0.0     Ready   34m
-```
 
 Now, let's verify if our datasource `wikipedia` exists or not. For that, first find out the database `Sevices` by the following command,
 
 Now access the [web console](https://druid.apache.org/docs/latest/operations/web-console) of Druid database from any browser by port-forwarding the routers. Let’s port-forward the port `8888` to local machine:
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=restored-druid"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=restored-druid"
+```
 NAME                          TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)                                                 AGE
 restored-druid-brokers        ClusterIP   10.128.74.54     <none>        8082/TCP                                                10m
 restored-druid-coordinators   ClusterIP   10.128.30.124    <none>        8081/TCP                                                10m
 restored-druid-pods           ClusterIP   None             <none>        8081/TCP,8090/TCP,8083/TCP,8091/TCP,8082/TCP,8888/TCP   10m
 restored-druid-routers        ClusterIP   10.128.228.193   <none>        8888/TCP                                                10m
-```
 ```bash
 kubectl port-forward -n demo svc/restored-druid-routers 8888
 Forwarding from 127.0.0.1:8888 -> 8888
@@ -718,16 +734,16 @@ Then hit the `http://localhost:8888` from any browser, and you will be prompted 
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.password}' | base64 -d
-  DqG5E63NtklAkxqC
+  kubectl get secret -n demo restored-druid-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  DqG5E63NtklAkxqC
 After providing the credentials correctly, you should be able to access the web console like shown below. Now if you go to the `Datasources` section, you will see that our ingested datasource `wikipedia` exists in the list. 
 <p align="center">
   <img alt="lifecycle"  src="/docs/guides/druid/backup/logical/images/druid-ui-6.png">

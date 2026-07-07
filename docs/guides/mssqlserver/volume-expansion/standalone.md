@@ -34,9 +34,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of MSSQLServer
 
@@ -47,12 +47,12 @@ Here, we are going to deploy a  `MSSQLServer` standalone using a supported versi
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  2d
 standard (default)     driver.standard.io      Delete          Immediate              true                   3m25s
 standard-static        driver.standard.io      Delete          Immediate              true                   3m19s
-```
 
 We can see from the output that `standard (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class.
 
@@ -73,9 +73,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -91,9 +91,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 In this section, we are going to deploy a MSSQLServer Standalone with 1GB volume. Then, in the next section we will expand its volume to 2GB using `MSSQLServerOpsRequest` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
@@ -141,28 +141,30 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mssql-standalone.yaml
-mssqlserver.kubedb.com/mssql-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mssql-standalone.yaml
 ```
+mssqlserver.kubedb.com/mssql-standalone created
 
 Now, wait until `mssql-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ms -n demo mssql-standalone
+kubectl get ms -n demo mssql-standalone
+```
 NAME               VERSION     STATUS   AGE
 mssql-standalone   2022-cu12   Ready    5m
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo mssql-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mssql-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-7e7ed996-b682-4d84-8450-4c06fe92b11f   1Gi        RWO            Delete           Bound    demo/data-mssql-standalone-0   standard       <unset>                          5m29s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -206,9 +208,9 @@ During `Online` VolumeExpansion KubeDB expands volume without deleting the pods,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mops-volume-exp-std.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-volume-exp-std created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mops-volume-exp-std.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/mops-volume-exp-std created
 
 #### Verify MSSQLServer volume expanded successfully
 
@@ -217,15 +219,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 NAME                  TYPE              STATUS       AGE
 mops-volume-exp-std   VolumeExpansion   Successful   9m
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe msops -n demo mops-volume-exp-std
+kubectl describe msops -n demo mops-volume-exp-std
+```
 Name:         mops-volume-exp-std
 Namespace:    demo
 Labels:       <none>
@@ -340,18 +343,19 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo mssql-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mssql-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-7e7ed996-b682-4d84-8450-4c06fe92b11f   2Gi        RWO            Delete           Bound    demo/data-mssql-standalone-0   standard       <unset>                          26m
-```
 
 The above output verifies that we have successfully expanded the volume of the MSSQLServer Standalone database.
 
@@ -361,19 +365,23 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 
 ```bash
-$ kubectl patch -n demo ms/mssql-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo ms/mssql-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 mssqlserver.kubedb.com/mssql-standalone patched
 
-$ kubectl delete -n demo mssqlserver mssql-standalone
+```bash
+kubectl delete -n demo mssqlserver mssql-standalone
+```
 mssqlserver.kubedb.com "mssql-standalone" deleted
 
-$ kubectl delete -n demo mssqlserveropsrequest mops-volume-exp-std
+```bash
+kubectl delete -n demo mssqlserveropsrequest mops-volume-exp-std
+```
 mssqlserveropsrequest.ops.kubedb.com "mops-volume-exp-std" deleted
 
 kubectl delete issuer -n demo mssqlserver-ca-issuer
 kubectl delete secret -n demo mssqlserver-ca
 kubectl delete ns demo
-```
 
 ## Next Steps
 

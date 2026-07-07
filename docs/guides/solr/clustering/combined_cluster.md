@@ -25,13 +25,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -78,17 +80,17 @@ Here,
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
-zooKeeper.kubedb.com/zoo-com created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 ```
+zooKeeper.kubedb.com/zoo-com created
 
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get ZooKeeper -n demo -w
+kubectl get ZooKeeper -n demo -w
+```
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
-```
 Here, we are going to create a standalone (ie. `replicas: 1`) Solr cluster. We will use the Solr image provided by the Solr (`9.8.0`) for this demo. To learn more about Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
 
 ```yaml
@@ -117,24 +119,24 @@ spec:
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/combined-standalone.yaml
-solr.kubedb.com/solr-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/combined-standalone.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 Watch the bootstrap progress:
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.6.1     Ready    3h37m
-
-```
 
 Hence the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo  -l 'app.kubernetes.io/instance=solr-combined'
+kubectl get all,secret,pvc -n demo  -l 'app.kubernetes.io/instance=solr-combined'
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 pod/solr-combined-0   1/1     Running   0          75s
 
@@ -157,7 +159,6 @@ secret/solr-combined-zk-digest-readonly   kubernetes.io/basic-auth   2      78s
 
 NAME                                                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/solr-combined-data-solr-combined-0   Bound    pvc-c073b8b8-9005-41c5-ac21-bd060a5214a1   1Gi        RWO            standard       75s
-```
 
 - `PetSet` - a PetSet(Appscode manages customized petset) named after the Solr instance. In topology mode, the operator creates 3 PetSets with name `{Solr-Name}-{Sufix}`.
 - `Services` -  2 services are generated for each Solr database.
@@ -179,10 +180,10 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `8983` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/solr-combined 8983
+kubectl port-forward -n demo svc/solr-combined 8983
+```
 Forwarding from 127.0.0.1:8983 -> 8983
 Forwarding from [::1]:8983 -> 8983
-```
 
 Now, our Solr cluster is accessible at `localhost:8983`.
 
@@ -192,21 +193,22 @@ Now, our Solr cluster is accessible at `localhost:8983`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
+  kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
+  ```
   admin
-    ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
-  Xy3ZjyU)~(9IO8_n
+  kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  Xy3ZjyU)~(9IO8_n
 
 Now let's check the health of our Solr database.
 
 ```bash
-$ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/collections?action=CLUSTERSTATUS"
+```
 {
   "responseHeader":{
     "status":0,
@@ -248,7 +250,6 @@ $ curl -XGET -k -u 'admin:Xy3ZjyU)~(9IO8_n' "http://localhost:8983/solr/admin/co
     "live_nodes":["solr-combined-0.solr-combined-pods.demo:8983_solr"]
   }
 }
-```
 
 ## Create Multi-Node Combined Solr Cluster
 
@@ -280,24 +281,24 @@ spec:
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/combined-multinode.yaml
-solr.kubedb.com/solr-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/combined-multinode.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 Watch the bootstrap progress:
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.6.1     Ready    3h37m
-
-```
 
 Hence the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo  -l 'app.kubernetes.io/instance=solr-combined'
+kubectl get all,secret,pvc -n demo  -l 'app.kubernetes.io/instance=solr-combined'
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 pod/solr-combined-0   1/1     Running   0          75s
 pod/solr-combined-1   1/1     Running   0          66s
@@ -322,7 +323,6 @@ secret/solr-combined-zk-digest-readonly   kubernetes.io/basic-auth   2      78s
 NAME                                                       STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/solr-combined-data-solr-combined-0   Bound    pvc-c073b8b8-9005-41c5-ac21-bd060a5214a1   1Gi        RWO            standard       75s
 persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-69b509b1-5e42-4b7e-a64e-1b8e15b25bc7   1Gi        RWO            standard       66s
-```
 
 
 
@@ -331,12 +331,16 @@ persistentvolumeclaim/solr-combined-data-solr-combined-1   Bound    pvc-69b509b1
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo solr solr-combined -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 solr.kubedb.com/solr-combined patched
 
-$ kubectl delete -n demo sl/solr-combined
+```bash
+kubectl delete -n demo sl/solr-combined
+```
 solr.kubedb.com "solr-combined" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted

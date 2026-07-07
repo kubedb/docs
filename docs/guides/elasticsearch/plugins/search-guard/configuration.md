@@ -31,18 +31,20 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 We will use `htpasswd`** to hash user password. Install `apache2-utils` package for this.
 
 ```bash
-$ sudo apt-get install apache2-utils
+sudo apt-get install apache2-utils
 ```
 
 To keep configuration files separated, open a new terminal and create a directory `/tmp/kubedb/sg`
@@ -100,7 +102,7 @@ searchguard:
 ```
 
 ```bash
-$ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_config.yml
+wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_config.yml
 ```
 
 ### sg_internal_users.yml
@@ -149,7 +151,7 @@ readall:
 Run following command to write user information in `sg_internal_users.yml` file with password.
 
 ```bash
-$ curl https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_internal_users.yml | envsubst > sg_internal_users.yml
+curl https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_internal_users.yml | envsubst > sg_internal_users.yml
 ```
 
 > Note: If user does not provide `spec.authSecret`, KubeDB will generate random password for both admin and readall user.
@@ -173,7 +175,7 @@ See details about [action groups](http://docs.search-guard.com/v5/action-groups)
 Run following command to get action groups we will use in this tutorial
 
 ```bash
-$ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_action_groups.yml
+wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_action_groups.yml
 ```
 
 ```yml
@@ -255,7 +257,7 @@ sg_readall:
 ```
 
 ```bash
-$ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles.yml
+wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles.yml
 ```
 
 ### sg_roles_mapping.yml
@@ -292,7 +294,7 @@ See details about [backend roles mapping](http://docs.search-guard.com/v5/mappin
 Get roles mapping by running
 
 ```bash
-$ wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles_mapping.yml
+wget https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/sg-config/sg_roles_mapping.yml
 ```
 
 ```yml
@@ -318,7 +320,7 @@ sg_readall:
 Now create a Secret with these files to use in your Elasticsearch object.
 
 ```bash
-$ kubectl create secret generic -n demo config-elasticsearch-auth \
+kubectl create secret generic -n demo config-elasticsearch-auth \
                 --from-file=sg_config.yml \
                 --from-file=sg_internal_users.yml \
                 --from-file=sg_action_groups.yml \
@@ -328,9 +330,8 @@ $ kubectl create secret generic -n demo config-elasticsearch-auth \
                 --from-literal=ADMIN_PASSWORD=$ADMIN_PASSWORD \
                 --from-literal=READALL_USERNAME=readall \
                 --from-literal=READALL_PASSWORD=$READALL_PASSWORD
-
-secret/config-elasticsearch-auth created
 ```
+secret/config-elasticsearch-auth created
 
 Here,
 
@@ -381,32 +382,32 @@ Here,
 Create example above with following command
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/config-elasticsearch.yaml
-elasticsearch.kubedb.com/config-elasticsearch created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/config-elasticsearch.yaml
 ```
+elasticsearch.kubedb.com/config-elasticsearch created
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
 ```bash
-$ kubectl get es -n demo config-elasticsearch -o wide
+kubectl get es -n demo config-elasticsearch -o wide
+```
 NAME                   VERSION   STATUS    AGE
 config-elasticsearch   searchguard-7.9.3    Running   1m
-```
 
 ## Connect to Elasticsearch Database
 
 At first, forward port 9200 of `config-elasticsearch-0` pod. Run following command on a separate terminal,
 
 ```bash
-$ kubectl port-forward -n demo config-elasticsearch-0 9200
+kubectl port-forward -n demo config-elasticsearch-0 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, you can connect to this database at `localhost:9200`.
 
 ```bash
-$ curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
+curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
 ```
 
 ```json
@@ -434,10 +435,15 @@ $ curl --user "admin:$ADMIN_PASSWORD" "localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/config-elasticsearch
+kubectl patch -n demo es/config-elasticsearch -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo es/config-elasticsearch
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

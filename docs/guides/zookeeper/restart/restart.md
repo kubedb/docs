@@ -24,10 +24,10 @@ KubeDB supports restarting the ZooKeeper database via a ZooKeeperOpsRequest. Res
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/zookeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -59,9 +59,9 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/restart/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/restart/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 ## Apply Restart opsRequest
 
@@ -88,18 +88,21 @@ spec:
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/restart/ops.yaml
-zookeeperopsrequest.ops.kubedb.com/zk-restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/restart/ops.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/zk-restart created
 
 Now the Ops-manager operator will restart the pods sequentially by their cardinal suffix.
 
-```shell
-$ kubectl get zookeeperopsrequest -n demo
+```bash
+kubectl get zookeeperopsrequest -n demo
+```
 NAME         TYPE      STATUS       AGE
 zk-restart   Restart   Successful   10m
 
-$ kubectl get zookeeperopsrequest -n demo -oyaml zk-restart
+```bash
+kubectl get zookeeperopsrequest -n demo -oyaml zk-restart
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ZooKeeperOpsRequest
 metadata:
@@ -185,8 +188,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 
 
 ## Cleaning up

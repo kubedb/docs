@@ -30,24 +30,25 @@ This tutorial will show you how to use KubeDB to run a SingleStore database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available SingleStoreVersion
 
 When you have installed KubeDB, it has created `SinglestoreVersion` crd for all supported SingleStore versions. Check it by using the `kubectl get singlestoreversions` command. You can also use `sdbv` shorthand instead of `singlestoreversions`.
 
-```bash
- $ kubectl get singlestoreversions.catalog.kubedb.com
+ ```bash
+ kubectl get singlestoreversions.catalog.kubedb.com
+ ```
 NAME     VERSION   DB_IMAGE                                                          DEPRECATED   AGE
 8.1.32   8.1.32    ghcr.io/appscode-images/singlestore-node:alma-8.1.32-e3d3cde6da                2d1h
 8.5.30   8.5.30    ghcr.io/appscode-images/singlestore-node:alma-8.5.30-4f46ab16a5                2d1h
@@ -55,17 +56,16 @@ NAME     VERSION   DB_IMAGE                                                     
 8.7.10   8.7.10    ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384                2d1h
 8.7.21   8.7.21    ghcr.io/appscode-images/singlestore-node:alma-8.7.21-f0b8de04d5                2d1h
 8.9.3    8.9.3     ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a                 2d1h
-```
 ## Create SingleStore License Secret
 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Create a SingleStore database
 
@@ -135,9 +135,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/quickstart/yamls/quickstart.yaml
-singlestore.kubedb.com/sdb-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/quickstart/yamls/quickstart.yaml
 ```
+singlestore.kubedb.com/sdb-quickstart created
 Here,
 
 - `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.9.3` database is going to be created.
@@ -152,26 +152,34 @@ Here,
 KubeDB operator watches for `Singlestore` objects using Kubernetes api. When a `Singlestore` object is created, KubeDB operator will create new PetSet and Service with the matching SingleStore object name. KubeDB operator will also create a governing service for PetSets, if one is not already present.
 
 ```bash
-$ kubectl get petset -n demo
+kubectl get petset -n demo
+```
 NAME                               READY   AGE
 sdb-quickstart-leaf                2/2     33s
 sdb-quickstart-aggregator          1/1     37s
-$ kubectl get pvc -n demo
+
+```bash
+kubectl get pvc -n demo
+```
 NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-sdb-quickstart-leaf-0                Bound    pvc-4f45c51b-47d4-4254-8275-782bf3588667   10Gi       RWO            standard       <unset>                 42s
 data-sdb-quickstart-leaf-1                Bound    pvc-769e68f4-80a9-4e3e-b2bc-e974534b9dee   10Gi       RWO            standard       <unset>                 35s
 data-sdb-quickstart-aggregator-0          Bound    pvc-75057e3d-e1d7-4770-905b-6049f2edbcde   1Gi        RWO            standard       <unset>                 46s
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-4f45c51b-47d4-4254-8275-782bf3588667   10Gi       RWO            Delete           Bound    demo/data-sdb-quickstart-leaf-0                standard       <unset>                          87s
 pvc-75057e3d-e1d7-4770-905b-6049f2edbcde   1Gi        RWO            Delete           Bound    demo/data-sdb-quickstart-aggregator-0   standard       <unset>                          91s
 pvc-769e68f4-80a9-4e3e-b2bc-e974534b9dee   10Gi       RWO            Delete           Bound    demo/data-sdb-quickstart-leaf-1                standard       <unset>                          80s
-$ kubectl get service -n demo
+
+```bash
+kubectl get service -n demo
+```
 NAME                  TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
 sdb-quickstart        LoadBalancer   10.96.27.144   192.10.25.36  3306:32076/TCP,8081:30910/TCP   2m1s
 sdb-quickstart-pods   ClusterIP      None           <none>        3306/TCP                        2m1s
-
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Singlestore object:
 
@@ -404,17 +412,24 @@ If you want to use an existing secret please specify that when creating the Sing
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sdb-quickstart-auth` secret holds username and password
 
 ```bash
-$ kubectl get pod -n demo sdb-quickstart-aggregator-0 -oyaml | grep podIP
-  podIP: 10.244.0.14
-$ kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-  root
-$ kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-  J0h_BUdJB8mDO31u
+kubectl get pod -n demo sdb-quickstart-aggregator-0 -oyaml | grep podIP
 ```
+  podIP: 10.244.0.14
+
+```bash
+kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
+  root
+
+```bash
+kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+  J0h_BUdJB8mDO31u
 we will exec into the pod `sdb-quickstart-aggregator-0` and connect to the database using username and password
 
 ```bash
-$ kubectl exec -it -n demo sdb-quickstart-aggregator-0 -- bash
+kubectl exec -it -n demo sdb-quickstart-aggregator-0 -- bash
+```
   Defaulting container name to singlestore.
   Use 'kubectl describe pod/sdb-quickstart-aggregator-0 -n demo' to see all of the containers in this pod.
   
@@ -442,17 +457,15 @@ $ kubectl exec -it -n demo sdb-quickstart-aggregator-0 -- bash
   | singlestore_health |
   +--------------------+
   4 rows in set (0.00 sec)
-
-```
 You can also connect with database management tools like [singlestore-studio](https://docs.singlestore.com/db/v8.5/reference/singlestore-tools-reference/singlestore-studio/)
 
 You can simply access to SingleStore studio by forwarding the Primary service port to any of your localhost port. Or, Accessing through ExternalP's 8081 port is also an option.
 
 ```bash
-$ kubectl port-forward -n demo service/sdb-quickstart 8081
+kubectl port-forward -n demo service/sdb-quickstart 8081
+```
 Forwarding from 127.0.0.1:8081 -> 8081
 Forwarding from [::1]:8081 -> 8081
-```
 Lets, open your browser and go to the http://localhost:8081 or with TLS https://localhost:8081 then click on `Add or Create Cluster` option.
 Then choose `Add Existing Cluster` and click on `next` and you will get an interface like that below:
 
@@ -475,9 +488,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete sdb sdb-quickstart -n demo
-The Singlestore "sdb-quickstart" is invalid: spec.deletionPolicy: Invalid value: "sdb-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
+kubectl delete sdb sdb-quickstart -n demo
 ```
+The Singlestore "sdb-quickstart" is invalid: spec.deletionPolicy: Invalid value: "sdb-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 
 Now, run `kubectl patch -n demo sdb sdb-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the singlestore object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -492,14 +505,15 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 At first, run `kubectl patch -n demo sdb sdb-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the singlestore object,
 
 ```bash
-$ kubectl delete sdb sdb-quickstart -n demo
-singlestore.kubedb.com "sdb-quickstart" deleted
+kubectl delete sdb sdb-quickstart -n demo
 ```
+singlestore.kubedb.com "sdb-quickstart" deleted
 
 Now, run the following command to get all singlestore resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                              TYPE                       DATA   AGE
 secret/sdb-quickstart-auth   kubernetes.io/basic-auth   2      3m35s
 
@@ -507,8 +521,6 @@ NAME                                                            STATUS   VOLUME 
 persistentvolumeclaim/data-sdb-quickstart-leaf-0                Bound    pvc-389f40a8-09bc-4724-aa52-94705d56ff77   1Gi        RWO            standard       <unset>                 3m18s
 persistentvolumeclaim/data-sdb-quickstart-leaf-1                Bound    pvc-8dfbf04e-41a8-4cdd-ba14-7ad42d8701bb   1Gi        RWO            standard       <unset>                 3m11s
 persistentvolumeclaim/data-sdb-quickstart-aggregator-0   Bound    pvc-c4f7d255-7307-4455-b195-70c71b81706f   1Gi        RWO            standard       <unset>                 3m29s
-
-```
 
 From the above output, you can see that all singlestore resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your singlestore again using this resources.
 
@@ -523,18 +535,17 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete sdb sdb-quickstart -n demo
-singlestore.kubedb.com "sdb-quickstart" deleted
+kubectl delete sdb sdb-quickstart -n demo
 ```
+singlestore.kubedb.com "sdb-quickstart" deleted
 
 Now, run the following command to get all singlestore resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                              TYPE                       DATA   AGE
 secret/sdb-quickstart-auth   kubernetes.io/basic-auth   2      17m
-
-```
 
 From the above output, you can see that all singlestore resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.
 
@@ -554,9 +565,9 @@ singlestore.kubedb.com "singlestore-quickstart" deleted
 Now, run the following command to get all singlestore resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
-No resources found in demo namespace.
+kubectl get petset,svc,secret,pvc -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all singlestore resources are deleted. There is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 

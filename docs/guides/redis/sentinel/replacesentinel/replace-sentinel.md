@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to replace Sent
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -65,17 +65,17 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
-redissentinel.kubedb.com/sen-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-demo created
 
 Now, wait until `sen-dmo` has status `Ready`. i.e. ,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME       VERSION   STATUS   AGE
 sen-demo   6.2.14     Ready    96s
-```
 ### Deploy Redis in Sentinel Mode
 
 In this section, we are going to deploy a Redis database in Sentinel Mode. 
@@ -106,9 +106,9 @@ spec:
 Let's create the `Redis` CR we have shown above, 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/redis.yaml
-redis.kubedb.com/rd-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/redis.yaml
 ```
+redis.kubedb.com/rd-demo created
 
 Now, wait until `rd-demo` has status `Ready`. i.e. ,
 
@@ -119,7 +119,8 @@ rd-demo   6.2.14     Ready    67s
 
 Lets exec into a sentinel pod, and make sure sentinel monitors redis master
 ```bash
-$ kubectl exec -it -n demo sen-demo-0 -c redissentinel -- bash
+kubectl exec -it -n demo sen-demo-0 -c redissentinel -- bash
+```
 root@sen-demo-0:/data# redis-cli -p 26379 sentinel masters
 1)  1) "name"
     2) "demo/rd-demo"
@@ -163,7 +164,6 @@ root@sen-demo-0:/data# redis-cli -p 26379 sentinel masters
    40) "1"
 root@sen-demo-0:/data# exit
 exit
-```
 
 ### Replace Sentinel
 
@@ -190,18 +190,18 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/new-sentinel.yaml
-redissentinel.kubedb.com/new-sentinel created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/new-sentinel.yaml
 ```
+redissentinel.kubedb.com/new-sentinel created
 
 Now, wait until `new-sentinel` has status `Ready`. i.e. ,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME           VERSION   STATUS   AGE
 new-sentinel   6.2.14     Ready    60s
 sen-demo       6.2.14     Ready    11m
-```
 
 Here, we are going to replace `sen-demo` with `new-sentinel`
 
@@ -237,9 +237,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/replace-sentinel.yaml
-redisopsrequest.ops.kubedb.com/replace-sentinel created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/replace-sentinel.yaml
 ```
+redisopsrequest.ops.kubedb.com/replace-sentinel created
 
 #### Verify Replacement
 
@@ -248,10 +248,10 @@ If everything goes well, `KubeDB` Enterprise operator will update the sentinel o
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ kubectl get redisopsrequest -n demo 
+kubectl get redisopsrequest -n demo 
+```
 NAME               TYPE              STATUS       AGE
 replace-sentinel   ReplaceSentinel   Successful   2m34s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
@@ -260,7 +260,8 @@ Lets exec into one of the new-sentinel pod and verify if it is following the mas
 database if it exists.
 
 ```bash
-$ kubectl exec -it -n demo new-sentinel-0 -c redissentinel -- bash
+kubectl exec -it -n demo new-sentinel-0 -c redissentinel -- bash
+```
 root@new-sentinel-0:/data# redis-cli -p 26379 sentinel masters
 1)  1) "name"
     2) "demo/rd-demo"
@@ -304,7 +305,6 @@ root@new-sentinel-0:/data# redis-cli -p 26379 sentinel masters
    40) "1"
 root@new-sentinel-0:/data# exit
 exit
-```
 
 The above output verifies that we have successfully replaced sentinel of Redis database.
 
@@ -314,30 +314,40 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-demo patched
 
-$ kubectl delete rd rd-demo -n demo
+```bash
+kubectl delete rd rd-demo -n demo
+```
 redis.kubedb.com "rd-demo" deleted
 
-$ kubectl delete -n demo redisopsrequest replace-sentinel
-redisopsrequest.ops.kubedb.com "replace-sentinel" deleted
+```bash
+kubectl delete -n demo redisopsrequest replace-sentinel
 ```
+redisopsrequest.ops.kubedb.com "replace-sentinel" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-demo patched
 
-$ kubectl delete redissentinel sen-demo -n demo
+```bash
+kubectl delete redissentinel sen-demo -n demo
+```
 redis.kubedb.com "sen-demo" deleted
 
-$ kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/new-sentinel -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/new-sentinel patched
 
-$ kubectl delete redissentinel new-sentinel -n demo
-redis.kubedb.com "new-sentinel" deleted
+```bash
+kubectl delete redissentinel new-sentinel -n demo
 ```
+redis.kubedb.com "new-sentinel" deleted
 
 
 ## Next Steps

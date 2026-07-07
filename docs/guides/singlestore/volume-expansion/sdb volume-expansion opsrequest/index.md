@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of SingleStore
 
@@ -45,23 +45,23 @@ Here, we are going to deploy a  `SingleStore` cluster using a supported version 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ### Prepare SingleStore Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageClass
+kubectl get storageClass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6d2h
 standard (default)     driver.standard.io      Delete          Immediate              true                   3d21h
 standard-static        driver.standard.io      Delete          Immediate              true                   42m
-```
 
 Here, we will use `standard` storageClass for this tuitorial.
 
@@ -130,36 +130,37 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/volume-expansion/volume-expansion/example/sample-sdb.yaml
-singlestore.kubedb.com/sample-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/volume-expansion/volume-expansion/example/sample-sdb.yaml
 ```
+singlestore.kubedb.com/sample-sdb created
 
 Now, wait until `sample-sdb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sdb -n demo
+kubectl get sdb -n demo
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    4m25s
-
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sample-sdb-aggregator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-sdb-aggregator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "10Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-41cb892c-99fc-4211-a8c2-4e6f8a16c661   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         standard       <unset>                          90s
 pvc-6e241724-6577-408e-b8de-9569d7d785c4   10Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         standard       <unset>                          75s
 pvc-95ecc525-540b-4496-bf14-bfac901d73c4   1Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   standard       <unset>                          94s
-
-
-```
 
 You can see the `aggregator` petset has 1GB storage, and the capacity of all the `aggregator` persistent volumes are also 1GB.
 
@@ -203,9 +204,9 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/volume-expansion/volume-expansion/example/sdb-offline-volume-expansion.yaml
-singlestoreopsrequest.ops.kubedb.com/sdb-offline-vol-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/volume-expansion/volume-expansion/example/sdb-offline-volume-expansion.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdb-offline-vol-expansion created
 
 #### Verify SingleStore volume expanded successfully
 
@@ -214,15 +215,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME                        TYPE              STATUS       AGE
 sdb-offline-vol-expansion   VolumeExpansion   Successful   13m
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded. If we describe the `SingleStoreOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe sdbops -n demo sdb-offline-vol-expansion 
+kubectl describe sdbops -n demo sdb-offline-vol-expansion 
+```
 Name:         sdb-offline-vol-expansion
 Namespace:    demo
 Labels:       <none>
@@ -450,24 +452,25 @@ Events:
   Normal   Starting                                        8m49s  KubeDB Ops-manager Operator  Resuming Singlestore database: demo/sample-sdb
   Normal   Successful                                      8m49s  KubeDB Ops-manager Operator  Successfully resumed Singlestore database: demo/sample-sdb for SinglestoreOpsRequest: sdb-offline-vol-expansion
 
-  
-```
-
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo sample-sdb-aggregator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-sdb-aggregator -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
-$ kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo sample-sdb-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "11Gi"
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-0a4b35e6-988e-4088-ae41-852ad82c5800   2Gi        RWO            Delete           Bound    demo/data-sample-sdb-aggregator-0   standard       <unset>                          22m
 pvc-f6df5743-2bb1-4705-a2f7-be6cf7cdd7f1   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-0         standard       <unset>                          22m
 pvc-f8fee59d-74dc-46ac-9973-ff1701a6837b   11Gi       RWO            Delete           Bound    demo/data-sample-sdb-leaf-1         standard       <unset>                          19m
-```
 
 The above output verifies that we have successfully expanded the volume of the SingleStore database.
 
@@ -476,6 +479,9 @@ The above output verifies that we have successfully expanded the volume of the S
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete sdb -n demo sample-sdb
-$ kubectl delete singlestoreopsrequest -n demo sdb-offline-volume-expansion
+kubectl delete sdb -n demo sample-sdb
+```
+
+```bash
+kubectl delete singlestoreopsrequest -n demo sdb-offline-volume-expansion
 ```

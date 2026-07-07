@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` Migration to migrate an existing `M
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Source Database
 
@@ -76,7 +76,7 @@ See the official [MongoDB Replica Set](https://www.mongodb.com/docs/manual/repli
 Connect to the source instance and verify that the oplog is available:
 
 ```bash
-$ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u admin -p
+mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u admin -p
 ```
 
 ```bash
@@ -172,7 +172,7 @@ db.orders.find().pretty()
 First, create an authentication secret using the `migrator` user credentials:
 
 ```bash
-$ kubectl create secret generic source-mongodb-auth -n demo \
+kubectl create secret generic source-mongodb-auth -n demo \
                 --type=kubernetes.io/basic-auth \
                 --from-literal=username=migrator \
                 --from-literal=password=<password>
@@ -250,9 +250,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mgo-destination.yaml
-mongodb.kubedb.com/mgo-destination created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mgo-destination.yaml
 ```
+mongodb.kubedb.com/mgo-destination created
 
 > Note: Adjust the `resources.requests.storage` based on the source database size.
 
@@ -288,9 +288,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mongodb-migrate.yaml
-migration.courier.kubedb.com/mongodb-migrate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/migration/mongodb-migrate.yaml
 ```
+migration.courier.kubedb.com/mongodb-migrate created
 
 Here,
 
@@ -331,7 +331,7 @@ mongodb-migrate   Running   mongodb   incr    0                17h
 You can also see collection-wise progress, detailed checkpoints, and sync metrics by checking the migration pod logs:
 
 ```bash
-$ kubectl logs -n demo migration-<migration-pod-name>
+kubectl logs -n demo migration-<migration-pod-name>
 ```
 
 Example output during the full sync stage — showing per-collection progress, total/finished/processing/waiting collections:
@@ -351,7 +351,7 @@ Example output during incremental sync — showing LAG, checkpoint timestamps, a
 Once the migration reaches the `incr` stage (continuous oplog tailing), exec into the KubeDB target pod and confirm all seed documents were copied over:
 
 ```bash
-$ kubectl exec -it -n demo mgo-destination-0 -- mongosh -u root -p<root-password>
+kubectl exec -it -n demo mgo-destination-0 -- mongosh -u root -p<root-password>
 ```
 
 ```bash
@@ -390,7 +390,7 @@ db.orders.find().pretty()
 With the migration still running, connect to the **source DigitalOcean** instance and run some DML:
 
 ```bash
-$ mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u migrator -p
+mongosh "mongodb+srv://<digitalocean-host>.mongo.ondigitalocean.com" -u migrator -p
 ```
 
 ```bash
@@ -453,8 +453,8 @@ Once the `LAG` drops to near zero, stop all writes to the source database. Wait 
 Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migration -n demo mongodb-migrate
-migration.courier.kubedb.com "mongodb-migrate" deleted
+kubectl delete migration -n demo mongodb-migrate
 ```
+migration.courier.kubedb.com "mongodb-migrate" deleted
 
 Finally, update your application's connection string to point to the target KubeDB-managed `MongoDB` database. The migration is complete.

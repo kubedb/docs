@@ -33,9 +33,9 @@ KubeDB supports two methods for rotating credentials:
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/rotate-auth](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,24 +64,24 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m22s
-```
 
 When Qdrant is deployed, KubeDB creates a secret called `qdrant-sample-auth` (format: `{db-name}-auth`) that stores the API key used for authentication.
 
 ```bash
-$ kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 --decode
-<initial-api-key>
+kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 --decode
 ```
+<initial-api-key>
 
 ## Apply RotateAuth OpsRequest
 
@@ -111,9 +111,9 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops-request.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops-request.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth created
 
 ## Verify Authentication Rotated
 
@@ -122,19 +122,19 @@ If everything goes well, `KubeDB` ops-manager operator will rotate the authentic
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-rotate-auth
+watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-rotate-auth
+```
 Every 3.0s: kubectl get QdrantOpsRequest -n demo qdops-rotate-auth
 
 NAME                TYPE         STATUS       AGE
 qdops-rotate-auth   RotateAuth   Successful   2m15s
-```
 
 We can see from the above output that the `QdrantOpsRequest` has succeeded. Now let's check if the authentication secret has been updated:
 
 ```bash
-$ kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 --decode
-<new-rotated-api-key>
+kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 --decode
 ```
+<new-rotated-api-key>
 
 You can see that the API key has been rotated. The new key is different from the initial key. KubeDB has automatically updated the Qdrant instances to use the new credentials.
 
@@ -159,9 +159,9 @@ type: Opaque
 Let's create the `Secret` we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/custom-auth-secret.yaml
-secret/my-custom-auth-secret created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/custom-auth-secret.yaml
 ```
+secret/my-custom-auth-secret created
 
 Now, create a `QdrantOpsRequest` with the custom secret reference:
 
@@ -182,9 +182,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops-custom.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth-custom created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/rotate-auth/ops-custom.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth-custom created
 
 ## Next Steps
 
@@ -197,16 +197,22 @@ qdrantopsrequest.ops.kubedb.com/qdops-rotate-auth-custom created
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete qdrantopsrequest -n demo qdops-rotate-auth qdops-rotate-auth-custom
+kubectl delete qdrantopsrequest -n demo qdops-rotate-auth qdops-rotate-auth-custom
+```
 qdrantopsrequest.ops.kubedb.com "qdops-rotate-auth" deleted
 qdrantopsrequest.ops.kubedb.com "qdops-rotate-auth-custom" deleted
 
-$ kubectl delete secret -n demo my-custom-auth-secret
+```bash
+kubectl delete secret -n demo my-custom-auth-secret
+```
 secret "my-custom-auth-secret" deleted
 
-$ kubectl delete qdrant -n demo qdrant-sample
+```bash
+kubectl delete qdrant -n demo qdrant-sample
+```
 qdrant.kubedb.com "qdrant-sample" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted

@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,9 +46,9 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo md-custom-serviceaccount
-serviceaccount/md-custom-serviceaccount created
+kubectl create serviceaccount -n demo md-custom-serviceaccount
 ```
+serviceaccount/md-custom-serviceaccount created
 
 It should create a service account.
 
@@ -70,9 +70,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the MariaDB instance named `sample-mariadb`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-role.yaml
-role.rbac.authorization.k8s.io/md-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/md-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -98,16 +98,17 @@ This permission is required for MariaDB pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding md-custom-rolebinding --role=md-custom-role --serviceaccount=demo:md-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding created
+kubectl create rolebinding md-custom-rolebinding --role=md-custom-role --serviceaccount=demo:md-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding created
 
 It should bind `md-custom-role` and `md-custom-serviceaccount` successfully.
 
 SO, All required resources for RBAC are created.
 
 ```bash
-$ kubectl get serviceaccount,role,rolebindings -n demo
+kubectl get serviceaccount,role,rolebindings -n demo
+```
 NAME                                      SECRETS   AGE
 serviceaccount/default                    1         38m
 serviceaccount/md-custom-serviceaccount   1         36m
@@ -117,14 +118,13 @@ role.rbac.authorization.k8s.io/md-custom-role   2021-03-18T05:13:27Z
 
 NAME                                                          ROLE                  AGE
 rolebinding.rbac.authorization.k8s.io/md-custom-rolebinding   Role/md-custom-role   79s
-```
 
 Now, create a MariaDB crd specifying `spec.podTemplate.spec.serviceAccountName` field to `md-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Below is the YAML for the MariaDB crd we just created.
 
@@ -155,15 +155,16 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo sample-mariadb-0
+kubectl get pod -n demo sample-mariadb-0
+```
 NAME            READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   1/1     Running   0          2m44s
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo sample-mariadb-0
+kubectl logs -f -n demo sample-mariadb-0
+```
 2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
 2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
 2021-03-18 05:35:13+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 1:11.8.5+maria~focal started.
@@ -173,7 +174,6 @@ $ kubectl logs -f -n demo sample-mariadb-0
 2021-03-18  5:35:22 0 [Note] Added new Master_info '' to hash table
 2021-03-18  5:35:22 0 [Note] mysqld: ready for connections.
 Version: '11.8.5-MariaDB-1:11.8.5+maria~focal'  socket: '/run/mysqld/mysqld.sock'  port: 3306  mariadb.org binary distribution
-```
 
 Once we see `mysqld: ready for connections.` in the log, the database is ready.
 
@@ -184,9 +184,9 @@ An existing service account can be reused in another MariaDB instance. No new ac
 Now, create MariaDB crd `another-mariadb` using the existing service account name `md-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db-2.yaml
-mariadb.kubedb.com/another-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/custom-rbac/using-custom-rbac/examples/md-custom-db-2.yaml
 ```
+mariadb.kubedb.com/another-mariadb created
 
 Below is the YAML for the MariaDB crd we just created.
 
@@ -217,10 +217,10 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo another-mariadb-0
+kubectl get pod -n demo another-mariadb-0
+```
 NAME                READY   STATUS    RESTARTS   AGE
 another-mariadb-0   1/1     Running   0          37s
-```
 
 Check the pod's log to see if the database is ready
 
@@ -243,18 +243,33 @@ Version: '11.8.5-MariaDB-1:11.8.5+maria~focal'  socket: '/run/mysqld/mysqld.sock
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete mariadb -n demo another-mariadb
-mariadb.kubedb.com "another-mariadb" deleted
-$ kubectl delete -n demo role md-custom-role
-role.rbac.authorization.k8s.io "md-custom-role" deleted
-$ kubectl delete -n demo rolebinding md-custom-rolebinding
-rolebinding.rbac.authorization.k8s.io "md-custom-rolebinding" deleted
-$ kubectl delete sa -n demo md-custom-serviceaccount
-serviceaccount "md-custom-serviceaccount" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete mariadb -n demo another-mariadb
+```
+mariadb.kubedb.com "another-mariadb" deleted
+
+```bash
+kubectl delete -n demo role md-custom-role
+```
+role.rbac.authorization.k8s.io "md-custom-role" deleted
+
+```bash
+kubectl delete -n demo rolebinding md-custom-rolebinding
+```
+rolebinding.rbac.authorization.k8s.io "md-custom-rolebinding" deleted
+
+```bash
+kubectl delete sa -n demo md-custom-serviceaccount
+```
+serviceaccount "md-custom-serviceaccount" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted
 
 

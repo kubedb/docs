@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -74,22 +74,23 @@ spec:
 Let's create the `Memcached` CR we have shown above, 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/memcached-vertical.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/memcached-vertical.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e. ,
 
 ```bash
-$ kubectl get memcached -n demo
+kubectl get memcached -n demo
+```
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    5m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "100m",
@@ -100,7 +101,6 @@ $ kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].re
     "memory": "128Mi"
   }
 }
-```
 
 We can see from the above output that there are some default resources set by the operator. And the scheduler will choose the best suitable node to place the container of the Pod.
 
@@ -144,9 +144,9 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/vertical-scaling.yaml
-memcachedopsrequest.ops.kubedb.com/memcached-mc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/vertical-scaling.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/memcached-mc created
 
 #### Verify Memcached Database resources updated successfully 
 
@@ -155,16 +155,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 NAME                  TYPE                STATUS       AGE
 memcached-mc          VerticalScaling     Successful   5m
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. 
 Now, we are going to verify from the Pod yaml whether the resources of the Memcached database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -175,7 +176,6 @@ $ kubectl get pod -n demo memcd-quickstart-0 -o json | jq '.spec.containers[].re
     "memory": "400Mi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the Memcached database.
 
@@ -184,13 +184,16 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
-
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete -n demo memcached memcd-quickstart
+```bash
+kubectl delete -n demo memcached memcd-quickstart
+```
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete memcachedopsrequest -n demo memcached-mc
-memcachedopsrequest.ops.kubedb.com "memcached-mc" deleted
+```bash
+kubectl delete memcachedopsrequest -n demo memcached-mc
 ```
+memcachedopsrequest.ops.kubedb.com "memcached-mc" deleted

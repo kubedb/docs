@@ -33,9 +33,9 @@ In this tutorial, we will use .sql script stored in GitHub repository [kubedb/ms
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
   
 ## Prepare Initialization Scripts
 
@@ -48,10 +48,10 @@ At first, we will create a ConfigMap with `init.sql` file. Then, we will provide
 Let's create a ConfigMap with the `init.sql` initialization script,
 
 ```bash
-$ kubectl create configmap -n demo mssql-init-scripts \
+kubectl create configmap -n demo mssql-init-scripts \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/mssqlserver-init-scripts/raw/master/init.sql)"
-configmap/mssql-init-scripts created
 ```
+configmap/mssql-init-scripts created
 
 
 ## Deploy the Microsoft SQL Server database 
@@ -68,9 +68,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -86,9 +86,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Deploy a Microsoft SQL Server database with Init-Script
 KubeDB implements a `MSSQLServer` CRD to define the specification of a Microsoft SQL Server database. Below is the `MSSQLServer` object created in this tutorial.
@@ -150,9 +150,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-standalone.yaml
-mssqlserver.kubedb.com/ms-init created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-standalone.yaml
 ```
+mssqlserver.kubedb.com/ms-init created
   </div>
 
   
@@ -208,9 +208,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-ag-cluster.yaml
-mssqlsever.kubedb.com/ms-ag-init created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-ag-cluster.yaml
 ```
+mssqlsever.kubedb.com/ms-ag-init created
   </div>
 
 </div>
@@ -225,7 +225,8 @@ Here,
 KubeDB operator watches for `MSSQLServer` objects using Kubernetes API. When a `MSSQLServer` object is created, KubeDB operator will create a PetSet and Services, Secrets, and other necessary resouces for this `MSSQLServer` Database.
 
 ```bash
-$ kubectl dba describe ms -n demo ms-init
+kubectl dba describe ms -n demo ms-init
+```
 Name:         ms-init
 Namespace:    demo
 Labels:       <none>
@@ -368,23 +369,23 @@ Status:
     Status:                True
     Type:                  Provisioned
   Phase:                   Ready
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. 
 
 KubeDB operator has created a new Secret called `ms-init-auth`  for storing the password for MSSQLServer SA user.
 
 ```bash
-$ kubectl view-secret -n demo ms-init-auth -a
+kubectl view-secret -n demo ms-init-auth -a
+```
 password='9jtGBoona46wUYmL'
 username='sa'
-```
 
 
 Let's connect ot the database pod and verify the `init.sql` script is executed successfully or not. 
 
-```bash 
-$ kubectl exec -it -n demo ms-init-0 -- bash
+```bash
+kubectl exec -it -n demo ms-init-0 -- bash
+```
 Defaulted container "mssql" out of: mssql, mssql-init (init)
 mssql@ms-init-0:/$ cd init-database/
 mssql@ms-init-0:/init-database$ ls
@@ -469,7 +470,6 @@ id                   name                                                       
                    8 name8                                                                                                                                                                                                                                                                      2025-08-06 10:36:49.5645412
 
 (8 rows affected)
-```
 
 
 

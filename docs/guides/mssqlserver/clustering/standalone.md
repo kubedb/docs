@@ -28,24 +28,25 @@ This tutorial will show you how to use KubeDB to run a Standalone SQL Server dat
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d20h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available Microsoft SQL Server Versions
 
 When you have installed KubeDB, it has created `MSSQLServerVersion` CR for all supported Microsoft SQL Server versions. Check it by using the `kubectl get mssqlserverversions`. You can also use `msversion` shorthand instead of `mssqlserverversions`.
 
 ```bash
-$ kubectl get msversion
+kubectl get msversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                7d19h
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                7d19h
@@ -53,8 +54,6 @@ NAME        VERSION   DB_IMAGE                                                DE
 2022-cu19   2022      mcr.microsoft.com/mssql/server:2022-CU19-ubuntu-22.04                7d19h
 2022-cu22   2022      mcr.microsoft.com/mssql/server:2022-CU22-ubuntu-22.04                7d19h
 2025-cu0    2025      mcr.microsoft.com/mssql/server:2025-RTM-ubuntu-22.04                 7d19h
-
-```
 
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mssqlserver/standalone/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -76,9 +75,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -94,9 +93,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Configuring Environment Variables for SQL Server on Linux
 You can use environment variables to configure SQL Server on Linux containers.
@@ -172,9 +171,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-standalone.yaml
-mssqlserver.kubedb.com/mssqlserver-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-standalone.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-standalone created
 
 Here,
 
@@ -189,17 +188,20 @@ Here,
 KubeDB operator watches for `MSSQLServer` objects using Kubernetes api. When a `MSSQLServer` object is created, KubeDB operator will create a new PetSet and a Service with the matching MSSQLServer object name. KubeDB operator will also create a governing service for PetSets with the name `<MSSQLServerName>-pods`, if one is not already present.
 
 ```bash
-$ kubectl get petset -n demo mssqlserver-standalone
+kubectl get petset -n demo mssqlserver-standalone
+```
 NAME                     AGE
 mssqlserver-standalone   13m
 
-
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-mssqlserver-standalone-0   Bound    pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            standard       15m
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   REASON   AGE
 pvc-ccbba9d2-5556-49cd-9ce8-23c28ad56f12   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-standalone-0   standard                15m
 
@@ -209,12 +211,10 @@ NAME                          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)  
 mssqlserver-standalone        ClusterIP   10.96.128.61   <none>        1433/TCP   15m
 mssqlserver-standalone-pods   ClusterIP   None           <none>        1433/TCP   15m
 
-```
-
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified MSSQLServer object:
 
 ```bash
-$ kubectl get ms -n demo mssqlserver-standalone -o yaml
+kubectl get ms -n demo mssqlserver-standalone -o yaml
 ```
 
 ```yaml
@@ -362,12 +362,14 @@ If you want to use an existing secret please specify that when creating the MSSQ
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `mssqlserver-standalone-auth` secret holds username and password
 
 ```bash
-$ kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
-axgXHj4oRIVQ1ocK
+```bash
+kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+axgXHj4oRIVQ1ocK
 We can exec into the pod `mssqlserver-standalone-0` using the following command:
 ```bash
 kubectl exec -it -n demo mssqlserver-standalone-0 -c mssql -- bash
@@ -431,7 +433,7 @@ kubedb_system
 
 Run the following command to see the created appbinding object:
 ```bash
-$ kubectl get appbinding -n demo -oyaml
+kubectl get appbinding -n demo -oyaml
 ```
 
 ```yaml
@@ -495,12 +497,14 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+```
 mssqlserver.kubedb.com/mssqlserver-standalone patched
 
-$ kubectl delete ms -n demo mssqlserver-standalone
-The MSSQLServer "mssqlserver-standalone" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-standalone": Can not delete as deletionPolicy is set to "DoNotTerminate"
+```bash
+kubectl delete ms -n demo mssqlserver-standalone
 ```
+The MSSQLServer "mssqlserver-standalone" is invalid: spec.deletionPolicy: Invalid value: "mssqlserver-standalone": Can not delete as deletionPolicy is set to "DoNotTerminate"
 
 Now, run `kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"` to set `spec.deletionPolicy` to `Halt` (which deletes the mssqlserver object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -515,14 +519,15 @@ When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specd
 At first, run `kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"`. Then delete the mssqlserver object,
 
 ```bash
-$ kubectl delete ms -n demo mssqlserver-standalone
-mssqlserver.kubedb.com "mssqlserver-standalone" deleted
+kubectl delete ms -n demo mssqlserver-standalone
 ```
+mssqlserver.kubedb.com "mssqlserver-standalone" deleted
 
 Now, run the following command to get mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                                        TYPE                       DATA   AGE
 secret/mssqlserver-ca                       kubernetes.io/tls          2      40m
 secret/mssqlserver-standalone-auth          kubernetes.io/basic-auth   2      30m
@@ -532,7 +537,6 @@ secret/mssqlserver-standalone-server-cert   kubernetes.io/tls          3      30
 
 NAME                                                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-mssqlserver-standalone-0   Bound    pvc-656e3bd1-65da-441c-851f-2ae076f8ebbd   1Gi        RWO            standard       29m
-```
 
 From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mssqlserver again using these resources.
 
@@ -545,23 +549,26 @@ When the [DeletionPolicy](/docs/guides/mssqlserver/concepts/mssqlserver.md#specd
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
-mssqlserver.kubedb.com/mssqlserver-standalone patched
-$ kubectl delete ms -n demo mssqlserver-standalone 
-mssqlserver.kubedb.com "mssqlserver-standalone" deleted
+kubectl patch -n demo ms mssqlserver-standalone -p '{"spec":{"deletionPolicy":"Delete"}}' --type="merge"
 ```
+mssqlserver.kubedb.com/mssqlserver-standalone patched
+
+```bash
+kubectl delete ms -n demo mssqlserver-standalone 
+```
+mssqlserver.kubedb.com "mssqlserver-standalone" deleted
 
 Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                                        TYPE                       DATA   AGE
 secret/mssqlserver-ca                       kubernetes.io/tls          2      49m
 secret/mssqlserver-standalone-auth          kubernetes.io/basic-auth   2      39m
 secret/mssqlserver-standalone-client-cert   kubernetes.io/tls          3      39m
 secret/mssqlserver-standalone-config        Opaque                     1      39m
 secret/mssqlserver-standalone-server-cert   kubernetes.io/tls          3      39m
-```
 
 From the above output, you can see that all mssqlserver resources(`MSSQLServer`, `PetSet`, `Pod`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mssqlserver using `snapshots`(if previously taken) and `Secrets`.
 
@@ -584,10 +591,10 @@ mssqlserver.kubedb.com "mssqlserver-standalone" deleted
 Now, run the following command to get all mssqlserver resources in `demo` namespaces,
 
 ```bash
-$ kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+kubectl get ms,petset,pod,svc,secret,pvc -n demo 
+```
 NAME                       TYPE                DATA   AGE
 secret/mssqlserver-ca      kubernetes.io/tls   2      53m
-```
 
 From the above output, you can see that all mssqlserver resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `WipeOut`.
 

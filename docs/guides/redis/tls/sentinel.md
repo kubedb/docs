@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Redis. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -63,7 +63,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated. The secret should be created in `cert-manager` namespace to create the `ClusterIssuer`.
 
 ```bash
-$ kubectl create secret tls redis-ca \
+kubectl create secret tls redis-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=cert-manager
@@ -84,9 +84,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/clusterissuer.yaml
-clusterissuer.cert-manager.io/redis-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/clusterissuer.yaml
 ```
+clusterissuer.cert-manager.io/redis-ca-issuer created
 
 ## TLS/SSL encryption in Sentinel
 
@@ -117,25 +117,26 @@ spec:
 ### Deploy Redis in Sentinel Mode
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/sentinel-ssl.yaml
-redissentinel.kubedb.com/sen-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/sentinel-ssl.yaml
 ```
+redissentinel.kubedb.com/sen-tls created
 
 Now, wait until `sen-tls` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get redissentinel -n demo
+watch kubectl get redissentinel -n demo
+```
 Every 2.0s: kubectl get redis -n demo
 NAME      VERSION   STATUS   AGE
 sen-tls   6.2.14     Ready    111s
-```
 
 ### Verify TLS/SSL in Redis in Sentinel Mode
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo sen-tls-client-cert
+kubectl describe secret -n demo sen-tls-client-cert
+```
 Name:         sen-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -158,7 +159,6 @@ Data
 ca.crt:   1147 bytes
 tls.crt:  1127 bytes
 tls.key:  1675 bytes
-```
 
 ## TLS/SSL encryption in Redis in Sentinel Mode
 
@@ -193,25 +193,26 @@ spec:
 ### Deploy Redis in Sentinel Mode
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/rd-sentinel.yaml
-redis.kubedb.com/rd-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/rd-sentinel.yaml
 ```
+redis.kubedb.com/rd-tls created
 
 Now, wait until `rd-tls` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get redis -n demo
 NAME      VERSION     STATUS     AGE
 rd-tls    6.2.14       Ready      2m14s
-```
 
 ### Verify TLS/SSL in Redis in Sentinel Mode
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo rd-tls-client-cert
+kubectl describe secret -n demo rd-tls-client-cert
+```
 Name:         rd-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -234,14 +235,13 @@ Data
 tls.key:  1679 bytes
 ca.crt:   1147 bytes
 tls.crt:  1127 bytes
-```
 
 
 Now, we can connect using tls-certs connect to the redis and write some data
 
 ```bash
-$ kubectl exec -it -n demo rd-tls-0 -c redis -- bash
-
+kubectl exec -it -n demo rd-tls-0 -c redis -- bash
+```
 # Trying to connect without tls certificates
 root@rd-tls-0:/data# redis-cli
 127.0.0.1:6379> 
@@ -255,28 +255,35 @@ root@rd-tls-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs/cl
 127.0.0.1:6379> set hello world
 OK
 127.0.0.1:6379> exit
-```
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redis/rd-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redis/rd-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-tls patched
 
-$ kubectl delete -n demo redis rd-tls
+```bash
+kubectl delete -n demo redis rd-tls
+```
 redis.kubedb.com "rd-tls" deleted
 
-$ kubectl patch -n demo redissentinel/sen-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/sen-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-tls patched
 
-$ kubectl delete -n demo redissentinel sen-tls
+```bash
+kubectl delete -n demo redissentinel sen-tls
+```
 redissentinel.kubedb.com "sen-tls" deleted
 
-$ kubectl delete clusterissuer redis-ca-issuer
-clusterissuer.cert-manager.io "redis-ca-issuer" deleted
+```bash
+kubectl delete clusterissuer redis-ca-issuer
 ```
+clusterissuer.cert-manager.io "redis-ca-issuer" deleted
 
 ## Next Steps
 

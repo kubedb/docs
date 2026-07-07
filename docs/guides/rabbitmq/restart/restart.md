@@ -24,10 +24,10 @@ KubeDB supports restarting the RabbitMQ database via a RabbitMQOpsRequest. Resta
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/rabbitmq](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -58,9 +58,9 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/restart/rm.yaml
-rabbitmq.kubedb.com/rm created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/restart/rm.yaml
 ```
+rabbitmq.kubedb.com/rm created
 
 ## Apply Restart opsRequest
 
@@ -87,18 +87,21 @@ spec:
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/restart/ops.yaml
-rabbitmqopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/restart/ops.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will restrart the pods sequetially by their cardinal suffix.
 
-```shell
-$ kubectl get rabbitmqopsrequest -n demo
+```bash
+kubectl get rabbitmqopsrequest -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   10m
 
-$ kubectl get rabbitmqopsrequest -n demo -oyaml restart
+```bash
+kubectl get rabbitmqopsrequest -n demo -oyaml restart
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RabbitMQOpsRequest
 metadata:
@@ -139,7 +142,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 
 ## Cleaning up

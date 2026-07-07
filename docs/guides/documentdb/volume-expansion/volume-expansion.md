@@ -37,13 +37,13 @@ backup/restore and no manual PVC editing required. This guide expands a 3-node c
 ## PVCs before
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
     -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName,STATUS:.status.phase
+```
 NAME                           SIZE   SC         STATUS
 data-documentdb-cls-sample-0   5Gi    longhorn   Bound
 data-documentdb-cls-sample-1   5Gi    longhorn   Bound
 data-documentdb-cls-sample-2   5Gi    longhorn   Bound
-```
 
 ## Create the VolumeExpansion OpsRequest
 
@@ -67,21 +67,24 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-volume-expansion.yaml
+kubectl apply -f cluster-volume-expansion.yaml
+```
 documentdbopsrequest.ops.kubedb.com/documentdb-cls-volume-expansion created
 
-$ kubectl get dcops -n demo documentdb-cls-volume-expansion
+```bash
+kubectl get dcops -n demo documentdb-cls-volume-expansion
+```
 NAME                              TYPE              STATUS       AGE
 documentdb-cls-volume-expansion   VolumeExpansion   Successful   4m49s
-```
 
 The status conditions walk through the offline-expansion mechanics: the operator deletes the
 PetSet, then for each replica it deletes the pod, expands the PVC, recreates the pod, and waits
 for it to become ready, before finally recreating the PetSet:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-volume-expansion \
+kubectl get dcops -n demo documentdb-cls-volume-expansion \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 Running=True :: Volume Expansion is in progress
 DeletePetset=True :: delete petset; ConditionStatus:True
 IsPvcData-documentdb-cls-sample-0Updated=True :: is pvc data-documentdb-cls-sample-0 updated; ConditionStatus:True
@@ -92,7 +95,6 @@ IsPvcData-documentdb-cls-sample-1Updated=True :: is pvc data-documentdb-cls-samp
 VolumeExpansion=True :: Offline Volume Expansion performed successfully in DocumentDB pods
 ReadyPetSets=True :: PetSet is recreated
 Successful=True :: Successfully Expanded Volume.
-```
 
 ## PVCs after
 
@@ -100,26 +102,31 @@ All three data volumes are now `10Gi`, and the `DocumentDB` object's storage req
 to match:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=documentdb-cls-sample \
     -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName,STATUS:.status.phase
+```
 NAME                           SIZE   SC         STATUS
 data-documentdb-cls-sample-0   10Gi   longhorn   Bound
 data-documentdb-cls-sample-1   10Gi   longhorn   Bound
 data-documentdb-cls-sample-2   10Gi   longhorn   Bound
 
-$ kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
-10Gi
+```bash
+kubectl get docdb -n demo documentdb-cls-sample -o jsonpath='{.spec.storage.resources.requests.storage}'
 ```
+10Gi
 
 The cluster is healthy and serving traffic after the expansion:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 ## Standalone
 

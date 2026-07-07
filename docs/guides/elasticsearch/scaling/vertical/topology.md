@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -92,55 +92,58 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/Elasticsearch-topology.yaml
-Elasticsearch.kubedb.com/es-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/Elasticsearch-topology.yaml
 ```
+Elasticsearch.kubedb.com/es-cluster created
 
 Now, wait until `es-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME         VERSION        STATUS   AGE
 es-cluster   xpack-9.2.3   Ready    53m
-
-```
 
 Let's check the Pod containers resources for both `data`,`ingest` and `master` of the Elasticsearch topology cluster. Run the following command to get the resources of the `broker` and `controller` containers of the Elasticsearch topology cluster
 
 ```bash
-$ kubectl get pod -n demo es-cluster-data-0  -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1536Mi"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
-$ kubectl get pod -n demo es-cluster-ingest-0  -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1536Mi"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
-
-$ kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1536Mi"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
-
+kubectl get pod -n demo es-cluster-data-0  -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo es-cluster-ingest-0  -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "memory": "1536Mi"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
 This is the default resources of the Elasticsearch topology cluster set by the `KubeDB` operator.
 
 We are now ready to apply the `ElasticsearchOpsRequest` CR to update the resources of this database.
@@ -193,9 +196,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/vertical/Elasticsearch-vertical-scaling-topology.yaml
-Elasticsearchopsrequest.ops.kubedb.com/vscale-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/vertical/Elasticsearch-vertical-scaling-topology.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/vscale-topology created
 
 #### Verify Elasticsearch Topology cluster resources updated successfully
 
@@ -204,16 +207,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get elasticsearchopsrequest -n demo 
+kubectl get elasticsearchopsrequest -n demo 
+```
 NAME              TYPE              STATUS       AGE
 vscale-topology   VerticalScaling   Successful   18m
-
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo vscale-topology
+kubectl describe Elasticsearchopsrequest -n demo vscale-topology
+```
 Name:         vscale-topology
 Namespace:    demo
 Labels:       <none>
@@ -632,12 +635,11 @@ Events:
   Warning  create es client; ConditionStatus:True                                       11m   KubeDB Ops-manager Operator  create es client; ConditionStatus:True
   Warning  re enable shard allocation; ConditionStatus:True                             11m   KubeDB Ops-manager Operator  re enable shard allocation; ConditionStatus:True
   Normal   RestartNodes                                                                 11m   KubeDB Ops-manager Operator  Successfully restarted all nodes
-
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo es-cluster-ingest-0  -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo es-cluster-ingest-0  -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "900m",
@@ -648,7 +650,10 @@ $ kubectl get pod -n demo es-cluster-ingest-0  -o json | jq '.spec.containers[].
     "memory": "1Gi"
   }
 }
-$ kubectl get pod -n demo es-cluster-data-0  -o json | jq '.spec.containers[].resources'
+
+```bash
+kubectl get pod -n demo es-cluster-data-0  -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "900Mi"
@@ -658,7 +663,10 @@ $ kubectl get pod -n demo es-cluster-data-0  -o json | jq '.spec.containers[].re
     "memory": "900Mi"
   }
 }
-$ kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].resources'
+
+```bash
+kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "750m",
@@ -669,8 +677,6 @@ $ kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].
     "memory": "800Mi"
   }
 }
-
-```
 
 The above output verifies that we have successfully scaled up the resources of the Elasticsearch topology cluster.
 

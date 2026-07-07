@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -61,9 +61,9 @@ spec:
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
-redissentinel.kubedb.com/sen-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-demo created
 
 Here,
 - `spec.replicas` denotes the number of replica nodes
@@ -102,9 +102,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/redis.yaml
-redis.kubedb.com/rd-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/sentinel/redis.yaml
 ```
+redis.kubedb.com/rd-demo created
 
 Here,
 
@@ -115,21 +115,27 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes API. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets named `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME       VERSION   STATUS   AGE
 sen-demo   6.2.14     Ready    2m39
 
-$ kubectl get redis -n demo
+```bash
+kubectl get redis -n demo
+```
 NAME      VERSION   STATUS         AGE
 rd-demo   6.2.14     Ready   2m41s
 
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME       READY   AGE
 rd-demo    3/3     86s
 sen-demo   3/3     12m
 
-
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-rd-demo-0    Bound    pvc-830fb301-512a-4de9-a110-c0ce032fabca   1Gi        RWO            standard       99s
 data-rd-demo-1    Bound    pvc-0bc06618-a7ef-42ef-b2a0-4e5563d68df7   1Gi        RWO            standard       93s
@@ -138,8 +144,9 @@ data-sen-demo-0   Bound    pvc-c55d804e-67e1-431c-92a6-67bdde14f59c   1Gi       
 data-sen-demo-1   Bound    pvc-171e7d75-c423-4c7f-aabd-42ce50cd0ff4   1Gi        RWO            standard       12m
 data-sen-demo-2   Bound    pvc-2886e192-845b-4b44-89e0-20c2af64ec47   1Gi        RWO            standard       12m
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS   REASON   AGE
 pvc-0bc06618-a7ef-42ef-b2a0-4e5563d68df7   1Gi        RWO            Delete           Bound    demo/data-rd-demo-1    standard                111s
 pvc-171e7d75-c423-4c7f-aabd-42ce50cd0ff4   1Gi        RWO            Delete           Bound    demo/data-sen-demo-1   standard                13m
@@ -148,21 +155,21 @@ pvc-830fb301-512a-4de9-a110-c0ce032fabca   1Gi        RWO            Delete     
 pvc-99aebc54-c016-4376-a3a3-25f882ae86e7   1Gi        RWO            Delete           Bound    demo/data-rd-demo-2    standard                104s
 pvc-c55d804e-67e1-431c-92a6-67bdde14f59c   1Gi        RWO            Delete           Bound    demo/data-sen-demo-0   standard                13m
 
-
-$ kubectl get svc -n demo
+```bash
+kubectl get svc -n demo
+```
 NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 rd-demo           ClusterIP   10.96.165.208   <none>        6379/TCP    2m40s
 rd-demo-pods      ClusterIP   None            <none>        6379/TCP    2m40s
 rd-demo-standby   ClusterIP   10.96.193.56    <none>        6379/TCP    2m40s
 sen-demo          ClusterIP   10.96.249.99    <none>        26379/TCP   14m
 sen-demo-pods     ClusterIP   None            <none>        26379/TCP   14m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. `status.phase` section is similar for 
 `Redis` object and `RedisSentinel` object. Run the following command to see the modified `RedisSentinel` object:
 
 ```bash
-$ kubectl get redissentinel -n demo sen-demo -o yaml
+kubectl get redissentinel -n demo sen-demo -o yaml
 ```
 ```yaml
 apiVersion: kubedb.com/v1
@@ -257,16 +264,16 @@ status:
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.username}' | base64 -d
-  default
+  kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  default
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.password}' | base64 -d
-  5VjZ7iYaoo8YRp!p
+  kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  5VjZ7iYaoo8YRp!p
 Now, you can connect to this redis database using the service using the credentials.
 ### Connect to Sentinel
 
@@ -277,29 +284,32 @@ Now, you can connect to this redis database using the service using the credenti
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.username}' | base64 -d
-  root
+  kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  root
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.password}' | base64 -d
-  Gw_sd;~Vrsj9kJSL
+  kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  Gw_sd;~Vrsj9kJSL
 
 Now, you can connect to this sentinel using the service using the credentials. 
 ## Check Replication Scenario
 
-```bash
 # first list the redis pods list
-$ kubectl get pods --all-namespaces -o jsonpath='{range.items[*]}{.metadata.name} ---------- {.status.podIP}:6379{"\\n"}{end}' | grep rd-demo
+```bash
+kubectl get pods --all-namespaces -o jsonpath='{range.items[*]}{.metadata.name} ---------- {.status.podIP}:6379{"\\n"}{end}' | grep rd-demo
+```
 rd-demo-0 ---------- 10.244.0.70:6379
 rd-demo-1 ---------- 10.244.0.72:6379
 rd-demo-2 ---------- 10.244.0.74:6379
 
 # enter into any pod's container named redis
-$ kubectl exec -it -n demo rd-demo-0 -c redis -- bash
+```bash
+kubectl exec -it -n demo rd-demo-0 -c redis -- bash
+```
 /data #
 
 # now inside this container, see which role of this pod
@@ -316,7 +326,6 @@ second_repl_offset:-1
 repl_backlog_active:1
 repl_backlog_size:1048576
 repl_backlog_first_byte_offset
-```
 So, the node rd-demo-0 is master, and it has two connected slaves. If a replica node is being exec, it will show which master it is connected to.
 
 ## Check Sentinel Monitoring 
@@ -325,13 +334,16 @@ A sentinel can monitor multiple masters. Sentinel stores information about maste
 operation when master fail to respond. Sentinel pings master recurrently after a certain period a time.
 
 ```bash
-$ kubectl get pods --all-namespaces -o jsonpath='{range.items[*]}{.metadata.name} ---------- {.status.podIP}:6379{"\\n"}{end}' | grep sen-demo
+kubectl get pods --all-namespaces -o jsonpath='{range.items[*]}{.metadata.name} ---------- {.status.podIP}:6379{"\\n"}{end}' | grep sen-demo
+```
 sen-demo-0 ---------- 10.244.0.46:6379
 sen-demo-1 ---------- 10.244.0.48:6379
 sen-demo-2 ---------- 10.244.0.50:6379
-# enter into Sentinel pod's container named redissentinel
-$ kubectl exec -it -n demo sen-demo-0 -c redissentinel -- bash
 
+# enter into Sentinel pod's container named redissentinel
+```bash
+kubectl exec -it -n demo sen-demo-0 -c redissentinel -- bash
+```
 # now inside this container, see the masters information which this sentinels monitors
 /data #  redis-cli -p 26379 sentinel masters
 1)  1) "name"
@@ -374,7 +386,6 @@ $ kubectl exec -it -n demo sen-demo-0 -c redissentinel -- bash
    38) "5000"
    39) "parallel-syncs"
    40) "1"
-```
 
 It can be seen that the master `rd-demo-0.rd-demo-pods.demo.svc` has two slaves as we deployed Redis with three replicas, and it has two other sentinel instances
 monitoring it as we have deployed RedisSentinel instance with three replicas as well.
@@ -385,10 +396,10 @@ Now, you can connect to this database through [redis-cli](https://redis.io/topic
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
-
 # connect to any node
-$ kubectl exec -it rd-demo-0 -n demo -c redis -- bash
+```bash
+kubectl exec -it rd-demo-0 -n demo -c redis -- bash
+```
 /data #
 
 # now ensure that you are connected to the 1st pod
@@ -408,7 +419,6 @@ OK
 10.244.0.145:6379> set apps code 
 (error) READONLY You can't write against a read only replica.
 10.244.0.145:6379> exit
-```
 
 ## Automatic Failover
 
@@ -418,10 +428,10 @@ as the new replica of the new master.
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # connect to any node and get the master nodes info
-$ kubectl exec -it rd-demo-0 -n demo -c redis -- bash
-
+```bash
+kubectl exec -it rd-demo-0 -n demo -c redis -- bash
+```
 # Check role of the first pod which has IP 10.244.0.70
 /data # redis-cli -h 10.244.0.70 info replication | grep role
 role:master
@@ -430,8 +440,9 @@ role:master
 /data # redis-cli -h 10.244.0.70 debug sleep 120
 OK
 
-$ kubectl exec -it rd-demo-0 -n demo -c redis -- bash
-
+```bash
+kubectl exec -it rd-demo-0 -n demo -c redis -- bash
+```
 # Check role of the first pod which has IP 10.244.0.70
 /data # redis-cli -h 10.244.0.70 info replication | grep role
 role:slave
@@ -441,7 +452,6 @@ role:slave
 role:master
 
 /data # exit
-```
 
 Notice that 110.244.0.72 is the new master and 10.244.0.70 has become the replica of  10.244.0.72.
 
@@ -451,21 +461,25 @@ First set termination policy to `WipeOut` all the things created by KubeDB opera
 to clean what you created in this tutorial.
 
 ```bash
-$ kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/rd-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-demo patched
 
-$ kubectl delete rd rd-demo -n demo
-redis.kubedb.com "rd-demo" deleted
+```bash
+kubectl delete rd rd-demo -n demo
 ```
+redis.kubedb.com "rd-demo" deleted
 
 Now delete the RedisSentinel instance similarly.
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-demo patched
 
-$ kubectl delete redissentinel sen-demo -n demo
-redis.kubedb.com "sen-demo" deleted
+```bash
+kubectl delete redissentinel sen-demo -n demo
 ```
+redis.kubedb.com "sen-demo" deleted
 
 ## Next Steps
 

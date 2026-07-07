@@ -39,9 +39,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/zookeeper/backup/kubestash/logical/examples](/docs/guides/zookeeper/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -83,33 +83,35 @@ spec:
 Create the above `ZooKeeper` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/sample-zookeeper.yaml
-zookeeper.kubedb.com/sample-zookeeper created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/sample-zookeeper.yaml
 ```
+zookeeper.kubedb.com/sample-zookeeper created
 
 KubeDB will deploy a `ZooKeeper` according to the above specification. It will also create the necessary `Secrets` and `Services` to access.
 
 Let's check if the zookeeper is ready to use,
 
 ```bash
-$ kubectl get zk -n demo sample-zookeeper
+kubectl get zk -n demo sample-zookeeper
+```
 NAME               VERSION   STATUS   AGE
 sample-zookeeper   3.9.1     Ready    5m1s
-```
 
 The zookeeper is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this zookeeper using the following commands,
 
 ```bash
-$ kubectl get secret -n demo 
+kubectl get secret -n demo 
+```
 NAME                           TYPE                       DATA   AGE
 sample-zookeeper-auth          kubernetes.io/basic-auth   2      5m20s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-zookeeper
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-zookeeper
+```
 NAME                           TYPE         CLUSTER-IP        EXTERNAL-IP     PORT(S)                      AGE
 sample-zookeeper               ClusterIP    10.128.65.175     <none>          2181/TCP                     5m55s
 sample-zookeeper-pods          ClusterIP    None              <none>          2181/TCP,2888/TCP,3888/TCP   5m55s
 sample-zookeeper-admin-server  ClusterIP    10.128.163.169    <none>          8080/TCP                     5m55s
-```
 
 Here, we have to use service `sample-zookeeper` and secret `sample-zookeeper-auth` to connect with the zookeeper. `KubeDB` creates an [AppBinding](/docs/guides/zookeeper/concepts/appbinding.md) CR that holds the necessary information to connect with the zookeeper.
 
@@ -119,15 +121,15 @@ Here, we have to use service `sample-zookeeper` and secret `sample-zookeeper-aut
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME                       TYPE                   VERSION    AGE
 sample-zookeeper           kubedb.com/zookeeper   3.9.1      9m30s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-zookeeper -o yaml
+kubectl get appbindings -n demo sample-zookeeper -o yaml
 ```
 
 ```yaml
@@ -186,26 +188,30 @@ Here,
 Now, we are going to exec into one of the database pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-zookeeper" 
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-zookeeper" 
+```
 NAME                 READY   STATUS    RESTARTS   AGE
 sample-zookeeper-0   2/2     Running   0          16m
 sample-zookeeper-1   2/2     Running   0          13m
 sample-zookeeper-2   2/2     Running   0          13m
-```
 
 Now, let’s exec into the pod and create a directory,
 
 ```bash
-$ kubectl exec -it -n demo sample-zookeeper-0 -- sh
-
+kubectl exec -it -n demo sample-zookeeper-0 -- sh
+```
 Type "help" for help.
 
 # Check if Zookeeper server is running and healthy
-$ echo ruok | nc localhost 2181
+```bash
+echo ruok | nc localhost 2181
+```
 imok
 
 # Create a znode named /hello-dir with the data "hello-message"
-$ zkCli.sh create /hello-dir hello-messege
+```bash
+zkCli.sh create /hello-dir hello-messege
+```
 Connecting to localhost:2181
 ...
 Connection Log Messeges
@@ -214,7 +220,6 @@ Created /hello-dir
 
 # exit from the pod
 / $ exit
-```
 
 Now, we are ready to backup the data.
 
@@ -227,13 +232,19 @@ We are going to store our backed up data into a `S3` bucket. We have to create a
 Let's create a secret called `s3-secret` with access credentials to our desired s3 bucket,
 
 ```bash
-$ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
-$ echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
-$ kubectl create secret generic -n demo s3-secret \
+echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
+```
+
+```bash
+echo -n '<your-aws-secret-access-key-here>' > AWS_SECRET_ACCESS_KEY
+```
+
+```bash
+kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_ACCESS_KEY_ID \
     --from-file=./AWS_SECRET_ACCESS_KEY
-secret/s3-secret created
 ```
+secret/s3-secret created
 
 **Create BackupStorage:**
 
@@ -263,9 +274,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 
 Now, we are ready to backup our data to our desired backend.
 
@@ -296,9 +307,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -311,11 +322,14 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
-    --from-file=./RESTIC_PASSWORD
-secret "encrypt-secret" created
+echo -n 'changeit' > RESTIC_PASSWORD
 ```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
+    --from-file=./RESTIC_PASSWORD
+```
+secret "encrypt-secret" created
 
 Below is the YAML for `BackupConfiguration` CR to backup the `sample-zookeeper` that we have deployed earlier,
 
@@ -364,27 +378,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-zookeeper-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-zookeeper-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                      PHASE   PAUSED   AGE
 sample-zookeeper-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                  INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-zookeeper-repo                 0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the s3 bucket, we will see the `Repository` YAML stored in the `demo/zookeeper` directory.
 
@@ -395,20 +409,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                             SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-zookeeper-backup-frequent-backup   */5 * * * *             0        2m45s           3m25s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                 INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
 sample-zookeeper-backup-frequent-backup-1726572962   BackupConfiguration   sample-zookeeper-backup    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -417,18 +431,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-zookeeper-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo s3-zookeeper-repo
+kubectl get repository -n demo s3-zookeeper-repo
+```
 NAME                  INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-zookeeper-repo     true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-zookeeper-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-zookeeper-repo
+```
 NAME                                                                   REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962   s3-zookeeper-repo   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -441,7 +455,7 @@ s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962   s3-zookee
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962 -oyaml
+kubectl get snapshots -n demo s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962 -oyaml
 ```
 
 ```yaml
@@ -554,17 +568,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/restored-zookeeper.yaml
-zookeeper.kubedb.com/restored-zookeeper created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/restored-zookeeper.yaml
 ```
+zookeeper.kubedb.com/restored-zookeeper created
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.
 
 ```bash
-$ kubectl get zookeeper -n demo restored-zookeeper
+kubectl get zookeeper -n demo restored-zookeeper
+```
 NAME                 VERSION   STATUS         AGE
 restored-zookeeper   3.9.1     Provisioning   61s
-```
 
 #### Create RestoreSession:
 
@@ -605,18 +619,18 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-zookeeper-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-zookeeper-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY          FAILURE-POLICY   PHASE       DURATION   AGE
 sample-zookeeper-restore   s3-zookeeper-repo                     Succeeded   7s         116s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -627,34 +641,38 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into **`Ready`** state by the following command,
 
 ```bash
-$ kubectl get zookeeper -n demo restored-zookeeper
+kubectl get zookeeper -n demo restored-zookeeper
+```
 NAME                 VERSION   STATUS   AGE
 restored-zookeeper   3.9.1      Ready    6m31s
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-zookeeper"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-zookeeper"
+```
 NAME                             READY   STATUS      RESTARTS   AGE
 restored-zookeeper-0             2/2     Running     0          6m7s
 restored-zookeeper-1             2/2     Running     0          6m1s
 restored-zookeeper-2             2/2     Running     0          5m55s
-```
 
 Now, lets exec one of the `Pod` and verify restored data.
 
 ```bash
-$ kubectl exec -it -n demo restored-zookeeper-0 -- sh
-
+kubectl exec -it -n demo restored-zookeeper-0 -- sh
+```
 Type "help" for help.
 
 # Check if Zookeeper server is running and healthy
-$ echo ruok | nc localhost 2181
+```bash
+echo ruok | nc localhost 2181
+```
 imok
 
 # List all znodes from the root directory
-$ zkCli.sh ls /
+```bash
+zkCli.sh ls /
+```
 Connecting to localhost:2181
 ...
 Connection Log Messeges
@@ -662,7 +680,9 @@ Connection Log Messeges
 [hello-dir]
 
 # Verify the data stored in the /hello-dir znode
-$ zkCli.sh get /hello-dir
+```bash
+zkCli.sh get /hello-dir
+```
 Connecting to localhost:2181
 ...
 Connection Log Messeges
@@ -671,7 +691,6 @@ hello-messege
 
 # exit from the pod
 / $ exit
-```
 
 So, from the above output, we can see the `demo` database we had created in the original database `sample-zookeeper` has been restored in the `restored-zookeeper`.
 

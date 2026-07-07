@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -78,22 +78,23 @@ spec:
 Let's create the `RedisSentinel` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/sentinel.yaml
-redissentinel.kubedb.com/sen-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-demo created
 
 Now, wait until `sen-demo` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME       VERSION   STATUS   AGE
 sen-demo   6.2.14     Ready    86s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -104,11 +105,11 @@ $ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the RedisSentinel resources,
 ```bash
-$ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
+kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -119,7 +120,6 @@ $ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spe
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the redissentinel.
 
@@ -178,20 +178,23 @@ If it was an `InMemory database`, we could also autoscaler the inMemory resource
 Let's create the `RedisAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/sen-as.yaml
-redissentinelautoscaler.autoscaling.kubedb.com/sen-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/sen-as.yaml
 ```
+redissentinelautoscaler.autoscaling.kubedb.com/sen-as created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `redisautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get redissentinelautoscaler -n demo
+kubectl get redissentinelautoscaler -n demo
+```
 NAME    AGE
 sen-as   102s
 
-$ kubectl describe redissentinelautoscaler sen-as -n demo
+```bash
+kubectl describe redissentinelautoscaler sen-as -n demo
+```
 Name:         sen-as
 Namespace:    demo
 Labels:       <none>
@@ -318,7 +321,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      sen-demo
 Events:            <none>
-```
 So, the `redisautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `redissentinelopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
@@ -326,27 +328,28 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `redissentinelopsrequest` in the demo namespace to see if any `redissentinelopsrequest` object is created. After some time you'll see that a `redissentinelopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 rdsops-sen-demo-5emii6       VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 rdsops-sen-demo-5emii6       VerticalScaling   Successfull  10s
-```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded. 
 
 Now, we are going to verify from the Pod, and the Redis yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -358,7 +361,9 @@ $ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
   }
 }
 
-$ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
+```bash
+kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -369,7 +374,6 @@ $ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spe
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto-scaled the resources of the Redis standalone database.
@@ -381,12 +385,16 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redissentinel/sen-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-demo patched
 
-$ kubectl delete redissentinel -n demo sen-demo
+```bash
+kubectl delete redissentinel -n demo sen-demo
+```
 redissentinel.kubedb.com "sen-demo" deleted
 
-$ kubectl delete redissentinelautoscaler -n demo sen-as
-redissentinelautoscaler.autoscaling.kubedb.com "sen-as" deleted
+```bash
+kubectl delete redissentinelautoscaler -n demo sen-as
 ```
+redissentinelautoscaler.autoscaling.kubedb.com "sen-as" deleted

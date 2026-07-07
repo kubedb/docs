@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the E
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,27 +73,29 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/overview/quickstart/elasticsearch/yamls/elasticsearch-v1.yaml
-Elasticsearch.kubedb.com/es created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/overview/quickstart/elasticsearch/yamls/elasticsearch-v1.yaml
 ```
+Elasticsearch.kubedb.com/es created
 
 Now, wait until `es` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo
+kubectl get es -n demo
+```
 NAME   VERSION       STATUS   AGE
 es     xpack-9.2.3   Ready    3m53s
-```
 
 Let's check the number of replicas has from Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get elasticsearch -n demo es -o json | jq '.spec.replicas'
-2
-$ kubectl get petsets -n demo es -o json | jq '.spec.replicas'
+kubectl get elasticsearch -n demo es -o json | jq '.spec.replicas'
+```
 2
 
+```bash
+kubectl get petsets -n demo es -o json | jq '.spec.replicas'
 ```
+2
 
 We can see from both command that the cluster has 2 replicas.
 
@@ -102,7 +104,8 @@ Also, we can verify the replicas of the combined from an internal Elasticsearch 
 Now lets check the number of replicas,
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es'
+```
 NAME       READY   STATUS    RESTARTS   AGE
 pod/es-0   1/1     Running   0          5m
 pod/es-1   1/1     Running   0          4m54s
@@ -131,8 +134,6 @@ secret/es-transport-cert                kubernetes.io/tls          3      5m8s
 NAME                              STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-es-0   Bound    pvc-7c8cc17d-7427-4411-9262-f213e826540b   1Gi        RWO            standard     <unset>                 5m5s
 persistentvolumeclaim/data-es-1   Bound    pvc-f2cf7ac9-b0c2-4c44-93dc-476cc06c25b4   1Gi        RWO            standard     <unset>                 4m59s
-
-```
 
 We can see from the above output that the Elasticsearch has 2 nodes.
 
@@ -169,9 +170,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-up-combined.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-up-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-up-combined.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-up-combined created
 
 #### Verify Combined cluster replicas scaled up successfully
 
@@ -180,15 +181,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME          TYPE                STATUS       AGE
 esops-hscale-up-combined   HorizontalScaling   Successful   2m42s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequests -n demo esops-hscale-up-combined
+kubectl describe Elasticsearchopsrequests -n demo esops-hscale-up-combined
+```
 Name:         esops-hscale-up-combined
 Namespace:    demo
 Labels:       <none>
@@ -259,17 +261,17 @@ Events:
   Normal   Successful                                 2m16s  KubeDB Ops-manager Operator  Successfully Horizontally Scaled Database
 bonusree@bonusree-HP-ProBook-450-G4 ~> 
 
-```
-
 Now, we are going to verify the number of replicas this cluster has from the Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get Elasticsearch -n demo es -o json | jq '.spec.replicas'
+kubectl get Elasticsearch -n demo es -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo es -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo es -o json | jq '.spec.replicas'
 ```
+3
 
 
 
@@ -306,9 +308,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-down-combined.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-down-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scaling/horizontal/Elasticsearch-hscale-down-combined.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-hscale-down-combined created
 
 #### Verify Combined cluster replicas scaled down successfully
 
@@ -317,15 +319,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                         TYPE                STATUS       AGE
 esops-hscale-down-combined   HorizontalScaling   Successful   76s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$  kubectl describe Elasticsearchopsrequests -n demo esops-hscale-down-combined
+ kubectl describe Elasticsearchopsrequests -n demo esops-hscale-down-combined
+```
 Name:         esops-hscale-down-combined
 Namespace:    demo
 Labels:       <none>
@@ -451,17 +454,18 @@ Events:
   Normal   ResumeDatabase                                          83s   KubeDB Ops-manager Operator  Resuming Elasticsearch demo/es
   Normal   ResumeDatabase                                          83s   KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es
   Normal   Successful                                              83s   KubeDB Ops-manager Operator  Successfully Horizontally Scaled Database
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Elasticsearch object, number of pods the petset have,
 
 ```bash
-$ kubectl get Elasticsearch -n demo es -o json | jq '.spec.replicas' 
+kubectl get Elasticsearch -n demo es -o json | jq '.spec.replicas' 
+```
 2
 
-$ kubectl get petset -n demo es -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo es -o json | jq '.spec.replicas'
 ```
+2
 
 
 From all the above outputs we can see that the replicas of the combined cluster is `2`. That means we have successfully scaled down the replicas of the Elasticsearch combined cluster.

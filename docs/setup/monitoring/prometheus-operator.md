@@ -23,9 +23,9 @@ aliases:
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy Prometheus operator and respective resources.
 
   ```bash
-  $ kubectl create ns monitoring
-  namespace/monitoring created
+  kubectl create ns monitoring
   ```
+  namespace/monitoring created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -38,7 +38,7 @@ Let's install KubeDB operator with monitoring enabled.
 **Helm 3:**
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.monitoring.agent=prometheus.io/operator \
@@ -48,7 +48,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 **YAML (with Helm 3):**
 
 ```bash
-$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --no-hooks \
@@ -101,10 +101,10 @@ KubeDB has created a secret named `kubedb-apiserver-cert` in `monitoring` namesp
 Verify that the secret `kubedb-apiserver-cert` has been created in `monitoring` namespace.
 
 ```bash
-$ kubectl get secret -n monitoring -l=app=kubedb
+kubectl get secret -n monitoring -l=app=kubedb
+```
 NAME                             TYPE                DATA   AGE
 kubedb-apiserver-cert   kubernetes.io/tls   2      40m
-```
 
 We are going to specify this secret in [Prometheus](https://github.com/prometheus-operator/prometheus-operator/blob/master/Documentation/design.md#prometheus) crd specification. Prometheus operator will mount this secret in `/etc/prometheus/secret/kubedb-apiserver-cert` directory of respective Prometheus server pod.
 
@@ -146,11 +146,11 @@ If you don't have any existing Prometheus server running, you have to create a P
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+```
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
-```
 
 >YAML for the RBAC resources created above can be found [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/rbac.yaml).
 
@@ -185,19 +185,19 @@ Here, `spec.serviceMonitorSelector` is used to select the `ServiceMonitor` crd t
 Let's create the `Prometheus` object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prometheus.yaml
-prometheus.monitoring.coreos.com/prometheus created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prometheus.yaml
 ```
+prometheus.monitoring.coreos.com/prometheus created
 
 Prometheus operator watches for `Prometheus` crd. Once a `Prometheus` crd is created, it generates respective configuration and creates a `PetSet` to run Prometheus server.
 
 Let's check `PetSet` has been created,
 
 ```bash
-$ kubectl get petset -n monitoring
+kubectl get petset -n monitoring
+```
 NAME                    DESIRED   CURRENT   AGE
 prometheus-prometheus   1         1         2m14s
-```
 
 
 ### Verify Monitoring Metrics
@@ -207,18 +207,18 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-$ kubectl get pod prometheus-prometheus-0 -n monitoring
+kubectl get pod prometheus-prometheus-0 -n monitoring
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          2m40s
-```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+kubectl port-forward -n monitoring prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb` service as target.
 

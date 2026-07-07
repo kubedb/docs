@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Vertical Scaling on Cluster
 
@@ -44,11 +44,11 @@ Here, we are going to deploy a  `SingleStore` cluster using a supported version 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ### Deploy SingleStore Cluster 
 
@@ -113,22 +113,23 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sample-sdb.yaml
-singlestore.kubedb.com/sample-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sample-sdb.yaml
 ```
+singlestore.kubedb.com/sample-sdb created
 
 Now, wait until `sample-sdb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sdb -n demo
+kubectl get sdb -n demo
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    101s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -139,8 +140,6 @@ $ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers
     "memory": "2Gi"
   }
 }
-
-```
 
 We are now ready to apply the `SingleStoreOpsRequest` CR to update the resources of this database.
 
@@ -182,9 +181,9 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sdbops-vscale.yaml
-singlestoreopsrequest.ops.kubedb.com/sdbops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sdbops-vscale.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdbops-vscale created
 
 #### Verify SingleStore Cluster resources updated successfully 
 
@@ -193,15 +192,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get singlestoreopsrequest -n demo
+kubectl get singlestoreopsrequest -n demo
+```
 NAME            TYPE              STATUS       AGE
 sdbops-vscale   VerticalScaling   Successful   7m30s
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded. Now, we are going to verify from one of the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "700m",
@@ -213,8 +213,6 @@ $ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers
   }
 }
 
-```
-
 The above output verifies that we have successfully scaled up the resources of the SingleStore database.
 
 ## Cleaning Up
@@ -222,6 +220,9 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete sdb -n demo sample-sdb
-$ kubectl delete singlestoreopsrequest -n demo sdbops-vscale
+kubectl delete sdb -n demo sample-sdb
+```
+
+```bash
+kubectl delete singlestoreopsrequest -n demo sdbops-vscale
 ```

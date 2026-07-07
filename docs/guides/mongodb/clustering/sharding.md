@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,9 +70,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/mongo-sharding.yaml
-mongodb.kubedb.com/mongo-sh created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/clustering/mongo-sharding.yaml
 ```
+mongodb.kubedb.com/mongo-sh created
 
 Here,
 
@@ -102,26 +102,27 @@ KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `Mong
 MongoDB `mongo-sh` state,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME       VERSION   STATUS    AGE
 mongo-sh   4.4.26     Ready     9m41s
-```
 
 All the types of nodes `Shard`, `ConfigServer` & `Mongos` are deployed as petset.
 
 ```bash
-$ kubectl get petset -n demo
+kubectl get petset -n demo
+```
 NAME                 READY   AGE
 mongo-sh-configsvr   3/3     11m
 mongo-sh-mongos      3/3     8m41s
 mongo-sh-shard0      3/3     10m
 mongo-sh-shard1      3/3     8m59s
-```
 
 All PVCs and PVs for MongoDB `mongo-sh`,
 
 ```bash
-$ kubectl get pvc -n demo
+kubectl get pvc -n demo
+```
 NAME                           STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mongo-sh-configsvr-0   Bound    pvc-1db4185e-6a5f-11e9-a871-080027a851ba   1Gi        RWO            standard       16m
 datadir-mongo-sh-configsvr-1   Bound    pvc-330cc6ee-6a5f-11e9-a871-080027a851ba   1Gi        RWO            standard       16m
@@ -133,8 +134,9 @@ datadir-mongo-sh-shard1-0      Bound    pvc-75feb227-6a5f-11e9-a871-080027a851ba
 datadir-mongo-sh-shard1-1      Bound    pvc-89bb7bb3-6a5f-11e9-a871-080027a851ba   1Gi        RWO            standard       13m
 datadir-mongo-sh-shard1-2      Bound    pvc-98c96ae4-6a5f-11e9-a871-080027a851ba   1Gi        RWO            standard       13m
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS   REASON   AGE
 pvc-1db4185e-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-configsvr-0   standard                17m
 pvc-330cc6ee-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-configsvr-1   standard                16m
@@ -145,19 +147,18 @@ pvc-6ba3263e-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete     
 pvc-75feb227-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-shard1-0      standard                14m
 pvc-89bb7bb3-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-shard1-1      standard                14m
 pvc-98c96ae4-6a5f-11e9-a871-080027a851ba   1Gi        RWO            Delete           Bound    demo/datadir-mongo-sh-shard1-2      standard                13m
-```
 
 Services created for MongoDB `mongo-sh`
 
 ```bash
-$ kubectl get svc -n demo
+kubectl get svc -n demo
+```
 NAME                     TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)     AGE
 mongo-sh                 ClusterIP   10.108.188.201   <none>        27017/TCP   18m
 mongo-sh-configsvr-pods  ClusterIP   None             <none>        27017/TCP   18m
 mongo-sh-mongos-pods     ClusterIP   None             <none>        27017/TCP   18m
 mongo-sh-shard0-pods     ClusterIP   None             <none>        27017/TCP   18m
 mongo-sh-shard1-pods     ClusterIP   None             <none>        27017/TCP   18m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. It has also defaulted some field of crd object. Run the following command to see the modified MongoDB object:
 
@@ -351,16 +352,16 @@ If you want to use custom or existing secret please specify that when creating t
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.username}' | base64 -d
-  root
+  kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  root
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.password}' | base64 -d
-  7QiqLcuSCmZ8PU5a
+  kubectl get secrets -n demo mongo-sh-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  7QiqLcuSCmZ8PU5a
 
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/).
 
@@ -369,13 +370,15 @@ Now, you can connect to this database through [mongo-shell](https://docs.mongodb
 In this tutorial, we will insert sharded and unsharded document, and we will see if the data actually sharded across cluster or not.
 
 ```bash
-$ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
+kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
+```
 NAME                READY   STATUS    RESTARTS   AGE
 mongo-sh-mongos-0   1/1     Running   0          49m
 mongo-sh-mongos-1   1/1     Running   0          49m
 
-$ kubectl exec -it mongo-sh-mongos-0 -n demo bash
-
+```bash
+kubectl exec -it mongo-sh-mongos-0 -n demo bash
+```
 mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?gssapiServiceName=mongodb
@@ -388,7 +391,6 @@ For more comprehensive documentation, see
 Questions? Try the support group
 	http://groups.google.com/group/mongodb-user
 mongos>
-```
 
 To detect if the MongoDB instance that your client is connected to is mongos, use the isMaster command. When a client connects to a mongos, isMaster returns a document with a `msg` field that holds the string `isdbgrid`.
 
@@ -616,23 +618,24 @@ You can also keep the mongodb object and halt the database to resume it again la
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-mongodb.kubedb.com/mongo-sh patched
+kubectl patch -n demo mg/mongo-sh -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-sh patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":true}}' --type="merge"
-mongodb.kubedb.com/mongo-sh patched
+kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":true}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-sh patched
 
 After that, kubedb will delete the petsets and services and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,petset,svc,secret,pvc -n demo
+kubectl get mg,petset,svc,secret,pvc -n demo
+```
 NAME                          VERSION   STATUS   AGE
 mongodb.kubedb.com/mongo-sh   4.4.26     Halted   74m
 
@@ -651,7 +654,6 @@ persistentvolumeclaim/datadir-mongo-sh-shard0-2      Bound    pvc-82f83359-6e31-
 persistentvolumeclaim/datadir-mongo-sh-shard1-0      Bound    pvc-07ef7cd3-99b2-47de-b1bb-ef6c5606d92e   1Gi        RWO            standard       74m
 persistentvolumeclaim/datadir-mongo-sh-shard1-1      Bound    pvc-ffa4b9a7-2492-4f18-be90-7950004e9efd   1Gi        RWO            standard       74m
 persistentvolumeclaim/datadir-mongo-sh-shard1-2      Bound    pvc-4e75b90e-dac5-4431-a50e-2bc8dfcf481b   1Gi        RWO            standard       73m
-```
 
 From the above output, you can see that MongoDB object, PVCs, Secret are still there.
 
@@ -660,29 +662,30 @@ From the above output, you can see that MongoDB object, PVCs, Secret are still t
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":false}}' --type="merge"
-mongodb.kubedb.com/mongo-sh patched
+kubectl patch -n demo mg/mongo-sh -p '{"spec":{"halted":false}}' --type="merge"
 ```
+mongodb.kubedb.com/mongo-sh patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME       VERSION   STATUS    AGE
 mongo-sh   4.4.26     Ready     6m27s
-```
 
 Now, If you again exec into `pod` and look for previous data, you will see that, all the data persists.
 
 ```bash
-$ kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
+kubectl get po -n demo -l mongodb.kubedb.com/node.mongos=mongo-sh-mongos
+```
 NAME                READY   STATUS    RESTARTS   AGE
 mongo-sh-mongos-0   1/1     Running   0          3m52s
 mongo-sh-mongos-1   1/1     Running   0          3m52s
 
-
-$ kubectl exec -it mongo-sh-mongos-0 -n demo bash
-
+```bash
+kubectl exec -it mongo-sh-mongos-0 -n demo bash
+```
 mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p 7QiqLcuSCmZ8PU5a
 
 mongos> use test;
@@ -733,7 +736,6 @@ mongos> sh.status()
                         chunks:
                                 shard1	1
                         { "myfield" : { "$minKey" : 1 } } -->> { "myfield" : { "$maxKey" : 1 } } on : shard1 Timestamp(1, 0)
-```
 
 ## Cleaning up
 

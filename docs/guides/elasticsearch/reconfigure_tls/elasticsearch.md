@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/Elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -67,24 +67,23 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch.yaml
-Elasticsearch.kubedb.com/es-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch.yaml
 ```
+Elasticsearch.kubedb.com/es-demo created
 
 Now, wait until `es-demo` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME      VERSION        STATUS   AGE
 es-demo   xpack-9.2.3   Ready    26h
 
-```
-
 Now, we can exec one elasticsearch pod and verify configuration that the TLS is disabled.
 ```bash
-$ kubectl exec -n demo es-demo-0 -- \
+kubectl exec -n demo es-demo-0 -- \
                                         cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
-
+```
 Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
 xpack.security.enabled: true
 
@@ -95,8 +94,6 @@ xpack.security.transport.ssl.certificate: certs/transport/tls.crt
 xpack.security.transport.ssl.certificate_authorities: [ "certs/transport/ca.crt" ]
 
 xpack.security.http.ssl.enabled: false
-
-```
 Here, transport TLS is enabled but HTTP TLS is disabled. So, internal node to node communication is encrypted but communication from client to node is not encrypted.
 
 ### Create Issuer/ ClusterIssuer
@@ -106,23 +103,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls es-ca \
+kubectl create secret tls es-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/es-ca created
 ```
+secret/es-ca created
 
 Now, Let's create an `Issuer` using the `Elasticsearch-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -140,9 +137,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
-issuer.cert-manager.io/es-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-issuer.yaml
 ```
+issuer.cert-manager.io/es-issuer created
 
 ### Create ElasticsearchOpsRequest
 
@@ -184,24 +181,25 @@ Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 > **Note:** For combined Elasticsearch, you just need to refer Elasticsearch combined object in `databaseRef` field. To learn more about combined Elasticsearch, please visit [here](/docs/guides/elasticsearch/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-add-tls.yaml
-Elasticsearchopsrequest.ops.kubedb.com/add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-add-tls.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CRO,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME      TYPE             STATUS       AGE
 add-tls   ReconfigureTLS   Successful   73m
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo add-tls
+kubectl describe Elasticsearchopsrequest -n demo add-tls
+```
 Name:         add-tls
 Namespace:    demo
 Labels:       <none>
@@ -324,14 +322,13 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, Lets exec into a Elasticsearch  pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -n demo es-demo-0 -- \
+kubectl exec -n demo es-demo-0 -- \
                                   cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
-
+```
 Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
 xpack.security.enabled: true
 
@@ -346,8 +343,6 @@ xpack.security.http.ssl.key:  certs/http/tls.key
 xpack.security.http.ssl.certificate: certs/http/tls.crt
 xpack.security.http.ssl.certificate_authorities: [ "certs/http/ca.crt" ]
 
-```
-
 We can see from the above output that,  `xpack.security.http.ssl.enabled: true` which means TLS is enabled for HTTP communication.
 
 ## Rotate Certificate
@@ -355,14 +350,13 @@ We can see from the above output that,  `xpack.security.http.ssl.enabled: true` 
 Now we are going to rotate the certificate of this cluster. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -n demo es-demo-0 -- /bin/sh -c '\
+kubectl exec -n demo es-demo-0 -- /bin/sh -c '\
                                                       openssl s_client -connect localhost:9200 -showcerts < /dev/null 2>/dev/null | \
                                                       sed -ne "/-BEGIN CERTIFICATE-/,/-END CERTIFICATE-/p" > /tmp/server.crt && \
                                                       openssl x509 -in /tmp/server.crt -noout -enddate'
+```
 Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
 notAfter=Feb 26 05:16:15 2026 GMT
-
-```
 
 So, the certificate will expire on this time `Feb 26 05:16:17 2026 GMT`.
 
@@ -393,25 +387,25 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-rotate.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-rotate.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CRO,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo esops-rotate
+kubectl get Elasticsearchopsrequest -n demo esops-rotate
+```
 NAME           TYPE             STATUS       AGE
 esops-rotate   ReconfigureTLS   Successful   85m
-
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo esops-rotate
+kubectl describe Elasticsearchopsrequest -n demo esops-rotate
+```
 Name:         esops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -530,7 +524,6 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 
 
@@ -543,22 +536,20 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 .+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*........+.....+......+...+.+..............+....+..+.+...+......+.....+.........+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+........+.......+...+......+.....+..........+..+.........+......+....+...+..+....+..+.......+............+...+..+...+.+............+..+................+.....+................+.....+.+........+.+.....+.........................+........+......+....+...........+.+....................+.+..+......+......+...+...+...+......+.+...+.........+.....+.......+...+..+.............+.....+.+..............+......+.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 ..+........+...+...............+...+....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*...+...+...+...................+.....+.+......+.....+.........+....+...+.....+...+.......+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*....+...+..+............+....+..+...+..........+.........+......+.........+...........+....+..+.+..+.......+.....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
-
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls es-new-ca \
+kubectl create secret tls es-new-ca \
                                        --cert=ca.crt \
                                        --key=ca.key \
                                        --namespace=demo
-secret/es-new-ca created
-
 ```
+secret/es-new-ca created
 
 Now, Let's create a new `Issuer` using the `es-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -576,9 +567,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-new-issuer.yaml
-issuer.cert-manager.io/es-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-new-issuer.yaml
 ```
+issuer.cert-manager.io/es-new-issuer created
 
 ### Create ElasticsearchOpsRequest
 
@@ -610,24 +601,25 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-update-tls-issuer.yaml
-Elasticsearchpsrequest.ops.kubedb.com/esops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/Elasticsearch-update-tls-issuer.yaml
 ```
+Elasticsearchpsrequest.ops.kubedb.com/esops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CRO,
 
 ```bash
-$ kubectl get Elasticsearchopsrequests -n demo esops-update-issuer
+kubectl get Elasticsearchopsrequests -n demo esops-update-issuer
+```
 NAME                  TYPE             STATUS       AGE
 esops-update-issuer   ReconfigureTLS   Successful   6m28s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo esops-update-issuer
+kubectl describe Elasticsearchopsrequest -n demo esops-update-issuer
+```
 Name:         esops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -792,18 +784,15 @@ Events:
   Warning  create es client; ConditionStatus:True                     3m57s  KubeDB Ops-manager Operator  create es client; ConditionStatus:True
   Normal   RestartNodes                                               3m52s  KubeDB Ops-manager Operator  Successfully restarted all the nodes
 
-```
-
 Now, Let's exec into a Elasticsearch node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo es-demo-0 -- bash
+kubectl exec -it -n demo es-demo-0 -- bash
+```
 elasticsearch@es-demo-0:~$ openssl x509 -in /usr/share/elasticsearch/config/certs/http/..2025_11_28_09_34_24.3912740802/tls.crt -noout -issuer
 issuer=CN = ca-updated, O = kubedb-updated
 elasticsearch@es-demo-0:~$ openssl x509 -in /usr/share/elasticsearch/config/certs/transport/..2025_11_28_09_34_24.2105953641/tls.crt -noout -issuer
 issuer=CN = ca-updated, O = kubedb-updated
-
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -838,25 +827,25 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-remove.yaml
-Elasticsearchopsrequest.ops.kubedb.com/esops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure-tls/esops-remove.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/esops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CRO,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo esops-remove
+kubectl get Elasticsearchopsrequest -n demo esops-remove
+```
 NAME           TYPE             STATUS       AGE
 esops-remove   ReconfigureTLS   Successful   3m16s
-
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo esops-remove
+kubectl describe Elasticsearchopsrequest -n demo esops-remove
+```
 Name:         esops-remove
 Namespace:    demo
 Labels:       <none>
@@ -971,14 +960,12 @@ Events:
   Normal   ResumeDatabase                                             2m10s  KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es-demo
   Normal   Successful                                                 2m10s  KubeDB Ops-manager Operator  Successfully Reconfigured TLS
 
-```
-
 Now, Let's exec into one of the  node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -n demo es-demo-0 -- \
+kubectl exec -n demo es-demo-0 -- \
        cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
-
+```
 Defaulted container "elasticsearch" out of: elasticsearch, init-sysctl (init), config-merger (init)
 xpack.security.enabled: true
 
@@ -989,8 +976,6 @@ xpack.security.transport.ssl.certificate: certs/transport/tls.crt
 xpack.security.transport.ssl.certificate_authorities: [ "certs/transport/ca.crt" ]
 
 xpack.security.http.ssl.enabled: false
-
-```
 
 So, we can see from the above that, `xpack.security.http.ssl.enabled` is set to `false` which means TLS is disabled for HTTP layer. Also, the transport layer TLS settings are removed from the `elasticsearch.yml` file.
 

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/clickhouse](/docs/examples/clickhouse) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -73,9 +73,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-config-secret.yaml
-secret/ch-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-config-secret.yaml
 ```
+secret/ch-custom-config created
 
 
 In this section, we are going to create a ClickHouse object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `ClickHouse` CR that we are going to create,
@@ -135,9 +135,9 @@ spec:
 Let's create the `ClickHouse` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/clickhouse-cluster.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/clickhouse-cluster.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
@@ -181,9 +181,9 @@ Then, we will create a new secret with this configuration file.
 At first, create `clickhouse.yaml` file containing required configuration settings.
 
 ```bash
-$ cat clickhouse.yaml
-read_request_timeout: 6500ms
+cat clickhouse.yaml
 ```
+read_request_timeout: 6500ms
 
 Then, we will create a new secret with this configuration file.
 
@@ -203,9 +203,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/new-ch-config-secret.yaml
-secret/new-ch-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/new-ch-config-secret.yaml
 ```
+secret/new-ch-custom-config created
 
 #### Create ClickHouseOpsRequest
 
@@ -237,9 +237,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-reconfigure-ops-with-secret.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfigure-with-secret created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-reconfigure-ops-with-secret.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfigure-with-secret created
 
 #### Verify the new configuration is working
 
@@ -430,9 +430,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-reconfigure-ops-with-apply-config.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfigure-with-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure/ch-reconfigure-ops-with-apply-config.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-cluster-reconfigure-with-config created
 
 #### Verify the new configuration is working
 

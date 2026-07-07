@@ -25,13 +25,15 @@ KubeDB supports providing ACL configuration for Redis. This tutorial will show y
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
 
-  $ kubectl get ns demo
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 

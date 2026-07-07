@@ -21,9 +21,9 @@ KubeDB supports finer user control over role based access permissions provided t
 > Prerequisites: A running Kubernetes cluster with KubeDB installed. See the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) if you need to set up your environment.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Overview
 
@@ -34,9 +34,9 @@ KubeDB allows users to provide custom RBAC resources, namely, `ServiceAccount`, 
 At first, let's create a `Service Account` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 Now, we need to create a role that has necessary access permissions for the Neo4j database named `quick-neo4j`.
 
@@ -87,19 +87,19 @@ rules:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/custom-rbac/neo4j-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/custom-rbac/neo4j-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding \
+kubectl create rolebinding my-custom-rolebinding \
   --role=my-custom-role \
   --serviceaccount=demo:my-custom-serviceaccount \
   --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 Now, create a Neo4j CRD specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
@@ -127,17 +127,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/custom-rbac/neo4j-custom-db.yaml
-neo4j.kubedb.com/quick-neo4j created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/custom-rbac/neo4j-custom-db.yaml
 ```
+neo4j.kubedb.com/quick-neo4j created
 
 Check that the pod is running:
 
 ```bash
-$ kubectl get pod -n demo quick-neo4j-0
+kubectl get pod -n demo quick-neo4j-0
+```
 NAME             READY   STATUS    RESTARTS   AGE
 quick-neo4j-0    1/1     Running   0          3m
-```
 
 ## Cleaning up
 

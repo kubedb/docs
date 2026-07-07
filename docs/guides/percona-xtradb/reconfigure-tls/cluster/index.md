@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Add TLS to a PerconaXtraDB Cluster
 
@@ -63,26 +63,31 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/sample-pxc.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/sample-pxc.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until `sample-pxc` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get perconaxtradb -n demo
+kubectl get perconaxtradb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-pxc       8.4.3    Ready    9m17s
-```
 
 ```bash
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+```bash
+kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 U6(h_pYrekLZ2OOd
 
-$ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb  -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb  -- bash
+```
 root@sample-pxc-0:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
 Your PerconaXtraDB connection id is 108
@@ -109,8 +114,6 @@ PerconaXtraDB [(none)]>  show variables like '%ssl%';
 +---------------------+-----------------------------+
 10 rows in set (0.001 sec)
 
-```
-
 We can verify from the above output that TLS is disabled for this database.
 
 ### Create Issuer/ ClusterIssuer
@@ -120,12 +123,12 @@ Now, we are going to create an example `Issuer` that will be used throughout the
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=perconaxtradb/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=perconaxtradb/O=kubedb"
+```
 Generating a RSA private key
 ...........................................................................+++++
 ........................................................................................................+++++
 writing new private key to './ca.key'
-```
 
 - create a secret using the certificate files we have just generated,
 
@@ -199,19 +202,19 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-add-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-add-tls.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest --all-namespaces
+kubectl get perconaxtradbopsrequest --all-namespaces
+```
 NAMESPACE   NAME            TYPE             STATUS       AGE
 demo        pxops-add-tls   ReconfigureTLS   Successful   6m6s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
 
@@ -220,7 +223,8 @@ Now, we are going to connect to the database for verifying the `PerconaXtraDB` s
 Let's exec into the pod to verify TLS/SSL configuration,
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ ls /etc/mysql/certs/client
 ca.crt  tls.crt  tls.key
 root@sample-pxc-0:/ ls /etc/mysql/certs/server
@@ -261,7 +265,6 @@ PerconaXtraDB [(none)]> show variables like '%require_secure_transport%';
 
 PerconaXtraDB [(none)]> quit;
 Bye
-```
 
 We can see from the above output that, `have_ssl` is set to `ture`. So, database TLS is enabled successfully to this database.
 
@@ -272,12 +275,12 @@ We can see from the above output that, `have_ssl` is set to `ture`. So, database
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ apt update
 root@sample-pxc-0:/ apt install openssl
 root@sample-pxc-0:/ openssl x509 -in /etc/mysql/certs/client/tls.crt -inform  PEM -enddate -nameopt RFC2253 -noout
 notAfter=Apr 13 05:18:43 2022 GMT
-```
 
 So, the certificate will expire on this time `Apr 13 05:18:43 2022 GMT`.
 
@@ -308,29 +311,29 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-rotate-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-rotate-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-rotate-tls.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-rotate-tls created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest --all-namespaces
+kubectl get perconaxtradbopsrequest --all-namespaces
+```
 NAMESPACE   NAME               TYPE             STATUS       AGE
 demo        pxops-rotate-tls   ReconfigureTLS   Successful    3m
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ apt update
 root@sample-pxc-0:/ apt install openssl
 root@sample-pxc-0:/# openssl x509 -in /etc/mysql/certs/client/tls.crt -inform  PEM -enddate -nameopt RFC2253 -noout
 notAfter=Apr 13 06:04:50 2022 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -340,7 +343,8 @@ Now, we are going to update the server certificate.
 
 - Let's describe the server certificate `sample-pxc-server-cert`
 ```bash
-$ kubectl describe certificate -n demo sample-pxc-server-cert
+kubectl describe certificate -n demo sample-pxc-server-cert
+```
 Name:         sample-pxc-server-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -409,7 +413,6 @@ Events:
   Normal  Requested  19m                cert-manager  Created new CertificateRequest resource "sample-pxc-server-cert-p5287"
   Normal  Reused     19m (x5 over 22m)  cert-manager  Reusing private key stored in existing Secret resource "sample-pxc-server-cert"
   Normal  Issuing    19m (x6 over 65m)  cert-manager  The certificate has been successfully issued
-```
 
 We want to add `subject` and `emailAddresses` in the spec of server sertificate.
 
@@ -448,34 +451,33 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-update-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-update-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-update-tls.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-update-tls created
 
 #### Verify certificate is updated successfully
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest -n demo
+kubectl get perconaxtradbopsrequest -n demo
+```
 Every 2.0s: kubectl get perconaxtradbopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 pxops-update-tls   ReconfigureTLS     Successful      7m
-
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded.
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0  -c perconaxtradb -- bash
+kubectl exec -it -n demo sample-pxc-0  -c perconaxtradb -- bash
+```
 root@sample-pxc-0:/ apt update
 root@sample-pxc-0:/ apt install openssl
 root@sample-pxc-0:/ openssl x509 -in /etc/mysql/certs/server/tls.crt -inform PEM  -subject -email -nameopt RFC2253 -noout
 subject=CN=sample-pxc.demo.svc,O=kubedb:server
 kubedb@appscode.com
-```
 
 We can see from the above output that, the subject name and email address match with the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -510,26 +512,27 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-remove-tls.yaml
-perconaxtradbopsrequest.ops.kubedb.com/pxops-remove-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/reconfigure-tls/cluster/examples/pxops-remove-tls.yaml
 ```
+perconaxtradbopsrequest.ops.kubedb.com/pxops-remove-tls created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `PerconaXtraDBOpsRequest` to be `Successful`.  Run the following command to watch `PerconaXtraDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get perconaxtradbopsrequest --all-namespaces
+kubectl get perconaxtradbopsrequest --all-namespaces
+```
 NAMESPACE   NAME               TYPE             STATUS       AGE
 demo        pxops-remove-tls   ReconfigureTLS   Successful   6m27s
-```
 
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed.
 
 Now, Let's exec into the database and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb  -- bash
+kubectl exec -it -n demo sample-pxc-0 -c perconaxtradb  -- bash
+```
 root@sample-pxc-0:/  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the PerconaXtraDB monitor.  Commands end with ; or \g.
 Your PerconaXtraDB connection id is 108
@@ -556,8 +559,6 @@ PerconaXtraDB [(none)]>  show variables like '%ssl%';
 +---------------------+-----------------------------+
 10 rows in set (0.001 sec)
 
-```
-
 So, we can see from the above that, output that tls is disabled successfully.
 
 ## Cleaning up
@@ -565,8 +566,17 @@ So, we can see from the above that, output that tls is disabled successfully.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo --all
-$ kubectl delete issuer -n demo --all
-$ kubectl delete perconaxtradbopsrequest -n demo --all
-$ kubectl delete ns demo
+kubectl delete perconaxtradb -n demo --all
+```
+
+```bash
+kubectl delete issuer -n demo --all
+```
+
+```bash
+kubectl delete perconaxtradbopsrequest -n demo --all
+```
+
+```bash
+kubectl delete ns demo
 ```

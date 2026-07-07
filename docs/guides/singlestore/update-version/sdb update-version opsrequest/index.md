@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare SingleStore Cluster
 
@@ -42,11 +42,11 @@ namespace/demo created
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 Now, we are going to deploy a `SingleStore` cluster database with version `8.7.21`.
 
@@ -114,17 +114,17 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/update-version/cluster/examples/sample-sdb.yaml
-singlestore.kubedb.com/sample-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/update-version/cluster/examples/sample-sdb.yaml
 ```
+singlestore.kubedb.com/sample-sdb created
 
 Now, wait until `sample-sdb` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sdb -n demo
+kubectl get sdb -n demo
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 sample-sdb   kubedb.com/v1alpha2   8.7.21    Ready    4m37s
-```
 
 We are now ready to apply the `SingleStoreOpsRequest` CR to update this database.
 
@@ -159,9 +159,9 @@ Here,
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/update-version/cluster/examples/sdbops-update.yaml
-singlestoreopsrequest.ops.kubedb.com/sdb-update-patch created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/update-version/cluster/examples/sdbops-update.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/sdb-update-patch created
 
 #### Verify SingleStore version updated successfully 
 
@@ -170,31 +170,39 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `SingleStoreOpsRequest` to be `Successful`.  Run the following command to watch `SingleStoreOpsRequest` CR,
 
 ```bash
-$ kubectl get sdbops -n demo 
+kubectl get sdbops -n demo 
+```
 NAME               TYPE            STATUS       AGE
 sdb-update-patch   UpdateVersion   Successful   3m46s
-```
 
 We can see from the above output that the `SingleStoreOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `SingleStore` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get sdb -n demo sample-sdb -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get sdb -n demo sample-sdb -o=jsonpath='{.spec.version}{"\n"}'
+```
 8.9.3
 
-$ kubectl get petset -n demo sample-sdb-aggregator -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
-
-$ kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
-
-$ kubectl get pods -n demo sample-sdb-aggregator-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
-
-$ kubectl get pods -n demo sample-sdb-leaf-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
+```bash
+kubectl get petset -n demo sample-sdb-aggregator -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
+
+```bash
+kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
+
+```bash
+kubectl get pods -n demo sample-sdb-aggregator-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
+
+```bash
+kubectl get pods -n demo sample-sdb-leaf-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
 
 You can see from above, our `SingleStore` cluster database has been updated with the new version. So, the update process is successfully completed.
 
@@ -203,6 +211,9 @@ You can see from above, our `SingleStore` cluster database has been updated with
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete sdb -n demo sample-sdb
-$ kubectl delete singlestoreopsrequest -n demo sdb-update-patch 
+kubectl delete sdb -n demo sample-sdb
+```
+
+```bash
+kubectl delete singlestoreopsrequest -n demo sdb-update-patch 
 ```

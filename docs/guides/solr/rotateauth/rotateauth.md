@@ -30,13 +30,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/solr/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,10 +49,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Solr CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -59,7 +61,8 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named `SolrVersions`. The installation process comes with a set of tested SolrVersion objects. Let's check available SolrVersions by,
 
 ```bash
-$ kubectl get solrversion
+kubectl get solrversion
+```
 NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 8.11.2   8.11.2    ghcr.io/appscode-images/solr:8.11.2   true         12d
 8.11.4   8.11.4    ghcr.io/appscode-images/solr:8.11.4                12d
@@ -67,8 +70,6 @@ NAME     VERSION   DB_IMAGE                              DEPRECATED   AGE
 9.6.1    9.6.1     ghcr.io/appscode-images/solr:9.6.1                 12d
 9.7.0    9.7.0     ghcr.io/appscode-images/solr:9.7.0                 12d
 9.8.0    9.8.0     ghcr.io/appscode-images/solr:9.8.0                 12d
-
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this SolrVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated SolrVersion.
 
@@ -109,17 +110,17 @@ spec:
 Let's create the ZooKeeper CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
-zooKeeper.kubedb.com/zoo-com created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/zookeeper/zookeeper.yaml
 ```
+zooKeeper.kubedb.com/zoo-com created
 
 The ZooKeeper's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get zookeeper -n demo -w
+kubectl get zookeeper -n demo -w
+```
 NAME       TYPE                  VERSION   STATUS   AGE
 zoo-com    kubedb.com/v1alpha2   3.7.2     Ready    13m
-```
 
 Then we can deploy solr in our cluster.
 
@@ -150,17 +151,17 @@ spec:
 Let's create the Solr CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
-solr.kubedb.com/solr-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/quickstart/overview/yamls/solr/solr.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 The Solr's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get Solr -n demo -w
+kubectl get Solr -n demo -w
+```
 NAME            TYPE                    VERSION     STATUS   AGE
 solr-combined   kubedb.com/v1alpha2     9.8.0      Ready    17m
-```
 
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
@@ -198,19 +199,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Solr.
 
 Let's create the `SolrOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotate-auth.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotate-auth.yaml
+ ```
 solropsrequest.ops.kubedb.com/solrops-rotate-auth-generated created
-```
 Let's wait for `SolrOpsrequest` to be `Successful`. Run the following command to watch `SolrOpsrequest` CRO
-```shell
- $ kubectl get Solropsrequest -n demo
+ ```bash
+ kubectl get Solropsrequest -n demo
+ ```
  NAME                          TYPE         STATUS       AGE
 solrops-rotate-auth-generated   RotateAuth   Successful    2m3s
-```
 If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Solropsrequest -n demo solrops-rotate-auth-generated 
+```bash
+kubectl describe Solropsrequest -n demo solrops-rotate-auth-generated 
+```
 Name:         solrops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -303,37 +305,44 @@ Events:
   Normal   RestartNodes                                              5m20s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  5m20s  KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-combined
   Normal   Successful                                                5m20s  KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-combined for SolrOpsRequest: solrops-rotate-auth-generated
-
-```
 **Verify Auth is rotated**
-```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
-"solr-combined-auth"
-$ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
-admin⏎ 
-$ kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
-dt(MVdBeBDlEy~Cp⏎                                    
+```bash
+ kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
 ```
+"solr-combined-auth"
+
+```bash
+kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.username}' | base64 -d
+```
+admin⏎ 
+
+```bash
+kubectl get secret -n demo solr-combined-auth -o jsonpath='{.data.password}' | base64 -d
+```
+dt(MVdBeBDlEy~Cp⏎                                    
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo solr-combined-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-admin⏎           
-$ kubectl get secret -n demo solr-combined-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-QtnsJluRRjaaWWec⏎              
+```bash
+kubectl get secret -n demo solr-combined-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+admin⏎           
+
+```bash
+kubectl get secret -n demo solr-combined-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+QtnsJluRRjaaWWec⏎              
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
-```shell
-$ kubectl create secret generic solr-combined-user-auth -n demo \
+```bash
+kubectl create secret generic solr-combined-user-auth -n demo \
                                                 --type=kubernetes.io/basic-auth \
                                                 --from-literal=username=admin \
                                                 --from-literal=password=Solr-secret
- secret/solr-combined-user-auth created
 ```
+ secret/solr-combined-user-auth created
 Now create a `SolrOpsRequest` with `RotateAuth` type. Below is the YAML of the `SolrOpsRequest` that we are going to create,
 
 ```shell
@@ -361,21 +370,22 @@ Here,
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotateauthuser.yaml
-solropsrequest.ops.kubedb.com/solrops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/rotate-auth/rotateauthuser.yaml
 ```
+solropsrequest.ops.kubedb.com/solrops-rotate-auth-user created
 Let’s wait for `SolrOpsRequest` to be Successful. Run the following command to watch `SolrOpsRequest` CRO:
 
-```shell
-$ kubectl get Solropsrequest -n demo
+```bash
+kubectl get Solropsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 solrops-rotate-auth-generated   RotateAuth   Successful    13m
 solrops-rotate-auth-user        RotateAuth   Successful    2m3s
-```
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Solropsrequest -n demo solrops-rotate-auth-user
+```bash
+kubectl describe Solropsrequest -n demo solrops-rotate-auth-user
+```
 Name:         solrops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -470,24 +480,31 @@ Events:
   Normal   RestartNodes                                              11m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  11m   KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-combined
   Normal   Successful                                                11m   KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-combined for SolrOpsRequest: solrops-rotate-auth-user
-
-```
 **Verify auth is rotate**
-```shell
-$  kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
+```bash
+ kubectl get solr -n demo solr-combined -ojson | jq .spec.authSecret.name
+```
 "solr-combined-user-auth"
-$ kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.username}' | base64 -d
+```
 solr⏎      
-$ kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo solr-combined-user-auth -o jsonpath='{.data.password}' | base64 -d
+```
 Solr-secret⏎                                                                                     
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo solr-combined-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-Solr                                                                                    
-$ kubectl get secret -n demo solr-combined-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-dt(MVdBeBDlEy~Cp⏎   
+```bash
+kubectl get secret -n demo solr-combined-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+Solr                                                                                    
+
+```bash
+kubectl get secret -n demo solr-combined-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+dt(MVdBeBDlEy~Cp⏎   
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -495,13 +512,24 @@ The above output shows that the password has been changed successfully. The prev
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
-```shell
-$ kubectl delete Solropsrequest solrops-rotate-auth-generated solrops-rotate-auth-user -n demo
-$ kubectl delete secret -n demo  solr-combined-user-auth
-$ kubectl delete secret -n demo  solr-combined-auth
-$ kubectl delete solr -n demo solr-combined
-$ kubectl delete ns demo
+```bash
+kubectl delete Solropsrequest solrops-rotate-auth-generated solrops-rotate-auth-user -n demo
+```
 
+```bash
+kubectl delete secret -n demo  solr-combined-user-auth
+```
+
+```bash
+kubectl delete secret -n demo  solr-combined-auth
+```
+
+```bash
+kubectl delete solr -n demo solr-combined
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

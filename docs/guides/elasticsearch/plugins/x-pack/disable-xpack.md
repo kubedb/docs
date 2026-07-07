@@ -27,13 +27,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,7 +48,7 @@ Here, we are going to use ElasticsearchVersion `xpack-8.19.9`.
 > To change authPlugin, it is recommended to create another `ElasticsearchVersion` CRD. Then, use that `ElasticsearchVersion` to install an Elasticsearch without authentication, or with other authPlugin.
 
 ```bash
-$ kubectl get elasticsearchversions xpack-8.19.9 -o yaml
+kubectl get elasticsearchversions xpack-8.19.9 -o yaml
 ```
 
 ```yaml
@@ -105,17 +107,17 @@ spec:
 Let's create the Elasticsearch object,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-xpack-disabled.yaml
-elasticsearch.kubedb.com/es-xpack-disabled created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-xpack-disabled.yaml
 ```
+elasticsearch.kubedb.com/es-xpack-disabled created
 
 Wait for Elasticsearch to be ready,
 
 ```bash
-$ kubectl get es -n demo es-xpack-disabled
+kubectl get es -n demo es-xpack-disabled
+```
 NAME                VERSION   STATUS    AGE
 es-xpack-disabled   xpack-9.2.3     Running   6m14s
-```
 
 ## Connect to Elasticsearch Database
 
@@ -124,17 +126,17 @@ As we have disabled X-Pack security, we no longer require *username* and *passwo
 At first, forward port 9200 of `es-xpack-disabled-0` pod. Run following command in a separate terminal,
 
 ```bash
-$ kubectl port-forward -n demo es-xpack-disabled-0 9200
+kubectl port-forward -n demo es-xpack-disabled-0 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, we can connect with the database at `localhost:9200`.
 
 Let's check health of our Elasticsearch database.
 
 ```bash
-$ curl "localhost:9200/_cluster/health?pretty"
+curl "localhost:9200/_cluster/health?pretty"
 ```
 
 ```json

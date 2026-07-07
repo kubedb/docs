@@ -26,9 +26,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -98,19 +98,19 @@ Here,
 Now create this Postgres object with Streaming Replication support
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
-postgres.kubedb.com/ha-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
 ```
+postgres.kubedb.com/ha-postgres created
 
 KubeDB operator creates three Pod as PostgreSQL server.
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
+```
 NAME            READY   STATUS    RESTARTS   AGE   LABELS
 ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-0
 ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-1
 ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-2
-```
 
 Here,
 
@@ -120,20 +120,20 @@ Here,
 Services for Postgres `ha-postgres` are created.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres"
+```
 NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                               AGE
 ha-postgres           ClusterIP   10.102.19.49   <none>        5432/TCP,2379/TCP                     4m
 ha-postgres-pods      ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP,2384/TCP   4m
 ha-postgres-standby   ClusterIP   10.97.36.117   <none>        5432/TCP                              4m
-```
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
+```
 NAME                  SELECTOR
 ha-postgres           map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:primary]
 ha-postgres-pods      map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres]
 ha-postgres-standby   map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:standby]
-```
 
 Here,
 
@@ -155,16 +155,16 @@ Now connect to this *primary* server Pod `ha-postgres-0` using pgAdmin installed
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.username}' | base64 -d
-  postgres
+  kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  postgres
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.password}' | base64 -d
-  MHRrOcuyddfh3YpU
+  kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  MHRrOcuyddfh3YpU
 
 You can check `pg_stat_replication` information to know who is currently streaming from *primary*.
 
@@ -245,12 +245,12 @@ kubectl delete pod -n demo ha-postgres-0
 ```
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
+```
 NAME            READY     STATUS    RESTARTS   AGE       LABELS
 ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-0
 ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-1
 ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=ha-postgres-2
-```
 
 Here,
 
@@ -322,19 +322,19 @@ Here,
 Now create this Postgres object
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
-postgres "hot-postgres" created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
 ```
+postgres "hot-postgres" created
 
 KubeDB operator creates three Pod as PostgreSQL server.
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
+```
 NAME             READY     STATUS    RESTARTS   AGE       LABELS
 hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=hot-postgres-0
 hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=hot-postgres-1
 hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=standby,petset.kubernetes.io/pod-name=hot-postgres-2
-```
 
 Here,
 
@@ -357,16 +357,16 @@ Now connect to one of our *hot standby* servers Pod `hot-postgres-2` using pgAdm
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.username}' | base64 -d
-  postgres
+  kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  postgres
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.password}' | base64 -d
-  ZZgjjQMUdKJYy1W9
+  kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  ZZgjjQMUdKJYy1W9
 
 Try to create a database (write operation)
 
@@ -391,10 +391,15 @@ So, you can see here that you can connect to *hot standby* and it only accepts r
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pg/ha-postgres pg/hot-postgres
+kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo pg/ha-postgres pg/hot-postgres
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

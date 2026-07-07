@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/rabbitmq](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,19 +62,17 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/rm.yaml
-rabbitmq.kubedb.com/rm created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/rm.yaml
 ```
+rabbitmq.kubedb.com/rm created
 
 Now, wait until `rm` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo
+kubectl get rm -n demo
+```
 NAME    VERSION    STATUS    AGE
 rm      4.2.4     Ready     10m
-
-
-```bash
 $ kubectl get secrets -n demo rm-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
@@ -90,23 +88,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls rabbitmq-ca \
+kubectl create secret tls rabbitmq-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/rabbitmq-ca created
 ```
+secret/rabbitmq-ca created
 
 Now, Let's create an `Issuer` using the `mongo-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -124,9 +122,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/issuer.yaml
-issuer.cert-manager.io/rm-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/issuer.yaml
 ```
+issuer.cert-manager.io/rm-issuer created
 
 ### Create RabbitMQOpsRequest
 
@@ -168,25 +166,26 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/rmops-add-tls.yaml
-rabbitmqopsrequest.ops.kubedb.com/rmops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/rmops-add-tls.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rmops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CRO,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 rmops-add-tls   ReconfigureTLS   Successful    91s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-add-tls 
+kubectl describe rabbitmqopsrequest -n demo rmops-add-tls 
+```
 Name:         rmops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -289,17 +288,16 @@ Events:
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming RabbitMQ demo/rm
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed RabbitMQ demo/rm
   Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 ## Rotate Certificate
 
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it rm-2 -n demo bash
+kubectl exec -it rm-2 -n demo bash
+```
 root@rm-2:/# openssl x509 -in /var/private/ssl/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 13:32:20 2021 GMT
-```
 
 So, the certificate will expire on this time `Jun  9 13:32:20 2021 GMT`. 
 
@@ -330,25 +328,26 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/reconfigure-tls/rmops-rotate.yaml
-RabbitMQopsrequest.ops.kubedb.com/rmops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/reconfigure-tls/rmops-rotate.yaml
 ```
+RabbitMQopsrequest.ops.kubedb.com/rmops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CRO,
 
 ```bash
-$ kubectl get RabbitMQopsrequest -n demo
+kubectl get RabbitMQopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 rmops-rotate    ReconfigureTLS   Successful    112s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-rotate
+kubectl describe rabbitmqopsrequest -n demo rmops-rotate
+```
 Name:         rmops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -438,15 +437,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it rm-2 -n demo bash
+kubectl exec -it rm-2 -n demo bash
+```
 root@rm-2:/# openssl x509 -in /var/run/rabbitmq/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 16:17:55 2021 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -457,23 +455,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls rm-new-ca \
+kubectl create secret tls rm-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/rm-new-ca created
 ```
+secret/rm-new-ca created
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -491,9 +489,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/rm-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/rm-new-issuer created
 
 ### Create RabbitMQOpsRequest
 
@@ -525,25 +523,26 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/rm-change-issuer.yaml
-rabbitmqopsrequest.ops.kubedb.com/rm-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/rm-change-issuer.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rm-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CRO,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 rm-change-issuer      ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rm-change-issuer
+kubectl describe rabbitmqopsrequest -n demo rm-change-issuer
+```
 Name:         rm-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -634,15 +633,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it rm-2 -n demo bash
+kubectl exec -it rm-2 -n demo bash
+```
 root@mgo-rs-tls-2:/$ openssl x509 -in /var/run/rabbitmq/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -677,25 +675,26 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/mops-remove.yaml
-rabbitmqopsrequest.ops.kubedb.com/mops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/reconfigure-tls/mops-remove.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/mops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CRO,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME          TYPE             STATUS        AGE
 mops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo mops-remove
+kubectl describe rabbitmqopsrequest -n demo mops-remove
+```
 Name:         mops-remove
 Namespace:    demo
 Labels:       <none>
@@ -783,7 +782,6 @@ Events:
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming RabbitMQ demo/rm
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed RabbitMQ demo/rm
   Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

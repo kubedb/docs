@@ -23,9 +23,9 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -36,10 +36,10 @@ namespace/demo created
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For pgbouncer, push `SERVER_IMAGE`, `EXPORTER_IMAGE` of following PgBouncerVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.pgBouncer.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.pgBouncer.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  ```
   NAME     VERSION   SERVER_IMAGE              EXPORTER_IMAGE                     DEPRECATED
   1.17.0   1.17.0    kubedb/pgbouncer:1.17.0   kubedb/pgbouncer_exporter:v0.1.1   false
-  ```
 
   Docker hub repositories:
 
@@ -54,13 +54,13 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret generic -n demo docker-registry myregistrykey \
+kubectl create secret generic -n demo docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -93,9 +93,9 @@ spec:
 Now, create the PgBouncerVersion crd,
 
 ```bash
-$ kubectl apply -f pvt-pgbouncerversion.yaml
-pgbouncerversion.kubedb.com/1.17.0 created
+kubectl apply -f pvt-pgbouncerversion.yaml
 ```
+pgbouncerversion.kubedb.com/1.17.0 created
 
 ## Deploy PgBouncer from Private Registry
 
@@ -129,17 +129,17 @@ spec:
 Now run the command to create this pgbouncer server:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/private-registry/pvt-reg-pgbouncer.yaml
-pgbouncer.kubedb.com/pvt-reg-pgbouncer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/private-registry/pvt-reg-pgbouncer.yaml
 ```
+pgbouncer.kubedb.com/pvt-reg-pgbouncer created
 
 To check if the images pulled successfully from the repository, see if the PgBouncer is in Running state:
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-pgbouncer"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-pgbouncer"
+```
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-pgbouncer-0   1/1       Running   0          3m
-```
 
 ## Cleaning up
 

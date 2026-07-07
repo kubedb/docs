@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -69,18 +69,17 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/update-version/Elasticsearch.yaml
-Elasticsearch.kubedb.com/es-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/update-version/Elasticsearch.yaml
 ```
+Elasticsearch.kubedb.com/es-demo created
 
 Now, wait until `es-demo` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo 
+kubectl get es -n demo 
+```
 NAME      VERSION        STATUS   AGE
 es-demo   xpack-8.18.8   Ready    9m10s
-
-```
 
 We are now ready to apply the `ElasticsearchOpsRequest` CR to update.
 
@@ -117,9 +116,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/update-version/update-version.yaml
-Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/update-version/update-version.yaml
 ```
+Elasticsearchopsrequest.ops.kubedb.com/Elasticsearch-update-version created
 
 #### Verify Elasticsearch version updated successfully
 
@@ -128,15 +127,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`.  Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get Elasticsearchopsrequest -n demo
+kubectl get Elasticsearchopsrequest -n demo
+```
 NAME                   TYPE            STATUS        AGE
 Elasticsearch-update-version   UpdateVersion   Successful    2m6s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe Elasticsearchopsrequest -n demo es-demo-update
+kubectl describe Elasticsearchopsrequest -n demo es-demo-update
+```
 Name:         es-demo-update
 Namespace:    demo
 Labels:       <none>
@@ -284,21 +284,22 @@ Events:
   Normal   ResumeDatabase                                                     28m   KubeDB Ops-manager Operator  Successfully resumed Elasticsearch demo/es-demo
   Normal   Successful                                                         28m   KubeDB Ops-manager Operator  Successfully Updated Database
 
-```
-
 Now, we are going to verify whether the `Elasticsearch` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get es -n demo es-demo -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get es -n demo es-demo -o=jsonpath='{.spec.version}{"\n"}'
+```
 xpack-9.2.3
 
-$ kubectl get petset -n demo es-demo -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo es-demo -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 
-$ kubectl get pods -n demo es-demo-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.2.3
-
+```bash
+kubectl get pods -n demo es-demo-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/elastic:9.2.3
 
 You can see from above, our `Elasticsearch` has been updated with the new version. So, the updateVersion process is successfully completed.
 

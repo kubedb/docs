@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Solr. This tutorial will show y
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/Solr](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Solr) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -84,9 +84,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/sl-issuer.yaml
-issuer.cert-manager.io/solr-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/sl-issuer.yaml
 ```
+issuer.cert-manager.io/solr-ca-issuer created
 
 ## TLS/SSL encryption in Solr Topology Cluster
 
@@ -148,22 +148,23 @@ spec:
 ### Deploy Solr Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/solr-topology.yaml
-Solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/solr-topology.yaml
 ```
+Solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster created` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    2m31s
-```
 
 ### Verify TLS/SSL in Solr Topology Cluster
 
 ```bash
-$ kubectl describe secret solr-cluster-client-cert -n demo
+kubectl describe secret solr-cluster-client-cert -n demo
+```
 Name:         solr-cluster-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -190,12 +191,12 @@ ca.crt:          1147 bytes
 keystore.p12:    3511 bytes
 tls.crt:         1497 bytes
 tls.key:         1679 bytes
-```
 
 Now, Let's exec into a solr data pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo solr-cluster-data-0 -- bash
+kubectl exec -it -n demo solr-cluster-data-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-cluster-data-0:/opt/solr-9.4.1$ env | grep -i SSL
 JAVA_OPTS= -Djavax.net.ssl.trustStore=/var/solr/etc/truststore.p12 -Djavax.net.ssl.trustStorePassword=QyHKB(dYoT1MQYMu -Djavax.net.ssl.keyStore=/var/solr/etc/keystore.p12 -Djavax.net.ssl.keyStorePassword=QyHKB(dYoT1MQYMu -Djavax.net.ssl.keyStoreType=PKCS12 -Djavax.net.ssl.trustStoreType=PKCS12
@@ -206,8 +207,6 @@ SOLR_SSL_KEY_STORE_PASSWORD=QyHKB(dYoT1MQYMu
 SOLR_SSL_TRUST_STORE=/var/solr/etc/truststore.p12
 SOLR_SSL_KEY_STORE=/var/solr/etc/keystore.p12
 SOLR_SSL_NEED_CLIENT_AUTH=false
-
-```
 
 We can see from the above output that, keystore location is `/var/solr/etc` which means that TLS is enabled.
 

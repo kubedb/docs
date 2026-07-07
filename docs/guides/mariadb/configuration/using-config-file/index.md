@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for MariaDB. This tutorial will s
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
 
-  $ kubectl get ns demo
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -66,9 +68,9 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
-secret/md-configuration created
+kubectl create secret generic -n demo md-configuration --from-file=./md-config.cnf
 ```
+secret/md-configuration created
 
 Verify the Secret has the configuration file.
 
@@ -90,9 +92,9 @@ metadata:
 Now, create MariaDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Below is the YAML for the MariaDB crd we just created.
 
@@ -122,15 +124,17 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 
 Check that the petset's pod is running
 
-```bash
- $ kubectl get pod -n demo
+ ```bash
+ kubectl get pod -n demo
+ ```
 NAME               READY   STATUS    RESTARTS   AGE
 sample-mariadb-0   1/1     Running   0          21s
 
-$ kubectl get mariadb -n demo 
+```bash
+kubectl get mariadb -n demo 
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5    Ready    71s
-```
 
 We can see the database is in ready phase so it can accept conncetion.
 
@@ -138,9 +142,10 @@ Now, we will check if the database has started with the custom configuration we 
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # Connceting to the database
- $ kubectl exec -it -n demo sample-mariadb-0 -- bash
+ ```bash
+ kubectl exec -it -n demo sample-mariadb-0 -- bash
+ ```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 23
@@ -170,15 +175,17 @@ MariaDB [(none)]> show variables like 'read_buffer_size';
 
 MariaDB [(none)]> exit
 Bye
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

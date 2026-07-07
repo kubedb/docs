@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,25 +62,27 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/ig.yaml
-ignite.kubedb.com/ig created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/ig.yaml
 ```
+ignite.kubedb.com/ig created
 
 Now, wait until `ig` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME    VERSION    STATUS    AGE
 ig      2.17.0     Ready     10m
-```
 
 ```bash
-$ kubectl get secrets -n demo ig-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo ig-auth -o jsonpath='{.data.username}' | base64 -d
+```
 ignite
 
-$ kubectl get secrets -n demo ig-auth -o jsonpath='{.data.password}' | base64 -d
-U6(h_pYrekLZ2OOd
+```bash
+kubectl get secrets -n demo ig-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+U6(h_pYrekLZ2OOd
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -91,23 +93,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls ignite-ca \
+kubectl create secret tls ignite-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/ignite-ca created
 ```
+secret/ignite-ca created
 
 Now, Let's create an `Issuer` using the `mongo-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -125,9 +127,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/issuer.yaml
-issuer.cert-manager.io/ig-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/issuer.yaml
 ```
+issuer.cert-manager.io/ig-issuer created
 
 ### Create IgniteOpsRequest
 
@@ -169,25 +171,26 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/igops-add-tls.yaml
-igniteopsrequest.ops.kubedb.com/igops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/igops-add-tls.yaml
 ```
+igniteopsrequest.ops.kubedb.com/igops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CRO,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 igops-add-tls   ReconfigureTLS   Successful    91s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-add-tls 
+kubectl describe igniteopsrequest -n demo igops-add-tls 
+```
 Name:         igops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -290,17 +293,16 @@ Events:
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming Ignite demo/ig
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed Ignite demo/ig
   Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 ## Rotate Certificate
 
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it ig-2 -n demo bash
+kubectl exec -it ig-2 -n demo bash
+```
 root@ig-2:/# openssl x509 -in /ignite/certs/client/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 13:32:20 2025 GMT
-```
 
 So, the certificate will expire on this time `Jun  9 13:32:20 2025 GMT`. 
 
@@ -331,25 +333,26 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Ignite/reconfigure-tls/igops-rotate.yaml
-Igniteopsrequest.ops.kubedb.com/igops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Ignite/reconfigure-tls/igops-rotate.yaml
 ```
+Igniteopsrequest.ops.kubedb.com/igops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CRO,
 
 ```bash
-$ kubectl get Igniteopsrequest -n demo
+kubectl get Igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 igops-rotate    ReconfigureTLS   Successful    112s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-rotate
+kubectl describe igniteopsrequest -n demo igops-rotate
+```
 Name:         igops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -439,15 +442,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it ig-2 -n demo bash
+kubectl exec -it ig-2 -n demo bash
+```
 root@ig-2:/# openssl x509 -in /ignite/certs/client/tls.crt -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 16:17:55 2025 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -458,23 +460,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls ig-new-ca \
+kubectl create secret tls ig-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/ig-new-ca created
 ```
+secret/ig-new-ca created
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -492,9 +494,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/ig-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/ig-new-issuer created
 
 ### Create IgniteOpsRequest
 
@@ -526,25 +528,26 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/ig-change-issuer.yaml
-igniteopsrequest.ops.kubedb.com/ig-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/ig-change-issuer.yaml
 ```
+igniteopsrequest.ops.kubedb.com/ig-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CRO,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 ig-change-issuer      ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo ig-change-issuer
+kubectl describe igniteopsrequest -n demo ig-change-issuer
+```
 Name:         ig-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -635,15 +638,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it ig-2 -n demo bash
+kubectl exec -it ig-2 -n demo bash
+```
 root@ig-2:/$ openssl x509 -in /ignite/certs/client/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -678,25 +680,26 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/mops-remove.yaml
-igniteopsrequest.ops.kubedb.com/mops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/mops-remove.yaml
 ```
+igniteopsrequest.ops.kubedb.com/mops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CRO,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME          TYPE             STATUS        AGE
 mops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo mops-remove
+kubectl describe igniteopsrequest -n demo mops-remove
+```
 Name:         mops-remove
 Namespace:    demo
 Labels:       <none>
@@ -784,7 +787,6 @@ Events:
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming Ignite demo/ig
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed Ignite demo/ig
   Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

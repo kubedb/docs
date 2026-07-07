@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for PerconaXtraDB. This tutorial 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
 
-  $ kubectl get ns demo
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-config-file/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -65,14 +67,15 @@ Here, `read_buffer_size` is set to 1MB in bytes.
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo px-configuration --from-file=./px-config.cnf
-secret/px-configuration created
+kubectl create secret generic -n demo px-configuration --from-file=./px-config.cnf
 ```
+secret/px-configuration created
 
 Verify the Secret has the configuration file.
 
 ```bash
-$ kubectl get secret -n demo px-configuration -o yaml
+kubectl get secret -n demo px-configuration -o yaml
+```
 apiVersion: v1
 stringData:
   px-config.cnf: |
@@ -84,14 +87,13 @@ metadata:
   name: px-configuration
   namespace: demo
   ...
-```
 
 Now, create PerconaXtraDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-config-file/examples/px-custom.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/configuration/using-config-file/examples/px-custom.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Below is the YAML for the PerconaXtraDB crd we just created.
 
@@ -122,16 +124,18 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME           READY   STATUS    RESTARTS   AGE
 sample-pxc-0   2/2     Running   0          75m
 sample-pxc-1   2/2     Running   0          95m
 sample-pxc-2   2/2     Running   0          95m
 
-$ kubectl get perconaxtradb -n demo 
+```bash
+kubectl get perconaxtradb -n demo 
+```
 NAME         VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    96m
-```
 
 We can see the database is in ready phase so it can accept connection.
 
@@ -139,9 +143,10 @@ Now, we will check if the database has started with the custom configuration we 
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # Connecting to the database
-$ kubectl exec -it -n demo sample-pxc-0 -- bash
+```bash
+kubectl exec -it -n demo sample-pxc-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-4.4$  mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -178,15 +183,17 @@ mysql> show variables like 'read_buffer_size';
 
 mysql> exit
 Bye
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete perconaxtradb -n demo sample-pxc
-perconaxtradb.kubedb.com "sample-pxc" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete perconaxtradb -n demo sample-pxc
 ```
+perconaxtradb.kubedb.com "sample-pxc" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

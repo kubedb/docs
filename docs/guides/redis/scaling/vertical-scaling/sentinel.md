@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to perform vert
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -76,21 +76,22 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/sentinel.yaml
-redissentinel.kubedb.com/sen-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-sample created
 
 Now, wait until `sen-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME         VERSION   STATUS   AGE
 sen-sample   6.2.14     Ready    5m20s
-```
 
 Let's check the Pod containers resources,
 ```bash
-$ kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "100Mi"
@@ -100,7 +101,6 @@ $ kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resource
     "memory": "100Mi"
   }
 }
-```
 
 ### Deploy Redis :
 
@@ -141,20 +141,21 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/rd-sentinel.yaml
-redis.kubedb.com/rd-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/rd-sentinel.yaml
 ```
+redis.kubedb.com/rd-sample created
 
 Now, wait until `rd-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME        VERSION   STATUS   AGE
 rd-sample   6.2.14     Ready    2m11s
-```
 Let's check the Pod containers resources,
 ```bash
-$ kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "100Mi"
@@ -164,7 +165,6 @@ $ kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources
     "memory": "100Mi"
   }
 }
-```
 
 We are now ready to apply the `RedisSentinelOpsRequest` CR to vertical scale on sentinel and `RedisOpsRequest` CR to vertical scale database.
 
@@ -206,9 +206,9 @@ Here,
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-sentinel.yaml
-redissentinelopsrequest.ops.kubedb.com/sen-ops-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-sentinel.yaml
 ```
+redissentinelopsrequest.ops.kubedb.com/sen-ops-vertical created
 
 #### Verify RedisSentinel resources updated successfully :
 
@@ -217,18 +217,19 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `RedisSentinelOpsRequest` to be `Successful`.  Run the following command to watch `RedisSentinelOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME               TYPE              STATUS       AGE
 sen-ops-vertical   VerticalScaling   Successful   5m27s
-```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
 Now, we are going to verify from the Pod yaml whether the resources of the sentinel has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -239,7 +240,6 @@ $ kubectl get pod -n demo sen-sample-0 -o json | jq '.spec.containers[].resource
     "memory": "300Mi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the sentinel instance.
 ### Vertical Scale Redis
@@ -280,9 +280,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-redis-sentinel.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-redis-sentinel.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-vertical created
 
 #### Verify Redis resources updated successfully :
 
@@ -291,16 +291,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 NAME              TYPE              STATUS       AGE
 rd-ops-vertical   VerticalScaling   Successful   4m4s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 Now, we are going to verify from the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources'
+```
 {}
 {
   "limits": {
@@ -312,31 +313,40 @@ $ kubectl get pod -n demo rd-sample-0 -o json | jq '.spec.containers[].resources
     "memory": "300Mi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the redis database.
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-sample patched
 
-$ kubectl delete -n demo redis rd-sample
+```bash
+kubectl delete -n demo redis rd-sample
+```
 redis.kubedb.com "rd-sample" deleted
 
-$ kubectl delete -n demo redisopsrequest rd-ops-vertical 
+```bash
+kubectl delete -n demo redisopsrequest rd-ops-vertical 
+```
 redisopsrequest.ops.kubedb.com "rd-ops-vertical" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-sample patched
 
-$ kubectl delete -n demo redissentinel sen-sample
+```bash
+kubectl delete -n demo redissentinel sen-sample
+```
 redissentinel.kubedb.com "sen-sample" deleted
 
-$ kubectl delete -n demo redissentinelopsrequests sen-ops-vertical 
-redissentinelopsrequest.ops.kubedb.com "sen-ops-vertical" deleted
+```bash
+kubectl delete -n demo redissentinelopsrequests sen-ops-vertical 
 ```
+redissentinelopsrequest.ops.kubedb.com "sen-ops-vertical" deleted

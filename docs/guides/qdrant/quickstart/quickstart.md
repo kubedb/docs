@@ -25,9 +25,9 @@ This tutorial will show you how to use KubeDB to run a Qdrant database.
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -36,10 +36,10 @@ namespace/demo created
 We will need to provide `StorageClass` in the Qdrant CR specification. Check available `StorageClass` in your cluster using the following command:
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  10d
-```
 
 Here, we have `standard` StorageClass in our cluster.
 
@@ -48,12 +48,12 @@ Here, we have `standard` StorageClass in our cluster.
 When you install KubeDB, it creates `QdrantVersion` CRDs for all supported Qdrant versions. Let's check available `QdrantVersion`s:
 
 ```bash
-$ kubectl get qdrantversions
+kubectl get qdrantversions
+```
 NAME     VERSION   DB_IMAGE                                       DEPRECATED   AGE
 1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                13d
 1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                13d
 1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                13d
-```
 
 Notice the `DEPRECATED` column. `true` means that QdrantVersion is deprecated for the current KubeDB version and KubeDB will not work for that version.
 
@@ -85,9 +85,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/qdrant-sample.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/quickstart/qdrant-sample.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Here,
 
@@ -101,19 +101,20 @@ Here,
 Now, let's watch the progress of creating the `Qdrant` cluster:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -w
+kubectl get qdrant -n demo qdrant-sample -w
+```
 NAME             VERSION   STATUS         AGE
 qdrant-sample    1.17.0    Provisioning   5s
 qdrant-sample    1.17.0    Provisioning   30s
 qdrant-sample    1.17.0    Ready          2m
-```
 
 ## Describe Qdrant
 
 Let's describe the `Qdrant` object to see its current state:
 
 ```bash
-$ kubectl describe qdrant -n demo qdrant-sample
+kubectl describe qdrant -n demo qdrant-sample
+```
 Name:         qdrant-sample
 Namespace:    demo
 Labels:       <none>
@@ -210,39 +211,41 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-```
-
 ## Find Underlying Kubernetes Resources
 
 KubeDB operator creates a Petset, PVCs, PVs, and Services for the Qdrant database. Let's check them:
 
 ```bash
-$ kubectl get petset -n demo qdrant-sample
+kubectl get petset -n demo qdrant-sample
+```
 NAME            AGE
 qdrant-sample   2m34s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 data-qdrant-sample-0                      Bound    pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            standard       <unset>      
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            Delete           Bound    demo/data-qdrant-sample-0                      standard       <unset>                          4m14s
 
-
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                 TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                       AGE
 qdrant-sample        ClusterIP   10.43.18.112   <none>        6333/TCP,6334/TCP             5m36s
 qdrant-sample-pods   ClusterIP   None           <none>        6335/TCP                      5m36s
-
-```
 
 ## Verify Qdrant YAML Output
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created and is able to accept client connections. Run the following command to see the modified Qdrant object:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o yaml
+kubectl get qdrant -n demo qdrant-sample -o yaml
 ```
 
 ```yaml
@@ -348,7 +351,7 @@ status:
 KubeDB creates a Secret containing authentication credentials for the Qdrant cluster. Let's check it:
 
 ```bash
-$ kubectl get secret -n demo qdrant-sample-auth -o yaml
+kubectl get secret -n demo qdrant-sample-auth -o yaml
 ```
 ```yaml
 apiVersion: v1
@@ -382,20 +385,26 @@ type: Opaque
 Now, let's connect to the Qdrant cluster using port forwarding:
 
 ```bash
-$ kubectl port-forward -n demo svc/qdrant-sample 6333:6333
-$ export QDRANT_API_KEY=$(kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d)
-
-$ curl -H "api-key: $QDRANT_API_KEY" http://localhost:6333/collections
-{"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":0.00001235}
+kubectl port-forward -n demo svc/qdrant-sample 6333:6333
 ```
+
+```bash
+export QDRANT_API_KEY=$(kubectl get secret -n demo qdrant-sample-auth -o jsonpath='{.data.api-key}' | base64 -d)
+```
+
+```bash
+curl -H "api-key: $QDRANT_API_KEY" http://localhost:6333/collections
+```
+{"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":0.00001235}
 
 Let's create a collection with some vector data:
 
 ```bash
-$ curl -X PUT http://localhost:6333/collections/demo_vectors \
+curl -X PUT http://localhost:6333/collections/demo_vectors \
   -H "Content-Type: application/json" \
   -H "api-key: $QDRANT_API_KEY" \
   -d '{
+```
     "vectors": {
       "size": 8,
       "distance": "Cosine"
@@ -403,10 +412,12 @@ $ curl -X PUT http://localhost:6333/collections/demo_vectors \
   }'
 {"result":true,"status":"ok","time":0.050803361}
 
-$ curl -X PUT "http://localhost:6333/collections/demo_vectors/points?wait=true" \
+```bash
+curl -X PUT "http://localhost:6333/collections/demo_vectors/points?wait=true" \
   -H "Content-Type: application/json" \
   -H "api-key: $QDRANT_API_KEY" \
   -d '{
+```
     "points": [
       {"id": 1, "vector": [0.15, 0.22, 0.31, 0.44, 0.51, 0.68, 0.73, 0.89], "payload": {"label": "apple"}},
       {"id": 2, "vector": [0.12, 0.28, 0.35, 0.42, 0.53, 0.64, 0.71, 0.85], "payload": {"label": "banana"}},
@@ -414,15 +425,15 @@ $ curl -X PUT "http://localhost:6333/collections/demo_vectors/points?wait=true" 
     ]
   }'
 {"result":{"operation_id":1,"status":"completed"},"status":"ok","time":0.001645376}
-```
 
 Now scroll through the points to verify they were stored:
 
 ```bash
-$ curl -X POST http://localhost:6333/collections/demo_vectors/points/scroll \
+curl -X POST http://localhost:6333/collections/demo_vectors/points/scroll \
   -H "Content-Type: application/json" \
   -H "api-key: $QDRANT_API_KEY" \
   -d '{"limit": 5, "with_payload": true, "with_vector": false}' | jq
+```
 {
   "result": {
     "points": [
@@ -435,14 +446,13 @@ $ curl -X POST http://localhost:6333/collections/demo_vectors/points/scroll \
   "status": "ok",
   "time": 0.000086921
 }
-```
 
 ## AppBinding
 
 KubeDB creates an AppBinding CR that holds the necessary information to connect with the database.
 
 ```bash
-$ kubectl get appbinding -n demo -o yaml
+kubectl get appbinding -n demo -o yaml
 ```
 
 ```yaml
@@ -503,12 +513,14 @@ This field regulates the deletion process of the related resources when the `Qdr
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB prevents deletion of the database using admission webhooks. If you try to delete it, you will get an error:
 
 ```bash
-$ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+```
 qdrant.kubedb.com/qdrant-sample patched
 
-$ kubectl delete qdrant -n demo qdrant-sample
-The Qdrant "qdrant-sample" is invalid: spec.deletionPolicy: Invalid value: "qdrant-sample": Can not delete as deletionPolicy is set to "DoNotTerminate"
+```bash
+kubectl delete qdrant -n demo qdrant-sample
 ```
+The Qdrant "qdrant-sample" is invalid: spec.deletionPolicy: Invalid value: "qdrant-sample": Can not delete as deletionPolicy is set to "DoNotTerminate"
 
 **Halt:**
 
@@ -517,25 +529,26 @@ When `deletionPolicy` is set to `Halt`, KubeDB deletes the `Qdrant` object and i
 At first, set the `deletionPolicy` to `Halt` and then delete the database:
 
 ```bash
-$ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
+kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
+```
 qdrant.kubedb.com/qdrant-sample patched
 
-$ kubectl delete qdrant -n demo qdrant-sample
-qdrant.kubedb.com "qdrant-sample" deleted
+```bash
+kubectl delete qdrant -n demo qdrant-sample
 ```
+qdrant.kubedb.com "qdrant-sample" deleted
 
 Now, check that the PVCs and Secrets still exist:
 
 ```bash
-$ kubectl get secret,pvc -n demo
+kubectl get secret,pvc -n demo
+```
 NAME                          TYPE                       DATA   AGE
 secret/qdrant-sample-auth     Opaque                     2      11m
 secret/qdrant-sample-f36f30   Opaque                     1      11m
 
 NAME                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-qdrant-sample-0   Bound    pvc-0015c0ad-4ddd-404c-9d8b-b9ea1f6cc15f   1Gi        RWO            standard     <unset>                 11m
-
-```
 
 You can recreate your Qdrant database later using these PVCs and Secrets.
 
@@ -548,9 +561,9 @@ When `deletionPolicy` is set to `Delete`, KubeDB deletes the `Qdrant` object, po
 When `deletionPolicy` is set to `WipeOut`, KubeDB deletes all resources of this database (pods, PVCs, Secrets, snapshots, etc.). There is no option to recreate the database once deleted with this policy.
 
 ```bash
-$ kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-qdrant.kubedb.com/qdrant-sample patched
+kubectl patch -n demo qdrant/qdrant-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 ```
+qdrant.kubedb.com/qdrant-sample patched
 
 > Be careful when using `WipeOut` — there is no way to recover the database after deletion.
 

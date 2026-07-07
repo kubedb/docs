@@ -28,9 +28,9 @@ running database with a `HanaDBOpsRequest`.
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## How TLS works in HanaDB
 
@@ -50,11 +50,14 @@ their **alias**:
 These guides use a self-signed CA `Issuer`. First create a CA key pair and a `Secret`, then an `Issuer`
 that signs with it.
 
-```bash
 # generate a CA
-$ openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ca.key -out ca.crt -subj "/CN=ca/O=kubedb"
+```bash
+openssl req -x509 -nodes -days 3650 -newkey rsa:2048 -keyout ca.key -out ca.crt -subj "/CN=ca/O=kubedb"
+```
+
 # store it as a Secret
-$ kubectl create secret tls hdb-ca --cert=ca.crt --key=ca.key -n demo
+```bash
+kubectl create secret tls hdb-ca --cert=ca.crt --key=ca.key -n demo
 ```
 
 ```yaml
@@ -69,9 +72,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/hdb-ca-issuer.yaml
-issuer.cert-manager.io/hdb-ca-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/hdb-ca-issuer.yaml
 ```
+issuer.cert-manager.io/hdb-ca-issuer created
 
 ## Option A — Deploy a HanaDB with TLS enabled
 
@@ -107,9 +110,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/system-replication-tls.yaml
-hanadb.kubedb.com/hanadb-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/system-replication-tls.yaml
 ```
+hanadb.kubedb.com/hanadb-cluster created
 
 ## Option B — Add TLS to a running HanaDB (ReconfigureTLS)
 
@@ -135,9 +138,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/reconfigure-add-tls.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/reconfigure-add-tls.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-add-tls created
 
 > `ReconfigureTLS` performs a **rolling restart** of the HANA pods to load the new certificates. Request
 > success alone is not enough — verify the database returns to `Ready` and that TLS connections work.
@@ -145,13 +148,14 @@ hanadbopsrequest.ops.kubedb.com/hdbops-add-tls created
 Wait for the ops request to succeed:
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-add-tls
+kubectl get hdbops -n demo hdbops-add-tls
+```
 NAME             TYPE             STATUS       AGE
 hdbops-add-tls   ReconfigureTLS   Successful   7m
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-add-tls
+kubectl describe hdbops -n demo hdbops-add-tls
+```
 ...
 Status:
   Conditions:
@@ -174,14 +178,14 @@ Status:
     Reason:   Successful
     Type:     Successful
   Phase:      Successful
-```
 
 ## Verify TLS
 
 Confirm the certificates and secrets exist, and that the server cert is mounted:
 
 ```bash
-$ kubectl get issuer,certificate -n demo
+kubectl get issuer,certificate -n demo
+```
 NAME                                  READY   AGE
 issuer.cert-manager.io/hdb-ca-issuer   True    10m
 
@@ -190,22 +194,23 @@ certificate.cert-manager.io/hanadb-cluster-client-cert             True    hanad
 certificate.cert-manager.io/hanadb-cluster-metrics-exporter-cert   True    hanadb-cluster-metrics-exporter-cert   3m
 certificate.cert-manager.io/hanadb-cluster-server-cert             True    hanadb-cluster-server-cert             3m
 
-$ kubectl exec -n demo hanadb-cluster-1 -c hanadb -- /bin/sh -lc 'ls -l /etc/hanadb-tls/server'
+```bash
+kubectl exec -n demo hanadb-cluster-1 -c hanadb -- /bin/sh -lc 'ls -l /etc/hanadb-tls/server'
+```
 total 0
 lrwxrwxrwx 1 root root ... ca.crt -> ..data/ca.crt
 lrwxrwxrwx 1 root root ... tls.crt -> ..data/tls.crt
 lrwxrwxrwx 1 root root ... tls.key -> ..data/tls.key
-```
 
 Verify the TLS handshake against the SQL port (`39017`) using `openssl s_client`:
 
 ```bash
-$ kubectl run hdb-tls-check -n demo --rm -i --restart=Never --image=alpine:3.20 -- \
+kubectl run hdb-tls-check -n demo --rm -i --restart=Never --image=alpine:3.20 -- \
   sh -lc "apk add --no-cache openssl >/dev/null && echo | openssl s_client -connect hanadb-cluster.demo.svc:39017 -servername hanadb-cluster.demo.svc"
+```
 ...
 New, TLSv1.3, Cipher is TLS_AES_256_GCM_SHA384
 ...
-```
 
 The handshake completes over TLS 1.3, confirming the SQL port now requires TLS. (SAP HANA serves the
 SQL endpoint from its own internal PKI keystore, so the certificate subject shown by `openssl` is HANA's
@@ -234,16 +239,19 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/reconfigure-rotate-tls.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-rotate-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/tls/reconfigure-rotate-tls.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-rotate-tls created
 
 KubeDB re-issues all three certificates from the same issuer and performs a rolling restart so the pods
 pick up the new material. Track the request and confirm the database returns to `Ready`:
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-rotate-tls
-$ kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+kubectl get hdbops -n demo hdbops-rotate-tls
+```
+
+```bash
+kubectl get hanadb.kubedb.com -n demo hanadb-cluster
 ```
 
 > After a certificate rotation on a System Replication cluster, verify that a `primary` role is
@@ -261,10 +269,19 @@ database it restores HANA's built-in ClientPKI. Either way the pods are restarte
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-add-tls hdbops-rotate-tls
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
-$ kubectl delete issuer -n demo hdb-ca-issuer
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-add-tls hdbops-rotate-tls
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
+```
+
+```bash
+kubectl delete issuer -n demo hdb-ca-issuer
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

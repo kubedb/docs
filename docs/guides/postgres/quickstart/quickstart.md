@@ -29,9 +29,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,25 +44,27 @@ This tutorial will also use a pgAdmin to connect and test PostgreSQL database, o
 Run the following command to install pgAdmin,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/pgadmin.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/pgadmin.yaml
+```
 deployment.apps/pgadmin created
 service/pgadmin created
 
-$ kubectl get pods -n demo --watch
+```bash
+kubectl get pods -n demo --watch
+```
 NAME                      READY     STATUS              RESTARTS   AGE
 pgadmin-5b4b96779-lfpfh   0/1       ContainerCreating   0          1m
 pgadmin-5b4b96779-lfpfh   1/1       Running   0         2m
 ^C⏎
-```
 
 Now, you can open pgAdmin on your browser using following address `http://<cluster ip>:<NodePort of pgadmin service>`.
 
 If you are using minikube then open pgAdmin in your browser by running `minikube service pgadmin -n demo`. Or you can get the URL of Service `pgadmin` by running following command
 
 ```bash
-$ minikube service pgadmin -n demo --url
-http://192.168.99.100:31983
+minikube service pgadmin -n demo --url
 ```
+http://192.168.99.100:31983
 
 To log into the pgAdmin, use username __`admin`__ and password __`admin`__.
 
@@ -71,11 +73,10 @@ To log into the pgAdmin, use username __`admin`__ and password __`admin`__.
 We will have to provide `StorageClass` in Postgres crd specification. Check available `StorageClass` in your cluster using following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  10d
-
-```
 
 Here, we have `standard` StorageClass in our cluster.
 
@@ -84,7 +85,8 @@ Here, we have `standard` StorageClass in our cluster.
 When you have installed KubeDB, it has created `PostgresVersion` crd for all supported PostgreSQL versions. Let's check available PostgresVersions by,
 
 ```bash
-$ kubectl get postgresversion
+kubectl get postgresversion
+```
 NAME                      VERSION   DISTRIBUTION   DB_IMAGE                                                                DEPRECATED   AGE
 10.23                     10.23     Official       ghcr.io/appscode-images/postgres:10.23-alpine                                        8d
 10.23-bullseye            10.23     Official       ghcr.io/appscode-images/postgres:10.23-bullseye                                      8d
@@ -174,8 +176,6 @@ timescaledb-2.14.2-pg14   14.11     TimescaleDB    docker.io/timescale/timescale
 timescaledb-2.14.2-pg15   15.6      Official       docker.io/timescale/timescaledb:2.14.2-pg15-oss                                      8d
 timescaledb-2.14.2-pg16   16.2      Official       docker.io/timescale/timescaledb:2.14.2-pg16-oss                                      8d
 
-```
-
 Notice the `DEPRECATED` column. Here, `true` means that this PostgresVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PostgresVersion.
 
 In this tutorial, we will use `18.3` PostgresVersion crd to create PostgreSQL database. To know more about what is `PostgresVersion` crd and why there is `18.3` and `18.3-debian` variation, please visit [here](/docs/guides/postgres/concepts/catalog.md). You can also see supported PostgresVersion [here](/docs/guides/postgres/README.md#supported-postgresversion-crd).
@@ -208,9 +208,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
-postgres.kubedb.com/quick-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 ```
+postgres.kubedb.com/quick-postgres created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -232,9 +232,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1alpha2.yaml
-postgres.kubedb.com/quick-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1alpha2.yaml
 ```
+postgres.kubedb.com/quick-postgres created
 
 Here,
 
@@ -252,15 +252,16 @@ If you are using RBAC enabled cluster, PostgreSQL specific RBAC permission is re
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created.
 
 ```bash
-$  kubectl get pg -n demo quick-postgres -o wide
+ kubectl get pg -n demo quick-postgres -o wide
+```
 NAME             VERSION   STATUS     AGE
 quick-postgres   18.3      Creating   13s
-```
 
 Let's describe Postgres object `quick-postgres`
 
 ```bash
-$ kubectl describe -n demo postgres quick-postgres 
+kubectl describe -n demo postgres quick-postgres 
+```
 Name:         quick-postgres
 Namespace:    demo
 Labels:       <none>
@@ -414,18 +415,15 @@ Events:
   Normal  Successful  106s  Postgres operator  Successfully created governing service
   Normal  Successful  106s  Postgres operator  Successfully created Service
   Normal  Successful  105s  Postgres operator  Successfully created appbinding
-```
 
 KubeDB has created two services for the Postgres object.
 
 ```bash
-$ kubectl get service -n demo --selector=app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=quick-postgres
+kubectl get service -n demo --selector=app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=quick-postgres
+```
 NAME                  TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                      AGE
 quick-postgres        ClusterIP   10.96.52.28   <none>        5432/TCP,2379/TCP            3m19s
 quick-postgres-pods   ClusterIP   None          <none>        5432/TCP,2380/TCP,2379/TCP   3m19s
-
-
-```
 
 Here,
 
@@ -479,16 +477,16 @@ Now, you can connect to this database from the pgAdmin dashboard using `quick-po
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
-  postgres
+  kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  postgres
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
-  DD8i56UBIcs63PVO
+  kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  DD8i56UBIcs63PVO
 
 Now, go to pgAdmin dashboard and connect to the database using the connection information as shown below,
 
@@ -505,37 +503,37 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl edit pg -n demo quick-postgres
+kubectl edit pg -n demo quick-postgres
+```
 spec:
   deletionPolicy: Halt
-```
 
 Now, if you delete the Postgres object, the KubeDB operator will delete every resource created for this Postgres CR, but leaves the auth secrets, and PVCs.
 
 Let's delete the Postgres object,
 
 ```bash
-$ kubectl delete pg -n demo quick-postgres
-postgres.kubedb.com "quick-postgres" deleted
+kubectl delete pg -n demo quick-postgres
 ```
+postgres.kubedb.com "quick-postgres" deleted
 Check resources:
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=quick-postgres'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=quick-postgres'
+```
 NAME                         TYPE                       DATA   AGE
 secret/quick-postgres-auth   kubernetes.io/basic-auth   2      27m
 
 NAME                                          STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-quick-postgres-0   Bound    pvc-b30e3255-a7ea-4f61-8637-f60e283236b2   1Gi        RWO            standard       27m
-```
 
 ## Resume Postgres
 Say, the Postgres CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Postgres using the existing auth secrets and the PVCs.
 
 You can do it by simpily re-deploying the original Postgres object:
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
-postgres.kubedb.com/quick-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 ```
+postgres.kubedb.com/quick-postgres created
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:

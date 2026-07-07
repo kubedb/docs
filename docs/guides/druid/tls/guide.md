@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Druid. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/druid](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/druid) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -84,9 +84,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/druid-ca-issuer.yaml
-issuer.cert-manager.io/druid-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/druid-ca-issuer.yaml
 ```
+issuer.cert-manager.io/druid-ca-issuer created
 
 ## TLS/SSL encryption in Druid Cluster
 
@@ -97,19 +97,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -135,9 +141,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Now, lets go ahead and create a druid database.
 
@@ -168,15 +174,15 @@ spec:
 ### Deploy Druid Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/druid-cluster-tls.yaml
-druid.kubedb.com/druid-cluster-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/tls/yamls/druid-cluster-tls.yaml
 ```
+druid.kubedb.com/druid-cluster-tls created
 
 Now, wait until `druid-cluster-tls created` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get druid -n demo -w
-
+kubectl get druid -n demo -w
+```
 Every 2.0s: kubectl get druid -n demo                                                                                                                          aadee: Fri Sep  6 12:34:51 2024
 NAME                TYPE                  VERSION   STATUS          AGE
 druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Ready           20s
@@ -184,12 +190,12 @@ druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Provisioning    1m
 ...
 ...
 druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Ready           38m
-```
 
 ### Verify TLS/SSL in Druid Cluster
 
 ```bash
-$ kubectl describe secret druid-cluster-tls-client-cert -n demo
+kubectl describe secret druid-cluster-tls-client-cert -n demo
+```
 Name:         druid-cluster-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -217,12 +223,12 @@ tls-combined.pem:  3835 bytes
 tls.crt:           2126 bytes
 tls.key:           1708 bytes
 truststore.jks:    865 bytes
-```
 
 Now, Lets exec into a druid coordinators pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo druid-cluster-tls-coordinators-0 -- bash
+kubectl exec -it -n demo druid-cluster-tls-coordinators-0 -- bash
+```
 Defaulted container "druid" out of: druid, init-druid (init)
 bash-5.1$ cat conf/druid/cluster/_common/common.runtime.properties 
 druid.client.https.trustStorePassword={"type": "environment", "variable": "DRUID_KEY_STORE_PASSWORD"}
@@ -239,7 +245,6 @@ druid.server.https.certAlias=druid
 druid.server.https.keyStorePassword={"type": "environment", "variable": "DRUID_KEY_STORE_PASSWORD"}
 druid.server.https.keyStorePath=/opt/druid/ssl/keystore.jks
 druid.server.https.keyStoreType=jks
-```
 
 We can see from the above output that, all the TLS related configuration is added. Here the `MySQL` and `ZooKeeper` deployed with Druid is also TLS secure and their connection configs are added as well.
 
@@ -252,10 +257,10 @@ Druid uses separate ports for TLS/SSL. While the plaintext port for `routers` no
 First port-forward the port `9088` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/druid-cluster-tls-routers 9088
+kubectl port-forward -n demo svc/druid-cluster-tls-routers 9088
+```
 Forwarding from 127.0.0.1:9088 -> 9088
 Forwarding from [::1]:9088 -> 9088
-```
 
 
 Now hit the `https://localhost:9088/` from any browser. Here you may select `Advance` and then `Proceed to localhost (unsafe)` or you can add the `ca.crt` from the secret `druid-cluster-tls-client-cert` to your browser's Authorities.
@@ -267,16 +272,16 @@ After that you will be prompted to provide the credential of the druid database.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.password}' | base64 -d
-  LzJtVRX5E8MorFaf
+  kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  LzJtVRX5E8MorFaf
 
 After providing the credentials correctly, you should be able to access the web console like shown below.
 

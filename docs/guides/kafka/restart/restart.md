@@ -24,10 +24,10 @@ KubeDB supports restarting the Kafka database via a KafkaOpsRequest. Restarting 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -89,9 +89,9 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restart/kafka.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restart/kafka.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 ## Apply Restart opsRequest
 
@@ -118,18 +118,21 @@ spec:
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restart/ops.yaml
-kafkaopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restart/ops.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the controller pods, then broker of the referenced kafka.
 
-```shell
-$ kubectl get kfops -n demo
+```bash
+kubectl get kfops -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   119s
 
-$ kubectl get kfops -n demo restart -oyaml
+```bash
+kubectl get kfops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: KafkaOpsRequest
 metadata:
@@ -230,7 +233,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Cleaning up
 

@@ -27,11 +27,11 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to migrate
 - You need **at least two** `StorageClass`es — the current one and the target one. This guide migrates from `local-path` to `longhorn-custom`:
 
   ```bash
-  $ kubectl get sc
+  kubectl get sc
+  ```
   NAME                   PROVISIONER             ALLOWVOLUMEEXPANSION   AGE
   local-path (default)   rancher.io/local-path   false                  11h
   longhorn-custom        driver.longhorn.io      true                   11h
-  ```
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/storage-migration/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/storage-migration/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -40,10 +40,10 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to migrate
 Deploy a standalone Milvus on `local-path` and wait until it is `Ready`:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone
+kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone
+```
 NAME                       STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-milvus-standalone-0   Bound    pvc-...     1Gi        RWO            local-path     14m
-```
 
 ### Apply the StorageMigration OpsRequest
 
@@ -71,20 +71,21 @@ Here,
 - `spec.migration.oldPVReclaimPolicy` controls what happens to the old PersistentVolume (`Delete` or `Retain`).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/storage-migration/yamls/storage-migration-standalone.yaml
-milvusopsrequest.ops.kubedb.com/storage-migration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/storage-migration/yamls/storage-migration-standalone.yaml
 ```
+milvusopsrequest.ops.kubedb.com/storage-migration created
 
 ### Watch Progress
 
 ```bash
-$ kubectl get milvusopsrequest storage-migration -n demo
+kubectl get milvusopsrequest storage-migration -n demo
+```
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   87s
-```
 
 ```bash
-$ kubectl describe milvusopsrequest storage-migration -n demo
+kubectl describe milvusopsrequest storage-migration -n demo
+```
 ...
 Status:
   Conditions:
@@ -97,7 +98,6 @@ Status:
     Type:     GetStorageClass
     ...
   Phase:      Successful
-```
 
 During migration, the operator runs a migrator job to copy the data, recreates the PVC on the new `StorageClass`, and recreates the pod.
 
@@ -106,13 +106,15 @@ During migration, the operator runs a migrator job to copy the data, recreates t
 The PVC is now backed by `longhorn-custom`, and the database spec reflects the new class:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone
+kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone
+```
 NAME                       STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS      AGE
 data-milvus-standalone-0   Bound    pvc-...     1Gi        RWO            longhorn-custom   33s
 
-$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.storage.storageClassName}'
-longhorn-custom
+```bash
+kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.storage.storageClassName}'
 ```
+longhorn-custom
 
 ## Storage Migration — Distributed Milvus
 
@@ -139,36 +141,46 @@ spec:
 The operator migrates the PVC of every `streamingnode` replica. Starting from `local-path`:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-cluster -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName
+kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-cluster -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName
+```
 NAME                                  SIZE   SC
 data-milvus-cluster-streamingnode-0   1Gi    local-path
 data-milvus-cluster-streamingnode-1   1Gi    local-path
-```
 
 After the migration completes:
 
 ```bash
-$ kubectl get milvusopsrequest storage-migration -n demo
+kubectl get milvusopsrequest storage-migration -n demo
+```
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   3m40s
 
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-cluster -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName
+```bash
+kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-cluster -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName
+```
 NAME                                  SIZE   SC
 data-milvus-cluster-streamingnode-0   1Gi    longhorn-custom
 data-milvus-cluster-streamingnode-1   1Gi    longhorn-custom
 
-$ kubectl get milvuses.kubedb.com milvus-cluster -n demo -o jsonpath='{.spec.topology.distributed.streamingnode.storage.storageClassName}'
-longhorn-custom
+```bash
+kubectl get milvuses.kubedb.com milvus-cluster -n demo -o jsonpath='{.spec.topology.distributed.streamingnode.storage.storageClassName}'
 ```
+longhorn-custom
 
 (This example was run with `streamingnode` scaled to two replicas; both PVCs are migrated.)
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo storage-migration
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusopsrequest -n demo storage-migration
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

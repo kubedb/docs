@@ -195,11 +195,11 @@ AuthSecret contains a `user` key and a `password` key which contains the `userna
 Example:
 
 ```bash
-$ kubectl create secret generic kcc-auth -n demo \
+kubectl create secret generic kcc-auth -n demo \
 --from-literal=username=jhon-doe \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "kcc-auth" created
 ```
+secret "kcc-auth" created
 
 ```yaml
 apiVersion: v1

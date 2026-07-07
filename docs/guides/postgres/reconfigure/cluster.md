@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to reconfigure 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Now, we are going to deploy a  `Postgres` Cluster using a supported version by `KubeDB` operator. Then we are going to apply `PostgresOpsRequest` to reconfigure its configuration.
 
@@ -54,9 +54,9 @@ shared_buffers=256MB
 Now, we will create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-file=./user.conf
-secret/pg-configuration created
+kubectl create secret generic -n demo pg-configuration --from-file=./user.conf
 ```
+secret/pg-configuration created
 
 In this section, we are going to create a Postgres object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Postgres` CR that we are going to create,
 
@@ -85,14 +85,15 @@ spec:
 Let's create the `Postgres` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/ha-postgres.yaml
-postgres.kubedb.com/ha-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/ha-postgres.yaml
 ```
+postgres.kubedb.com/ha-postgres created
 
 Now, wait until `ha-postgres` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pods,pg -n demo
+kubectl get pods,pg -n demo
+```
 NAME                READY   STATUS    RESTARTS   AGE
 pod/ha-postgres-0   2/2     Running   0          2m28s
 pod/ha-postgres-1   2/2     Running   0          59s
@@ -101,11 +102,10 @@ pod/ha-postgres-2   2/2     Running   0          51s
 NAME                              VERSION   STATUS   AGE
 postgres.kubedb.com/ha-postgres   18.3      Ready    2m38s
 
-```
-
 Now lets check these parameters,
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql
 psql (18.3)
@@ -122,7 +122,6 @@ postgres=# show shared_buffers;
 ----------------
  256MB
 (1 row)
-```
 You can check the other pods same way.
 So we have configured custom parameters.
 ### Reconfigure using new config secret
@@ -139,9 +138,9 @@ max_connections = 250
 Then, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-pg-configuration --from-file=./user.conf
-secret/new-pg-configuration created
+kubectl create secret generic -n demo new-pg-configuration --from-file=./user.conf
 ```
+secret/new-pg-configuration created
 
 #### Create PostgresOpsRequest
 
@@ -171,9 +170,9 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/reconfigure-using-secret.yaml
-postgresopsrequest.ops.kubedb.com/pgops-reconfigure-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/reconfigure-using-secret.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pgops-reconfigure-config created
 
 #### Verify the new configuration is working
 
@@ -182,16 +181,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get pgops -n demo
+kubectl get pgops -n demo
+```
 NAME                       TYPE          STATUS       AGE
 pgops-reconfigure-config   Reconfigure   Successful   3m21s
-```
 
 We can see from the above output that the `PostgresOpsRequest` has succeeded.
 Now let's connect to a postgres instance and run a postgres internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql
 psql (18.3)
@@ -202,8 +202,6 @@ postgres=# show max_connections;
 -----------------
  250
 (1 row)
-
-```
 
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250`.
 You can check for other pods in the same way.
@@ -237,9 +235,9 @@ Here,
 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/apply-config.yaml
-postgresopsrequest.ops.kubedb.com/pgops-reconfigure-apply-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/apply-config.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pgops-reconfigure-apply-config created
 
 
 #### Verify the new configuration is working
@@ -249,16 +247,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get postgresopsrequest pgops-reconfigure-apply-config -n demo
+kubectl get postgresopsrequest pgops-reconfigure-apply-config -n demo
+```
 NAME            TYPE          STATUS       AGE
 apply-config   Reconfigure   Successful   4m59s
-```
 We can see this ops request was successful.
 
 Now let's connect to a postgres instance and run a postgres internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ cat /etc/config/user.conf 
 #________******kubedb.com/inline-config******________#
@@ -281,8 +280,6 @@ postgres=# show shared_buffers;
 ----------------
  512MB
 (1 row)
-
-```
 
 As we can see from above the configuration has been changed, the value of `max_connections` has been changed from `250` to `230` and the `shared_buffers` has been changed `256MB` to `512MB`.
 
@@ -318,9 +315,9 @@ Here,
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/remove-config.yaml
-postgresopsrequest.ops.kubedb.com/remove-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/reconfigure/remove-config.yaml
 ```
+postgresopsrequest.ops.kubedb.com/remove-config created
 
 #### Verify the new configuration is working
 
@@ -329,16 +326,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the `configSec
 Let's wait for `PostgresOpsRequest` to be `Successful`.  Run the following command to watch `PostgresOpsRequest` CR,
 
 ```bash
-$ kubectl get pgops -n demo remove-config 
+kubectl get pgops -n demo remove-config 
+```
 NAME            TYPE          STATUS       AGE
 remove-config   Reconfigure   Successful   5m5s
-
-```
 
 Now let's connect to a postgres instance and run a postgres internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo ha-postgres-0 -- bash
+kubectl exec -it -n demo ha-postgres-0 -- bash
+```
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 ha-postgres-0:/$ psql
 psql (18.3)
@@ -356,8 +353,6 @@ postgres=# show shared_buffers;
  256MB
 (1 row)
 
-```
-
 As we can see from the configuration has changed to its default value. So removal of existing custom configuration using `PostgresOpsRequest` is successful.
 
 ## Cleaning Up
@@ -365,9 +360,15 @@ As we can see from the configuration has changed to its default value. So remova
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete postgres -n demo ha-postgres
-$ kubectl delete postgresopsrequest -n demo pgops-reconfigure-apply-config pgops-reconfigure-config remove-config
-$ kubectl delete ns demo
+kubectl delete postgres -n demo ha-postgres
+```
+
+```bash
+kubectl delete postgresopsrequest -n demo pgops-reconfigure-apply-config pgops-reconfigure-config remove-config
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

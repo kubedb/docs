@@ -214,14 +214,15 @@ If you want to use an existing or custom secret, please specify that when creati
 Example:
 
 ```bash
-$ kubectl create secret generic p1-auth -n demo \
+kubectl create secret generic p1-auth -n demo \
 --from-literal=POSTGRES_USER=not@user \
 --from-literal=POSTGRES_PASSWORD=not@secret
-secret "p1-auth" created
 ```
+secret "p1-auth" created
 
 ```bash
-$ kubectl get secret -n demo p1-auth -o yaml
+kubectl get secret -n demo p1-auth -o yaml
+```
 apiVersion: v1
 data:
   POSTGRES_PASSWORD: bm90QHNlY3JldA==
@@ -235,7 +236,6 @@ metadata:
   selfLink: /api/v1/namespaces/demo/secrets/p1-auth
   uid: 15b3e8a1-af6c-11e8-996d-0800270d7bae
 type: Opaque
-```
 
 > Updating this field create a `RotateAuth` OpsRequest by GitOps operator.
 

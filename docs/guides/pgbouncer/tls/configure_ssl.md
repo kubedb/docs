@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption (via, `sslMode` and `connectionPool
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -106,9 +106,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/tls/issuer.yaml
-issuer.cert-manager.io/pgbouncer-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/tls/issuer.yaml
 ```
+issuer.cert-manager.io/pgbouncer-ca-issuer created
 
 ## Prepare Postgres
 Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgbouncer/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
@@ -161,25 +161,26 @@ spec:
 ### Deploy PgBouncer
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/tls/pgbouncer-ssl.yaml
-pgbouncer.kubedb.com/pb-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/tls/pgbouncer-ssl.yaml
 ```
+pgbouncer.kubedb.com/pb-tls created
 
 Now, wait until `pb-tls created` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get pb -n demo
+watch kubectl get pb -n demo
+```
 Every 2.0s: kubectl get pgbouncer -n demo
 NAME     VERSION   STATUS   AGE
 pb-tls   1.18.0    Ready    108s
-```
 
 ### Verify TLS/SSL in PgBouncer
 
 Now, connect to this database through [psql](https://www.postgresql.org/docs/current/app-psql.html) and verify if `SSLMode` has been set up as intended (i.e, `require`).
 
 ```bash
-$ kubectl describe secret -n demo pb-tls-client-cert
+kubectl describe secret -n demo pb-tls-client-cert
+```
 Name:         pb-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=connection-pooler
@@ -203,13 +204,16 @@ Data
 ca.crt:   1159 bytes
 tls.crt:  1135 bytes
 tls.key:  1679 bytes
-```
 
 Now, Lets save the client cert and key to two different files:
 
 ```bash
-$ kubectl get secrets -n demo pb-tls-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
-$ cat client.crt
+kubectl get secrets -n demo pb-tls-client-cert -o jsonpath='{.data.tls\.crt}' | base64 -d > client.crt
+```
+
+```bash
+cat client.crt
+```
 -----BEGIN CERTIFICATE-----
 MIIDGTCCAgGgAwIBAgIQFzXjq6IExD5sjF7FW44NzTANBgkqhkiG9w0BAQsFADAl
 MRIwEAYDVQQDDAlwZ2JvdW5jZXIxDzANBgNVBAoMBmt1YmVkYjAeFw0yNTAxMjMx
@@ -229,8 +233,14 @@ coSL5sY28QU1iS0bO3wHoFx6t8gzwluP/H040ImS60CE5t/b3njIgfWDHzhDOkKV
 Rl66yC3j2YD8+Dvdl63Dp8r5KtWDvGAkiM8SVysASHnKAM/ipEqUoqyWBUT7gG/L
 JbiZCRCTnewRU9/mzcn9FxxmAPt7yq9IEND1cMQ=
 -----END CERTIFICATE-----
-$ kubectl get secrets -n demo pb-tls-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
-$ cat client.key
+
+```bash
+kubectl get secrets -n demo pb-tls-client-cert -o jsonpath='{.data.tls\.key}' | base64 -d > client.key
+```
+
+```bash
+cat client.key
+```
 -----BEGIN RSA PRIVATE KEY-----
 MIIEpAIBAAKCAQEA22vbbMwzwDSTu2w+9cgKk1ZQB9bXGoOsS/l2wc/Tg93xjCKg
 I/qWsNJqFXyOQWEjiOssLLhFhiELyfN/dAtORgg9MR099hpL2NN80+AYcwPyFIoV
@@ -257,25 +267,24 @@ yqS9bNW+KpngP4tQtyQLizW8JbWRVVdrsvRWFeouifswF0hvRNSIA9XAD9DrjbiQ
 HJ+zYQKBgQCKfewbwVLuexdW6yLrxwXuMAZljtHUQWe7Txx3k+bw+kAF46NEBlN2
 bZc0zaz8cEn8d7GWVGGGulZA7XxZM+Tr3uD1t/8AkiS/GwRKcXBOjzQZS08bnTVJ
 BwIhO4g2OiLojS6dQxrXtj/miB3pTZbVed7QhYOBUGEFs3lUV+KEVQ==
-```
 
 Now, if you see the common name of the client.crt you can see,
 ```bash
-$ openssl x509 -in client.crt -inform PEM -subject -nameopt RFC2253 -noout
-subject=CN=pgbouncer
+openssl x509 -in client.crt -inform PEM -subject -nameopt RFC2253 -noout
 ```
+subject=CN=pgbouncer
 Here common name of the client certificate is important if you want to connect with the client certificate, the `username must match the common name of the certificate`. Here, we can see the common name(CN) is, `pgbouncer`. So, we will use pgbouncer user to connect with PgBouncer.
 
 Now, we can connect using `subject=CN=pgbouncer` to connect to the psql,
 
 ```bash
-$ psql "sslmode=require port=9999 host=localhost dbname=pgbouncer user=pgbouncer sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"
+psql "sslmode=require port=9999 host=localhost dbname=pgbouncer user=pgbouncer sslrootcert=ca.crt sslcert=client.crt sslkey=client.key"
+```
 psql (16.3 (Ubuntu 16.3-1.pgdg22.04+1), server 16.1)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, compression: off)
 Type "help" for help.
 
 pgbouncer=# 
-```
 
 We are connected to the pgbouncer database. Let's run some command to verify the sslMode and the user,
 
@@ -299,9 +308,9 @@ User can update `sslMode` & `connectionPool.authType` if needed. Some changes ma
 The good thing is, **KubeDB operator will throw error for invalid SSL specs while creating/updating the PgBouncer object.** i.e.,
 
 ```bash
-$ kubectl patch -n demo pb/pb-tls -p '{"spec":{"sslMode": "disabled"}}' --type="merge"
-The PgBouncer "pb-tls" is invalid: spec.sslMode: Unsupported value: "disabled": supported values: "disable", "allow", "prefer", "require", "verify-ca", "verify-full"
+kubectl patch -n demo pb/pb-tls -p '{"spec":{"sslMode": "disabled"}}' --type="merge"
 ```
+The PgBouncer "pb-tls" is invalid: spec.sslMode: Unsupported value: "disabled": supported values: "disable", "allow", "prefer", "require", "verify-ca", "verify-full"
 
 > Note: There is no official support from kubedb for PgBouncer to connect wit cert mode`.
 

@@ -25,13 +25,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ At first, we will create a ConfigMap from `data.sql` file. Then, we will provide
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo pg-init-script \
+kubectl create configmap -n demo pg-init-script \
 --from-literal=data.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/postgres-init-scripts/master/data.sql)"
-configmap/pg-init-script created
 ```
+configmap/pg-init-script created
 
 ## Create PostgreSQL with script source
 
@@ -85,22 +87,23 @@ VolumeSource provided in `init.script` will be mounted in Pod and will be execut
 Now, let's create the Postgres crd which YAML we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/script-postgres.yaml
-postgres.kubedb.com/script-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/initialization/script-postgres.yaml
 ```
+postgres.kubedb.com/script-postgres created
 
 Now, wait until Postgres goes in `Running` state. Verify that the database is in `Running` state using following command,
 
-```bash
- $ kubectl get pg -n demo script-postgres
+ ```bash
+ kubectl get pg -n demo script-postgres
+ ```
 NAME              VERSION    STATUS    AGE
 script-postgres   10.2-v5    Running   39s
-```
 
 You can use `kubectl dba describe` command to view which resources has been created by KubeDB for this Postgres object.
 
 ```bash
-$ kubectl dba describe pg -n demo script-postgres
+kubectl dba describe pg -n demo script-postgres
+```
 Name:               script-postgres
 Namespace:          demo
 CreationTimestamp:  Fri, 21 Sep 2018 15:53:27 +0600
@@ -182,7 +185,6 @@ Events:
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
   Normal  Successful  57s   Postgres operator  Successfully patched PetSet
   Normal  Successful  57s   Postgres operator  Successfully patched Postgres
-```
 
 ## Verify Initialization
 
@@ -199,16 +201,16 @@ Now let's connect to our Postgres `script-postgres`  using pgAdmin we have insta
 - Username: Run following command to get *username*,
 
   ```bash
-  $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.username}' | base64 -d
-  postgres
+  kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  postgres
 
 - Password: Run the following command to get *password*,
 
   ```bash
-  $ kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.password}' | base64 -d
-  NC1fEq0q5XqHazB8
+  kubectl get secrets -n demo script-postgres-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  NC1fEq0q5XqHazB8
 
 In PostgreSQL, run following query to check `pg_catalog.pg_tables` to confirm initialization.
 
@@ -227,11 +229,19 @@ We can see TABLE `dashboard` in `data` Schema which is created through initializ
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/script-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pg/script-postgres
+kubectl patch -n demo pg/script-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo configmap/pg-init-script
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo pg/script-postgres
+```
+
+```bash
+kubectl delete -n demo configmap/pg-init-script
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

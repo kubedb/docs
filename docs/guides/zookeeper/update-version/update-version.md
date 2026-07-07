@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -68,17 +68,17 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/update-version/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/update-version/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo                                                                                                                                             
+kubectl get zk -n demo                                                                                                                                             
+```
 NAME               VERSION    STATUS    AGE
 zk-quickstart      3.8.3      Ready     109s
-```
 
 We are now ready to apply the `ZooKeeperOpsRequest` CR to update this database.
 
@@ -116,9 +116,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/update-version/zk-version-upgrade-ops.yaml
-zookeeperopsrequest.ops.kubedb.com/upgrade-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/update-version/zk-version-upgrade-ops.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/upgrade-topology created
 
 #### Verify ZooKeeper version updated successfully
 
@@ -127,16 +127,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ kubectl get zookeeperopsrequest -n demo
+kubectl get zookeeperopsrequest -n demo
+```
 Every 2.0s: kubectl get zookeeperopsrequest -n demo
 NAME                TYPE            STATUS       AGE
 upgrade-topology    UpdateVersion   Successful   84s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo upgrade-topology
+kubectl describe zookeeperopsrequest -n demo upgrade-topology
+```
 Name:         upgrade-topology
 Namespace:    demo
 Labels:       <none>
@@ -248,20 +249,23 @@ Events:
   Normal   RestartPods                                               7m25s  KubeDB Ops-manager Operator  Successfully Restarted ZooKeeper nodes
   Normal   Starting                                                  7m25s  KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                7m25s  KubeDB Ops-manager Operator 
-```
 
 Now, we are going to verify whether the `ZooKeeper` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get zk -n demo zk-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get zk -n demo zk-quickstart -o=jsonpath='{.spec.version}{"\n"}'
+```
 3.9.1
 
-$ kubectl get petset -n demo zk-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo zk-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/zookeeper:3.9.1@sha256:21365fd1bd55cacd6bf556394d6dcb76ad559ad3767adc304e62db205e4b10b7
 
-$ kubectl get pods -n demo zk-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/zookeeper:3.9.1
+```bash
+kubectl get pods -n demo zk-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/zookeeper:3.9.1
 
 You can see from above, our `ZooKeeper` cluster has been updated with the new version. So, the updateVersion process is successfully completed.
 

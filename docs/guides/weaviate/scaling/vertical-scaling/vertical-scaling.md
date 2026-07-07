@@ -29,9 +29,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to update the resou
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/scaling/vertical-scaling](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -73,20 +73,22 @@ spec:
 Let's create the `Weaviate` CR and wait for it to become `Ready`:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling/weaviate.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling/weaviate.yaml
+```
 weaviate.kubedb.com/weaviate-sample created
 
-$ kubectl get weaviate -n demo
+```bash
+kubectl get weaviate -n demo
+```
 NAME              TYPE                  VERSION   STATUS   AGE
 weaviate-sample   kubedb.com/v1alpha2   1.33.1    Ready    5m
-```
 
 Let's check the current resources of one of the pods:
 
 ```bash
-$ kubectl get pod -n demo weaviate-sample-0 -o jsonpath='{.spec.containers[0].resources}'
-{"limits":{"cpu":"500m","memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
+kubectl get pod -n demo weaviate-sample-0 -o jsonpath='{.spec.containers[0].resources}'
 ```
+{"limits":{"cpu":"500m","memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
 
 ## Apply Vertical Scaling on the Weaviate Cluster
 
@@ -122,22 +124,23 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/wvops-vertical-scale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/wvops-vertical-scale created
 
 The Ops Manager will update the PetSet resources and restart the pods one by one to apply the new resources.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo wvops-vertical-scale
+kubectl get weaviateopsrequest -n demo wvops-vertical-scale
+```
 NAME                   TYPE              STATUS       AGE
 wvops-vertical-scale   VerticalScaling   Successful   2m
-```
 
 Let's look at the `status.conditions` of the `WeaviateOpsRequest`:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo wvops-vertical-scale -o yaml
+kubectl get weaviateopsrequest -n demo wvops-vertical-scale -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: WeaviateOpsRequest
 metadata:
@@ -206,17 +209,18 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 Now, let's verify the resources of the cluster have been updated:
 
 ```bash
-$ kubectl get pod -n demo weaviate-sample-0 -o jsonpath='{.spec.containers[0].resources}'
+kubectl get pod -n demo weaviate-sample-0 -o jsonpath='{.spec.containers[0].resources}'
+```
 {"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.podTemplate.spec.containers[0].resources}'
-{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
+```bash
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.podTemplate.spec.containers[0].resources}'
 ```
+{"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 
 The resources have been updated successfully.
 
@@ -231,7 +235,13 @@ The resources have been updated successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo wvops-vertical-scale
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo wvops-vertical-scale
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

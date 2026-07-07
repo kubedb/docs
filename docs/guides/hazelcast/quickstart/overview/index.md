@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/hazelcast/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Hazelcast CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -58,10 +60,10 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named `HazelcastVersions`. The installation process comes with a set of tested HazelcastVersion objects. Let's check available HazelcastVersions by,
 
 ```bash
-$ kubectl get hzversion
+kubectl get hzversion
+```
 NAME    VERSION   DB_IMAGE                               DEPRECATED   AGE
 5.5.2   5.5.2     hazelcast/hazelcast-enterprise:5.5.2                148m
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this HazelcastVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated HazelcastVersion.
 
@@ -120,24 +122,24 @@ Here,
 Let's create the Hazelcast CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-sample created
 
 The Hazelcast's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get hazelcast -n demo
+kubectl get hazelcast -n demo
+```
 NAME               TYPE                  VERSION   STATUS   AGE
 hazelcast-sample   kubedb.com/v1alpha2   5.5.2     Ready    3m
-
-```
 
 
 Describe the Hazelcast object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe hz hazelcast-sample -n demo
+kubectl describe hz hazelcast-sample -n demo
+```
 Name:         hazelcast-sample
 Namespace:    demo
 Labels:       <none>
@@ -278,14 +280,14 @@ Status:
     Type:                  DatabaseReadAccess
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a Hazelcast CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=hazelcast-sample'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=hazelcast-sample'
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 pod/hazelcast-sample-0   1/1     Running   0          76m
 pod/hazelcast-sample-1   1/1     Running   0          75m
@@ -309,7 +311,6 @@ NAME                                                             STATUS   VOLUME
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-0   Bound    pvc-d88feaed-2680-44f5-b2ac-5f5ec8216db8   2Gi        RWO            standard       <unset>                 76m
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-1   Bound    pvc-970da06b-a76e-442f-8350-97603efbe9df   2Gi        RWO            standard       <unset>                 75m
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-2   Bound    pvc-3bd48f9c-14f9-40af-ba5d-1e0ed6538722   2Gi        RWO            standard       <unset>                 74m 
-```
 
 - `StatefulSet` - a StatefulSet named after the Hazelcast instance. In topology mode, the operator creates 3 PetSets with name `{Hazelcast-Name}`.
 - `Services` -  2 services are generated for each Hazelcast database.
@@ -327,11 +328,11 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `8983` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/hazelcast-sample 5701
+kubectl port-forward -n demo svc/hazelcast-sample 5701
+```
 Forwarding from 127.0.0.1:5701 -> 5701
 Forwarding from [::1]:5701 -> 5701
 Handling connection for 5701
-```
 
 Now, our Hazelcast cluster is accessible at `localhost:5701`.
 
@@ -341,21 +342,22 @@ Now, our Hazelcast cluster is accessible at `localhost:5701`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo hazelcast-sample-auth -o jsonpath='{.data.username}' | base64 -d
+  kubectl get secret -n demo hazelcast-sample-auth -o jsonpath='{.data.username}' | base64 -d
+  ```
   admin                             
-    ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo hazelcast-sample-auth -o jsonpath='{.data.password}' | base64 -d
-  v_;HzZUg3;un~fIs
+  kubectl get secret -n demo hazelcast-sample-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  v_;HzZUg3;un~fIs
 
 Now let's check the health of our Hazelcast database.
 
 ```bash
-$ curl -XGET -k -u 'admin:v_;HzZUg3;un~fIs' "http://localhost:5701/hazelcast/health" | jq
+curl -XGET -k -u 'admin:v_;HzZUg3;un~fIs' "http://localhost:5701/hazelcast/health" | jq
+```
 {
   "nodeState": "ACTIVE",
   "clusterState": "ACTIVE",
@@ -364,8 +366,6 @@ $ curl -XGET -k -u 'admin:v_;HzZUg3;un~fIs' "http://localhost:5701/hazelcast/hea
   "clusterSize": 3
 }
 
-```
-
 ## Halt Hazelcast
 
 KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` deletion policy. If admission webhook is enabled, it prevents the user from deleting the database as long as the `spec.deletionPolicy` is set `DoNotTerminate`.
@@ -373,21 +373,22 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl patch -n demo hazelcast hazelcast-sample -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-hazelcast.kubedb.com/hazelcast-sample patched
+kubectl patch -n demo hazelcast hazelcast-sample -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+hazelcast.kubedb.com/hazelcast-sample patched
 
 Now, if you delete the Hazelcast object, the KubeDB operator will delete every resource created for this Hazelcast CR, but leaves the auth secrets, and PVCs.
 
 ```bash
-$  kubectl delete hazelcast -n demo hazelcast-sample
-hazelcast.kubedb.com "hazelcast-sample" deleted
+ kubectl delete hazelcast -n demo hazelcast-sample
 ```
+hazelcast.kubedb.com "hazelcast-sample" deleted
 
 Check resources:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=hazelcast-sample'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=hazelcast-sample'
+```
 NAME                                    TYPE                       DATA   AGE
 secret/hazelcast-sample-auth            kubernetes.io/basic-auth   2      109m
 secret/hazelcast-sample-config          Opaque                     2      98m
@@ -396,7 +397,6 @@ NAME                                                             STATUS   VOLUME
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-0   Bound    pvc-d88feaed-2680-44f5-b2ac-5f5ec8216db8   2Gi        RWO            standard       <unset>                 98m
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-1   Bound    pvc-970da06b-a76e-442f-8350-97603efbe9df   2Gi        RWO            standard       <unset>                 97m
 persistentvolumeclaim/hazelcast-sample-data-hazelcast-sample-2   Bound    pvc-3bd48f9c-14f9-40af-ba5d-1e0ed6538722   2Gi        RWO            standard       <unset>                 96m
-```
 
 ## Resume Hazelcast
 
@@ -405,24 +405,28 @@ Say, the Hazelcast CR was deleted with `spec.deletionPolicy` to `Halt` and you w
 You can do it by simpily re-deploying the original Hazelcast object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/hazelcast/quickstart/overview/yamls/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-sample created
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo hazelcast hazelcast-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo hazelcast hazelcast-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 hazelcast.kubedb.com/hazelcast-sample patched
 
-$ kubectl delete -n demo hz/hazelcast-sample
+```bash
+kubectl delete -n demo hz/hazelcast-sample
+```
 hazelcast.kubedb.com "hazelcast-sample" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/elasticsearch](/docs/examples/elasticsearch) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -67,9 +67,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-combined-custom-config.yaml
-secret/es-combined-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-combined-custom-config.yaml
 ```
+secret/es-combined-custom-config created
 
 In this section, we are going to create an Elasticsearch object specifying `spec.configuration.secretName` field to apply this custom configuration. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
@@ -99,27 +99,27 @@ spec:
 Let's create the `Elasticsearch` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-combined.yaml
-elasticsearch.kubedb.com/es-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-combined.yaml
 ```
+elasticsearch.kubedb.com/es-combined created
 
 Now, wait until `es-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo 
+kubectl get es -n demo 
+```
 NAME          VERSION        STATUS   AGE
 es-combined   xpack-8.19.9   Ready    20m
-```
 
 Now, we will check if the Elasticsearch has started with the custom configuration we have provided.
 
 Exec into the Elasticsearch pod and query the cluster settings to see the configuration:
 
 ```bash
-$ kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
-              "max_clause_count" : "2048"
-              "max_clause_count" : "2048"
+kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
 ```
+              "max_clause_count" : "2048"
+              "max_clause_count" : "2048"
 
 Here, we can see that our given configuration is applied to the Elasticsearch cluster for all nodes. `indices.query.bool.max_clause_count` is set to `2048` from the default value `1024`.
 
@@ -149,9 +149,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/new-es-combined-custom-config.yaml
-secret/new-es-combined-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/new-es-combined-custom-config.yaml
 ```
+secret/new-es-combined-custom-config created
 
 #### Create ElasticsearchOpsRequest
 
@@ -183,9 +183,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-update-combined.yaml
-elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-update-combined.yaml
 ```
+elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-combined created
 
 #### Verify the new configuration is working
 
@@ -194,15 +194,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get elasticsearchopsrequests -n demo
+kubectl get elasticsearchopsrequests -n demo
+```
 NAME                         TYPE          STATUS       AGE
 esops-reconfigure-combined   Reconfigure   Successful   73s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$  kubectl describe elasticsearchopsrequest -n demo esops-reconfigure-combined
+ kubectl describe elasticsearchopsrequest -n demo esops-reconfigure-combined
+```
 Name:         esops-reconfigure-combined
 Namespace:    demo
 Labels:       <none>
@@ -304,15 +305,14 @@ Events:
   Warning  create es client; ConditionStatus:True                         60s   KubeDB Ops-manager Operator  create es client; ConditionStatus:True
   Normal   RestartNodes                                                   55s   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Successful                                                     54s   KubeDB Ops-manager Operator  Successfully reconfigured all elasticsearch nodes.
-```
 
 Now let's exec into one of the instances and query the cluster settings to check the new configuration.
 
 ```bash
-$ kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
-              "max_clause_count" : "4096"
-              "max_clause_count" : "4096"
+kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
 ```
+              "max_clause_count" : "4096"
+              "max_clause_count" : "4096"
 
 As we can see from the configuration of the ready Elasticsearch, the value of `indices.query.bool.max_clause_count` has been changed from `2048` to `4096`. So the reconfiguration of the cluster is successful.
 
@@ -352,9 +352,9 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-apply-combined.yaml
-elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-apply-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/reconfigure/es-reconfigure-apply-combined.yaml
 ```
+elasticsearchopsrequest.ops.kubedb.com/esops-reconfigure-apply-combined created
 
 #### Verify the new configuration is working
 
@@ -363,18 +363,18 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `ElasticsearchOpsRequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsRequest` CR,
 
 ```bash
-$ kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-combined
+kubectl get elasticsearchopsrequests -n demo esops-reconfigure-apply-combined
+```
 NAME                               TYPE          STATUS       AGE
 esops-reconfigure-apply-combined   Reconfigure   Successful   118s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. Now let's exec into one of the instances and check the new configuration.
 
 ```bash
-$ kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
-              "max_clause_count" : "8192"
-              "max_clause_count" : "8192"
+kubectl exec -it -n demo es-combined-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_nodes/settings?filter_path=nodes.*.settings.indices&pretty" --user "elastic:X4gzeLWqUHKMoQT7" | grep max_clause_count
 ```
+              "max_clause_count" : "8192"
+              "max_clause_count" : "8192"
 
 As we can see from the configuration of the ready Elasticsearch, the value of `indices.query.bool.max_clause_count` has been changed from `4096` to `8192`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

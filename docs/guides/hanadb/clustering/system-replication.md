@@ -28,9 +28,9 @@ Replication cluster and inspects its replication state.
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Create a System Replication Cluster
 
@@ -73,9 +73,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/clustering/system-replication.yaml
-hanadb.kubedb.com/hanadb-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/clustering/system-replication.yaml
 ```
+hanadb.kubedb.com/hanadb-cluster created
 
 Here,
 
@@ -92,31 +92,31 @@ Here,
 Wait until `hanadb-cluster` is `Ready`:
 
 ```bash
-$ kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+```
 NAME             VERSION   STATUS   AGE
 hanadb-cluster   2.0.82    Ready    12m
-```
 
 KubeDB labels each pod with its role (`kubedb.com/role`). Note the `hanadb-cluster-arbiter-0` pod —
 because `spec.replicas` is even (2), KubeDB added an arbiter as the raft tie-breaker:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+```
 NAME                       READY   STATUS    RESTARTS   AGE     ROLE
 hanadb-cluster-0           2/2     Running   0          12m     primary
 hanadb-cluster-1           2/2     Running   0          12m     secondary
 hanadb-cluster-arbiter-0   1/1     Running   0          5m33s   arbiter
-```
 
 The Services route traffic to the primary and (read-only) secondary:
 
 ```bash
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=hanadb-cluster
+kubectl get svc -n demo -l app.kubernetes.io/instance=hanadb-cluster
+```
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)               AGE
 hanadb-cluster             ClusterIP   10.43.65.245    <none>        39017/TCP             12m
 hanadb-cluster-pods        ClusterIP   None            <none>        39001/TCP,39017/TCP   12m
 hanadb-cluster-secondary   ClusterIP   10.43.219.128   <none>        39017/TCP             12m
-```
 
 Here `hanadb-cluster` always points at the primary, `hanadb-cluster-secondary` at the read-only
 secondary (created because `operationMode` is `logreplay_readaccess`), and `hanadb-cluster-pods` is the
@@ -127,8 +127,9 @@ governing headless Service.
 Identify the primary pod (role `primary`) and inspect HANA's System Replication status:
 
 ```bash
-$ kubectl exec -n demo hanadb-cluster-0 -c hanadb -- /bin/sh -lc \
+kubectl exec -n demo hanadb-cluster-0 -c hanadb -- /bin/sh -lc \
   'source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbnsutil -sr_state'
+```
 System Replication State
 ~~~~~~~~~~~~~~~~~~~~~~~~
 online: true
@@ -145,20 +146,22 @@ Site Mappings:
 SITE_hanadb-cluster-0 (primary/primary)
     |---SITE_hanadb-cluster-1 (sync/logreplay_readaccess)
 done.
-```
 
 The HANA SystemReplication status confirms the secondary is connected and `ACTIVE`. (HANA maps the
 `fullsync` replication mode to `SYNC` plus the full-sync option, so the runtime mode reads `SYNC`.)
 
 ```bash
-$ HANA_PASSWORD="$(kubectl get secret hanadb-cluster-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
-$ kubectl exec -n demo hanadb-cluster-0 -c hanadb -- /bin/sh -lc \
+HANA_PASSWORD="$(kubectl get secret hanadb-cluster-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+```
+
+```bash
+kubectl exec -n demo hanadb-cluster-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' \
   \"SELECT SITE_NAME, SECONDARY_SITE_NAME, REPLICATION_MODE, REPLICATION_STATUS FROM SYS.M_SERVICE_REPLICATION\""
+```
 SITE_NAME,SECONDARY_SITE_NAME,REPLICATION_MODE,REPLICATION_STATUS
 "SITE_hanadb-cluster-0","SITE_hanadb-cluster-1","SYNC","ACTIVE"
 1 row selected
-```
 
 ## Day-2 Operations
 
@@ -172,8 +175,11 @@ Once the cluster is running you can:
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
-$ kubectl delete ns demo
+kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

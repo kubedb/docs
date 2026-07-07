@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/ignite](/docs/examples/ignite) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -69,22 +69,23 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/ig.yaml
-ignite.kubedb.com/ig created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/ig.yaml
 ```
+ignite.kubedb.com/ig created
 
 Now, wait until `ig` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME            VERSION    STATUS    AGE
 ig   2.17.0      Ready     5m56s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -95,7 +96,6 @@ $ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -142,9 +142,9 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale.yaml
-igniteopsrequest.ops.kubedb.com/igops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale.yaml
 ```
+igniteopsrequest.ops.kubedb.com/igops-vscale created
 
 #### Verify Ignite resources updated successfully 
 
@@ -153,16 +153,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME                      TYPE              STATUS       AGE
 igops-vscale              VerticalScaling   Successful   108s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-vscale
+kubectl describe igniteopsrequest -n demo igops-vscale
+```
 Name:         igops-vscale
 Namespace:    demo
 Labels:       <none>
@@ -273,12 +274,11 @@ Events:
   Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed Ignite demo/ig
   Normal  Successful                 3s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 
-```
-
 Now, we are going to verify from the Pod yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -289,7 +289,6 @@ $ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the Ignite database.
 

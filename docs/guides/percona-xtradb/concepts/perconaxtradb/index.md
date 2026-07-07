@@ -126,15 +126,14 @@ type: Opaque
 In the given secrets below, `sample-pxc-monitor` and `sample-pxc-replication` are the system user secrets under `sample-pxc` PerconaXtraDB object.
 
 ```bash
-$ kubectl get secret -n demo
+kubectl get secret -n demo
+```
 NAME                     TYPE                                  DATA   AGE
 default-token-r556j      kubernetes.io/service-account-token   3      157m
 sample-pxc-auth          kubernetes.io/basic-auth              2      157m
 sample-pxc-monitor       kubernetes.io/basic-auth              2      157m
 sample-pxc-replication   kubernetes.io/basic-auth              2      157m
 sample-pxc-token-p25ww   kubernetes.io/service-account-token   3      141m
-
-```
 
 ### spec.storageType
 

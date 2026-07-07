@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/update-version](/docs/examples/qdrant/update-version) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -49,12 +49,12 @@ At first, we are going to deploy a Qdrant instance using a supported `Qdrant` ve
 When you have installed `KubeDB`, it has created `QdrantVersion` CR for all supported `Qdrant` versions. Let's check the supported versions:
 
 ```bash
-$ kubectl get qdrantversion
+kubectl get qdrantversion
+```
 NAME     VERSION   DB_IMAGE                                       DEPRECATED   AGE
 1.15.4   1.15.4    docker.io/qdrant/qdrant:v1.15.4-unprivileged                24d
 1.16.2   1.16.2    docker.io/qdrant/qdrant:v1.16.2-unprivileged                24d
 1.17.0   1.17.0    docker.io/qdrant/qdrant:v1.17.0-unprivileged                24d
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Qdrant`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `QdrantVersion` for the `Qdrant` instance that we will update from this version to another. In the next section, we are going to verify version update constraints.
 
@@ -65,7 +65,8 @@ Qdrant supports rolling version updates. You can update from any currently runni
 Let's get one of the `qdrantversion` YAMLs:
 
 ```bash
-$ kubectl get qdrantversion 1.17.0 -o yaml
+kubectl get qdrantversion 1.17.0 -o yaml
+```
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: QdrantVersion
 metadata:
@@ -78,7 +79,6 @@ spec:
   db:
     image: docker.io/qdrant/qdrant:v1.17.0-unprivileged
   version: "1.17.0"
-```
 
 **Deploy Qdrant Instance:**
 
@@ -105,9 +105,9 @@ spec:
 Let's create the `Qdrant` cr we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/update-version/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/update-version/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 **Wait for the database to be ready:**
 
@@ -116,37 +116,46 @@ qdrant.kubedb.com/qdrant-sample created
 Now, watch `Qdrant` is going to `Running` state and also watch `PetSet` and its pod is created and going to `Running` state:
 
 ```bash
-$ watch -n 3 kubectl get qdrant -n demo
+watch -n 3 kubectl get qdrant -n demo
+```
 Every 3.0s: kubectl get qdrant -n demo
 
 NAME              VERSION   STATUS   AGE
 qdrant-sample     1.16.2    Ready    3m42s
 
-$ watch -n 3 kubectl get petset -n demo qdrant-sample
+```bash
+watch -n 3 kubectl get petset -n demo qdrant-sample
+```
 Every 3.0s: kubectl get petset -n demo qdrant-sample
 
 NAME              READY   AGE
 qdrant-sample     3/3     4m17s
 
-$ watch -n 3 kubectl get pod -n demo
+```bash
+watch -n 3 kubectl get pod -n demo
+```
 Every 3.0s: kubectl get pods -n demo
 
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-0     1/1     Running   0          4m55s
 qdrant-sample-1     1/1     Running   0          4m12s
 qdrant-sample-2     1/1     Running   0          3m38s
-```
 
 Let's verify the `Qdrant`, the `PetSet` and its `Pod` image version:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.version}{"\n"}'
+```
 1.16.2
 
-$ kubectl get petset -n demo qdrant-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo qdrant-sample -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 docker.io/qdrant/qdrant:v1.16.2-unprivileged
 
-$ kubectl get pod -n demo qdrant-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get pod -n demo qdrant-sample-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
 docker.io/qdrant/qdrant:v1.16.2-unprivileged
 
 We are ready to apply version updating on this `Qdrant` instance.
@@ -158,8 +167,6 @@ Here, we are going to update `Qdrant` from version `1.16.2` to `1.17.0`.
 **Create QdrantOpsRequest:**
 
 To update the instance, you have to create a `QdrantOpsRequest` cr with your desired version that is supported by `KubeDB`. Below is the YAML of the `QdrantOpsRequest` cr that we are going to create:
-
-```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:

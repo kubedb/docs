@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -77,9 +77,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-custom-config.yaml
-secret/sl-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-custom-config.yaml
 ```
+secret/sl-custom-config created
 
 In this section, we are going to create a Solr object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Solr` CR that we are going to create,
 
@@ -109,23 +109,24 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/reconfigure/solr.yaml
-solr.kubedb.com/solr created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/reconfigure/solr.yaml
 ```
+solr.kubedb.com/solr created
 
 Now, wait until `solr` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 solr     kubedb.com/v1alpha2   9.6.1     Ready    10m
-```
 
 Now, we will check if the Solr has started with the custom configuration we have provided.
 
 Exec into the Solr pod and execute the following commands to see the configurations:
 ```bash
-$ kubectl exec -it -n demo solr-0 -- bash
+kubectl exec -it -n demo solr-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -159,8 +160,6 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   </solrcloud>
   <metrics enabled="${metricsEnabled:true}"/>
 </solr>
-
-```
 Here, we can see that our given configuration is applied to the Solr cluster. `maxBooleanClauses` is set to `2024`.
 
 ### Reconfigure using new config secret
@@ -198,9 +197,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/new-sl-custom-config.yaml
-secret/new-sl-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/new-sl-custom-config.yaml
 ```
+secret/new-sl-custom-config created
 
 #### Create SolrOpsRequest
 
@@ -231,9 +230,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-reconfigure-custom-config.yaml
-solropsrequest.ops.kubedb.com/sl-reconfigure-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-reconfigure-custom-config.yaml
 ```
+solropsrequest.ops.kubedb.com/sl-reconfigure-custom-config created
 
 #### Verify the new configuration is working
 
@@ -242,15 +241,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get slops -n demo 
+kubectl get slops -n demo 
+```
 NAME                           TYPE          STATUS       AGE
 sl-reconfigure-custom-config   Reconfigure   Successful   5m24s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe slops -n demo sl-reconfigure-custom-config 
+kubectl describe slops -n demo sl-reconfigure-custom-config 
+```
 Name:         sl-reconfigure-custom-config
 Namespace:    demo
 Labels:       <none>
@@ -339,12 +339,12 @@ Events:
   Normal   Starting                                                  3m31s  KubeDB Ops-manager Operator  Resuming Solr database: demo/solr
   Normal   Successful                                                3m31s  KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr for SolrOpsRequest: sl-reconfigure-custom-config
   Normal   RestartNodes                                              3m31s  KubeDB Ops-manager Operator  Successfully restarted all nodes
-```
 
 Now let's exec one of the instance and cat solr.xml file to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo solr-0 -- bash
+kubectl exec -it -n demo solr-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -378,7 +378,6 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   </solrcloud>
   <metrics enabled="${metricsEnabled:true}"/>
 </solr>
-```
 
 As we can see from the configuration of ready Solr, the value of `log.retention.hours` has been changed from `2024` to `2030`. So the reconfiguration of the cluster is successful.
 
@@ -426,9 +425,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-reconfigure-apply-config.yaml
-Solropsrequest.ops.kubedb.com/sl-reconfigure-apply-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure/sl-reconfigure-apply-config.yaml
 ```
+Solropsrequest.ops.kubedb.com/sl-reconfigure-apply-config created
 
 #### Verify the new configuration is working
 
@@ -437,15 +436,16 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                           TYPE          STATUS       AGE
 sl-reconfigure-custom-config   Reconfigure   Successful   2m22s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to reconfigure the cluster.
 
 ```bash
-$ kubectl describe slops -n demo sl-reconfigure-custom-config 
+kubectl describe slops -n demo sl-reconfigure-custom-config 
+```
 Name:         sl-reconfigure-custom-config
 Namespace:    demo
 Labels:       <none>
@@ -549,12 +549,12 @@ Events:
   Normal   RestartNodes                                              52s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                  52s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr
   Normal   Successful                                                52s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr for SolrOpsRequest: sl-reconfigure-custom-config
-```
 
 Now let's exec into one of the instance and cat `solr.xml` file to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo solr-0 -- bash
+kubectl exec -it -n demo solr-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
 <?xml version="1.0" encoding="UTF-8"?>
@@ -588,7 +588,6 @@ solr@solr-0:/opt/solr-9.6.1$ cat /var/solr/solr.xml
   </solrcloud>
   <metrics enabled="${metricsEnabled:true}"/>
 </solr>
-```
 
 As we can see from the configuration of ready Solr, the value of `maxBooleanClauses` has been changed from `2030` to `2024`. So the reconfiguration of the database using the `applyConfig` field is successful.
 

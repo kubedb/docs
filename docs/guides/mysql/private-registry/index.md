@@ -27,7 +27,8 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For mysql, push `DB_IMAGE`, `EXPORTER_IMAGE`, `REPLICATION_MODE_DETECTOR_IMAGE`(only required for Group Replication), `INITCONTAINER_IMAGE` of following MySQLVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
-$ kubectl get mysqlversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,REPLICATION_MODE_DETECTOR_IMAGE:.spec.replicationModeDetector.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+kubectl get mysqlversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,REPLICATION_MODE_DETECTOR_IMAGE:.spec.replicationModeDetector.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+```
 NAME            VERSION   DB_IMAGE                    EXPORTER_IMAGE                   REPLICATION_MODE_DETECTOR_IMAGE            INITCONTAINER_IMAGE                    DEPRECATED
 5.7.35-v1       5.7.35    mysql:5.7.35                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
 8.4.8          8.4.8    mysql:8.4.8                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:5.7-v2               <none>
@@ -36,8 +37,6 @@ NAME            VERSION   DB_IMAGE                    EXPORTER_IMAGE            
 8.0.31-innodb   8.4.8    mysql/mysql-server:8.4.8   kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.26-v1            <none>
 8.4.8          8.4.8    mysql:8.4.8                kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.4.8_linux_amd64   <none>
 8.0.3-v4        8.0.3     mysql:8.0.3                 kubedb/mysqld-exporter:v0.13.1   kubedb/replication-mode-detector:v0.13.0   kubedb/mysql-init:8.0.3-v1             <none>
-
-```
 
   Docker hub repositories:
   - [kubedb/operator](https://hub.docker.com/r/kubedb/operator)
@@ -84,9 +83,9 @@ spec:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-   ```
 
 ## Create ImagePullSecret
 
@@ -95,13 +94,13 @@ ImagePullSecrets is a type of a Kubernete Secret whose sole purpose is to pull p
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -140,17 +139,17 @@ spec:
 Now run the command to deploy this `MySQL` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/private-registry/yamls/standalone.yaml
-mysql.kubedb.com/mysql-pvt-reg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/private-registry/yamls/standalone.yaml
 ```
+mysql.kubedb.com/mysql-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `MySQL` is in running state:
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME              READY     STATUS    RESTARTS   AGE
 mysql-pvt-reg-0   1/1       Running   0          56s
-```
 
 ## Cleaning up
 

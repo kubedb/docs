@@ -42,17 +42,17 @@ But that is a bit rare though.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ### Step 1: Create a High-Availability MySQL Cluster
 
@@ -87,24 +87,27 @@ spec:
 
 Now, create the namespace and apply the manifest:
 
-```shell
 # Create the namespace if it doesn't exist
-$ kubectl create ns demo
+```bash
+kubectl create ns demo
+```
 namespace/demo created
 
 # Apply the manifest to deploy the cluster
-$ kubectl apply -f ha-mysql.yaml
-mysql.kubedb.com/ha-mysql created
+```bash
+kubectl apply -f ha-mysql.yaml
 ```
+mysql.kubedb.com/ha-mysql created
 
 You can monitor on another terminal the status until all pods are ready:
-```shell
-$ watch kubectl get my,petset,pods -n demo
+```bash
+watch kubectl get my,petset,pods -n demo
 ```
 See the database is ready.
 
-```shell
-$ kubectl get my,petset,pods -n demo
+```bash
+kubectl get my,petset,pods -n demo
+```
 NAME                             VERSION   STATUS   AGE
 mysql.kubedb.com/ha-mysql   8.2.0     Ready    19h
 
@@ -116,32 +119,31 @@ pod/ha-mysql-0   2/2     Running   3 (24m ago)   16h
 pod/ha-mysql-1   2/2     Running   2 (24m ago)   16h
 pod/ha-mysql-2   2/2     Running   3 (24m ago)   16h
 
-```
-
 Inspect who is primary and who is standby.
 
-```shell
 # you can inspect who is primary
 # and who is secondary like below
-
-$ kubectl get pods -n demo --show-labels | grep role
+```bash
+kubectl get pods -n demo --show-labels | grep role
+```
 ha-mysql-0   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=primary,statefulset.kubernetes.io/pod-name=ha-mysql-0
 ha-mysql-1   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ha-mysql-1
 ha-mysql-2   2/2     Running   0          34m   app.kubernetes.io/component=database,app.kubernetes.io/instance=ha-mysql,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=mysqls.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=ha-mysql-7f595bb48b,kubedb.com/role=standby,statefulset.kubernetes.io/pod-name=ha-mysql-2
-
-```
 The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=standby` are the standby's.
 
 
 Let's create a table in the primary.
 
-```shell
 # find the primary pod
-$ kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```bash
+kubectl get pods -n demo --show-labels | grep primary | awk '{ print $1 }'
+```
 ha-mysql-0
 
 # exec into the primary pod
-$ kubectl exec -it -n demo ha-mysql-0  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-0  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$  mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -173,13 +175,12 @@ mysql> show Databases;
 +--------------------+
 6 rows in set (0.09 sec)
 
-```
-
 Verify that the table has been created on the standby nodes. Note that standby pods have read-only access, 
 so you won't be able to perform any write operations.
 
-```shell
-$ kubectl exec -it -n demo ha-mysql-1  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-1  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -210,8 +211,6 @@ mysql> show databases;
 
 mysql> create database Hi;
 ERROR 1290 (HY000): The MySQL server is running with the --super-read-only option so it cannot execute this statement
-
-```
 ### Step 2: Simulating a Failover
 
 Before simulating failover, let’s discuss how KubeDB-managed MySQL handles such scenarios.
@@ -241,10 +240,10 @@ ha-mysql-2 standby
 
 Let's delete the current primary and see how the role change happens almost immediately.
 
-```shell
-$ kubectl delete pods -n demo ha-mysql-0 
-pod "ha-mysql-0" deleted
+```bash
+kubectl delete pods -n demo ha-mysql-0 
 ```
+pod "ha-mysql-0" deleted
 You see almost immediately the failover happened. 
 ```shell
 ha-mysql-0 
@@ -289,8 +288,9 @@ A healthy replica is promoted as the new primary, and it resumes accepting write
 
 Now we know how failover is done, let's check if the new primary is working.
 
-```shell
-$ kubectl exec -it -n demo ha-mysql-1  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-1  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -308,7 +308,6 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 mysql> CREATE DATABASE hi;
 Query OK, 1 row affected (0.16 sec)
-```
 
 You will see the deleted pod (ha-mysql-0) is brought back by the kubedb operator and it is now assigned to standby role.
 
@@ -320,9 +319,9 @@ ha-mysql-2 standby
 
 Lets check if the standby(`ha-mysql-0`) got the updated data from new primary `ha-mysql-1`.
 
-```shell
-$ kubectl exec -it -n demo ha-mysql-1  -- bash
-
+```bash
+kubectl exec -it -n demo ha-mysql-1  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -352,15 +351,13 @@ mysql> Show Databases;
 +--------------------+
 7 rows in set (0.12 sec)
 
-```
-
 #### Case 2: Delete the current primary and One replica
 
-```shell
-$ kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+```bash
+kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+```
 pod "ha-mysql-1" deleted
 pod "ha-mysql-2" deleted
-```
 Again we can see the failover happened pretty quickly.
 
 ```shell
@@ -378,8 +375,9 @@ ha-mysql-2 standby
 ```
 Lets validate the cluster state from new primary(`ha-mysql-0`).
 
-```shell
-$ kubectl exec -it -n demo ha-mysql-0  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-0  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -405,18 +403,15 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
 
-```
-
 #### Case3: Delete any of the replica's
 
 Let's delete both of the standby's.
 
-```shell
-$ kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+```bash
+kubectl delete pods -n demo ha-mysql-1 ha-mysql-2
+```
 pod "ha-mysql-1" deleted
 pod "ha-mysql-2" deleted
-
-```
 
 ```shell
 ha-mysql-0 primary
@@ -433,8 +428,9 @@ ha-mysql-2 standby
 ```
 
 Lets verify cluster state.
-```shell
-$ kubectl exec -it -n demo ha-mysql-0  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-0  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -459,18 +455,17 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 | ha-mysql-2.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.01 sec)
-```
 
 #### Case 4: Delete both primary and all replicas
 
 Let's delete all the pods.
 
-```shell
-$ kubectl delete pods -n demo ha-mysql-0 ha-mysql-1 ha-mysql-2
+```bash
+kubectl delete pods -n demo ha-mysql-0 ha-mysql-1 ha-mysql-2
+```
 pod "ha-mysql-0" deleted
 pod "ha-mysql-1" deleted
 pod "ha-mysql-2" deleted
-```
 ```bash
 ha-mysql-0 
 ha-mysql-1
@@ -487,8 +482,9 @@ ha-mysql-2 standby
 
 Lets verify the cluster state now.
 
-```shell
-$ kubectl exec -it -n demo ha-mysql-0  -- bash
+```bash
+kubectl exec -it -n demo ha-mysql-0  -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-4.4$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -513,7 +509,6 @@ mysql> SELECT MEMBER_HOST, MEMBER_PORT, MEMBER_STATE, MEMBER_ROLE FROM performan
 | ha-mysql-2.ha-mysql-pods.demo.svc |        3306 | ONLINE       | SECONDARY   |
 +---------------------------------------------+-------------+--------------+-------------+
 3 rows in set (0.00 sec)
-```
 
 ## A Guide to Handling MySQL Storage
 
@@ -560,9 +555,12 @@ It depends on your `StorageClass`. If your storageclass supports online volume e
 ## CleanUp
 
 To clean up the Kubernetes resources created by this tutorial, run:
-```shell
-$ kubectl delete my -n demo ha-mysql
-$ kubectl delete ns demo
+```bash
+kubectl delete my -n demo ha-mysql
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ### Next Steps

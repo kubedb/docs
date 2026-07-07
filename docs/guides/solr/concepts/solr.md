@@ -135,11 +135,11 @@ AuthSecret contains a `username` key and a `password` key which contains the `us
 Example:
 
 ```bash
-$ kubectl create secret generic solr-cluster-admin0-cred -n demo \
+kubectl create secret generic solr-cluster-admin0-cred -n demo \
 --from-literal=username=admin \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "solr-cluster-admin-cred" created
 ```
+secret "solr-cluster-admin-cred" created
 
 ```yaml
 apiVersion: v1

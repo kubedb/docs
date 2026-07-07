@@ -25,16 +25,17 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).  In this tutorial we will use private repository of [docker hub](https://hub.docker.com/).
 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For redis, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following RedisVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
-$ kubectl get redisversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+kubectl get redisversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,INITCONTAINER_IMAGE:.spec.initContainer.image,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image
+```
 NAME           VERSION   INITCONTAINER_IMAGE                DB_IMAGE                                        EXPORTER_IMAGE
 4.0.11         4.0.11    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/kubedb/redis:4.0.11                     ghcr.io/kubedb/redis_exporter:1.66.0
 5.0.14         5.0.14    ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/redis:5.0.14-bullseye   ghcr.io/kubedb/redis_exporter:1.66.0
@@ -52,7 +53,6 @@ valkey-7.2.5   7.2.5     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-ima
 valkey-7.2.9   7.2.9     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:7.2.9            ghcr.io/kubedb/redis_exporter:1.66.0
 valkey-8.0.3   8.0.3     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:8.0.3            ghcr.io/kubedb/redis_exporter:1.66.0
 valkey-8.1.1   8.1.1     ghcr.io/kubedb/redis-init:0.12.0   ghcr.io/appscode-images/valkey:8.1.1            ghcr.io/kubedb/redis_exporter:1.66.0
-```
 
   Docker hub repositories:
 
@@ -90,13 +90,13 @@ ImagePullSecrets is a type of Kubernetes Secret whose sole purpose is to pull pr
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry -n demo myregistrykey \
+kubectl create secret docker-registry -n demo myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -135,25 +135,26 @@ spec:
 Now run the command to deploy this `Redis` object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
-redis.kubedb.com/redis-pvt-reg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/private-registry/demo-2.yaml
 ```
+redis.kubedb.com/redis-pvt-reg created
 
 To check if the images pulled successfully from the repository, see if the `Redis` is in running state:
 
 ```bash
-$ kubectl get pods -n demo -w
+kubectl get pods -n demo -w
+```
 NAME              READY     STATUS              RESTARTS   AGE
 redis-pvt-reg-0   0/1       Pending             0          0s
 redis-pvt-reg-0   0/1       Pending             0          0s
 redis-pvt-reg-0   0/1       ContainerCreating   0          0s
 redis-pvt-reg-0   1/1       Running             0          2m
 
-
-$ kubectl get rd -n demo
+```bash
+kubectl get rd -n demo
+```
 NAME            VERSION   STATUS    AGE
 redis-pvt-reg   6.2.14    Running   40s
-```
 
 ## Cleaning up
 
@@ -170,18 +171,24 @@ kubectl delete ns demo
 ```
 
 ```bash
-$ kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/redis-pvt-reg -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/redis-pvt-reg patched
 
-$ kubectl delete -n demo rd/redis-pvt-reg
+```bash
+kubectl delete -n demo rd/redis-pvt-reg
+```
 redis.kubedb.com "redis-pvt-reg" deleted
 
-$ kubectl delete -n demo secret myregistrykey
+```bash
+kubectl delete -n demo secret myregistrykey
+```
 secret "myregistrykey" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Next Steps
 

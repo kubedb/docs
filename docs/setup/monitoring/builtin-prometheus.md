@@ -25,9 +25,9 @@ This tutorial will show you how to configure builtin [Prometheus](https://github
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy respective monitoring resources.
 
   ```bash
-  $ kubectl create ns monitoring
-  namespace/monitoring created
+  kubectl create ns monitoring
   ```
+  namespace/monitoring created
 
 ## Enable KubeDB Operator Monitoring
 
@@ -38,7 +38,7 @@ Let's install KubeDB with operator monitoring enabled.
 **Helm 3:**
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.monitoring.agent=prometheus.io/builtin
@@ -47,7 +47,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 **YAML (with Helm 3):**
 
 ```bash
-$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --no-hooks \
@@ -114,10 +114,10 @@ KubeDB has created a secret named `kubedb-apiserver-cert` in `monitoring` namesp
 Verify that the secret `kubedb-apiserver-cert` has been created in `monitoring` namespace.
 
 ```bash
-$ kubectl get secret -n monitoring -l=app=kubedb
+kubectl get secret -n monitoring -l=app=kubedb
+```
 NAME                             TYPE                DATA   AGE
 kubedb-apiserver-cert   kubernetes.io/tls   2      3h33m
-```
 
 We are going to mount this secret in `/etc/prometheus/secret/kubedb-apiserver-cert` directory of Prometheus deployment.
 
@@ -295,20 +295,20 @@ data:
 Let's create the ConfigMap we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-config.yaml
-configmap/kubedb-prom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-config.yaml
 ```
+configmap/kubedb-prom-config created
 
 **Create RBAC:**
 
 If you are using an RBAC enabled cluster, you have to give necessary RBAC permissions for Prometheus. Let's create necessary RBAC stuffs for Prometheus,
 
 ```bash
-$ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/monitoring/prometheus/builtin/artifacts/rbac.yaml
+```
 clusterrole.rbac.authorization.k8s.io/prometheus created
 serviceaccount/prometheus created
 clusterrolebinding.rbac.authorization.k8s.io/prometheus created
-```
 
 > YAML for the RBAC resources created above can be found [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/builtin/artifacts/rbac.yaml).
 
@@ -371,9 +371,9 @@ Notice that, we have mounted `kubedb-apiserver-cert` secret as a volume at `/etc
 Now, let's create the deployment,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-deploy.yaml
-deployment.apps/prometheus created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/operator/prom-deploy.yaml
 ```
+deployment.apps/prometheus created
 
 ### Verify Monitoring Metrics
 
@@ -382,18 +382,18 @@ Prometheus server is listening to port `9090`. We are going to use [port forward
 At first, let's check if the Prometheus pod is in `Running` state.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app=prometheus
+kubectl get pod -n monitoring -l=app=prometheus
+```
 NAME                         READY   STATUS    RESTARTS   AGE
 prometheus-5bcb9678c-kh8vt   1/1     Running   0          149m
-```
 
 Now, run following command on a separate terminal to forward 9090 port of `prometheus-5bcb9678c-kh8vt` pod,
 
 ```bash
-$ kubectl port-forward -n monitoring prometheus-5bcb9678c-kh8vt 9090
+kubectl port-forward -n monitoring prometheus-5bcb9678c-kh8vt 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `api` endpoint of `kubedb` service as target.
 

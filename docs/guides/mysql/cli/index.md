@@ -23,16 +23,16 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a MySQL object as specified in `mysql.yaml`.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/cli/yamls/mysql-demo.yaml
-mysql.kubedb.com/mysql-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/cli/yamls/mysql-demo.yaml
 ```
+mysql.kubedb.com/mysql-demo created
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/cli/yamls/mysql-demo.yaml --namespace=kube-system
-mysql.kubedb.com/mysql-demo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/cli/yamls/mysql-demo.yaml --namespace=kube-system
 ```
+mysql.kubedb.com/mysql-demo created
 
 `kubectl create` command also considers `stdin` as input.
 
@@ -45,11 +45,11 @@ cat mysql-demo.yaml | kubectl create -f -
 `kubectl get` command allows users to list or find any KubeDB object. To list all MySQL objects in `default` namespace, run the following command:
 
 ```bash
-$ kubectl get mysql
+kubectl get mysql
+```
 NAME         VERSION   STATUS    AGE
 mysql-demo   8.4.8    Running   5m1s
 mysql-dev    8.4.8    Running   10m1s
-```
 
 To get YAML of an object, use `--output=yaml` flag.
 
@@ -124,7 +124,8 @@ kubectl get mysql mysql-demo --output=json
 To list all KubeDB objects, use following command:
 
 ```bash
-$ kubectl get all -n demo -o wide
+kubectl get all -n demo -o wide
+```
 NAME               READY   STATUS    RESTARTS   AGE     IP            NODE                 NOMINATED NODE   READINESS GATES
 pod/mysql-demo-0   1/1     Running   0          2m17s   10.244.0.13   kind-control-plane   <none>           1/1
 
@@ -140,7 +141,6 @@ appbinding.appcatalog.appscode.com/mysql-demo   kubedb.com/mysql   8.4.8    2m17
 
 NAME                          VERSION   STATUS   AGE
 mysql.kubedb.com/mysql-demo   8.4.8    Ready    2m17s
-```
 
 Flag `--output=wide` is used to print additional information.
 
@@ -151,19 +151,20 @@ List command supports short names for each object types. You can use it like `ku
 To print only object name, run the following command:
 
 ```bash
-$ kubectl get all -o name
+kubectl get all -o name
+```
 mysql/mysql-demo
 mysql/mysql-dev
 mysql/mysql-prod
 mysql/mysql-qa
-```
 
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe MySQL database `mysql-demo` with relevant information.
 
 ```bash
-$ kubectl dba describe my -n demo
+kubectl dba describe my -n demo
+```
 Name:               mysql-demo
 Namespace:          demo
 CreationTimestamp:  Mon, 15 Mar 2021 17:53:48 +0600
@@ -271,7 +272,6 @@ Events:
   Normal  Successful  5m    KubeDB Operator  Successfully created service for primary/standalone
   Normal  Successful  5m    KubeDB Operator  Successfully created database auth secret
   Normal  Successful  5m    KubeDB Operator  Successfully created PetSet
-```
 
 `kubectl dba describe` command provides following basic information about a MySQL database.
 
@@ -316,8 +316,8 @@ To learn about various options of `describe` command, please visit [here](/docs/
 Lets edit an existing running MySQL object to setup database [Halted](/docs/guides/mysql/concepts/database/index.md#spechalted). The following command will open MySQL `mysql-demo` in editor.
 
 ```bash
-$ kubectl edit my -n demo mysql-quickstart
-
+kubectl edit my -n demo mysql-quickstart
+```
 spec:
   ....
   authSecret:
@@ -327,7 +327,6 @@ spec:
   ....
 
 mysql.kubedb.com/mysql-quickstart edited
-```
 
 #### Edit Restrictions
 
@@ -353,16 +352,16 @@ For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a MySQL `mysql-dev` in default namespace
 
 ```bash
-$ kubectl delete mysql mysql-dev
-mysql.kubedb.com "mysql-dev" deleted
+kubectl delete mysql mysql-dev
 ```
+mysql.kubedb.com "mysql-dev" deleted
 
 You can also use YAML files to delete objects. The following command will delete a mysql using the type and name specified in `mysql.yaml`.
 
 ```bash
-$ kubectl delete -f mysql-demo.yaml
-mysql.kubedb.com "mysql-dev" deleted
+kubectl delete -f mysql-demo.yaml
 ```
+mysql.kubedb.com "mysql-dev" deleted
 
 `kubectl delete` command also takes input from `stdin`.
 
@@ -380,16 +379,23 @@ kubectl delete mysql -l mysql.app.kubernetes.io/instance=mysql-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```bash
 # Create objects
-$ kubectl create -f
+```bash
+kubectl create -f
+```
 
 # List objects
-$ kubectl get mysql
-$ kubectl get mysql.kubedb.com
+```bash
+kubectl get mysql
+```
+
+```bash
+kubectl get mysql.kubedb.com
+```
 
 # Delete objects
-$ kubectl delete mysql <name>
+```bash
+kubectl delete mysql <name>
 ```
 
 ## Next Steps

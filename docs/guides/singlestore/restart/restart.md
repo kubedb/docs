@@ -24,10 +24,10 @@ KubeDB supports restarting the SingleStore database via a SingleStoreOpsRequest.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/singlestore/restart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/singlestore/restart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -36,11 +36,11 @@ KubeDB supports restarting the SingleStore database via a SingleStoreOpsRequest.
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Deploy SingleStore
 
@@ -104,9 +104,9 @@ spec:
 Let's create the `SingleStore` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/restart/yamls/sdb-sample.yaml
-singlestore.kubedb.com/sdb-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/restart/yamls/sdb-sample.yaml
 ```
+singlestore.kubedb.com/sdb-sample created
 **Wait for the database to be ready:**
 
 Now, wait for `SingleStore` going on `Ready` state
@@ -143,18 +143,21 @@ spec:
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/restart/yamls/restart-ops.yaml
-singlestoreopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/restart/yamls/restart-ops.yaml
 ```
+singlestoreopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will restart the pods sequentially by their cardinal suffix.
 
-```shell
-$ kubectl get singlestoreopsrequest -n demo
+```bash
+kubectl get singlestoreopsrequest -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   10m
 
-$ kubectl get singlestoreopsrequest -n demo restart -oyaml
+```bash
+kubectl get singlestoreopsrequest -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SinglestoreOpsRequest
 metadata:
@@ -246,7 +249,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 
 ## Cleaning up

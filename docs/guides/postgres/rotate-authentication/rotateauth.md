@@ -29,9 +29,9 @@ section_menu_id: guides
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
   
 ## Create a PostgreSQL database
 KubeDB implements a Postgres CRD to define the specification of a PostgreSQL database.
@@ -59,25 +59,25 @@ spec:
 
 Command:
 
-```shell
-$ kubectl apply -f postgres.yaml 
-postgres.kubedb.com/quick-postgres created
+```bash
+kubectl apply -f postgres.yaml 
 ```
+postgres.kubedb.com/quick-postgres created
 
 Or, you can deploy by using command:
 
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
-postgres.kubedb.com/quick-postgres created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 ```
+postgres.kubedb.com/quick-postgres created
 
 Now, wait until quick-postgres has status Ready. i.e,
 
-```shell
-$ kubectl get pg -n demo -w
+```bash
+kubectl get pg -n demo -w
+```
 NAME             VERSION   STATUS   AGE
 quick-postgres   18.3     Ready    7m36s
-```
 ## Verify authentication 
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
 
@@ -90,8 +90,9 @@ $ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.password}' 
 yFj_WnVA9rxfQlLt
 ````
 Now, you can exec into the pod `quick-postgres-0` and connect to database using `username` and `password`
-```shell
-$ kubectl exec -it -n demo quick-postgres-0 -- bash 
+```bash
+kubectl exec -it -n demo quick-postgres-0 -- bash 
+```
 Defaulted container "postgres" out of: postgres, postgres-init-container (init)
  
 quick-postgres-0:/$ PGPASSWORD=yFj_WnVA9rxfQlLt psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc
@@ -103,7 +104,6 @@ postgres=# \dt
 --------+--------------------+-------+----------
  public | kubedb_write_check | table | postgres
  (1 row)
-```
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth PostgresOpsRequest
 
@@ -129,19 +129,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Postgres.
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-generated.yaml
+ ```
  postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-generated created
-```
 Let's wait for `PostgresOpsrequest` to be `Successful`. Run the following command to watch `PostgresOpsrequest` CRO
-```shell
- $ kubectl get postgresopsrequest -n demo
+ ```bash
+ kubectl get postgresopsrequest -n demo
+ ```
  NAME                          TYPE         STATUS       AGE
  pgops-rotate-auth-generated   RotateAuth   Successful   7m47s
-```
 If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated 
+```bash
+kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated 
+```
  Name:         pgops-rotate-auth-generated
  Namespace:    demo
  Labels:       <none>
@@ -222,38 +223,45 @@ $ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-generated
    Normal   ResumeDatabase                                                    19m   KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
    Normal   ResumeDatabase                                                    19m   KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
    Normal   Successful                                                        19m   KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth secret for demo/quick-postgres
-  
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
-"quick-postgres-auth"
-$ kubectl get secret -n demo quick-postgres-auth -o=jsonpath='{.data.username}' | base64 -d
- postgres
-$ kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
- zGB9GF!NXwI.2HP9⏎                       
+```bash
+kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 ```
+"quick-postgres-auth"
+
+```bash
+kubectl get secret -n demo quick-postgres-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+ postgres
+
+```bash
+kubectl get secret -n demo quick-postgres-auth -o jsonpath='{.data.password}' | base64 -d
+```
+ zGB9GF!NXwI.2HP9⏎                       
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo quick-postgres-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-postgres
-$ kubectl get secret -n demo quick-postgres-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-yFj_WnVA9rxfQlLt                           
+```bash
+kubectl get secret -n demo quick-postgres-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+postgres
+
+```bash
+kubectl get secret -n demo quick-postgres-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+yFj_WnVA9rxfQlLt                           
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > **Note:** Can not change the username while rotating authentication. The username must be same as 'postgres' which is the current username of the database.
 
-```shell
-$ kubectl create secret generic quick-postgres-user-auth -n demo \
+```bash
+kubectl create secret generic quick-postgres-user-auth -n demo \
                                                 --type=kubernetes.io/basic-auth \
                                                 --from-literal=username=postgres \
                                                 --from-literal=password=postgres-secret
- secret/quick-postgres-user-auth created
 ```
+ secret/quick-postgres-user-auth created
 Now create a `PostgresOpsRequest` with `RotateAuth` type. Below is the YAML of the `PostgresOpsRequest` 
 that we are going to create,
 
@@ -282,21 +290,22 @@ Here,
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-user.yaml
-postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-user.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-user created
 Let’s wait for `PostgresOpsRequest` to be Successful. Run the following command to watch `PostgresOpsRequest` CRO:
 
-```shell
-$ kubectl get postgresopsrequest -n demo
+```bash
+kubectl get postgresopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 pgops-rotate-auth-generated   RotateAuth   Successful   19h
 pgops-rotate-auth-user        RotateAuth   Successful   7m44s
-```
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe postgresopsrequest -n demo pgops-rotate-auth-user 
+```bash
+kubectl describe postgresopsrequest -n demo pgops-rotate-auth-user 
+```
 Name:         pgops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -380,24 +389,31 @@ Events:
   Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Resuming PostgreSQL demo/quick-postgres
   Normal   ResumeDatabase                                                    9m58s  KubeDB Ops-manager Operator  Successfully resumed PostgreSQL demo/quick-postgres
   Normal   Successful                                                        9m58s  KubeDB Ops-manager Operator  Successfully Rotated Postgres Auth secret for demo/quick-postgres
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
+```bash
+kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
+```
 "quick-postgres-user-auth"
-$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 postgres                                        
-$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.password}' | base64 -d
+```
 postgres-secret                                                                
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo quick-postgres-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-postgres                                                                                    
-$ kubectl get secret -n demo quick-postgres-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-zGB9GF!NXwI.2HP9 
+```bash
+kubectl get secret -n demo quick-postgres-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+postgres                                                                                    
+
+```bash
+kubectl get secret -n demo quick-postgres-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+zGB9GF!NXwI.2HP9 
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -406,14 +422,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete postgresopsrequest pgops-rotate-auth-generated pgops-rotate-auth-user -n demo
-postgresopsrequest.ops.kubedb.com "pgops-rotate-auth-generated" "pgops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  quick-postgres-user-auth
-secret "quick-postgres-user-auth" deleted
-$ kubectl delete secret -n demo  quick-postgres-auth
-secret "quick-postgres-auth" deleted
+```bash
+kubectl delete postgresopsrequest pgops-rotate-auth-generated pgops-rotate-auth-user -n demo
 ```
+postgresopsrequest.ops.kubedb.com "pgops-rotate-auth-generated" "pgops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  quick-postgres-user-auth
+```
+secret "quick-postgres-user-auth" deleted
+
+```bash
+kubectl delete secret -n demo  quick-postgres-auth
+```
+secret "quick-postgres-auth" deleted
 
 
 ## Next Steps

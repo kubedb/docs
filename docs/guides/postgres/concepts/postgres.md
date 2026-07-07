@@ -116,7 +116,8 @@ spec:
 `spec.version` is a required field that specifies the name of the [PostgresVersion](/docs/guides/postgres/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `PostgresVersion` resources,
 
 ```bash
-$ kubectl get pgversion
+kubectl get pgversion
+```
 NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 10.2       10.2      kubedb/postgres:10.2       true         44m
 10.2-v1    10.2      kubedb/postgres:10.2-v2    true         44m
@@ -146,7 +147,6 @@ NAME       VERSION   DB_IMAGE                   DEPRECATED   AGE
 9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4                44m
 9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5                44m
 9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6                44m
-```
 ### spec.replicas
 
 `spec.replicas` specifies the total number of primary and standby nodes in Postgres database cluster configuration. One pod is selected as Primary and others act as standby replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
@@ -180,14 +180,15 @@ If you want to use an existing or custom secret, please specify that when creati
 Example:
 
 ```bash
-$ kubectl create secret generic p1-auth -n demo \
+kubectl create secret generic p1-auth -n demo \
 --from-literal=POSTGRES_USER=not@user \
 --from-literal=POSTGRES_PASSWORD=not@secret
-secret "p1-auth" created
 ```
+secret "p1-auth" created
 
 ```bash
-$ kubectl get secret -n demo p1-auth -o yaml
+kubectl get secret -n demo p1-auth -o yaml
+```
 apiVersion: v1
 data:
   POSTGRES_PASSWORD: bm90QHNlY3JldA==
@@ -201,7 +202,6 @@ metadata:
   selfLink: /api/v1/namespaces/demo/secrets/p1-auth
   uid: 15b3e8a1-af6c-11e8-996d-0800270d7bae
 type: Opaque
-```
 
 ### spec.storageType
 

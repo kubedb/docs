@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for Ignite. This tutorial will sh
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-  
-  $ kubectl get ns demo
+
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,10 +72,10 @@ metadata:
 ```
 Here, `authenticationEnabled's` default value is `false`. In this secret, we make the value `true`.
 
-```bash
- $ kubectl apply -f ignite-configuration.yaml
+ ```bash
+ kubectl apply -f ignite-configuration.yaml
+ ```
 secret/ignite-configuration created
-```
 
 Let's get the ignite-configuration `secret` with custom configuration:
 
@@ -98,9 +100,9 @@ type: Opaque
 Now, create Ignite crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/custom-ignite.yaml
-ignite.kubedb.com/custom-ignite created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-config/custom-ignite.yaml
 ```
+ignite.kubedb.com/custom-ignite created
 
 Below is the YAML for the Ignite crd we just created.
 
@@ -130,16 +132,17 @@ Now, wait a few minutes. KubeDB operator will create necessary petset, services 
 Check if the database is ready
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME               VERSION   STATUS   AGE
 custom-ignite      2.17.0    Ready    17m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 We will connect to `custom-ignite-0` pod:
 
 ```bash
-$ kubectl exec -it -n demo custom-ignite-0 -c ignite -- bash
+kubectl exec -it -n demo custom-ignite-0 -c ignite -- bash
+```
 [ignite@custom-ignite-0 config]$ cat /ignite/config/node-configuration.xml
 
 <?xml version="1.0" encoding="UTF-8"?>
@@ -153,7 +156,6 @@ http://www.springframework.org/schema/beans/spring-beans-3.0.xsd">
 <property name="authenticationEnabled" value="true"></property>
     </bean>
 </beans>
-```
 
 Here, we can see `authenticationEnabled's` value is `true`.
 

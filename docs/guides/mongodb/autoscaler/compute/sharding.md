@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -102,22 +102,23 @@ spec:
 Let's create the `MongoDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-sh.yaml
-mongodb.kubedb.com/mg-sh created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-sh.yaml
 ```
+mongodb.kubedb.com/mg-sh created
 
 Now, wait until `mg-sh` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME    VERSION    STATUS    AGE
 mg-sh   4.4.26      Ready     3m57s
-```
 
 Let's check a shard Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -128,11 +129,11 @@ $ kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resour
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the MongoDB resources,
 ```bash
-$ kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podTemplate.spec.resources'
+kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podTemplate.spec.resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -143,7 +144,6 @@ $ kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podT
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the mongodb.
 
@@ -220,20 +220,23 @@ It has two fields inside it.
 Let's create the `MongoDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-as-sh.yaml
-mongodbautoscaler.autoscaling.kubedb.com/mg-as-sh created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/compute/mg-as-sh.yaml
 ```
+mongodbautoscaler.autoscaling.kubedb.com/mg-as-sh created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `mongodbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mongodbautoscaler -n demo
+kubectl get mongodbautoscaler -n demo
+```
 NAME        AGE
 mg-as-sh    102s
 
-$ kubectl describe mongodbautoscaler mg-as-sh -n demo
+```bash
+kubectl describe mongodbautoscaler mg-as-sh -n demo
+```
 Name:         mg-as-sh
 Namespace:    demo
 Labels:       <none>
@@ -398,8 +401,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      mg-sh-shard1
 Events:            <none>
-
-```
 So, the `mongodbautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `mongodbopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
@@ -407,25 +408,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `mongodbopsrequest` in the demo namespace to see if any `mongodbopsrequest` object is created. After some time you'll see that a `mongodbopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                          TYPE              STATUS       AGE
 mops-vpa-mg-sh-shard-ml75qi   VerticalScaling   Progressing  19s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                            TYPE              STATUS       AGE
 mops-vpa-mg-sh-shard-ml75qi     VerticalScaling   Successful   5m8s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-vpa-mg-sh-shard-ml75qi
+kubectl describe mongodbopsrequest -n demo mops-vpa-mg-sh-shard-ml75qi
+```
 Name:         mops-vpa-mg-sh-shard-ml75qi
 Namespace:    demo
 Labels:       <none>
@@ -534,35 +536,34 @@ Events:
   Normal  ResumeDatabase        46s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-sh
   Normal  ResumeDatabase        46s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-sh
   Normal  Successful            46s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
-```
 
 Now, we are going to verify from the Pod, and the MongoDB yaml whether the resources of the shard pod of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "400Mi"
-  },
-  "requests": {
-    "cpu": "400m",
-    "memory": "400Mi"
-  }
-}
-
-
-$ kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podTemplate.spec.resources'
-{
-  "limits": {
-    "memory": "400Mi"
-  },
-  "requests": {
-    "cpu": "400m",
-    "memory": "400Mi"
-  }
-}
-
+kubectl get pod -n demo mg-sh-shard0-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "memory": "400Mi"
+  },
+  "requests": {
+    "cpu": "400m",
+    "memory": "400Mi"
+  }
+}
+
+```bash
+kubectl get mongodb -n demo mg-sh -o json | jq '.spec.shardTopology.shard.podTemplate.spec.resources'
+```
+{
+  "limits": {
+    "memory": "400Mi"
+  },
+  "requests": {
+    "cpu": "400m",
+    "memory": "400Mi"
+  }
+}
 
 
 The above output verifies that we have successfully auto scaled the resources of the MongoDB sharded database.

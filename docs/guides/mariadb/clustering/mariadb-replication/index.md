@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/clustering/mariadb-replication/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -71,9 +71,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples/demo-1.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples/demo-1.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
@@ -87,7 +87,8 @@ Here,
 KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<mariadb-object-name>-pods`.
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o yaml
+kubectl get mariadb -n demo sample-mariadb -o yaml
+```
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
@@ -227,9 +228,9 @@ status:
   observedGeneration: 2
   phase: Ready
 
-
-
-$ kubectl get petset,svc,secret,pvc,pv,pod -n demo
+```bash
+kubectl get petset,svc,secret,pvc,pv,pod -n demo
+```
 NAME                                             AGE
 petset.apps.k8s.appscode.com/sample-mariadb      53s
 petset.apps.k8s.appscode.com/sample-mariadb-mx   56s
@@ -271,14 +272,13 @@ pod/sample-mariadb-mx-0   1/1     Running   0          3m9s
 pod/sample-mariadb-mx-1   1/1     Running   0          3m9s
 pod/sample-mariadb-mx-2   1/1     Running   0          3m9s
 
-```
-
 ## Check the Cluster Status
 
 Now, we are ready to check newly created cluster status. Connect to maxscale pod and run the following commands from any of the maxscale pod and you will get the same result.
 
 ```bash
-$ kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
+kubectl exec -it -n demo svc/sample-mariadb-mx -- bash
+```
 bash-4.4$ maxctrl list servers
 ┌─────────┬─────────────────────────────────────────────────────────────┬──────┬─────────────┬─────────────────┬─────────┬────────────────────┐
 │ Server  │ Address                                                     │ Port │ Connections │ State           │ GTID    │ Monitor            │
@@ -289,8 +289,6 @@ bash-4.4$ maxctrl list servers
 ├─────────┼─────────────────────────────────────────────────────────────┼──────┼─────────────┼─────────────────┼─────────┼────────────────────┤
 │ server3 │ sample-mariadb-2.sample-mariadb-pods.demo.svc.cluster.local │ 3306 │ 0           │ Slave, Running  │ 0-1-125 │ ReplicationMonitor │
 └─────────┴─────────────────────────────────────────────────────────────┴──────┴─────────────┴─────────────────┴─────────┴────────────────────┘
-
-```
 
 ## Connecting to MariaDB Database
 
@@ -303,7 +301,8 @@ Writing to a slave replica may result in a binary log (binlog) conflict issue. I
 We recommend using a non-root user for production environments. The root user has extensive privileges, which can pose security risks. Therefore, it is advisable to create a dedicated user with appropriate permissions for production use.
 
 ```bash
-$ kubectl exec -it -n demo svc/sample-mariadb -- bash
+kubectl exec -it -n demo svc/sample-mariadb -- bash
+```
 mysql@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 11
@@ -328,12 +327,12 @@ MariaDB [(none)]> quit;
 Bye
 mysql@sample-mariadb-0:/ exit
 exit
-```
 ## Check Connectivity using Test User
 
-```bash
 # Master Node
-$ kubectl exec -it -n demo svc/sample-mariadb -- bash
+```bash
+kubectl exec -it -n demo svc/sample-mariadb -- bash
+```
 mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
@@ -355,7 +354,9 @@ MariaDB [(none)]> quit;
 Bye
 
 # Slave Node
-$ kubectl exec -it -n demo svc/sample-mariadb-standby -- bash
+```bash
+kubectl exec -it -n demo svc/sample-mariadb-standby -- bash
+```
 mysql@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
@@ -378,7 +379,6 @@ Bye
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 ## Insert Data and Check Availability
 
@@ -387,9 +387,10 @@ In a MariaDB Replication Cluster, Only master member can write, and slave member
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # master node
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 mysql@sample-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
@@ -426,7 +427,9 @@ exit
 
 # check slave node data
 
-$ kubectl exec -it -n demo sample-mariadb-1 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-1 -- bash
+```
 mysql@sample-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 209
@@ -471,7 +474,6 @@ MariaDB [(none)]> quit
 Bye
 mysql@sample-mariadb-2:/# exit
 exit
-```
 
 ## Automatic Failover
 
@@ -580,14 +582,14 @@ deployment.apps/ubuntu created
 Let's exec into the pod and install mariadb-client.
 
 ```bash
-$ kubectl exec -it -n demo pod/ubuntu-bb47d8d6c-4vhjv -- bash                12:00
+kubectl exec -it -n demo pod/ubuntu-bb47d8d6c-4vhjv -- bash                12:00
+```
 mysql@ubuntu-bb47d8d6c-4vhjv:/# apt update
 ... ... ..
 mysql@ubuntu-bb47d8d6c-4vhjv:/# apt install mariadb-client -y
 Reading package lists... Done
 ... .. ...
 mysql@ubuntu-bb47d8d6c-4vhjv:/#
-```
 
 Now let's try to connect with the Maxscale Proxy server through the `sample-mariadb-mx` service as the `testuser` user.
 
@@ -748,13 +750,19 @@ After logging in, you will be greeted by an intuitive dashboard showcasing serve
 Let's clean up what we created in this tutorial.
 
 ```bash
-$ kubectl delete mariadb.kubedb.com -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete -n demo deployment.apps/ubuntu
-deployment.apps "ubuntu" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb.kubedb.com -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete -n demo deployment.apps/ubuntu
+```
+deployment.apps "ubuntu" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted
 
 
 

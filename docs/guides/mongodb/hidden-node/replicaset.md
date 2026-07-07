@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -84,9 +84,9 @@ spec:
 > Note: inMemory databases are only allowed for Percona variations of mongodb
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/hidden-node/replicaset.yaml
-mongodb.kubedb.com/mongo-rs-hid created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/hidden-node/replicaset.yaml
 ```
+mongodb.kubedb.com/mongo-rs-hid created
 
 Here,
 
@@ -107,7 +107,8 @@ Here,
 KubeDB operator watches for `MongoDB` objects using Kubernetes api. When a `MongoDB` object is created, KubeDB operator will create two new PetSets (one for replicas & one for hidden-nodes) and a Service with the matching MongoDB object name. This service will always point to the primary of the replicaset. KubeDB operator will also create a governing service for the pods of those two PetSets with the name `<mongodb-name>-pods`.
 
 ```bash
-$ kubectl dba describe mg -n demo mongo-rs-hid
+kubectl dba describe mg -n demo mongo-rs-hid
+```
 Name:               mongo-rs-hid
 Namespace:          demo
 CreationTimestamp:  Mon, 31 Oct 2022 11:03:50 +0600
@@ -250,31 +251,33 @@ Events:
   Normal  Successful    7m    MongoDB operator  Successfully patched PetSet demo/mongo-rs-hid-hidden
   Normal  Successful    7m    MongoDB operator  Successfully patched MongoDB
 
-
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME                  READY   AGE
 mongo-rs-hid          3/3     13m
 mongo-rs-hid-hidden   2/2     12m
 
-
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 datadir-mongo-rs-hid-hidden-0   Bound    pvc-e8c2a3b3-0c47-453f-8a5a-40d7dcb5b4d7   2Gi        RWO            standard       13m
 datadir-mongo-rs-hid-hidden-1   Bound    pvc-7b752799-b6b9-43cf-9aa7-d39a2577216c   2Gi        RWO            standard       13m
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   REASON   AGE
 pvc-7b752799-b6b9-43cf-9aa7-d39a2577216c   2Gi        RWO            Delete           Bound    demo/datadir-mongo-rs-hid-hidden-1   standard                13m
 pvc-e8c2a3b3-0c47-453f-8a5a-40d7dcb5b4d7   2Gi        RWO            Delete           Bound    demo/datadir-mongo-rs-hid-hidden-0   standard                13m
 
-
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 mongo-rs-hid        ClusterIP   10.96.197.33   <none>        27017/TCP   14m
 mongo-rs-hid-pods   ClusterIP   None           <none>        27017/TCP   14m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified MongoDB object:
 
@@ -393,14 +396,18 @@ Now, you can connect to this database through [mongo-rs-hid](https://docs.mongod
 At first, insert data inside primary member `rs0:PRIMARY`.
 
 ```bash
-$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mongo-rs-hid-auth -o jsonpath='{.data.password}' | base64 -d
+```
 OX4yb!IFm;~yAHkD
 
-$ kubectl exec -it mongo-rs-hid-0 -n demo bash
-
+```bash
+kubectl exec -it mongo-rs-hid-0 -n demo bash
+```
 bash-4.4$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB shell version v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
@@ -610,7 +617,6 @@ replicaset:PRIMARY> rs.status()
 	},
 	"operationTime" : Timestamp(1667193912, 1)
 }
-```
 
 Here, Hidden-node's `statestr` is showing SECONDARY. If you want to see if they have been really added as hidden or not, you need to run `rs.conf()` command, look at the `hidden: true` specifications.
 
@@ -756,7 +762,8 @@ Now, check the redundancy and data availability in secondary members.
 We will exec in `mongo-rs-hid-hidden-0`(which is a hidden node right now) to check the data availability.
 
 ```bash
-$ kubectl exec -it mongo-rs-hid-hidden-0 -n demo bash
+kubectl exec -it mongo-rs-hid-hidden-0 -n demo bash
+```
 bash-4.4$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -805,14 +812,13 @@ replicaset:SECONDARY> db.songs.find().pretty()
 rs0:SECONDARY> exit
 bye
 
-```
-
 ## Automatic Failover
 
 To test automatic failover, we will force the primary member to restart. As the primary member (`pod`) becomes unavailable, the rest of the members will elect a primary member by election.
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                    READY   STATUS    RESTARTS   AGE
 mongo-rs-hid-0          2/2     Running   0          34m
 mongo-rs-hid-1          2/2     Running   0          33m
@@ -820,22 +826,26 @@ mongo-rs-hid-2          2/2     Running   0          33m
 mongo-rs-hid-hidden-0   1/1     Running   0          33m
 mongo-rs-hid-hidden-1   1/1     Running   0          32m
 
-$ kubectl delete pod -n demo mongo-rs-hid-0
+```bash
+kubectl delete pod -n demo mongo-rs-hid-0
+```
 pod "mongo-rs-hid-0" deleted
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME                    READY   STATUS        RESTARTS   AGE
 mongo-rs-hid-0          2/2     Terminating   0          34m
 mongo-rs-hid-1          2/2     Running       0          33m
 mongo-rs-hid-2          2/2     Running       0          33m
 mongo-rs-hid-hidden-0   1/1     Running       0          33m
 mongo-rs-hid-hidden-1   1/1     Running       0          32m
-```
 
 Now verify the automatic failover, Let's exec in `mongo-rs-hid-0` pod,
 
 ```bash
-$ kubectl exec -it mongo-rs-hid-0  -n demo bash
+kubectl exec -it mongo-rs-hid-0  -n demo bash
+```
 bash-4.4:/$ mongosh admin -u root -p 'OX4yb!IFm;~yAHkD'
 Percona Server for MongoDB server version: v7.0.4-11
 connecting to: mongodb://127.0.0.1:27017/admin
@@ -862,7 +872,6 @@ replicaset:SECONDARY> db.songs.find().pretty()
 	"_id" : ObjectId("635f5df01804db954f81276e"),
 	"pink floyd" : "shine on you crazy diamond"
 }
-```
 We could terminate the hidden-nodes also in a similar fashion, & check the automatic failover.
 
 ## Cleaning up

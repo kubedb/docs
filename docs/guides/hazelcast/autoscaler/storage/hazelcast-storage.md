@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Hazel
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](/docs/examples/hazelcast) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,10 +48,10 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -96,33 +96,35 @@ spec:
 Let's create the `Hazelcast` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-dev created
 
 Now, wait until `hazelcast-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo -w
+kubectl get hz -n demo -w
+```
 NAME             TYPE                    VERSION   STATUS         AGE
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2    Provisioning   0s
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2     Provisioning   24s
 .
 .
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2     Ready          92s
-```
 
 Let's check volume size from statefulset, and from the persistent volume,
 
 ```bash
-$ kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                           STORAGECLASS          REASON     AGE
 pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         longhorn              <unset>    40s
 pvc-f068d245-718b-4561-b452-f3130bb260f6   1Gi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         longhorn              <unset>    35s
-```
 
 You can see the statefulset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -168,9 +170,9 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/storage/hazelcast-storage-autoscaler.yaml
-hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/storage/hazelcast-storage-autoscaler.yaml
 ```
+hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler created
 
 #### Storage Autoscaling is set up successfully
 
@@ -232,8 +234,9 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 
 Let's exec into the cluster pod and fill the cluster volume using the following commands:
 
-```bash
- $ kubectl exec -it -n demo hazelcast-dev-0 -- bash
+ ```bash
+ kubectl exec -it -n demo hazelcast-dev-0 -- bash
+ ```
 hazelcast@hazelcast-dev-0:~$ df -h /data/hazelcast
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  168K  958M   1% /data/hazelcast
@@ -244,31 +247,31 @@ hazelcast@hazelcast-dev-0:~$ dd if=/dev/zero of=/data/hazelcast/file.img bs=600M
 hazelcast@hazelcast-dev-0:~$ df -h /data/hazelcast
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51  974M  601M  358M  63% /data/hazelcast
-```
 
 So, from the above output we can see that the storage usage is 63%, which exceeded the `usageThreshold` 1%.
 
 Let's watch the `hazelcastopsrequest` in the demo namespace to see if any `hazelcastopsrequest` object is created. After some time you'll see that a `hazelcastopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get hazelcastopsrequest -n demo
+watch kubectl get hazelcastopsrequest -n demo
+```
 Every 2.0s: kubectl get hazelcastopsrequest -n demo
 NAME                        TYPE              STATUS        AGE
 hzops-hazelcast-dev-a89pwf   VolumeExpansion   Progressing   111s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo 
+kubectl get hazelcastopsrequest -n demo 
+```
 NAME                        TYPE              STATUS        AGE
 hzops-hazelcast-dev-sa4thn  VolumeExpansion   Successful    97s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe hzops -n demo hzops-hazelcast-dev-a89pwf
+kubectl describe hzops -n demo hzops-hazelcast-dev-a89pwf
+```
 Name:         hzops-hazelcast-dev-a89pwf
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -419,18 +422,19 @@ Events:
   Warning  get stateful set; ConditionStatus:True    65s    KubeDB Ops-manager Operator  get stateful set; ConditionStatus:True
   Normal   ReadyStatefulSets                         65s    KubeDB Ops-manager Operator  StatefulSet is recreated
 
-```
-
 Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the  cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get statefulset -n demo hazelcast-dev -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1531054080"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY      ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                           STORAGECLASS          REASON     AGE
 pvc-129be4b9-f7e8-489e-8bc5-cd420e680f51   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-0         longhorn              <unset>    30m5s
 pvc-f068d245-718b-4561-b452-f3130bb260f6   1462Mi        RWO            Delete           Bound    demo/hazelcast-dev-data-hazelcast-dev-1         longhorn              <unset>    30m1s
-```
 
 The above output verifies that we have successfully autoscaled the volume of the Hazelcast  cluster.
 

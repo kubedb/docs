@@ -34,10 +34,10 @@ You have to be familiar with following custom resources:
 
 To keep things isolated, we are going to use a separate namespace called `demo` throughout this tutorial. Create `demo` namespace if you haven't created it yet.
 
-```console
-$ kubectl create ns demo
-namespace/demo created
+```bash
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Elasticsearch
 
@@ -91,10 +91,10 @@ spec:
 
 Let's create the above `Elasticsearch` object,
 
-```console
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/sample_es.yaml
-elasticsearch.kubedb.com/sample-es created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/sample_es.yaml
 ```
+elasticsearch.kubedb.com/sample-es created
 
 KubeDB will create the necessary resources to deploy the Elasticsearch database according to the above specification. Let's wait until the database to be ready to use,
 
@@ -369,15 +369,24 @@ We are going to store our backed up data into a GCS bucket. So, we need to creat
 At first, let's create a `Secret` called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./RESTIC_PASSWORD \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 #### Create Repository
 
@@ -400,9 +409,9 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/repository.yaml
-repository.stash.appscode.com/gcs-repo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/repository.yaml
 ```
+repository.stash.appscode.com/gcs-repo created
 
 Now, we are ready to back up our database into our desired backend.
 
@@ -453,19 +462,19 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/backupconfiguration.yaml
-backupconfiguration.stash.appscode.com/sample-es-backup created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/backupconfiguration.yaml
 ```
+backupconfiguration.stash.appscode.com/sample-es-backup created
 
 ### Verify Backup Setup Successful
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME               TASK                         SCHEDULE      PAUSED   PHASE      AGE
 sample-es-backup   elasticsearch-backup-7.3.2   */5 * * * *            Ready      11s
-```
 
 ### Verify CronJob
 

@@ -23,16 +23,16 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Postgres object as specified in `postgres.yaml`.
 
 ```bash
-$ kubectl create -f postgres-demo.yaml
-postgres "postgres-demo" created
+kubectl create -f postgres-demo.yaml
 ```
+postgres "postgres-demo" created
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f postgres-demo.yaml --namespace=kube-system
-postgres "postgres-demo" created
+kubectl create -f postgres-demo.yaml --namespace=kube-system
 ```
+postgres "postgres-demo" created
 
 `kubectl create` command also considers `stdin` as input.
 
@@ -45,13 +45,13 @@ cat postgres-demo.yaml | kubectl create -f -
 `kubectl get` command allows users to list or find any KubeDB object. To list all Postgres objects in `default` namespace, run the following command:
 
 ```bash
-$ kubectl get postgres
+kubectl get postgres
+```
 NAME            VERSION    STATUS    AGE
 postgres-demo   10.2-v5    Running   13m
 postgres-dev    10.2-v5    Running   11m
 postgres-prod   10.2-v5    Running   11m
 postgres-qa     10.2-v5    Running   10m
-```
 
 To get YAML of an object, use `--output=yaml` flag.
 
@@ -80,8 +80,8 @@ kubectl get postgres postgres-demo --output=json
 To list all KubeDB objects, use following command:
 
 ```bash
-$ kubectl get all -o wide
-
+kubectl get all -o wide
+```
 NAME                    VERSION     STATUS      AGE
 es/elasticsearch-demo   2.3.1       Running     17m
 
@@ -95,7 +95,6 @@ NAME                                DATABASE                BUCKET              
 snap/postgres-demo-20170605-073557  pg/postgres-demo        gs:bucket-name      Succeeded   9m
 snap/snapshot-20171212-114700       pg/postgres-demo        gs:bucket-name      Succeeded   1h
 snap/snapshot-xyz                   es/elasticsearch-demo   local:/directory    Succeeded   5m
-```
 
 Flag `--output=wide` is used to print additional information.
 
@@ -108,26 +107,27 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Snapshots with their corresponding labels.
 
 ```bash
-$ kubectl get snap --show-labels
+kubectl get snap --show-labels
+```
 NAME                            DATABASE                STATUS      AGE       LABELS
 postgres-demo-20170605-073557   pg/postgres-demo        Succeeded   11m       app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo        Succeeded   1h        app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
 snapshot-xyz                    es/elasticsearch-demo   Succeeded   6m        app.kubernetes.io/name=elasticsearches.kubedb.com,app.kubernetes.io/instance=elasticsearch-demo
-```
 
 You can also filter list using `--selector` flag.
 
 ```bash
-$ kubectl get snap --selector='app.kubernetes.io/name=postgreses.kubedb.com' --show-labels
+kubectl get snap --selector='app.kubernetes.io/name=postgreses.kubedb.com' --show-labels
+```
 NAME                            DATABASE           STATUS      AGE       LABELS
 postgres-demo-20171212-073557   pg/postgres-demo   Succeeded   14m       app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
 snapshot-20171212-114700        pg/postgres-demo   Succeeded   2h        app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=postgres-demo
-```
 
 To print only object name, run the following command:
 
 ```bash
-$ kubectl get all -o name
+kubectl get all -o name
+```
 postgres/postgres-demo
 postgres/postgres-dev
 postgres/postgres-prod
@@ -135,14 +135,14 @@ postgres/postgres-qa
 snapshot/postgres-demo-20170605-073557
 snapshot/snapshot-20170505-114700
 snapshot/snapshot-xyz
-```
 
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe PostgreSQL database `postgres-demo` with relevant information.
 
 ```bash
-$ kubectl dba describe pg postgres-demo
+kubectl dba describe pg postgres-demo
+```
 Name:           postgres-demo
 Namespace:      default
 StartTimestamp: Tue, 12 Dec 2017 11:46:16 +0600
@@ -191,7 +191,6 @@ Events:
   5s         5s        Postgres operator  Normal  SuccessfulCreate     Successfully created Postgres
   55s        55s       Postgres operator  Normal  SuccessfulValidate   Successfully validate Postgres
   55s        55s       Postgres operator  Normal  Creating             Creating Kubernetes objects
-```
 
 `kubectl dba describe` command provides following basic information about a database.
 
@@ -258,16 +257,16 @@ For DormantDatabase, _spec.origin_ can't be edited using `kubectl edit`
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Postgres `postgres-dev` in default namespace
 
 ```bash
-$ kubectl delete postgres postgres-dev
-postgres "postgres-dev" deleted
+kubectl delete postgres postgres-dev
 ```
+postgres "postgres-dev" deleted
 
 You can also use YAML files to delete objects. The following command will delete a postgres using the type and name specified in `postgres.yaml`.
 
 ```bash
-$ kubectl delete -f postgres.yaml
-postgres "postgres-dev" deleted
+kubectl delete -f postgres.yaml
 ```
+postgres "postgres-dev" deleted
 
 `kubectl delete` command also takes input from `stdin`.
 
@@ -285,16 +284,23 @@ kubectl delete postgres -l postgres.app.kubernetes.io/instance=postgres-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```bash
 # Create objects
-$ kubectl create -f
+```bash
+kubectl create -f
+```
 
 # List objects
-$ kubectl get postgres
-$ kubectl get postgres.kubedb.com
+```bash
+kubectl get postgres
+```
+
+```bash
+kubectl get postgres.kubedb.com
+```
 
 # Delete objects
-$ kubectl delete postgres <name>
+```bash
+kubectl delete postgres <name>
 ```
 
 ## Next Steps

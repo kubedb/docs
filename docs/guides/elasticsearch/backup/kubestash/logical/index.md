@@ -39,9 +39,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/elasticsearch/backup/kubestash/logical/examples](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -84,24 +84,25 @@ spec:
 Create the above `Elasticsearch` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/sample-es.yaml
-elasticsearch.kubedb.com/es-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/sample-es.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart created
 
 KubeDB will deploy a `Elasticsearch` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get es -n demo es-quickstart
+kubectl get es -n demo es-quickstart
+```
 NAME              VERSION        STATUS   AGE
 es-quickstart     xpack-9.2.3   Ready    3h
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo
+kubectl get secret -n demo
+```
 NAME                                        TYPE                       DATA   AGE
 es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      3h35m
 es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      3h35m
@@ -115,12 +116,13 @@ es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      3h
 es-quickstart-remote-monitoring-user-cred   kubernetes.io/basic-auth   2      3h35m
 es-quickstart-transport-cert                kubernetes.io/tls          3      3h1m
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=es-quickstart
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=es-quickstart
+```
 NAME                   TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 es-quickstart          ClusterIP   10.128.185.239   <none>        9200/TCP   3h2m
 es-quickstart-master   ClusterIP   None             <none>        9300/TCP   3h2m
 es-quickstart-pods     ClusterIP   None             <none>        9200/TCP   3h2m
-```
 
 Here, we have to use service `es-quickstart` and secret `es-quickstart-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
@@ -129,16 +131,16 @@ Here, we have to use service `es-quickstart` and secret `es-quickstart-auth` to 
 
 Verify that the `AppBinding` has been created successfully using the following command,
 
-```bash
- $ kubectl get appbindings -n demo
+ ```bash
+ kubectl get appbindings -n demo
+ ```
 NAME              TYPE                       VERSION   AGE
 es-quickstart     kubedb.com/elasticsearch   9.2.3    3h6m
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo es-quickstart -o yaml
+kubectl get appbindings -n demo es-quickstart -o yaml
 ```
 
 ```yaml
@@ -218,35 +220,37 @@ Here,
 
 Now, we are going to insert some data into Elasticsearch.
 ```bash
-$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-elastic
-$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-tS$k!2IBI.ASI7FJ
+kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+elastic
 
 ```bash
-$ kubectl port-forward -n demo svc/es-quickstart 9200
+kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+tS$k!2IBI.ASI7FJ
+
+```bash
+kubectl port-forward -n demo svc/es-quickstart 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 ```bash
-$ curl -XPOST -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_doc?pretty" -H 'Content-Type: application/json' -d'
+curl -XPOST -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_doc?pretty" -H 'Content-Type: application/json' -d'
+```
          {
              "Company": "AppsCode Inc",
              "Product": "KubeDB"
          }
          '
-
-```
 Now, let’s verify that the index have been created successfully.
 
 ```bash
-$ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases FsJlvTyRSsuRWTpX8OpkOA   1   1         40            0       76mb           38mb
 green  open   info             9Z2Cl5fjQWGBAfjtF9LqBw   1   1          1            0      8.9kb          4.4kb
-```
 Also, let’s verify the data in the indexes:
 
 ```bash
@@ -294,13 +298,19 @@ We are going to store our backed up data into a `S3` bucket. We have to create a
 Let's create a secret called `s3-secret` with access credentials to our desired S3 bucket,
 
 ```bash
-$ echo -n '<your-access-key>' > AWS_ACCESS_KEY_ID
-$ echo -n '<your-secret-key>' > AWS_SECRET_ACCESS_KEY
-$ kubectl create secret generic -n demo s3-secret \
+echo -n '<your-access-key>' > AWS_ACCESS_KEY_ID
+```
+
+```bash
+echo -n '<your-secret-key>' > AWS_SECRET_ACCESS_KEY
+```
+
+```bash
+kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_ACCESS_KEY_ID \
     --from-file=./AWS_SECRET_ACCESS_KEY
-secret/s3-secret created
 ```
+secret/s3-secret created
 
 **Create BackupStorage:**
 
@@ -332,9 +342,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -365,9 +375,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -380,8 +390,11 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -436,27 +449,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/es-quickstart-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/es-quickstart-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                     PHASE   PAUSED   AGE
 es-quickstart-backup     Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                      INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-elasticsearch-repo                 0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the S3 bucket, we will see the `Repository` YAML stored in the `elastic/es` directory.
 
@@ -467,20 +480,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                             SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-es-quickstart-backup-frequent-backup     */5 * * * *             0        2m45s           3m25s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                              INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
 es-quickstart-backup-frequent-backup-1726655113   BackupConfiguration   es-quickstart-backup   Succeeded   22s        2m7s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -489,18 +502,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `es-quickstart-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo
+kubectl get repository -n demo
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE        PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-elasticsearch-repo   true        1                1.453 KiB   Ready   2m20s                    2m30s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-elasticsearch-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-elasticsearch-repo
+```
 NAME                                                              REPOSITORY              SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 s3-elasticsearch-repo-es-quickstckup-frequent-backup-1726655113   s3-elasticsearch-repo   frequent-backup   2024-09-18T10:25:23Z   Delete            Succeeded   8m
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -513,7 +526,8 @@ s3-elasticsearch-repo-es-quickstckup-frequent-backup-1726655113   s3-elasticsear
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo  s3-elasticsearch-repo-es-quickstckup-frequent-backup-1726655113 -oyaml
+kubectl get snapshots -n demo  s3-elasticsearch-repo-es-quickstckup-frequent-backup-1726655113 -oyaml
+```
 apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
@@ -582,7 +596,6 @@ status:
   size: 1.454 KiB
   snapshotTime: "2024-09-18T10:25:23Z"
   totalComponents: 1
-```
 
 > KubeStash uses `multielasticdump` to perform backups of target `Elasticsearch` databases. Therefore, the component name for logical backups is set as `dump`.
 
@@ -622,17 +635,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/restore-es.yaml
-elasticsearch.kubedb.com/es-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/restore-es.yaml
 ```
+elasticsearch.kubedb.com/es-cluster created
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.
 
 ```bash
-$ kubectl get es -n demo restored-es
+kubectl get es -n demo restored-es
+```
 NAME               VERSION   STATUS         AGE
 es-cluster         9.2.3    Provisioning   61s
-```
 
 #### Create RestoreSession:
 
@@ -673,18 +686,18 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/es-cluster-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/es-cluster-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY             FAILURE-POLICY   PHASE       DURATION   AGE
 es-cluster-restore     s3-elasticsearch-repo                   Succeeded   7s         116s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -695,29 +708,33 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into **`Ready`** state by the following command,
 
 ```bash
-$ kubectl get es -n demo es-cluster
+kubectl get es -n demo es-cluster
+```
 NAME            VERSION        STATUS   AGE
 es-cluster      xpack-9.2.3   Ready    6m14s
-```
 
 ```bash
-$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+```
 elastic
-$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
-tS$k!2IBI.ASI7FJ
-```
 
 ```bash
-$ kubectl port-forward -n demo svc/es-cluster 9200
+kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
+```
+tS$k!2IBI.ASI7FJ
+
+```bash
+kubectl port-forward -n demo svc/es-cluster 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 
 Now, lets check either data restored in elasticsearch or not.
 
 ```bash
-$ curl -XGET -k --user 'elastic:vD~b4DMXZ1iwdjnh' "https://localhost:9200/info/_search?pretty"
+curl -XGET -k --user 'elastic:vD~b4DMXZ1iwdjnh' "https://localhost:9200/info/_search?pretty"
+```
 {
   "took" : 83,
   "timed_out" : false,
@@ -746,7 +763,6 @@ $ curl -XGET -k --user 'elastic:vD~b4DMXZ1iwdjnh' "https://localhost:9200/info/_
     ]
   }
 }
-```
 
 So, from the above output, we can see the `info` database we had created in the original database `es-cluster` has been restored successfully.
 

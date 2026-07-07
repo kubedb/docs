@@ -31,9 +31,9 @@ To install `External-snapshotter`  in your cluster following the steps [here](ht
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: The yaml files used in this tutorial are stored in [docs/guides/postgres/remote-replica/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## continuous archiving
@@ -64,10 +64,10 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-```bash
-   $ kubectl apply -f backupstorage.yaml
+   ```bash
+   kubectl apply -f backupstorage.yaml
+   ```
    backupstorage.storage.kubestash.com/linode-storage created
-```
 
 ### secrets for backup-storage
 ```yaml
@@ -83,10 +83,10 @@ stringData:
   AWS_ENDPOINT: https://ap-south-1.linodeobjects.com
 ```
 
-```bash
-  $ kubectl apply -f storage-secret.yaml 
+  ```bash
+  kubectl apply -f storage-secret.yaml 
+  ```
   secret/storage created
-```
 
 ### Retention policy
 RetentionPolicy is a CR provided by KubeStash that allows you to set how long you'd like to retain the backup data.
@@ -105,9 +105,9 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/retentionPolicy.yaml 
-retentionpolicy.storage.kubestash.com/postgres-retention-policy created
+kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/retentionPolicy.yaml 
 ```
+retentionpolicy.storage.kubestash.com/postgres-retention-policy created
 
 ### PostgreSQLArchiver
 PostgreSQLArchiver is a CR provided by KubeDB for managing the archiving of MongoDB oplog files and performing volume-level backups
@@ -171,20 +171,22 @@ stringData:
   RESTIC_PASSWORD: "changeit"
 ```
 
-```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/postgresarchiver.yaml
+ ```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/postgresarchiver.yaml
+ ```
  postgresarchiver.archiver.kubedb.com/postgresarchiver-sample created
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/encryptionSecret.yaml
-```
+
+ ```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/pitr/yamls/encryptionSecret.yaml
+ ```
 
 ## Ensure volumeSnapshotClass
 
 ```bash
-$ kubectl get volumesnapshotclasses
+kubectl get volumesnapshotclasses
+```
 NAME                    DRIVER               DELETIONPOLICY   AGE
 longhorn-snapshot-vsc   driver.longhorn.io   Delete           7d22h
-
-```
 If not any, try using `longhorn` or any other [volumeSnapshotClass](https://kubernetes.io/docs/concepts/storage/volume-snapshot-classes/).
 ```yaml
 kind: VolumeSnapshotClass
@@ -199,11 +201,13 @@ parameters:
 ```
 
 ```bash
-$ helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
-
-$ kubectl apply -f volumesnapshotclass.yaml
-  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
+helm install longhorn longhorn/longhorn --namespace longhorn-system --create-namespace
 ```
+
+```bash
+kubectl apply -f volumesnapshotclass.yaml
+```
+  volumesnapshotclass.snapshot.storage.k8s.io/longhorn-snapshot-vsc unchanged
 
 # Deploy PostgreSQL
 So far we are ready with setup for continuously archive PostgreSQL, We deploy a postgresql referring the PostgreSQL archiver object
@@ -238,7 +242,8 @@ spec:
 
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                                                 READY   STATUS      RESTARTS   AGE
 demo-pg-0                                            2/2     Running     0          8m52s
 demo-pg-1                                            2/2     Running     0          8m22s
@@ -246,7 +251,6 @@ demo-pg-2                                            2/2     Running     0      
 demo-pg-backup-config-full-backup-1702388088-z4qbz   0/1     Completed   0          37s
 demo-pg-backup-config-manifest-1702388088-hpx6m      0/1     Completed   0          37s
 demo-pg-sidekick                                     1/1     Running     0          7m31s
-```
 
 `demo-pg-sidekick` is responsible for uploading wal-files
 
@@ -257,13 +261,14 @@ demo-pg-sidekick                                     1/1     Running     0      
 ### validate BackupConfiguration and VolumeSnapshots
 
 ```bash
-
-$ kubectl get backupconfigurations -n demo
-
+kubectl get backupconfigurations -n demo
+```
 NAME                    PHASE   PAUSED   AGE
 demo-pg-backup-config   Ready            2m43s
 
-$ kubectl get backupsession -n demo
+```bash
+kubectl get backupsession -n demo
+```
 NAME                                           INVOKER-TYPE          INVOKER-NAME            PHASE       DURATION   AGE
 demo-pg-backup-config-full-backup-1702388088   BackupConfiguration   demo-pg-backup-config   Succeeded              74s
 demo-pg-backup-config-manifest-1702388088      BackupConfiguration   demo-pg-backup-config   Succeeded              74s
@@ -271,14 +276,13 @@ demo-pg-backup-config-manifest-1702388088      BackupConfiguration   demo-pg-bac
 kubectl get volumesnapshots -n demo
 NAME                           READYTOUSE   SOURCEPVC                  SOURCESNAPSHOTCONTENT   RESTORESIZE   SNAPSHOTCLASS           SNAPSHOTCONTENT                                    CREATIONTIME   AGE
 demo-pg-1702388096             true         data-demo-pg-1                                     1Gi           longhorn-snapshot-vsc   snapcontent-735e97ad-1dfa-4b70-b416-33f7270d792c   2m5s           2m5s
-```
 
 ## data insert and switch wal
 After each and every wal switch the wal files will be uploaded to backup storage
 
 ```bash
-$ kubectl exec -it -n demo  demo-pg-0 -- bash
-
+kubectl exec -it -n demo  demo-pg-0 -- bash
+```
 bash-5.1$ psql
 
 postgres=# create database hi;
@@ -308,7 +312,6 @@ hi=# select pg_switch_wal();
 
 hi=# select count(*) from tab_1 ;
    200
-```
 
 > At this point We have 200 rows in our newly created table `tab_1` on database `hi`
 
@@ -317,7 +320,8 @@ Point-In-Time Recovery allows you to restore a PostgreSQL database to a specific
 Let's say accidentally our dba drops the table tab_1 and we want to restore.
 
 ```bash
-$ kubectl exec -it -n demo  demo-pg-0 -- bash
+kubectl exec -it -n demo  demo-pg-0 -- bash
+```
 bash-5.1$ psql
 postgres=# \c hi
 
@@ -326,7 +330,6 @@ DROP TABLE
 hi=# select count(*) from tab_1 ;
 ERROR:  relation "tab_1" does not exist
 LINE 1: select count(*) from tab_1 ;
-```
 We can't restore from a full backup since at this point no full backup was perform. so we can choose a specific time in which time we want to restore.We can get the specfice time from the wal that archived in the backup storage . Go to the binlog file and find where to store. You can parse wal-files using  `pg-waldump`.
 
 
@@ -381,40 +384,40 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f restore.yaml
-postgres.kubedb.com/restore-pg created
+kubectl apply -f restore.yaml
 ```
+postgres.kubedb.com/restore-pg created
 
 **check for Restored PostgreSQL**
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                                                 READY   STATUS      RESTARTS   AGE
 restore-pg-0                                         2/2     Running     0          46s
 restore-pg-1                                         2/2     Running     0          41s
 restore-pg-2                                         2/2     Running     0          22s
 restore-pg-restorer-4d4dg                            0/1     Completed   0          104s
 restore-pg-restoresession-2tsbv                      0/1     Completed   0          115s
-```
 
 ```bash
-$ kubectl get pg -n demo
+kubectl get pg -n demo
+```
 NAME         VERSION   STATUS   AGE
 demo-pg      18.3      Ready    44m
 restore-pg   18.3      Ready    2m36s
-```
 
 **Validating data on Restored PostgreSQL**
 
 ```bash
-$ kubectl exec -it -n demo  restore-pg-0 -- bash
+kubectl exec -it -n demo  restore-pg-0 -- bash
+```
 bash-5.1$ psql
 
 postgres=# \c hi
 
 hi=# select count(*) from tab_1 ;
    100
-```
 
 **so we are able to successfully recover from a disaster**
 
@@ -423,11 +426,23 @@ hi=# select count(*) from tab_1 ;
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete -n demo pg/demo-pg
-$ kubectl delete -n demo pg/restore-pg
-$ kubectl delete -n demo backupstorage
-$ kubectl delete -n demo postgresqlarchiver
-$ kubectl delete ns demo
+kubectl delete -n demo pg/demo-pg
+```
+
+```bash
+kubectl delete -n demo pg/restore-pg
+```
+
+```bash
+kubectl delete -n demo backupstorage
+```
+
+```bash
+kubectl delete -n demo postgresqlarchiver
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

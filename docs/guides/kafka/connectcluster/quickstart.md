@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/connectcluster](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/connectcluster) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,7 +48,8 @@ demo                 Active   9s
 When you install the KubeDB operator, it registers a CRD named [KafkaVersion](/docs/guides/kafka/concepts/kafkaversion.md). ConnectCluster Version is using the KafkaVersion CR to define the specification of ConnectCluster. The installation process comes with a set of tested KafkaVersion objects. Let's check available KafkaVersions by,
 
 ```bash
-$ kubectl get kfversion
+kubectl get kfversion
+```
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 3.5.2   3.5.2     ghcr.io/appscode-images/kafka-kraft:3.5.2                7d19h
 3.6.1   3.6.1     ghcr.io/appscode-images/kafka-kraft:3.6.1                7d19h
@@ -54,8 +57,6 @@ NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 3.8.1   3.8.1     ghcr.io/appscode-images/kafka-kraft:3.8.1                7d19h
 3.9.0   3.9.0     ghcr.io/appscode-images/kafka-kraft:3.9.0                7d19h
 4.0.0   4.0.0     ghcr.io/appscode-images/kafka:4.0.0                      7d19h
-
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaVersion. You can also use the short from `kfversion` to check available KafkaVersions.
 
@@ -66,8 +67,8 @@ In this tutorial, we will use `3.9.0` KafkaVersion CR to create a Kafka Connect 
 When you install the KubeDB operator, it registers a CRD named [KafkaConnectorVersion](/docs/guides/kafka/concepts/kafkaversion.md). KafkaConnectorVersion use to load connector-plugins to run ConnectCluster worker node(ex. mongodb-source/sink). The installation process comes with a set of tested KafkaConnectorVersion objects. Let's check available KafkaConnectorVersions by,
 
 ```bash
-$ kubectl get kcversion
-
+kubectl get kcversion
+```
 NAME                   VERSION   CONNECTOR_IMAGE                                                DEPRECATED   AGE
 gcs-0.13.0             0.13.0    ghcr.io/appscode-images/kafka-connector-gcs:0.13.0                          28h
 jdbc-2.6.1.final       2.6.1     ghcr.io/appscode-images/kafka-connector-jdbc:2.6.1.final                    28h
@@ -80,7 +81,6 @@ mysql-3.0.5.final      3.0.5     ghcr.io/appscode-images/kafka-connector-mysql:3
 postgres-2.7.4.final   2.7.4     ghcr.io/appscode-images/kafka-connector-postgres:2.7.4.final                28h
 postgres-3.0.5.final   3.0.5     ghcr.io/appscode-images/kafka-connector-postgres:3.0.5.final                28h
 s3-2.15.0              2.15.0    ghcr.io/appscode-images/kafka-connector-s3:2.15.0                           28h
-```
 
 
 Notice the `DEPRECATED` column. Here, `true` means that this KafkaConnectorVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated KafkaConnectorVersion. You can also use the short from `kcversion` to check available KafkaConnectorVersions.
@@ -156,14 +156,15 @@ Before create ConnectCluster, you have to deploy a `Kafka` cluster first. To dep
 Let's create the ConnectCluster CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/connectcluster-quickstart.yaml
-connectcluster.kafka.kubedb.com/connectcluster-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/connectcluster-quickstart.yaml
 ```
+connectcluster.kafka.kubedb.com/connectcluster-quickstart created
 
 The ConnectCluster's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the ConnectCluster.
 
 ```bash
-$ kubectl get connectcluster -n demo -w
+kubectl get connectcluster -n demo -w
+```
 NAME                        TYPE                        VERSION   STATUS         AGE
 connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
 connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
@@ -171,12 +172,11 @@ connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning  
 .
 connectcluster-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
 
-```
-
 Describe the `ConnectCluster` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe connectcluster -n demo connectcluster-quickstart
+kubectl describe connectcluster -n demo connectcluster-quickstart
+```
 Name:         connectcluster-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -339,14 +339,13 @@ Status:
   Phase:                   Ready
 Events:                    <none>
 
-```
-
 ### KubeDB Operator Generated Resources
 
 On deployment of a ConnectCluster CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,petset,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-quickstart'
+kubectl get all,petset,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-quickstart'
+```
 NAME                              READY   STATUS    RESTARTS   AGE
 pod/connectcluster-quickstart-0   1/1     Running   0          3m50s
 pod/connectcluster-quickstart-1   1/1     Running   0          3m7s
@@ -366,8 +365,6 @@ NAME                                            TYPE                       DATA 
 secret/connectcluster-quickstart-config         Opaque                     1      3m55s
 secret/connectcluster-quickstart-connect-cred   kubernetes.io/basic-auth   2      3m56s
 
-```
-
 - `PetSet` - a PetSet named after the ConnectCluster instance.
 - `Services` -  For a ConnectCluster instance headless service is created with name `{ConnectCluster-name}-{pods}` and a primary service created with name `{ConnectCluster-name}`.
 - `AppBinding` - an [AppBinding](/docs/guides/kafka/concepts/appbinding.md) which hold to connect information for the ConnectCluster worker nodes. It is also named after the ConnectCluster instance.
@@ -383,8 +380,8 @@ To create a connector, you can use the Kafka Connect REST API. But, KubeDB opera
 At first, we will create `config.properties` file containing required configuration settings. I am using the `mongodb-source` connector here. You can use any other connector as per your requirement.
 
 ```bash
-$ cat config.properties
-
+cat config.properties
+```
   connector.class=com.mongodb.kafka.connect.MongoSourceConnector
   tasks.max=1
   connection.uri=mongodb://root:XbCj85wKfCPKapJ8@mg-rep.demo.svc:27017/
@@ -400,7 +397,6 @@ $ cat config.properties
   key.ignore=true
   value.converter=org.apache.kafka.connect.json.JsonConverter
   value.converter.schemas.enable=false
-```
 
 Here,
 1. A MongoDB instance is already running. You can use your own MongoDB instance. To run mongodb instance, follow the [MongoDB Quickstart](/docs/guides/mongodb/quickstart/quickstart.md) guide.
@@ -411,7 +407,7 @@ Here,
 Now, we will create secret containing `config.properties` file.
 
 ```bash
-$ kubectl create secret generic mongodb-source-config --from-file=./config.properties -n demo
+kubectl create secret generic mongodb-source-config --from-file=./config.properties -n demo
 ```
 
 Now, we will use this secret to create a `Connector` CR.
@@ -440,20 +436,19 @@ Here,
 Now, create the `Connector` CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/mongodb-source-connector.yaml
-connector.kafka.kubedb.com/mongodb-source-connector created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/mongodb-source-connector.yaml
 ```
+connector.kafka.kubedb.com/mongodb-source-connector created
 
 ```bash
-$ kubectl get connector -n demo -w
-
+kubectl get connector -n demo -w
+```
 NAME                       TYPE                        CONNECTCLUSTER              STATUS   AGE
 mongodb-source-connector   kafka.kubedb.com/v1alpha1   connectcluster-quickstart   Pending   0s
 mongodb-source-connector   kafka.kubedb.com/v1alpha1   connectcluster-quickstart   Pending   0s
 .
 .
 mongodb-source-connector   kafka.kubedb.com/v1alpha1   connectcluster-quickstart   Running   1s
-```
 
 MongoDB source connector is created successfully and the status is `Running`. Now, the connector is ready to fetch data from the MongoDB instance to the Kafka topic.
 
@@ -492,12 +487,12 @@ rs1:PRIMARY> db.source.insertOne({"mongodb":"source"})
 Exec into one of the kafka brokers in interactive mode. Run consumer command to check the data in the topic.
 
 ```bash
-$ kubectl exec -it kafka-quickstart-1 -n demo -- bash
+kubectl exec -it kafka-quickstart-1 -n demo -- bash
+```
 kafka@kafka-quickstart-1:~$ kafka-console-consumer.sh --bootstrap-server localhost:9092 --consumer.config config/clientauth.properties --topic mongo.mongodb.source --from-beginning
 "{\"_id\": {\"$oid\": \"66389ca8c43abff3a434b916\"}, \"hi\": \"kubedb\"}"
 "{\"_id\": {\"$oid\": \"66389cb4c43abff3a434b917\"}, \"kafka\": \"connectcluster\"}"
 "{\"_id\": {\"$oid\": \"66389cc0c43abff3a434b918\"}, \"mongodb\": \"source\"}"
-```
 
 You can see the data inserted in the MongoDB collection is fetched by the MongoDB source connector and published to the Kafka topic.
 
@@ -506,15 +501,19 @@ You can see the data inserted in the MongoDB collection is fetched by the MongoD
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo connectcluster connectcluster-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo connectcluster connectcluster-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 connectcluster.kafka.kubedb.com/connectcluster-quickstart patched
 
-$ kubectl delete kf connectcluster-quickstart  -n demo
+```bash
+kubectl delete kf connectcluster-quickstart  -n demo
+```
 connectcluster.kafka.kubedb.com "connectcluster-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

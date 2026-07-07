@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -79,22 +79,23 @@ spec:
 Let's create the `Redis` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/rd-standalone.yaml
-redis.kubedb.com/rd-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/rd-standalone.yaml
 ```
+redis.kubedb.com/rd-standalone created
 
 Now, wait until `rd-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME            VERSION    STATUS    AGE
 rd-standalone   6.2.14      Ready     2m53s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -105,11 +106,11 @@ $ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the Redis resources,
 ```bash
-$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
+kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -120,7 +121,6 @@ $ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.c
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the redis.
 
@@ -179,20 +179,23 @@ Here,
 Let's create the `RedisAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/rd-as-standalone.yaml
-redisautoscaler.autoscaling.kubedb.com/rd-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/rd-as-standalone.yaml
 ```
+redisautoscaler.autoscaling.kubedb.com/rd-as created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `redisautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get redisautoscaler -n demo
+kubectl get redisautoscaler -n demo
+```
 NAME    AGE
 rd-as   102s
 
-$ kubectl describe redisautoscaler rd-as -n demo
+```bash
+kubectl describe redisautoscaler rd-as -n demo
+```
 Name:         rd-as
 Namespace:    demo
 Labels:       <none>
@@ -288,8 +291,6 @@ Status:
     Recommendation:
     Vpa Name:  rd-standalone
 Events:        <none>
-
-```
 So, the `redisautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `redisopsrequest` based on the recommendations, if the database pods are needed to scaled up or down.
@@ -297,27 +298,28 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `redisopsrequest` in the demo namespace to see if any `redisopsrequest` object is created. After some time you'll see that a `redisopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 rdops-rd-standalone-q2zozm   VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 rdops-rd-standalone-q2zozm   VerticalScaling   Successful   68s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, we are going to verify from the Pod, and the Redis yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -329,7 +331,9 @@ $ kubectl get pod -n demo rd-standalone-0 -o json | jq '.spec.containers[].resou
   }
 }
 
-$ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
+```bash
+kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redis") | .resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -340,7 +344,6 @@ $ kubectl get redis -n demo rd-standalone -o json | jq '.spec.podTemplate.spec.c
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto-scaled the resources of the Redis standalone database.
@@ -352,12 +355,16 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/rd-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-standalone patched
 
-$ kubectl delete rd -n demo rd-standalone
+```bash
+kubectl delete rd -n demo rd-standalone
+```
 redis.kubedb.com "rd-standalone" deleted
 
-$ kubectl delete redisautoscaler -n demo rd-as
-redisautoscaler.autoscaling.kubedb.com "rd-as" deleted
+```bash
+kubectl delete redisautoscaler -n demo rd-as
 ```
+redisautoscaler.autoscaling.kubedb.com "rd-as" deleted

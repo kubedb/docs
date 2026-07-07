@@ -33,9 +33,9 @@ section_menu_id: guides
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/rotate-auth) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -54,9 +54,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -72,9 +72,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ### Deploy Standalone Microsoft SQL Server
 KubeDB implements a `MSSQLServer` CRD to define the specification of a Microsoft SQL Server database. Below is the `MSSQLServer` object created in this tutorial.
@@ -119,16 +119,16 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
-mssqlserver.kubedb.com/mssqlserver-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/quickstart/mssqlserver-quickstart.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-quickstart created
 Now, wait until mssqlserver-quickstart has status Ready. i.e,
 
-```shell
-$  kubectl get ms -n demo -w
+```bash
+ kubectl get ms -n demo -w
+```
 NAME                     VERSION     STATUS   AGE
 mssqlserver-quickstart   2022-cu12   Ready    75m
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
@@ -142,7 +142,8 @@ $ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.pas
 ````
 Now, you can exec into the pod `mssqlserver-quickstart-0` and connect to database using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+```
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "9ycCSYznZpZRxs9U" -No
 1> select name from sys.databases
 2> go
@@ -160,7 +161,6 @@ kubedb_system
 mssql@mssqlserver-quickstart-0:/$ exit
 exit
 ⏎   
-```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth MSSQLServerOpsRequest
@@ -187,19 +187,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on MSSQLServer.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/rotate-auth-generated.yaml
+ ```
  MSSQLServeropsrequest.ops.kubedb.com/msops-rotate-auth-generated created
-```
 Let's wait for `MSSQLServerOpsrequest` to be `Successful`. Run the following command to watch `MSSQLServerOpsrequest` CRO
-```shell
- $ kubectl get MSSQLServeropsrequest -n demo
+ ```bash
+ kubectl get MSSQLServeropsrequest -n demo
+ ```
  NAME                          TYPE         STATUS       AGE
  msops-rotate-auth-generated   RotateAuth   Successful   7m47s
-```
 If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe MSSQLServeropsrequest -n demo msops-rotate-auth-generated
+```bash
+kubectl describe MSSQLServeropsrequest -n demo msops-rotate-auth-generated
+```
 Name:         msops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -287,21 +288,26 @@ Events:
   Normal   Starting                                                                    17m   KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssqlserver-quickstart
   Normal   Successful                                                                  17m   KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssqlserver-quickstart for MSSQLServerOpsRequest: msops-rotate-auth-generated
   Normal   UpdatePetSets                                                               17m   KubeDB Ops-manager Operator  successfully reconciled the MSSQLServer with updated credentials
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
-"mssqlserver-quickstart-auth"
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-sa⏎  
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-zTBVvzgoEb2qUe3X⏎                          
+```bash
+kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mssqlserver-quickstart-auth"
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
+sa⏎  
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+zTBVvzgoEb2qUe3X⏎                          
 Let's verify if we can connect to the database using the new credentials.
 
-```shell
-$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+```
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "zTBVvzgoEb2qUe3X" -No
 1> select name from sys.databases
 2> go
@@ -318,16 +324,18 @@ kubedb_system
 mssql@mssqlserver-quickstart-0:/$ exit
 exit
 ⏎   
-```
 
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-sa⏎                                                    
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-9ycCSYznZpZRxs9U⏎                              
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+sa⏎                                                    
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+9ycCSYznZpZRxs9U⏎                              
 Let's confirm that the previous credentials no longer work.
 ```shell
 kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
@@ -341,14 +349,13 @@ The above output shows that the password has been changed successfully. The prev
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: The `username` must be fixed as `sa`. The `password` must include uppercase letters, lowercase letters, and numbers
-```shell
-$ kubectl create secret generic mssqlserver-quickstart-auth-user -n demo \
+```bash
+kubectl create secret generic mssqlserver-quickstart-auth-user -n demo \
                                                --type=kubernetes.io/basic-auth \
                                                --from-literal=username=sa \
                                                --from-literal=password=Mssqlserver2
-secret/mssqlserver-quickstart-auth-user created
-
 ```
+secret/mssqlserver-quickstart-auth-user created
 Now create a `MSSQLServerOpsRequest` with `RotateAuth` type. Below is the YAML of the `MSSQLServerOpsRequest` that we are going to create,
 
 ```shell
@@ -377,21 +384,22 @@ Here,
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/rotate-auth-user.yaml
-MSSQLServeropsrequest.ops.kubedb.com/msops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mssqlserver/rotate-auth/rotate-auth-user.yaml
 ```
+MSSQLServeropsrequest.ops.kubedb.com/msops-rotate-auth-user created
 Let’s wait for `MSSQLServerOpsRequest` to be Successful. Run the following command to watch `MSSQLServerOpsRequest` CRO:
 
-```shell
-$ kubectl get MSSQLServeropsrequest -n demo
+```bash
+kubectl get MSSQLServeropsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 msops-rotate-auth-generated   RotateAuth   Successful   19h
 msops-rotate-auth-user        RotateAuth   Successful   7m44s
-```
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe MSSQLServeropsrequest -n demo msops-rotate-auth-user 
+```bash
+kubectl describe MSSQLServeropsrequest -n demo msops-rotate-auth-user 
+```
 Name:         msops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -481,21 +489,26 @@ Events:
   Normal   RestartNodes                                                                14m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                    14m   KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssqlserver-quickstart
   Normal   Successful                                                                  14m   KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssqlserver-quickstart for MSSQLServerOpsRequest: msops-rotate-auth-user
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
-"mssqlserver-quickstart-auth "
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
-sa⏎                                      
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-Mssqlserver2⏎                                                                  
+```bash
+kubectl get ms -n demo mssqlserver-quickstart -ojson | jq .spec.authSecret.name
 ```
+"mssqlserver-quickstart-auth "
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+sa⏎                                      
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+Mssqlserver2⏎                                                                  
 
 Let's verify if we can connect to the database using the new credentials.
-```shell
-$ kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+```bash
+kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
+```
 mssql@mssqlserver-quickstart-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Mssqlserver2" -No
 1> SELECT name FROM sys.databases 
 2> go
@@ -509,14 +522,16 @@ kubedb_system
 
 (5 rows affected)
 1> 
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-sa⏎                                                                                         
-$ kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-zTBVvzgoEb2qUe3X⏎ 
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+sa⏎                                                                                         
+
+```bash
+kubectl get secret -n demo mssqlserver-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+zTBVvzgoEb2qUe3X⏎ 
 Let's confirm that the previous credentials no longer work.
 ```shell
 kubectl exec -it -n demo mssqlserver-quickstart-0 -c mssql -- bash
@@ -532,15 +547,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete MSSQLServeropsrequest msops-rotate-auth-generated msops-rotate-auth-user -n demo
-MSSQLServeropsrequest.ops.kubedb.com "msops-rotate-auth-generated" "msops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo mssqlserver-quickstart-auth-user
-secret "mssqlserver-quickstart-auth-user" deleted
-$ kubectl delete secret -n demo mssqlserver-quickstart-auth
-secret "mssqlserver-quickstart-auth" deleted
-
+```bash
+kubectl delete MSSQLServeropsrequest msops-rotate-auth-generated msops-rotate-auth-user -n demo
 ```
+MSSQLServeropsrequest.ops.kubedb.com "msops-rotate-auth-generated" "msops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo mssqlserver-quickstart-auth-user
+```
+secret "mssqlserver-quickstart-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo mssqlserver-quickstart-auth
+```
+secret "mssqlserver-quickstart-auth" deleted
 
 ## Next Steps
 

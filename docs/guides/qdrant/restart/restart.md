@@ -29,9 +29,9 @@ KubeDB supports restarting the Qdrant database via a `QdrantOpsRequest`. Restart
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/restart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/qdrant/restart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,17 +60,17 @@ spec:
 Let's create the `Qdrant` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 Now, wait until `qdrant-sample` has status `Ready`:
 
 ```bash
-$ kubectl get qdrant -n demo
+kubectl get qdrant -n demo
+```
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m47s
-```
 
 ## Apply Restart OpsRequest
 
@@ -95,20 +95,21 @@ spec:
 Let's create the `QdrantOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/ops-request.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/restart/ops-request.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-restart created
 
 Now the Ops-manager operator will restart the Qdrant pods one by one, waiting for each pod to come back to `Running` state before proceeding to the next.
 
 ```bash
-$ kubectl get qdops -n demo qdops-restart
+kubectl get qdops -n demo qdops-restart
+```
 NAME            TYPE      STATUS       AGE
 qdops-restart   Restart   Successful   66s
-```
 
 ```bash
-$ kubectl get qdops -n demo qdops-restart -o yaml
+kubectl get qdops -n demo qdops-restart -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: QdrantOpsRequest
 metadata:
@@ -195,7 +196,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Next Steps
 
@@ -208,12 +208,16 @@ status:
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete qdrantopsrequest -n demo qdops-restart
+kubectl delete qdrantopsrequest -n demo qdops-restart
+```
 qdrantopsrequest.ops.kubedb.com "qdops-restart" deleted
 
-$ kubectl delete qdrant -n demo qdrant-sample
+```bash
+kubectl delete qdrant -n demo qdrant-sample
+```
 qdrant.kubedb.com "qdrant-sample" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted

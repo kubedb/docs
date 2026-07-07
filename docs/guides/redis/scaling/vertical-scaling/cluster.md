@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/redis](/docs/examples/redis) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -82,22 +82,23 @@ spec:
 Let's create the `Redis` CR we have shown above, 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/rd-cluster.yaml
-redis.kubedb.com/redis-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/rd-cluster.yaml
 ```
+redis.kubedb.com/redis-cluster created
 
 Now, wait until `rd-cluster` has status `Ready`. i.e. ,
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME            VERSION   STATUS   AGE
 redis-cluster   7.0.14     Ready    7m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo redis-cluster-shard0-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo redis-cluster-shard0-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "100Mi"
@@ -108,7 +109,9 @@ $ kubectl get pod -n demo redis-cluster-shard0-0 -o json | jq '.spec.containers[
   }
 }
 
-$ kubectl get pod -n demo redis-cluster-shard1-1 -o json | jq '.spec.containers[].resources'
+```bash
+kubectl get pod -n demo redis-cluster-shard1-1 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "100Mi"
@@ -118,7 +121,6 @@ $ kubectl get pod -n demo redis-cluster-shard1-1 -o json | jq '.spec.containers[
     "memory": "100Mi"
   }
 }
-```
 
 We can see from the above output that there are some default resources set by the operator for pods across all shards. And the scheduler will choose the best suitable node to place the container of the Pod.
 
@@ -163,9 +165,9 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-cluster.yaml
-redisopsrequest.ops.kubedb.com/redisops-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/scaling/vertical-scaling/vertical-cluster.yaml
 ```
+redisopsrequest.ops.kubedb.com/redisops-vertical created
 
 #### Verify Redis Cluster resources updated successfully 
 
@@ -174,39 +176,42 @@ If everything goes well, `KubeDB` Enterprise operator will update the resources 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo redisops-vertical
+watch kubectl get redisopsrequest -n demo redisops-vertical
+```
 NAME                TYPE              STATUS       AGE
 redisops-vertical   VerticalScaling   Successful   6m11s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, we are going to verify from the Pod yaml whether the resources of the cluster database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo redis-cluster-shard0-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "500m",
-    "memory": "800Mi"
-  },
-  "requests": {
-    "cpu": "200m",
-    "memory": "300Mi"
-  }
-}
-$ kubectl get pod -n demo redis-cluster-shard1-1 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "500m",
-    "memory": "800Mi"
-  },
-  "requests": {
-    "cpu": "200m",
-    "memory": "300Mi"
-  }
-}
+kubectl get pod -n demo redis-cluster-shard0-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "500m",
+    "memory": "800Mi"
+  },
+  "requests": {
+    "cpu": "200m",
+    "memory": "300Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo redis-cluster-shard1-1 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "500m",
+    "memory": "800Mi"
+  },
+  "requests": {
+    "cpu": "200m",
+    "memory": "300Mi"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the Redis cluster database.
 
@@ -215,13 +220,16 @@ The above output verifies that we have successfully scaled up the resources of t
 To clean up the Kubernetes resources created by this turorial, run:
 
 ```bash
-
-$ kubectl patch -n demo rd/redis-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/redis-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/redis-cluster patched
 
-$ kubectl delete -n demo redis redis-cluster
+```bash
+kubectl delete -n demo redis redis-cluster
+```
 redis.kubedb.com "redis-cluster" deleted
 
-$ kubectl delete -n demo redisopsrequest redisops-vertical 
-redisopsrequest.ops.kubedb.com "redisops-vertical " deleted
+```bash
+kubectl delete -n demo redisopsrequest redisops-vertical 
 ```
+redisopsrequest.ops.kubedb.com "redisops-vertical " deleted

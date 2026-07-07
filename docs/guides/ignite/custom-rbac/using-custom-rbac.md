@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,9 +46,9 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
@@ -70,9 +70,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Ignite instance named `quick-ignite`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -98,10 +98,9 @@ This permission is required for Ignite pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
-
+kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
@@ -130,9 +129,9 @@ subjects:
 Now, create a Ignite crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-db.yaml
-ignite.kubedb.com/ignite-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-db.yaml
 ```
+ignite.kubedb.com/ignite-quickstart created
 
 Below is the YAML for the Ignite crd we just created.
 
@@ -165,12 +164,12 @@ Now, wait a few minutes. the KubeDB operator will create necessary petset, servi
 Check that the pod is running:
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                   READY   STATUS    RESTARTS   AGE
 ignite-quickstart-0    1/1     Running   0          5m54s
 ignite-quickstart-1    1/1     Running   0          4m42s
 ignite-quickstart-2    1/1     Running   0          3m31s
-```
 
 ## Reusing Service Account
 
@@ -179,9 +178,9 @@ An existing service account can be reused in another Ignite instance. No new acc
 Now, create Ignite crd `minute-ignite` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-db-two.yaml
-ignite.kubedb.com/ignite-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-db-two.yaml
 ```
+ignite.kubedb.com/ignite-quickstart created
 
 Below is the YAML for the Ignite crd we just created.
 
@@ -214,40 +213,54 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the pod is running:
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                READY   STATUS    RESTARTS   AGE
 minute-ignite-0     1/1     Running   0          5m52s
-```
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo ig/ignite-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo ig/ignite-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 ignite.kubedb.com/ignite-quickstart patched
 
-$ kubectl delete -n demo ig/ignite-quickstart
+```bash
+kubectl delete -n demo ig/ignite-quickstart
+```
 ignite.kubedb.com "ignite-quickstart" deleted
 
-$ kubectl patch -n demo ig/minute-ignite -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo ig/minute-ignite -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 ignite.kubedb.com/minute-ignite patched
 
-$ kubectl delete -n demo ig/minute-ignite
+```bash
+kubectl delete -n demo ig/minute-ignite
+```
 ignite.kubedb.com "minute-ignite" deleted
 
-$ kubectl delete -n demo role my-custom-role
+```bash
+kubectl delete -n demo role my-custom-role
+```
 role.rbac.authorization.k8s.io "my-custom-role" deleted
 
-$ kubectl delete -n demo rolebinding my-custom-rolebinding
+```bash
+kubectl delete -n demo rolebinding my-custom-rolebinding
+```
 rolebinding.rbac.authorization.k8s.io "my-custom-rolebinding" deleted
 
-$ kubectl delete sa -n demo my-custom-serviceaccount
+```bash
+kubectl delete sa -n demo my-custom-serviceaccount
+```
 serviceaccount "my-custom-serviceaccount" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 If you would like to uninstall the KubeDB operator, please follow the steps [here](/docs/setup/README.md).
 

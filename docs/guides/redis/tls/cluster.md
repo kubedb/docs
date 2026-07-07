@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Redis. This tutorial will show 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -79,9 +79,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/issuer.yaml
-issuer.cert-manager.io/redis-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/issuer.yaml
 ```
+issuer.cert-manager.io/redis-ca-issuer created
 
 ## TLS/SSL encryption in Redis Cluster
 
@@ -116,25 +116,26 @@ spec:
 ### Deploy Redis Cluster
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/rd-cluster-ssl.yaml
-redis.kubedb.com/rd-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/tls/rd-cluster-ssl.yaml
 ```
+redis.kubedb.com/rd-tls created
 
 Now, wait until `rd-tls` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get redis -n demo
 NAME      VERSION     STATUS     AGE
 rd-tls    6.2.14       Ready      2m14s
-```
 
 ### Verify TLS/SSL in Redis Cluster
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo rd-tls-client-cert
+kubectl describe secret -n demo rd-tls-client-cert
+```
 Name:         rd-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -157,13 +158,13 @@ Data
 ca.crt:   1147 bytes
 tls.crt:  1127 bytes
 tls.key:  1679 bytes
-```
 
 
 Now, we can connect using tls-certs as root to connect to the redis and write some data
 
 ```bash
-$ kubectl exec -it -n demo rd-tls-shard0-0 -c redis -- bash
+kubectl exec -it -n demo rd-tls-shard0-0 -c redis -- bash
+```
 # Trying to connect without tls certificates
 root@rd-tls-0:/data# redis-cli
 127.0.0.1:6379> 
@@ -177,22 +178,25 @@ root@rd-tls-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs/cl
 127.0.0.1:6379> set hello world
 OK
 127.0.0.1:6379> exit
-```
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo redis/rd-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo redis/rd-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-tls patched
 
-$ kubectl delete -n demo redis rd-tls
+```bash
+kubectl delete -n demo redis rd-tls
+```
 redis.kubedb.com "rd-tls" deleted
 
-$ kubectl delete issuer -n demo redis-ca-issuer
-issuer.cert-manager.io "redis-ca-issuer" deleted
+```bash
+kubectl delete issuer -n demo redis-ca-issuer
 ```
+issuer.cert-manager.io "redis-ca-issuer" deleted
 
 ## Next Steps
 

@@ -28,9 +28,9 @@ so the MongoDB wire endpoint (port `10260`) stays serviceable throughout.
 - This tutorial uses a namespace called `demo`:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/documentdb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/documentdb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -57,21 +57,21 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster.yaml
-documentdb.kubedb.com/documentdb-cls-sample created
+kubectl apply -f cluster.yaml
 ```
+documentdb.kubedb.com/documentdb-cls-sample created
 
 The cluster has three pods — one Raft `primary` and two `standby` replicas. Each pod runs `2/2`
 containers: the `documentdb` engine and the `documentdb-coordinator` (the Raft member that
 participates in leader election):
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=documentdb-cls-sample -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=documentdb-cls-sample -L kubedb.com/role
+```
 NAME                      READY   STATUS    RESTARTS   AGE     ROLE
 documentdb-cls-sample-0   2/2     Running   0          2m23s   primary
 documentdb-cls-sample-1   2/2     Running   0          2m      standby
 documentdb-cls-sample-2   2/2     Running   0          93s     standby
-```
 
 ## Create the Restart OpsRequest
 
@@ -91,19 +91,19 @@ spec:
 - `spec.databaseRef` holds the name of the `DocumentDB` (it must be in the same namespace).
 
 ```bash
-$ kubectl apply -f cluster-restart.yaml
-documentdbopsrequest.ops.kubedb.com/documentdb-cls-restart created
+kubectl apply -f cluster-restart.yaml
 ```
+documentdbopsrequest.ops.kubedb.com/documentdb-cls-restart created
 
 Watch the OpsRequest until it reports `Successful` (`dcops` is the short name for
 `DocumentDBOpsRequest`; `docdb` is the short name for `DocumentDB`):
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-restart -w
+kubectl get dcops -n demo documentdb-cls-restart -w
+```
 NAME                     TYPE      STATUS        AGE
 documentdb-cls-restart   Restart   Progressing   20s
 documentdb-cls-restart   Restart   Successful    3m52s
-```
 
 ## What happened
 
@@ -112,8 +112,9 @@ primary (a controlled failover) before restarting it last, so a writable leader 
 present. The status conditions tell the whole story:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-restart \
+kubectl get dcops -n demo documentdb-cls-restart \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 Restart=True :: DocumentDB ops request is restarting pods
 ResumePGCoordinator=True :: successfully resumed documentdb-coordinator
 SetRaftKeyOpsRequestProgressing=True :: Successfully Set Raft Key OpsRequestProgressing
@@ -126,7 +127,6 @@ FailoverDone=True :: failover is done successfully
 RestartNodes=True :: Successfully restarted all nodes
 Successful=True :: Successfully completed the modification process.
 UnsetRaftKeyOpsRequestProgressing=True :: Successfully Unset Raft Key OpsRequestProgressing
-```
 
 ## After the restart
 
@@ -135,22 +135,25 @@ transferred during the rolling restart, the `primary` role has moved to a differ
 is expected and harmless:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=documentdb-cls-sample -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=documentdb-cls-sample -L kubedb.com/role
+```
 NAME                      READY   STATUS    RESTARTS   AGE     ROLE
 documentdb-cls-sample-0   2/2     Running   0          66s     standby
 documentdb-cls-sample-1   2/2     Running   0          2m51s   primary
 documentdb-cls-sample-2   2/2     Running   0          2m1s    standby
-```
 
 The database answers the MongoDB wire protocol immediately after the restart:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 ## Standalone
 

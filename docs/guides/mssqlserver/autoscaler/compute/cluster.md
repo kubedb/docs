@@ -36,9 +36,9 @@ This guide will show you how to use `KubeDB` to auto-scale compute resources i.e
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ## Autoscaling of MSSQLServer Availability Group Cluster
 
 Here, we are going to deploy a `MSSQLServer` Availability Group Cluster using a supported version by `KubeDB` operator. Then we are going to apply `MSSQLServerAutoscaler` to set up autoscaling.
@@ -57,9 +57,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -75,9 +75,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 In this section, we are going to deploy a MSSQLServer Availability Group Cluster with version `2025-cu0`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
@@ -132,21 +132,22 @@ spec:
 Let's create the `MSSQLServer` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/compute/mssqlserver-ag-cluster.yaml
-mssqlserver.kubedb.com/mssqlserver-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/compute/mssqlserver-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mssqlserver -n demo
+kubectl get mssqlserver -n demo
+```
 NAME                     VERSION     STATUS   AGE
 mssqlserver-ag-cluster   2022-cu12   Ready    8m27s
-```
 
 Let's check the MSSQLServer resources,
 ```bash
-$ kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mssql") | .resources'
+kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mssql") | .resources'
+```
 {
   "limits": {
     "cpu": "600m",
@@ -157,46 +158,51 @@ $ kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.
     "memory": "1536Mi"
   }
 }
-```
 
 
 Let's check the Pod containers resources, there are two containers here, first one with index 0 named `mssql` is the main container of mssqlserver. 
 
 ```bash
-$ kubectl get pod -n demo mssqlserver-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1717986918400m"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
-$ kubectl get pod -n demo mssqlserver-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1717986918400m"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
-$ kubectl get pod -n demo mssqlserver-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
-{
-  "limits": {
-    "cpu": "600m",
-    "memory": "1717986918400m"
-  },
-  "requests": {
-    "cpu": "500m",
-    "memory": "1536Mi"
-  }
-}
+kubectl get pod -n demo mssqlserver-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
 ```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1717986918400m"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo mssqlserver-ag-cluster-1 -o json | jq '.spec.containers[0].resources'
+```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1717986918400m"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo mssqlserver-ag-cluster-2 -o json | jq '.spec.containers[0].resources'
+```
+{
+  "limits": {
+    "cpu": "600m",
+    "memory": "1717986918400m"
+  },
+  "requests": {
+    "cpu": "500m",
+    "memory": "1536Mi"
+  }
+}
 
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the mssqlserver.
@@ -258,20 +264,23 @@ Here,
 Let's create the `MSSQLServerAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/compute/ms-as-compute.yaml
-mssqlserverautoscaler.autoscaling.kubedb.com/ms-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/autoscaler/compute/ms-as-compute.yaml
 ```
+mssqlserverautoscaler.autoscaling.kubedb.com/ms-as-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `mssqlserverautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mssqlserverautoscaler -n demo
+kubectl get mssqlserverautoscaler -n demo
+```
 NAME            AGE
 ms-as-compute   16s
 
-$ kubectl describe mssqlserverautoscaler ms-as-compute -n demo
+```bash
+kubectl describe mssqlserverautoscaler ms-as-compute -n demo
+```
 Name:         ms-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -410,7 +419,6 @@ Status:
           Memory:  9063982612
     Vpa Name:      mssqlserver-ag-cluster
 Events:            <none>
-```
 So, the `mssqlserverautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -420,23 +428,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `mssqlserveropsrequest` in the demo namespace to see if any `mssqlserveropsrequest` object is created. After some time you'll see that a `mssqlserveropsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 msops-mssqlserver-ag-cluster-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 NAME                                  TYPE              STATUS       AGE
 msops-mssqlserver-ag-cluster-8li26q   VerticalScaling   Successful   11m
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe msops -n demo msops-mssqlserver-ag-cluster-8li26q
+kubectl describe msops -n demo msops-mssqlserver-ag-cluster-8li26q
+```
 Name:         msops-mssqlserver-ag-cluster-8li26q
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -552,12 +561,12 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, we are going to verify from the Pod, and the MSSQLServer yaml whether the resources of the cluster database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo mssqlserver-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mssqlserver-ag-cluster-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "960m",
@@ -569,7 +578,9 @@ $ kubectl get pod -n demo mssqlserver-ag-cluster-0 -o json | jq '.spec.container
   }
 }
 
-$ kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mssql") | .resources'
+```bash
+kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "mssql") | .resources'
+```
 {
   "limits": {
     "cpu": "960m",
@@ -580,7 +591,6 @@ $ kubectl get ms -n demo mssqlserver-ag-cluster -o json | jq '.spec.podTemplate.
     "memory": "2Gi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the MSSQLServer cluster.

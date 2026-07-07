@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -72,27 +72,29 @@ spec:
 Here we are creating the pgpool with `max_pool=60`, it is necessary because we will up scale the pgpool replicas so for that we need larger `max_pool`. Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-horizontal.yaml
-pgpool.kubedb.com/pp-horizontal created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/pp-horizontal.yaml
 ```
+pgpool.kubedb.com/pp-horizontal created
 
 Now, wait until `pp-horizontal ` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 pp-horizontal   kubedb.com/v1alpha2   4.5.0     Ready    2m
-```
 
 Let's check the number of replicas this pgpool has from the Pgpool object, number of pods the petset have,
 
 ```bash
-$ kubectl get pgpool -n demo pp-horizontal -o json | jq '.spec.replicas'
+kubectl get pgpool -n demo pp-horizontal -o json | jq '.spec.replicas'
+```
 1
 
-$ kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
-1
+```bash
+kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
 ```
+1
 
 We can see from both command that the pgpool has 1 replica. 
 
@@ -129,9 +131,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-up-ops.yaml
-pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-up-ops.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-up created
 
 #### Verify replicas scaled up successfully 
 
@@ -140,16 +142,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                         TYPE                STATUS       AGE
 pgpool-horizontal-scale-up   HorizontalScaling   Successful   2m49s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to scale the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo pgpool-horizontal-scale-up
+kubectl describe pgpoolopsrequest -n demo pgpool-horizontal-scale-up
+```
 Name:         pgpool-horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -264,17 +267,18 @@ Events:
   Normal   UpdateDatabase                                                  3m37s  KubeDB Ops-manager Operator  Successfully updated Pgpool
   Normal   Starting                                                        3m37s  KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-horizontal
   Normal   Successful                                                      3m37s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-horizontal for PgpoolOpsRequest: pgpool-horizontal-scale-up
-```
 
 Now, we are going to verify the number of replicas this pgpool has from the Pgpool object, number of pods the petset have,
 
 ```bash
-$ kubectl get pp -n demo pp-horizontal -o json | jq '.spec.replicas'
+kubectl get pp -n demo pp-horizontal -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
 ```
+3
 From all the above outputs we can see that the replicas of the pgpool is `3`. That means we have successfully scaled up the replicas of the Pgpool.
 
 
@@ -309,9 +313,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-down-ops.yaml
-pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/scaling/ppops-hscale-down-ops.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/pgpool-horizontal-scale-down created
 
 #### Verify replicas scaled down successfully
 
@@ -320,16 +324,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 pgpool-horizontal-scale-down   HorizontalScaling   Successful   75s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to scale the pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo pgpool-horizontal-scale-down
+kubectl describe pgpoolopsrequest -n demo pgpool-horizontal-scale-down
+```
 Name:         pgpool-horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -416,17 +421,18 @@ Events:
   Normal   UpdateDatabase                                               48s   KubeDB Ops-manager Operator  Successfully updated Pgpool
   Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-horizontal
   Normal   Successful                                                   48s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-horizontal for PgpoolOpsRequest: pgpool-horizontal-scale-down
-```
 
 Now, we are going to verify the number of replicas this pgpool has from the Pgpool object, number of pods the petset have,
 
 ```bash
-$ kubectl get pp -n demo pp-horizontal -o json | jq '.spec.replicas'
+kubectl get pp -n demo pp-horizontal -o json | jq '.spec.replicas'
+```
 2
 
-$ kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo pp-horizontal -o json | jq '.spec.replicas'
 ```
+2
 From all the above outputs we can see that the replicas of the pgpool is `2`. That means we have successfully scaled up the replicas of the Pgpool.
 
 ## Cleaning Up

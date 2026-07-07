@@ -56,7 +56,7 @@ You verify the result using two complementary Cypher views:
 ## Step 1 — Set Up the Namespace
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
 ```
 
 ---
@@ -66,9 +66,11 @@ $ kubectl create ns demo
 Apply the example manifest and wait for the cluster to become ready:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+```
 
-$ kubectl get neo4j -n demo neo4j-test -w
+```bash
+kubectl get neo4j -n demo neo4j-test -w
 ```
 
 Wait until `STATUS` shows `Ready` before proceeding.
@@ -134,7 +136,7 @@ spec:
 ```
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
@@ -150,28 +152,35 @@ spec:
       strategy: "incremental"
       batchSize: 1
 EOF
+```
 neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-up created
 
-$ kubectl wait \
+```bash
+kubectl wait \
   --for=jsonpath='{.status.phase}'=Successful \
   neo4jopsrequest/neo4j-horizontal-scale-up \
   -n demo --timeout=900s
-neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-up condition met
 ```
+neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-up condition met
 
 ### Verify the Scale-Up
 
 Run these commands to confirm the cluster now has 5 members and that databases have been reallocated:
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-horizontal-scale-up
+kubectl get neo4jopsrequest -n demo neo4j-horizontal-scale-up
+```
 NAME                        TYPE                STATUS       AGE
 neo4j-horizontal-scale-up   HorizontalScaling   Successful   16s
 
-$ kubectl get neo4j -n demo neo4j-test -o jsonpath='{.spec.replicas}{"\n"}'
+```bash
+kubectl get neo4j -n demo neo4j-test -o jsonpath='{.spec.replicas}{"\n"}'
+```
 5
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
 NAME            READY   STATUS    RESTARTS   AGE
 neo4j-test-0    1/1     Running   0          ...
 neo4j-test-1    1/1     Running   0          ...
@@ -179,23 +188,28 @@ neo4j-test-2    1/1     Running   0          ...
 neo4j-test-3    1/1     Running   0          ...
 neo4j-test-4    1/1     Running   0          ...
 
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```bash
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
   "SHOW DATABASE appdb YIELD name, currentStatus, currentPrimariesCount, currentSecondariesCount RETURN name, currentStatus, currentPrimariesCount, currentSecondariesCount"
+```
 name, currentStatus, currentPrimariesCount, currentSecondariesCount
 "appdb", "online", 2, 0
 "appdb", "online", 2, 0
 
-$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
   "SHOW SERVERS YIELD name, state, health, hosting RETURN name, state, health, hosting ORDER BY name"
+```
 name, state, health, hosting
 "neo4j-test-0", "Enabled", "Available", ["neo4j", "system"]
 "neo4j-test-1", "Enabled", "Available", ["neo4j", "system"]
 "neo4j-test-2", "Enabled", "Available", ["appdb", "system"]
 "neo4j-test-3", "Enabled", "Available", ["appdb", "system"]
 "neo4j-test-4", "Enabled", "Available", ["system"]
-```
 
 > **What to look for:**
 > - All 5 pods are `Running`
@@ -225,7 +239,7 @@ spec:
 ```
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
@@ -240,53 +254,66 @@ spec:
     reallocate:
       strategy: "full"
 EOF
+```
 neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-down created
 
-$ kubectl wait \
+```bash
+kubectl wait \
   --for=jsonpath='{.status.phase}'=Successful \
   neo4jopsrequest/neo4j-horizontal-scale-down \
   -n demo --timeout=900s
-neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-down condition met
 ```
+neo4jopsrequest.ops.kubedb.com/neo4j-horizontal-scale-down condition met
 
 ### Verify the Scale-Down
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-horizontal-scale-down
+kubectl get neo4jopsrequest -n demo neo4j-horizontal-scale-down
+```
 NAME                          TYPE                STATUS       AGE
 neo4j-horizontal-scale-down   HorizontalScaling   Successful   37s
 
-$ kubectl get neo4j -n demo neo4j-test -o jsonpath='{.spec.replicas}{"\n"}'
+```bash
+kubectl get neo4j -n demo neo4j-test -o jsonpath='{.spec.replicas}{"\n"}'
+```
 3
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
 NAME            READY   STATUS    RESTARTS   AGE
 neo4j-test-0    1/1     Running   0          ...
 neo4j-test-1    1/1     Running   0          ...
 neo4j-test-2    1/1     Running   0          ...
 
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```bash
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -n demo neo4j-test-0 -- \
+```bash
+kubectl exec -n demo neo4j-test-0 -- \
   cypher-shell -d appdb -u neo4j -p "$PASS" \
   "MATCH (u:User) RETURN count(u) AS totalUsers"
+```
 totalUsers
 2000
 
-$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
   "SHOW DATABASE appdb YIELD name, currentStatus, currentPrimariesCount, currentSecondariesCount RETURN name, currentStatus, currentPrimariesCount, currentSecondariesCount"
+```
 name, currentStatus, currentPrimariesCount, currentSecondariesCount
 "appdb", "online", 2, 0
 "appdb", "online", 2, 0
 
-
-$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" \
   "SHOW SERVERS YIELD name, state, health, hosting RETURN name, state, health, hosting ORDER BY name"
+```
 name, state, health, hosting
 "neo4j-test-0", "Enabled", "Available", ["neo4j", "system"]
 "neo4j-test-1", "Enabled", "Available", ["appdb", "neo4j", "system"]
 "neo4j-test-2", "Enabled", "Available", ["appdb", "system"]
-```
 
 > ✅ The `totalUsers: 2000` result confirms **no data was lost** during the scale-down. The database remained online and queryable throughout.
 
@@ -325,15 +352,21 @@ If this OpsRequest does not finish, first inspect the affected pod and then chec
 Check the OpsRequest status, the pod events, and cluster allocation:
 
 ```bash
-$ kubectl describe neo4jopsrequest -n demo <ops-request-name>
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-$ kubectl describe pod -n demo neo4j-test-0
+kubectl describe neo4jopsrequest -n demo <ops-request-name>
+```
+
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
+
+```bash
+kubectl describe pod -n demo neo4j-test-0
 ```
 
 If the node is full, the new server count may not be schedulable. Check node capacity:
 
 ```bash
-$ kubectl describe node <node-name> | grep -A 10 "Allocated resources"
+kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 ```
 
 **Database shows `offline` after scaling**
@@ -341,8 +374,11 @@ $ kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 Neo4j may need time to reallocate. Wait a few seconds and re-run `SHOW DATABASE`. If it persists, check the `kubedb-ops-manager` logs and pod readiness:
 
 ```bash
-$ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
+```
+
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 ```
 
 **OpsRequest moves to `Failed`**
@@ -350,8 +386,11 @@ $ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 Read the failure condition and then inspect the `kubedb-ops-manager` logs:
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo <ops-request-name> -o jsonpath='{.status.conditions}' | jq .
-$ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
+kubectl get neo4jopsrequest -n demo <ops-request-name> -o jsonpath='{.status.conditions}' | jq .
+```
+
+```bash
+kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manager --tail=50
 ```
 
 ---
@@ -361,11 +400,17 @@ $ kubectl logs -n <kubedb-namespace> -l app.kubernetes.io/name=kubedb-ops-manage
 Remove all resources created in this guide:
 
 ```bash
-$ kubectl delete neo4jopsrequest -n demo \
+kubectl delete neo4jopsrequest -n demo \
   neo4j-horizontal-scale-up \
   neo4j-horizontal-scale-down
-$ kubectl delete neo4j -n demo neo4j-test
-$ kubectl delete ns demo
+```
+
+```bash
+kubectl delete neo4j -n demo neo4j-test
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ---

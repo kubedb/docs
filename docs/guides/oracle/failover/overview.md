@@ -37,16 +37,15 @@ This guide demonstrates how to set up an `Oracle HA cluster` with `Data Guard` e
 Check StorageClasses:
 
 ```bash
-$ kubectl get storageclasses
+kubectl get storageclasses
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  13d
-
-```
 
 * We’ll use the `demo` namespace for isolation:
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
 ```
 
 **Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:**
@@ -173,22 +172,20 @@ Here,
 Apply the manifest:
 
 ```bash
-$ kubectl apply -f oracle-dataguard.yaml
+kubectl apply -f oracle-dataguard.yaml
 ```
 
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/dataguard/dataguard.yaml
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/dataguard/dataguard.yaml
+```
 oracle.kubedb.com/oracle-sample created
-
-```
 Monitor status until all pods are ready:
 
 ```bash
-$ watch kubectl get oracle -n demo
+watch kubectl get oracle -n demo
+```
 NAME            VERSION   MODE        STATUS   AGE
 oracle-sample   21.3.0    DataGuard   Ready    25m
-
-```
 
 ---
 
@@ -238,13 +235,12 @@ consistent, and resilient against node or pod failures.
 You can check current roles:
 
 ```bash
-$ kubectl get pods -n demo --show-labels | grep role
+kubectl get pods -n demo --show-labels | grep role
+```
 oracle-sample-0            2/2     Running   0          49m   app.kubernetes.io/component=database,app.kubernetes.io/instance=oracle-sample,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=oracles.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=oracle-sample-6d6fdb69ff,kubedb.com/role=primary,oracle.db/role=instance,statefulset.kubernetes.io/pod-name=oracle-sample-0
 oracle-sample-1            2/2     Running   0          49m   app.kubernetes.io/component=database,app.kubernetes.io/instance=oracle-sample,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=oracles.kubedb.com,apps.kubernetes.io/pod-index=1,controller-revision-hash=oracle-sample-6d6fdb69ff,kubedb.com/role=standby,oracle.db/role=instance,statefulset.kubernetes.io/pod-name=oracle-sample-1
 oracle-sample-2            2/2     Running   0          48m   app.kubernetes.io/component=database,app.kubernetes.io/instance=oracle-sample,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=oracles.kubedb.com,apps.kubernetes.io/pod-index=2,controller-revision-hash=oracle-sample-6d6fdb69ff,kubedb.com/role=standby,oracle.db/role=instance,statefulset.kubernetes.io/pod-name=oracle-sample-2
 oracle-sample-observer-0   1/1     Running   0          49m   app.kubernetes.io/component=database,app.kubernetes.io/instance=oracle-sample,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=oracles.kubedb.com,apps.kubernetes.io/pod-index=0,controller-revision-hash=oracle-sample-observer-68648c7957,oracle.db/role=observer,statefulset.kubernetes.io/pod-name=oracle-sample-observer-0
-
-```
 The pod having `kubedb.com/role=primary` is the primary, `kubedb.com/role=standby` are the standby's and 
 `oracle-sample-observer-0` is the observer.
 
@@ -346,8 +342,8 @@ SQL> SELECT * FROM kathak;
 ```
 Typical output:
 
-```shell
-$ watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
+```bash
+watch -n 2 "kubectl get pods -n demo -o jsonpath='{range .items[*]}{.metadata.name} {.metadata.labels.kubedb\\.com/role}{\"\\n\"}{end}'"
 ```
 
 ```bash
@@ -362,7 +358,7 @@ oracle-sample-observer-0
 #### Case 1: Delete the Primary
 
 ```bash
-$ kubectl delete pod -n demo oracle-sample-0
+kubectl delete pod -n demo oracle-sample-0
 ```
 
 Within  few minutes (defined by `fastStartFailoverThreshold`), a standby is promoted:
@@ -474,11 +470,10 @@ bash-4.2$ command terminated with exit code 137
 #### Case 2: Delete Primary and One Standby
 
 ```bash
-$ kubectl delete pod -n demo oracle-sample-0 oracle-sample-1
+kubectl delete pod -n demo oracle-sample-0 oracle-sample-1
+```
 pod "oracle-sample-0" deleted
 pod "oracle-sample-1" deleted
-
-```
 
 The remaining standby (`oracle-sample-2`) is promoted to primary. The deleted pods return and rejoin as standbys.
 
@@ -493,7 +488,7 @@ oracle-sample-observer-0
 #### Case 3: Delete All Standbys
 
 ```bash
-$ kubectl delete pod -n demo oracle-sample-1 oracle-sample-2
+kubectl delete pod -n demo oracle-sample-1 oracle-sample-2
 ```
 
 The primary (`oracle-sample-0`) continues serving traffic. Once the standbys are recreated, they rejoin the Data Guard configuration and catch up from archived redo logs.
@@ -509,11 +504,11 @@ oracle-sample-observer-0
 #### Case 4: Delete All Pods
 
 ```bash
-$ kubectl delete pod -n demo oracle-sample-0 oracle-sample-1 oracle-sample-2
+kubectl delete pod -n demo oracle-sample-0 oracle-sample-1 oracle-sample-2
+```
 pod "oracle-sample-0" deleted
 pod "oracle-sample-1" deleted
 pod "oracle-sample-2" deleted
-```
 ```shell
 oracle-sample-0 
 oracle-sample-1 

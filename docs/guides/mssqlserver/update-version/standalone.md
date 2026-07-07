@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mssqlserver](/docs/examples/mssqlserver/update-version) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -59,9 +59,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 -
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -77,9 +77,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/standalone/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 
 ### Create MSSSQLServer
@@ -124,17 +124,17 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/update-version/mssql-standalone.yaml
-mssqlserver.kubedb.com/mssql-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/update-version/mssql-standalone.yaml
 ```
+mssqlserver.kubedb.com/mssql-standalone created
 
 Now, wait until `mssql-standalone` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ms -n demo
+kubectl get ms -n demo
+```
 NAME               VERSION     STATUS   AGE
 mssql-standalone   2022-cu12   Ready    3m8s
-```
 
 We are now ready to apply the `MSSQLServerOpsRequest` CR to update this database.
 
@@ -173,9 +173,9 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/update-version/msops-update-standalone.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-update-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/update-version/msops-update-standalone.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-update-standalone created
 
 #### Verify MSSQLServer version updated successfully :
 
@@ -184,16 +184,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mssqlserveropsrequest -n demo
+watch kubectl get mssqlserveropsrequest -n demo
+```
 Every 2.0s: kubectl get mssqlserveropsrequest -n demo
 NAME                      TYPE            STATUS       AGE
 msops-update-standalone   UpdateVersion   Successful   2m28s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to update the database.
 
 ```bash
-$ kubectl describe mssqlserveropsrequest -n demo msops-update-standalone
+kubectl describe mssqlserveropsrequest -n demo msops-update-standalone
+```
 Name:         msops-update-standalone
 Namespace:    demo
 Labels:       <none>
@@ -276,20 +277,23 @@ Events:
   Normal   RestartPods                                                           28s    KubeDB Ops-manager Operator  Successfully Restarted MSSQLServer pods
   Normal   Starting                                                              28s    KubeDB Ops-manager Operator  Resuming MSSQLServer database: demo/mssql-standalone
   Normal   Successful                                                            28s    KubeDB Ops-manager Operator  Successfully resumed MSSQLServer database: demo/mssql-standalone for MSSQLServerOpsRequest: msops-update-standalone
-```
 
 Now, we are going to verify whether the `MSSQLServer` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get ms -n demo mssql-standalone -o=jsonpath='{.spec.version}{"\n"}'                                
+kubectl get ms -n demo mssql-standalone -o=jsonpath='{.spec.version}{"\n"}'                                
+```
 2022-cu14
 
-$ kubectl get petset -n demo mssql-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'            
+```bash
+kubectl get petset -n demo mssql-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'            
+```
 mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04@sha256:c1aa8afe9b06eab64c9774a4802dcd032205d1be785b1fd51e1c0151e7586b74
 
-$ kubectl get pods -n demo mssql-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                
-mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
+```bash
+kubectl get pods -n demo mssql-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                
 ```
+mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04
 
 You can see from above, our `MSSQLServer` standalone database has been updated with the new version. So, the update process is successfully completed.
 

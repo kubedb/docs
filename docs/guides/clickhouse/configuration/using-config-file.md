@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for ClickHouse. This tutorial wil
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -45,11 +45,11 @@ At first, you have to create a secret with your configuration file contents as t
 At first, create `clickhouse.yaml` file containing required configuration settings.
 
 ```bash
-$ cat clickhouse-config.yaml
+cat clickhouse-config.yaml
+```
 profiles:
       default:
         max_query_size: 200000
-```
 
 Now, create the secret with this configuration file.
 

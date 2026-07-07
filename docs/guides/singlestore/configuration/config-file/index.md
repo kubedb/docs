@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for SingleStore. This tutorial wi
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-  
-  $ kubectl get ns demo
+
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/singlestore/configuration/config-file/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/singlestore/configuration/config-file/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,11 +50,11 @@ In this tutorial, we will configure [max_connections](https://docs.singlestore.c
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Custom Configuration
 
@@ -74,9 +76,9 @@ read_buffer_size = 122880
 Now, create a secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo sdb-configuration --from-file=./sdb-config.cnf
-configmap/sdb-configuration created
+kubectl create secret generic -n demo sdb-configuration --from-file=./sdb-config.cnf
 ```
+configmap/sdb-configuration created
 
 Verify the secret has the configuration file.
 
@@ -100,9 +102,9 @@ type: Opaque
 Now, create SingleStore crd specifying `spec.topology.aggregator.configSecret` and `spec.topology.leaf.configSecret` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/configuration/config-file/yamls/sdb-custom.yaml
-singlestore.kubedb.com/custom-sdb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/configuration/config-file/yamls/sdb-custom.yaml
 ```
+singlestore.kubedb.com/custom-sdb created
 
 Below is the YAML for the SingleStore crd we just created.
 
@@ -171,18 +173,19 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo
+kubectl get pod -n demo
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 custom-sdb-aggregator-0   2/2     Running   0          94s
 custom-sdb-aggregator-1   2/2     Running   0          88s
 custom-sdb-leaf-0         2/2     Running   0          91s
 custom-sdb-leaf-1         2/2     Running   0          86s
 
-$ kubectl get sdb -n demo
+```bash
+kubectl get sdb -n demo
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 custom-sdb   kubedb.com/v1alpha2   8.9.3    Ready    4m29s
-
-```
 
 We can see the database is in ready phase so it can accept conncetion.
 
@@ -190,9 +193,10 @@ Now, we will check if the database has started with the custom configuration we 
 
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
-```bash
 # Connceting to the database
-$ kubectl exec -it -n demo custom-sdb-aggregator-0 -- bash
+```bash
+kubectl exec -it -n demo custom-sdb-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@custom-sdb-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
@@ -228,8 +232,6 @@ singlestore> show variables like 'read_buffer_size';
 
 singlestore> exit
 Bye
-
-```
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:

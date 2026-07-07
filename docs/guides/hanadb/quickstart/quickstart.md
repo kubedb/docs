@@ -30,29 +30,29 @@ database using KubeDB.
 To keep things isolated, this tutorial uses a separate namespace called `demo`:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Check Available StorageClass
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  19d
-```
 
 ## Find Available HanaDBVersion
 
 KubeDB maintains a `HanaDBVersion` CRD with all supported SAP HANA versions and their images:
 
 ```bash
-$ kubectl get hanadbversions
+kubectl get hanadbversions
+```
 NAME     VERSION   DB_IMAGE                                               DEPRECATED   AGE
 2.0.76   2.0.76    docker.io/saplabs/hanaexpress:2.00.076.00.20240701.1                31h
 2.0.82   2.0.82    docker.io/saplabs/hanaexpress:2.00.082.00.20250528.1                6d13h
 2.0.88   2.0.88    docker.io/saplabs/hanaexpress:2.00.088.00.20251110.1                31h
-```
 
 ## Create a HanaDB Database
 
@@ -80,9 +80,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/quickstart/standalone.yaml
-hanadb.kubedb.com/hanadb-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/quickstart/standalone.yaml
 ```
+hanadb.kubedb.com/hanadb-quickstart created
 
 Here,
 
@@ -101,18 +101,19 @@ governing (headless) `Service`, an authentication `Secret`, and an `AppBinding` 
 ## Wait for the Database to be Ready
 
 ```bash
-$ kubectl get hanadb.kubedb.com -n demo hanadb-quickstart -w
+kubectl get hanadb.kubedb.com -n demo hanadb-quickstart -w
+```
 NAME                VERSION   STATUS         AGE
 hanadb-quickstart   2.0.82    Provisioning   2m
 hanadb-quickstart   2.0.82    Provisioning   18m
 hanadb-quickstart   2.0.82    Ready          19m
-```
 
 When `status.phase` becomes `Ready`, the database is ready for traffic. Let's look at the details with
 `kubectl describe`:
 
 ```bash
-$ kubectl describe hanadb.kubedb.com -n demo hanadb-quickstart
+kubectl describe hanadb.kubedb.com -n demo hanadb-quickstart
+```
 Name:         hanadb-quickstart
 Namespace:    demo
 API Version:  kubedb.com/v1alpha2
@@ -173,7 +174,6 @@ Status:
     Status:  True
     Type:    Provisioned
   Phase:     Ready
-```
 
 Note that KubeDB filled in sensible defaults — for example the default resources on the `hanadb`
 container and the `12000:79` security context derived from the `HanaDBVersion`.
@@ -181,7 +181,8 @@ container and the `12000:79` security context derived from the `HanaDBVersion`.
 ## Check Resources Created by KubeDB
 
 ```bash
-$ kubectl get hanadb.kubedb.com,pods,pvc,svc -n demo -l app.kubernetes.io/instance=hanadb-quickstart
+kubectl get hanadb.kubedb.com,pods,pvc,svc -n demo -l app.kubernetes.io/instance=hanadb-quickstart
+```
 NAME                              VERSION   STATUS   AGE
 hanadb.kubedb.com/hanadb-quickstart   2.0.82    Ready    19m
 
@@ -194,7 +195,6 @@ persistentvolumeclaim/data-hanadb-quickstart-0   Bound    pvc-83118378-1265-4843
 NAME                             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)               AGE
 service/hanadb-quickstart        ClusterIP   10.43.188.77   <none>        39017/TCP             6m33s
 service/hanadb-quickstart-pods   ClusterIP   None           <none>        39001/TCP,39017/TCP   6m33s
-```
 
 - `hanadb-quickstart` (port `39017`) is the primary SQL `Service`.
 - `hanadb-quickstart-pods` is the governing headless `Service` (nameserver port `39001`, SQL port `39017`).
@@ -204,42 +204,44 @@ service/hanadb-quickstart-pods   ClusterIP   None           <none>        39001/
 KubeDB stores the `SYSTEM` user credentials in the `hanadb-quickstart-auth` Secret:
 
 ```bash
-$ kubectl get secret -n demo hanadb-quickstart-auth -o jsonpath='{.type}'
+kubectl get secret -n demo hanadb-quickstart-auth -o jsonpath='{.type}'
+```
 kubernetes.io/basic-auth
 
-$ kubectl get secret -n demo hanadb-quickstart-auth -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+```bash
+kubectl get secret -n demo hanadb-quickstart-auth -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+```
 password
 password.json
 username
-```
 
 Read the password into a shell variable (avoid pasting real passwords into shared terminals):
 
 ```bash
-$ HANA_PASSWORD="$(kubectl get secret hanadb-quickstart-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+HANA_PASSWORD="$(kubectl get secret hanadb-quickstart-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
 ```
 
 Run a query with `hdbsql` from inside the database pod. Source the HANA environment first:
 
 ```bash
-$ kubectl exec -n demo hanadb-quickstart-0 -c hanadb -- /bin/sh -lc \
+kubectl exec -n demo hanadb-quickstart-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' 'SELECT 1 AS HELLO FROM DUMMY'"
+```
 HELLO
 1
 1 row selected (overall time 3143 usec; server time 158 usec)
-```
 
 List the databases inside the HANA instance:
 
 ```bash
-$ kubectl exec -n demo hanadb-quickstart-0 -c hanadb -- /bin/sh -lc \
+kubectl exec -n demo hanadb-quickstart-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' \"SELECT DATABASE_NAME, ACTIVE_STATUS FROM SYS.M_DATABASES\""
+```
 DATABASE_NAME,ACTIVE_STATUS
 "SYSTEMDB","YES"
 "HXE","YES"
 "KUBEDB_HEALTH_CHECK","YES"
 3 rows selected
-```
 
 Here, `SYSTEMDB` is the HANA system database, `HXE` is the tenant database, and `KUBEDB_HEALTH_CHECK`
 is the tenant database KubeDB uses for its periodic write probe.
@@ -249,9 +251,15 @@ is the tenant database KubeDB uses for its periodic write probe.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo hanadb.kubedb.com/hanadb-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-quickstart
-$ kubectl delete ns demo
+kubectl patch -n demo hanadb.kubedb.com/hanadb-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-quickstart
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

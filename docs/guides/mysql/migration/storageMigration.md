@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops Manager to  migrate `StorageCla
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare MySQL Database
 
@@ -79,13 +79,14 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/sample-mysql.yaml
-mysql.kubedb.com/sample-mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/sample-mysql.yaml
 ```
+mysql.kubedb.com/sample-mysql created
 Now, wait until sample-mysql has status `Ready` and check the `StorageClass`,
 
 ```bash
-$ kubectl get mysql,pvc -n demo
+kubectl get mysql,pvc -n demo
+```
 NAME                            VERSION   STATUS   AGE
 mysql.kubedb.com/sample-mysql   8.4.8     Ready    101s
 
@@ -93,7 +94,6 @@ NAME                                        STATUS   VOLUME                     
 persistentvolumeclaim/data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            local-path     <unset>                 96s
 persistentvolumeclaim/data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            local-path     <unset>                 90s
 persistentvolumeclaim/data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            local-path     <unset>                 85s
-```
 
 The database is `Ready` and all the `PersistentVolumeClaim` uses `local-path`  StorageClass, Let's create a table in the primary.
 
@@ -204,38 +204,38 @@ Here,
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
-``` bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/storage-migration.yaml
-mysqlopsrequest.ops.kubedb.com/storage-migration created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/storage-migration.yaml
 ```
+mysqlopsrequest.ops.kubedb.com/storage-migration created
 ## Verify the StorageClass Migrated Successfully
 
 If everything goes well, `KubeDB` operator will migrate the `StorageClass` along with the data.
 
 Let’s wait for `MySQLOpsRequest` to be `Successful`. Run the following command to watch MySQLOpsRequest CR,
 
-``` bash
-$ watch kubectl get mysqlopsrequest -n demo
-
+```bash
+watch kubectl get mysqlopsrequest -n demo
+```
 Every 2.0s: kubectl get mysqlopsrequest -n demo
 
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   12m
-```
 We can see from the above output that the `MySQLOpsRequest` has succeeded. Let's verify the StorageClass.
 
-``` bash
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS        VOLUMEATTRIBUTESCLASS   AGE
 data-sample-mysql-0   Bound    pvc-64cca3c6-85aa-426f-abc3-b300ecfe365a   1Gi        RWO            standard-custom     <unset>                 21m
 data-sample-mysql-1   Bound    pvc-1de36b06-8e32-4e9a-a01b-3b6d7c618688   1Gi        RWO            standard-custom     <unset>                 21m
 data-sample-mysql-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   1Gi        RWO            standard-custom     <unset>                 21m
-```
 
 The `PersistentVolumeClaim` StorageClass has changed to `standard-custom`.  Now, we will verify that the data remains intact after the `StorageMigration` operation. Let's exec into one of the `MySQL` pod and perform read query.
 
 ```bash
-$ kubectl exec -it -n demo sample-mysql-0 -- bash
+kubectl exec -it -n demo sample-mysql-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -278,8 +278,6 @@ mysql> select * from hello.users;
 +----+--------+--------------------+
 20 rows in set (0.00 sec)
 
-```
-
 From the above output we can verify that data remains intact after the `StorageMigration` operation.
 
 ## CleanUp
@@ -287,7 +285,13 @@ From the above output we can verify that data remains intact after the `StorageM
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mysqlopsrequest -n demo storage-migration
-$ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete ns demo
+kubectl delete mysqlopsrequest -n demo storage-migration
+```
+
+```bash
+kubectl delete mysql -n demo sample-mysql
+```
+
+```bash
+kubectl delete ns demo
 ```

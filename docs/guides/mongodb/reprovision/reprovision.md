@@ -24,10 +24,10 @@ KubeDB supports reprovisioning the MongoDB database via a MongoDBOpsRequest. Rep
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
+  ```bash
+  kubectl create ns demo
+  ```
   namespace/demo created
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -86,9 +86,9 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reprovision/mongo.yaml
-mongodb.kubedb.com/mongo created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reprovision/mongo.yaml
 ```
+mongodb.kubedb.com/mongo created
 
 ## Apply Reprovision opsRequest
 
@@ -114,9 +114,9 @@ spec:
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reprovision/ops.yaml
-mongodbopsrequest.ops.kubedb.com/repro created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reprovision/ops.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/repro created
 
 Now the Ops-manager operator will
 1) Pause the DB
@@ -125,13 +125,15 @@ Now the Ops-manager operator will
 4) Reconcile the db for start
 5) Wait for DB to be Ready. 
 
-```shell
-$ kubectl get mgops -n demo
+```bash
+kubectl get mgops -n demo
+```
 NAME    TYPE          STATUS       AGE
 repro   Reprovision   Successful   2m
 
-
-$ kubectl get mgops -n demo -oyaml repro
+```bash
+kubectl get mgops -n demo -oyaml repro
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MongoDBOpsRequest
 metadata:
@@ -177,7 +179,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 
 ## Cleaning up

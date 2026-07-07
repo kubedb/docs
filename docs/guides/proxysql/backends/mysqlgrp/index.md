@@ -28,9 +28,9 @@ This guide will show you how to use `KubeDB` operator to set up a `ProxySQL` ser
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare MySQL Backend 
 
@@ -62,22 +62,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's wait for the MySQL to be Ready. 
 
 ```bash
-$ kubectl get my -n demo 
+kubectl get my -n demo 
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.3    Ready    7m6s
-```
 
 Let's first create a user in the backend mysql server and a database to test the proxy traffic.
 
 ```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash
+kubectl exec -it -n demo mysql-server-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 mysql@mysql-server-0:/$  mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -125,7 +126,6 @@ mysql> select * FROM performance_schema.replication_group_members;
 
 mysql> exit
 Bye
-```
 
 This output from the performance_schema.replication_group_members table in MySQL shows the status of nodes in a Group Replication (GR) setup.
 We have 3 nodes in your MySQL Group Replication cluster. All 3 nodes are ONLINE – they are healthy and actively participating in replication. mysql-server-0 is the PRIMARY node – it's the one accepting write queries. And mysql-server-1 and mysql-server-2 are SECONDARY – they receive updates from the primary but are read-only.
@@ -154,23 +154,24 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
-proxysql.kubedb.com/mysql-proxy created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/mysql-proxy created
 
 Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
-$ kubectl get prx -n demo
+kubectl get prx -n demo
+```
 NAME          VERSION        STATUS   AGE
 mysql-proxy   3.0.1-debian   Ready    109s
-```
 
 Let's check the pods and associated kubernetes objects
 ```bash
-$ kubectl get petset,pods,svc,secrets -n demo
+kubectl get petset,pods,svc,secrets -n demo
+```
 NAME                                        AGE
 petset.apps.k8s.appscode.com/mysql-proxy    3m59s
 
@@ -187,13 +188,13 @@ NAME                               TYPE                       DATA   AGE
 secret/mysql-proxy-auth            kubernetes.io/basic-auth   2      4m1s
 secret/mysql-proxy-configuration   Opaque                     1      4m1s
 secret/mysql-proxy-monitor         kubernetes.io/basic-auth   2      4m1s
-```
 
 ### Check Internal Configuration
 Lets exec into the ProxySQL server pod and get into the admin panel. 
 
 ```bash
-$ kubectl exec -it -n demo mysql-proxy-0 -- bash
+kubectl exec -it -n demo mysql-proxy-0 -- bash
+```
 proxysql@mysql-proxy-0:/$  mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 93
@@ -204,7 +205,6 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 ProxySQLAdmin > 
-```
 
 Let's check the mysql_group_replication_hostgroups and mysql_servers table first. We didn't set it from the yaml. The KubeDB operator will do that for us. 
 
@@ -283,13 +283,13 @@ deployment.apps/ubuntu created
 Lets exec into the pod and install mysql-client. 
 
 ```bash
-$ kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+```
 root@ubuntu-bb47d8d6c-7wndq:/# apt update
 ... ... ..
 root@ubuntu-bb47d8d6c-7wndq:/# apt install mysql-client -y
 Reading package lists... Done
 ... .. ...
-```
 
 Now let's try to connect with the ProxySQL server through the `mysql-proxy` service as the `test` user. 
 

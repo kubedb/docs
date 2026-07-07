@@ -31,9 +31,9 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -75,24 +75,24 @@ spec:
 Let's create the `Memcached` CR we have shown above, 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/memcached-horizontal.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/memcached-horizontal.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e. ,
 
 ```bash
-$ kubectl get memcached -n demo
+kubectl get memcached -n demo
+```
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    5m
-```
 
 Let's check the number of replicas this database has from the Memcached object
 
 ```bash
-$ kubectl get memcached -n demo memcd-quickstart -o json | jq '.spec.replicas'
-3
+kubectl get memcached -n demo memcd-quickstart -o json | jq '.spec.replicas'
 ```
+3
 
 We are now ready to apply the `MemcachedOpsRequest` CR to update the resources of this database.
 
@@ -127,9 +127,9 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/horizontal-scaling.yaml
-memcachedopsrequest.ops.kubedb.com/memcd-horizontal-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/scaling/horizontal-scaling.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/memcd-horizontal-up created
 
 #### Verify Memcached resources updated successfully 
 
@@ -138,17 +138,17 @@ If everything goes well, `KubeDB` Enterprise operator will update the replicas o
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo memcd-horizontal-up
+watch kubectl get memcachedopsrequest -n demo memcd-horizontal-up
+```
 NAME                  TYPE                STATUS       AGE
 memcd-horizontal-up   HorizontalScaling   Successful   3m
-```
 
 Now, we are going to verify if the number of replicas the memcached database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get memcached -n demo memcd-quickstart -o json | jq '.spec.replicas'
-5
+kubectl get memcached -n demo memcd-quickstart -o json | jq '.spec.replicas'
 ```
+5
 
 The above output verifies that we have successfully scaled up the replicas of the Memcached database.
 
@@ -157,13 +157,16 @@ The above output verifies that we have successfully scaled up the replicas of th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete -n demo memcached memcd-quickstart
+```bash
+kubectl delete -n demo memcached memcd-quickstart
+```
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete -n demo memcachedopsrequest memcd-horizontal-up 
-memcachedopsrequest.ops.kubedb.com "memcd-horizontal-up" deleted
+```bash
+kubectl delete -n demo memcachedopsrequest memcd-horizontal-up 
 ```
+memcachedopsrequest.ops.kubedb.com "memcd-horizontal-up" deleted

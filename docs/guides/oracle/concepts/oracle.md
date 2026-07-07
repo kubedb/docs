@@ -89,11 +89,10 @@ spec:
               memory: 3Gi
   deletionPolicy: Delete
 ```
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/quickstart/standalone.yaml
-oracle.kubedb.com/oracle created
-
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/quickstart/standalone.yaml
 ```
+oracle.kubedb.com/oracle created
 #### 2. DataGuard Mode Configuration
 
 ```yaml

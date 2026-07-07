@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Mongo
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,11 +48,11 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  9h
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   9h
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -95,25 +95,28 @@ spec:
 Let's create the `MongoDB` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/storage/mg-sh.yaml
-mongodb.kubedb.com/mg-sh created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/storage/mg-sh.yaml
 ```
+mongodb.kubedb.com/mg-sh created
 
 Now, wait until `mg-sh` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME      VERSION    STATUS    AGE
 mg-sh     4.4.26      Ready     3m51s
-```
 
 Let's check volume size from one of the shard petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                            STORAGECLASS          REASON   AGE
 pvc-031836c6-95ae-4015-938c-da183c205828   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-configsvr-0   topolvm-provisioner            5m1s
 pvc-2515233f-0f7d-4d0d-8b45-97a3cb9d4488   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard0-2      topolvm-provisioner            3m44s
@@ -124,7 +127,6 @@ pvc-80dc91d3-f56f-4037-b6e1-f69e13fb434c   1Gi        RWO            Delete     
 pvc-c1965a32-7471-4885-ac52-f9eab056d48e   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard1-2      topolvm-provisioner            3m57s
 pvc-c838a27d-c75d-4caa-9c1d-456af3bfaba0   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard1-0      topolvm-provisioner            4m59s
 pvc-d47f19be-f206-41c5-a0b1-5022776fea2f   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard0-1      topolvm-provisioner            4m25s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -169,20 +171,23 @@ Here,
 Let's create the `MongoDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/storage/mg-as-sh.yaml
-mongodbautoscaler.autoscaling.kubedb.com/mg-as-sh created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/autoscaling/storage/mg-as-sh.yaml
 ```
+mongodbautoscaler.autoscaling.kubedb.com/mg-as-sh created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `mongodbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get mongodbautoscaler -n demo
+kubectl get mongodbautoscaler -n demo
+```
 NAME       AGE
 mg-as-sh   20s
 
-$ kubectl describe mongodbautoscaler mg-as-sh -n demo
+```bash
+kubectl describe mongodbautoscaler mg-as-sh -n demo
+```
 Name:         mg-as-sh
 Namespace:    demo
 Labels:       <none>
@@ -227,7 +232,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    60
 Events:                   <none>
-```
 So, the `mongodbautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up one of the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
@@ -235,7 +239,8 @@ Now, for this demo, we are going to manually fill up one of the persistent volum
 Let's exec into the database pod and fill the database volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo mg-sh-shard0-0 -- bash
+kubectl exec -it -n demo mg-sh-shard0-0 -- bash
+```
 root@mg-sh-shard0-0:/# df -h /data/db
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/ad11042f-f4cc-4dfc-9680-2afbbb199d48 1014M  335M  680M  34% /data/db
@@ -246,32 +251,32 @@ root@mg-sh-shard0-0:/# dd if=/dev/zero of=/data/db/file.img bs=500M count=1
 root@mg-sh-shard0-0:/# df -h /data/db
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/ad11042f-f4cc-4dfc-9680-2afbbb199d48 1014M  837M  178M  83% /data/db
-```
 
 So, from the above output we can see that the storage usage is 83%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `mongodbopsrequest` in the demo namespace to see if any `mongodbopsrequest` object is created. After some time you'll see that a `mongodbopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                TYPE              STATUS        AGE
 mops-mg-sh-ba5ikn   VolumeExpansion   Progressing   41s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get mongodbopsrequest -n demo
+watch kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                TYPE              STATUS        AGE
 mops-mg-sh-ba5ikn   VolumeExpansion   Successful    2m54s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-mg-sh-ba5ikn
+kubectl describe mongodbopsrequest -n demo mops-mg-sh-ba5ikn
+```
 Name:         mops-mg-sh-ba5ikn
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -380,14 +385,17 @@ Events:
   Normal  ResumeDatabase        36s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-sh
   Normal  ReadyPetSets     31s    KubeDB Ops-manager operator  PetSet is recreated
   Normal  Successful            31s    KubeDB Ops-manager operator  Successfully Expanded Volume
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the shard nodes of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1594884096"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                            STORAGECLASS          REASON   AGE
 pvc-031836c6-95ae-4015-938c-da183c205828   1Gi        RWO            Delete           Bound    demo/datadir-mg-sh-configsvr-0   topolvm-provisioner            13m
 pvc-2515233f-0f7d-4d0d-8b45-97a3cb9d4488   2Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard0-2      topolvm-provisioner            11m
@@ -398,7 +406,6 @@ pvc-80dc91d3-f56f-4037-b6e1-f69e13fb434c   2Gi        RWO            Delete     
 pvc-c1965a32-7471-4885-ac52-f9eab056d48e   2Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard1-2      topolvm-provisioner            11m
 pvc-c838a27d-c75d-4caa-9c1d-456af3bfaba0   2Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard1-0      topolvm-provisioner            12m
 pvc-d47f19be-f206-41c5-a0b1-5022776fea2f   2Gi        RWO            Delete           Bound    demo/datadir-mg-sh-shard0-1      topolvm-provisioner            12m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the shard nodes of this MongoDB database.
 

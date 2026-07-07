@@ -31,24 +31,25 @@ This tutorial will show you how to use KubeDB to run a MySQL database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available MySQLVersion
 
 When you have installed KubeDB, it has created `MySQLVersion` crd for all supported MySQL versions. Check it by using the following command,
 
 ```bash
-$ kubectl get mysqlversions
+kubectl get mysqlversions
+```
 5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                29h
 8.4.8          8.4.8    Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                29h
 8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                29h
@@ -60,7 +61,6 @@ $ kubectl get mysqlversions
 8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 29h
 9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 29h
 8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 29h
-```
 
 ## Create a MySQL database
 
@@ -88,9 +88,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
-mysql.kubedb.com/mysql-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1.yaml
 ```
+mysql.kubedb.com/mysql-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -112,9 +112,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1alpha2.yaml
-mysql.kubedb.com/mysql-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/quickstart-v1alpha2.yaml
 ```
+mysql.kubedb.com/mysql-quickstart created
 
 Here,
 
@@ -128,7 +128,8 @@ Here,
 KubeDB operator watches for `MySQL` objects using Kubernetes api. When a `MySQL` object is created, KubeDB operator will create a new PetSet and a Service with the matching MySQL object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl dba describe my -n demo mysql-quickstart
+kubectl dba describe my -n demo mysql-quickstart
+```
 Name:               mysql-quickstart
 Namespace:          demo
 CreationTimestamp:  Fri, 03 Jun 2022 12:50:40 +0600
@@ -242,18 +243,21 @@ Events:
   Normal   Successful  32s   KubeDB Operator  Successfully created MySQL
   Normal   Successful  32s   KubeDB Operator  Successfully created appbinding
 
-
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME               READY   AGE
 mysql-quickstart   1/1     3m19s
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                      STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-mysql-quickstart-0   Bound    pvc-ab44ce95-2300-47d7-8f25-3cd7bc5b0091   1Gi        RWO            standard       3m50s
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
 pvc-ab44ce95-2300-47d7-8f25-3cd7bc5b0091   1Gi        RWO            Delete           Bound    demo/data-mysql-quickstart-0   standard                4m19s
 
@@ -261,7 +265,6 @@ kubectl get service -n demo
 NAME                    TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 mysql-quickstart        ClusterIP   10.96.150.194   <none>        3306/TCP   5m13s
 mysql-quickstart-pods   ClusterIP   None            <none>        3306/TCP   5m13s
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified MySQL object:
 
@@ -350,20 +353,24 @@ If you want to use an existing secret please specify that when creating the MySQ
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `mysql-quickstart-auth` secret holds username and password
 
 ```bash
-$ kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
+kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
+```
   podIP: 10.244.0.30
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```bash
+kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-H(Y.s)pg&cX1Ds3J
+```bash
+kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+H(Y.s)pg&cX1Ds3J
 we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
 
 ```bash
-$ kubectl exec -it -n demo mysql-quickstart-0 -- bash
-
+kubectl exec -it -n demo mysql-quickstart-0 -- bash
+```
 root@mysql-quickstart-0:/# mysql -uroot -p"H(Y.s)pg&cX1Ds3J"
 
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -383,8 +390,6 @@ mysql> show databases;
 | sys                |
 +--------------------+
 5 rows in set (0.00 sec)
-
-```
 you can also connect with database management tools like [phpmyadmin](https://hub.docker.com/_/phpmyadmin), [dbgate](https://hub.docker.com/r/dbgate/dbgate).
 
 __connecting with `phpmyadmin`__
@@ -392,32 +397,35 @@ __connecting with `phpmyadmin`__
 lets create a deployment of `phpmyadmin`
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/phpmyadmin.yaml
-
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/phpmyadmin.yaml
+```
 deployment/myadmin created
 service/myadmin created
 
-$ kubectl get pods -n demo --watch
+```bash
+kubectl get pods -n demo --watch
+```
 NAME                       READY   STATUS    RESTARTS   AGE
 myadmin-85d86cf5b5-f4mq4   1/1     Running   0          8s
 mysql-quickstart-0         1/1     Running   0          12m
 
-
-$ kubectl get svc -n demo
+```bash
+kubectl get svc -n demo
+```
 NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 myadmin                 LoadBalancer   10.96.108.199   <pending>     80:32634/TCP   51s
 mysql-quickstart        ClusterIP      10.96.150.194   <none>        3306/TCP       13m
 mysql-quickstart-pods   ClusterIP      None            <none>        3306/TCP       13m
-
-
-```
 Lets, open your browser and go to the following URL: _http://{node-ip}:{myadmin-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
 ```bash
-$ kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+kubectl get svc -n demo myadmin -o json | jq '.spec.ports[].nodePort'
+```
 30158
 
-$ kubectl get node -o json | jq '.items[].status.addresses[].address'
+```bash
+kubectl get node -o json | jq '.items[].status.addresses[].address'
+```
 "172.18.0.3"
 "kind-control-plane"
 "172.18.0.4"
@@ -427,7 +435,6 @@ $ kubectl get node -o json | jq '.items[].status.addresses[].address'
 
 # expected url will be:
 url: http://172.18.0.4:30158
-```
 According to this example, the URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158).You can also use the external-ip of the service.Also port forward your service to connect.
 
 
@@ -439,34 +446,38 @@ __connecting with `dbgate`__
 
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/dbgate.yaml
-
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/quickstart/yamls/dbgate.yaml
+```
 deployment/dbgate created
 service/dbgate created
 
-$ kubectl get pods -n demo --watch
+```bash
+kubectl get pods -n demo --watch
+```
 NAME                       READY   STATUS    RESTARTS   AGE
 demo                 dbgate-77d7fd4889-bfhb9                         1/1     Running   0          17m
 
 -85d86cf5b5-f4mq4   1/1     Running   0          8s
 mysql-quickstart-0         1/1     Running   0          12m
 
-
-$ kubectl get svc -n demo
+```bash
+kubectl get svc -n demo
+```
 NAME                    TYPE           CLUSTER-IP      EXTERNAL-IP   PORT(S)        AGE
 dbgate                  LoadBalancer   10.96.226.216   <pending>     3000:32475/TCP               51s
 mysql-quickstart        ClusterIP      10.96.150.194   <none>        3306/TCP       13m
 mysql-quickstart-pods   ClusterIP      None            <none>        3306/TCP       13m
 
-```
-
 Lets, open your browser and go to the following URL: _http://{node-ip}:{dbgate-svc-nodeport}_. For kind cluster, you can get this URL by running the following command:
 
 ```bash
-$ kubectl get svc -n demo dbgate -o json | jq '.spec.ports[].nodePort'
+kubectl get svc -n demo dbgate -o json | jq '.spec.ports[].nodePort'
+```
 32475
 
-$ kubectl get node -o json | jq '.items[].status.addresses[].address'
+```bash
+kubectl get node -o json | jq '.items[].status.addresses[].address'
+```
 "172.18.0.3"
 "kind-control-plane"
 "172.18.0.4"
@@ -476,7 +487,6 @@ $ kubectl get node -o json | jq '.items[].status.addresses[].address'
 
 # expected url will be:
 url: http://172.18.0.4:32475
-```
 According to this example, the URL will be [ http://172.18.0.4:30158]( http://172.18.0.4:30158).You can also use the external-ip of the service.Also port forward your service to connect.
 
 You can connect multiple different database using db gate. To log into  MySQL select the MYSQL driver and use server __`mysql-quickstart.demo`__ or __`10.244.0.30`__ , username __`root`__ and password __`H(Y.s)pg&cX1Ds3J`__.
@@ -490,9 +500,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete my mysql-quickstart -n demo
-Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be halted. To delete, change spec.deletionPolicy
+kubectl delete my mysql-quickstart -n demo
 ```
+Error from server (BadRequest): admission webhook "mysql.validators.kubedb.com" denied the request: mysql "mysql-quickstart" can't be halted. To delete, change spec.deletionPolicy
 
 Now, run `kubectl edit my mysql-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` (which deletes the mysql object and keeps PVC, snapshots, Secrets intact) or remove this field (which default to `Delete`). Then you will be able to delete/halt the database.
 
@@ -507,21 +517,21 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 At first, run `kubectl edit my mysql-quickstart -n demo` to set `spec.deletionPolicy` to `Halt`. Then delete the mysql object,
 
 ```bash
-$ kubectl delete my mysql-quickstart -n demo
-mysql.kubedb.com "mysql-quickstart" deleted
+kubectl delete my mysql-quickstart -n demo
 ```
+mysql.kubedb.com "mysql-quickstart" deleted
 
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
 secret/mysql-quickstart-auth   Opaque                                2      20h
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-716f627c-9aa2-47b6-aa64-a547aab6f55c   1Gi        RWO            standard       20h
-```
 
 From the above output, you can see that all mysql resources(`PetSet`, `Service`, etc.) are deleted except `PVC` and `Secret`. You can recreate your mysql again using this resources.
 
@@ -536,18 +546,18 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete my mysql-quickstart -n demo
-mysql.kubedb.com "mysql-quickstart" deleted
+kubectl delete my mysql-quickstart -n demo
 ```
+mysql.kubedb.com "mysql-quickstart" deleted
 
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
+kubectl get petset,svc,secret,pvc -n demo
+```
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
 secret/mysql-quickstart-auth   Opaque
-```
 
 From the above output, you can see that all mysql resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`. You can initialize your mysql using `snapshots`(if previously taken) and `secret`.
 
@@ -567,9 +577,9 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petset,svc,secret,pvc -n demo
-No resources found in demo namespace.
+kubectl get petset,svc,secret,pvc -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all mysql resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
@@ -584,7 +594,8 @@ Suppose we have a database running `mysql-quickstart` in our cluster. Now, we ar
 Run the following command to get MySQL resources,
 
 ```bash
-$ kubectl get my,petset,secret,svc,pvc -n demo
+kubectl get my,petset,secret,svc,pvc -n demo
+```
 NAME                                VERSION   STATUS   AGE
 mysql.kubedb.com/mysql-quickstart   8.4.8    Halted   22m
 
@@ -594,7 +605,6 @@ secret/mysql-quickstart-auth   Opaque                                2      22m
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-mysql-quickstart-0   Bound    pvc-7ab0ebb0-bb2e-45c1-9af1-4f175672605b   1Gi        RWO            standard       22m
-```
 
 From the above output , you can see that `MySQL` object, `PVCs`, `Secret` are still alive. Then you can recreate your `MySQL` with same configuration.
 

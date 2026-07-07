@@ -39,14 +39,16 @@ KubeDB-generated passwords already satisfy these rules.
 ## Check the Current Credentials
 
 ```bash
-$ kubectl get secret hanadb-standalone-auth -n demo -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+kubectl get secret hanadb-standalone-auth -n demo -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+```
 password
 password.json
 username
 
-$ kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d; echo
-SYSTEM
+```bash
+kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d; echo
 ```
+SYSTEM
 
 ## Option A — Rotate with a KubeDB-generated password
 
@@ -67,20 +69,21 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/rotate-authentication/rotate-auth-generated.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-rotate-auth-generated created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/rotate-authentication/rotate-auth-generated.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-rotate-auth-generated created
 
 Wait for the ops request to succeed:
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-rotate-auth-generated
+kubectl get hdbops -n demo hdbops-rotate-auth-generated
+```
 NAME                           TYPE         STATUS       AGE
 hdbops-rotate-auth-generated   RotateAuth   Successful   4m22s
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-rotate-auth-generated
+kubectl describe hdbops -n demo hdbops-rotate-auth-generated
+```
 ...
 Status:
   Conditions:
@@ -105,37 +108,41 @@ Status:
     Status:   True
     Type:     Successful
   Phase:      Successful
-```
 
 KubeDB updates the `hanadb-standalone-auth` secret with the new password (keeping the previous one under
 `.prev` keys) and verifies connectivity with the new credentials:
 
 ```bash
-$ kubectl get secret hanadb-standalone-auth -n demo -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+kubectl get secret hanadb-standalone-auth -n demo -o go-template='{{range $k,$v := .data}}{{$k}}{{"\n"}}{{end}}'
+```
 password
 password.json
 password.prev
 username
 username.prev
 
-$ NEW_PASSWORD="$(kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
-$ kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
+```bash
+NEW_PASSWORD="$(kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+```
+
+```bash
+kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$NEW_PASSWORD' 'SELECT 1 AS OK FROM DUMMY'"
+```
 OK
 1
 1 row selected
-```
 
 ## Option B — Rotate with a user-provided password
 
 First create a `Secret` with the new credentials (username `SYSTEM`):
 
 ```bash
-$ kubectl create secret generic hanadb-new-auth -n demo \
+kubectl create secret generic hanadb-new-auth -n demo \
   --from-literal=username=SYSTEM \
   --from-literal=password='NewHanaPass1'
-secret/hanadb-new-auth created
 ```
+secret/hanadb-new-auth created
 
 Then reference it from the ops request:
 
@@ -158,40 +165,49 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/rotate-authentication/rotate-auth-user.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-rotate-auth-user created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/rotate-authentication/rotate-auth-user.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-rotate-auth-user created
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-rotate-auth-user
+kubectl get hdbops -n demo hdbops-rotate-auth-user
+```
 NAME                      TYPE         STATUS       AGE
 hdbops-rotate-auth-user   RotateAuth   Successful   2m33s
-```
 
 After the request succeeds, KubeDB pins `spec.authSecret` to your secret (`externallyManaged: true`):
 
 ```bash
-$ kubectl get hanadb.kubedb.com hanadb-standalone -n demo -o jsonpath='{.spec.authSecret}'
-{"activeFrom":"...","externallyManaged":true,"name":"hanadb-new-auth"}
+kubectl get hanadb.kubedb.com hanadb-standalone -n demo -o jsonpath='{.spec.authSecret}'
 ```
+{"activeFrom":"...","externallyManaged":true,"name":"hanadb-new-auth"}
 
 You can now connect with the password you supplied:
 
 ```bash
-$ kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
+kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p 'NewHanaPass1' 'SELECT 1 AS OK FROM DUMMY'"
+```
 OK
 1
 1 row selected
-```
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-rotate-auth-generated hdbops-rotate-auth-user
-$ kubectl delete secret -n demo hanadb-new-auth
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-standalone
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-rotate-auth-generated hdbops-rotate-auth-user
+```
+
+```bash
+kubectl delete secret -n demo hanadb-new-auth
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

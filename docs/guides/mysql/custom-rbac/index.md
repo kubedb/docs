@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/mysql/custom-rbac/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,9 +46,9 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
@@ -70,9 +70,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the MySQL instance named `quick-mysql`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -98,10 +98,9 @@ This permission is required for MySQL pods running on PSP enabled clusters.
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
-
+kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
@@ -129,9 +128,9 @@ subjects:
 Now, create a MySQL crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-db.yaml
-mysql.kubedb.com/quick-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-db.yaml
 ```
+mysql.kubedb.com/quick-mysql created
 
 Below is the YAML for the MySQL crd we just created.
 
@@ -162,15 +161,16 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, PetSet, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo quick-mysql-0
+kubectl get pod -n demo quick-mysql-0
+```
 NAME            READY   STATUS    RESTARTS   AGE
 quick-mysql-0   1/1     Running   0          2m44s
-```
 
 Check the pod's log to see if the database is ready
 
 ```bash
-$ kubectl logs -f -n demo quick-mysql-0
+kubectl logs -f -n demo quick-mysql-0
+```
 ...
 2022-06-28 13:46:46+00:00 [Note] [Entrypoint]: Entrypoint script for MySQL Server 8.4.8-1debian10 started.
 2022-06-28 13:46:46+00:00 [Note] [Entrypoint]: Switching to dedicated user 'mysql'
@@ -179,8 +179,6 @@ $ kubectl logs -f -n demo quick-mysql-0
 ...
 2022-06-28T13:47:02.915445Z 0 [System] [MY-011323] [Server] X Plugin ready for connections. Bind-address: '::' port: 33060, socket: /var/run/mysqld/mysqlx.sock
 2022-06-28T13:47:02.915504Z 0 [System] [MY-010931] [Server] /usr/sbin/mysqld: ready for connections. Version: '8.4.8'  socket: '/var/run/mysqld/mysqld.sock'  port: 3306  MySQL Community Server - GPL.
-
-```
 
 Once we see `MySQL init process done. Ready for start up.` in the log, the database is ready.
 
@@ -191,9 +189,9 @@ An existing service account can be reused in another MySQL instance. No new acce
 Now, create MySQL crd `minute-mysql` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-db-two.yaml
-mysql.kubedb.com/quick-mysql created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/custom-rbac/yamls/my-custom-db-two.yaml
 ```
+mysql.kubedb.com/quick-mysql created
 
 Below is the YAML for the MySQL crd we just created.
 
@@ -225,10 +223,10 @@ Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo minute-mysql-0
+kubectl get pod -n demo minute-mysql-0
+```
 NAME             READY     STATUS    RESTARTS   AGE
 minute-mysql-0   1/1       Running   0          14m
-```
 
 Check the pod's log to see if the database is ready
 

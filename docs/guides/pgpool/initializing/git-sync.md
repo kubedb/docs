@@ -32,9 +32,9 @@ In this example, we will initialize Pgpool using a `.sh` script from the GitHub 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/Pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -96,15 +96,16 @@ Here,
 Now, wait until `pgpool` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get Pgpool -n demo
+kubectl get Pgpool -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 pgpool   kubedb.com/v1alpha2   4.4.5     Ready    4m
-```
 
 Next, we will connect to the Pgpool database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
 ```bash
-$kubectl exec -it -n demo pgpool-0 -- sh
+kubectl exec -it -n demo pgpool-0 -- sh
+```
 Defaulted container "pgpool" out of: pgpool, git-sync (init)
 / $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
 / $ psql -U postgres -d postgres -h localhost -p <db container port>
@@ -118,8 +119,6 @@ postgres=# \dt
  public | kubedb_write_check_pgpool | table | postgres
  public | my_table                  | table | postgres
 (2 rows)
-
-```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
 ## From Private Git Repository
 
@@ -130,7 +129,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -145,7 +144,7 @@ This secret will be used by git-sync to authenticate with the Git repository.
 >Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also you can use any name instead of `git-creds` to create the secret.
 
 ```bash
-$ kubectl create secret generic -n demo <secret_name> \
+kubectl create secret generic -n demo <secret_name> \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -206,13 +205,13 @@ The `git-sync` container has two required flags:
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
-$ kubectl get Pgpool -n demo
+kubectl get Pgpool -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 pgpool   kubedb.com/v1alpha2   4.4.5     Ready    5m23s
-
-```
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- sh
+kubectl exec -it -n demo pgpool-0 -- sh
+```
 Defaulted container "pgpool" out of: pgpool, git-sync (init)
 / $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
 / $ psql -U postgres -d postgres -h localhost -p <db container port>
@@ -226,8 +225,6 @@ postgres=# \dt
  public | kubedb_write_check_pgpool | table | postgres
  public | my_table                  | table | postgres
 (2 rows)
-
-```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
 
 ### 2. Using Username and Personal Access Token(PAT)
@@ -236,7 +233,7 @@ First, create a `Personal Access Token (PAT)` on your Git host server with the r
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 > Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -291,13 +288,13 @@ Here,
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
-$ kubectl get Pgpool -n demo
+kubectl get Pgpool -n demo
+```
 NAME     TYPE                  VERSION   STATUS   AGE
 pgpool   kubedb.com/v1alpha2   4.4.5     Ready    3m32s
-
-```
 ```bash
-$ kubectl exec -it -n demo pgpool-0 -- sh
+kubectl exec -it -n demo pgpool-0 -- sh
+```
 Defaulted container "pgpool" out of: pgpool, git-sync (init)
 / $ export PGPASSWORD="qrDy;GnX4QsKQ0UL"
 / $ psql -U postgres -d postgres -h localhost -p 9999
@@ -311,7 +308,6 @@ postgres=# \dt
  public | kubedb_write_check_pgpool | table | postgres
  public | my_table                  | table | postgres
 (2 rows)
-```
 `my_table` is created by the `init-script.sh` script stored in the Private Git repository.
 
 ## CleanUp
@@ -319,7 +315,13 @@ postgres=# \dt
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete Pgpool -n demo pgpool
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete Pgpool -n demo pgpool
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

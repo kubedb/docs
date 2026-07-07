@@ -31,9 +31,9 @@ Below, we are providing some examples for the ops-request.
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ### Prepare MySQL Backend
 
@@ -65,24 +65,26 @@ spec:
 
 Let's apply the yaml, 
 
-``` bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's now wait for the mysql instance to be ready, 
 
 ```bash
-$ kubectl get mysql -n demo
+kubectl get mysql -n demo
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8    Ready    3m16s
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME             READY   STATUS    RESTARTS   AGE
 mysql-server-0   2/2     Running   0          3m11s
 mysql-server-1   2/2     Running   0          113s
 mysql-server-2   2/2     Running   0          109s
-```
 
 We need a user to test all the ssl functionalities. So let's create one user inside the mysql servers,
 
@@ -138,17 +140,18 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-``` bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 ## Check User and current TLS status
 
 Let's exec into the proxysql pod and see the current status. 
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash
+kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 18
@@ -177,7 +180,6 @@ MySQL [(none)]> show variables like '%have_ssl%';
 
 MySQL [(none)]> exit 
 Bye
-```
 We can see that the users have been fetched. Also the mysql-have_ssl variables is set to false. The use_ssl column is also set to 0 which means that there is no need for ssl-ca or cert for connect. 
 
 Let's check it with the follwing command. 
@@ -230,24 +232,22 @@ Now we want to add TLS to our proxysql server and we want the frontend connectio
 First we need an issuer for this. We can create one with the following command. Make sure that you have cert-manager running in your cluster and openssl installed. 
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mysql/O=kubedb"
-
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mysql/O=kubedb"
+```
 Generating a RSA private key
 .......................................+++++
 ...........................+++++
 writing new private key to './ca.key'
 
-```
-
 Let's create the ca-secret with the above created ca.crt and ca.key by using the following command,
 
 ```bash
-$ kubectl create secret tls proxy-ca \
+kubectl create secret tls proxy-ca \
                         --cert=ca.crt \
                         --key=ca.key \
                         --namespace=demo
-secret/proxy-ca created
 ```
+secret/proxy-ca created
 
 Now create issuer with the following yaml, 
 
@@ -263,9 +263,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/issuer.yaml
-issuer.cert-manager.io/proxy-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/issuer.yaml
 ```
+issuer.cert-manager.io/proxy-issuer created
 
 ### Apply ops-request to add TLS
 
@@ -302,23 +302,25 @@ spec:
 Let's apply and wait for the ops-request to be succeeded. 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-add-tls.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-add-tls.yaml
+```
 proxysqlopsrequest.ops.kubedb.com/recon-tls-add created
 
-$ kubectl get proxysqlopsrequest -n demo
+```bash
+kubectl get proxysqlopsrequest -n demo
+```
 NAME               TYPE             STATUS        AGE
 recon-tls-add      ReconfigureTLS   Successful    5m
-```
 
 ### Check ops-request effects
 
 Following secrets should be created 
 
 ```bash
-$ kubectl get secrets -n demo | grep cert
+kubectl get secrets -n demo | grep cert
+```
 proxy-server-server-cert             kubernetes.io/tls                     3      4m53s 
 proxy-server-client-cert             kubernetes.io/tls                     3      4m53s 
-```
 
 The directory `/var/lib/frontend/` should carry the certificates and other files within the directories as seen below. 
 ```bash
@@ -376,9 +378,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-activate-ssl.yaml
-proxysqlopsrequest.ops.kubedb.com/activate-ssl created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-activate-ssl.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/activate-ssl created
 
 Let's check the effect from the admin panel. 
 
@@ -544,16 +546,16 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-rotate-tls.yaml
-proxysqlopsrequest.ops.kubedb.com/recon-tls-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-rotate-tls.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/recon-tls-rotate created
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo
+kubectl get proxysqlopsrequest -n demo
+```
 NAME                    TYPE             STATUS      AGE
 recon-tls-add         ReconfigureTLS   Successful    15m
 recon-tls-rotate      ReconfigureTLS   Successful    5m
-```
 
 ### Check ops-request effect
 
@@ -566,8 +568,9 @@ notAfter=Feb  6 09:05:54 2023 GMT
 
 The expiration time has been updated. Now lets check the certificate crd. 
 
-```bash
- $ kubectl describe certificate -n demo proxy-server-server-cert
+ ```bash
+ kubectl describe certificate -n demo proxy-server-server-cert
+ ```
 Name:         proxy-server-server-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -642,7 +645,6 @@ Events:
   Normal  Requested  2m2s                  cert-manager  Created new CertificateRequest resource "proxy-server-server-cert-l2xgk"
   Normal  Reused     2m2s (x5 over 4m22s)  cert-manager  Reusing private key stored in existing Secret resource "proxy-server-server-cert"
   Normal  Issuing    2m1s (x6 over 23m)    cert-manager  The certificate has been successfully issued
-```
 
 This has also been updated.
 
@@ -702,15 +704,17 @@ spec:
 Let's apply and then wait for it to be succeed. 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-update-tls.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-update-tls.yaml
+```
 proxysqlopsrequest.ops.kubedb.com/recon-tls-update created
 
-$ kubectl get proxysqlopsrequest -n demo
+```bash
+kubectl get proxysqlopsrequest -n demo
+```
 NAME                    TYPE             STATUS        AGE
 recon-tls-update      ReconfigureTLS   Successful    5m
 recon-tls-add         ReconfigureTLS   Successful    15m
 recon-tls-rotate      ReconfigureTLS   Successful    10m
-```
 
 Let's check the info now. 
 
@@ -743,16 +747,18 @@ spec:
 Let's apply and check the effects. 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-remove-tls.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure-tls/cluster/examples/proxyops-remove-tls.yaml
+```
 proxysqlopsrequest.ops.kubedb.com/recon-tls-remove created
 
-$ kubectl get proxysqlopsrequest -n demo
+```bash
+kubectl get proxysqlopsrequest -n demo
+```
 NAME                    TYPE             STATUS        AGE
 recon-tls-remove      ReconfigureTLS   Successful    3m
 recon-tls-update      ReconfigureTLS   Successful    7m
 recon-tls-add         ReconfigureTLS   Successful    17m
 recon-tls-rotate      ReconfigureTLS   Successful    12m
-```
 
 ### Check ops-request effect
 
@@ -809,8 +815,17 @@ We can see the user has been successfuly connected without the tls information.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete proxysql -n demo --all
-$ kubectl delete issuer -n demo --all
-$ kubectl delete proxysqlopsrequest -n demo --all
-$ kubectl delete ns demo
+kubectl delete proxysql -n demo --all
+```
+
+```bash
+kubectl delete issuer -n demo --all
+```
+
+```bash
+kubectl delete proxysqlopsrequest -n demo --all
+```
+
+```bash
+kubectl delete ns demo
 ```

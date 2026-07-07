@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. **add, remove, update and rotation** of TLS/SSL
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/Solr](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Solr) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -86,24 +86,24 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/topology.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/solr/clustering/yamls/topology.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.6.1     Ready    148m
-```
 
 Now, we can exec one Solr broker pod and verify configuration that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo solr-cluster-data-0 -- env | grep SSL
-Defaulted container "solr" out of: solr, init-solr (init)
+kubectl exec -it -n demo solr-cluster-data-0 -- env | grep SSL
 ```
+Defaulted container "solr" out of: solr, init-solr (init)
 
 We can verify from the above output that TLS is disabled for this cluster.
 
@@ -114,23 +114,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca /O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca /O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls solr-ca \
+kubectl create secret tls solr-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/solr-ca created
 ```
+secret/solr-ca created
 
 Now, Let's create an `Issuer` using the `Solr-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -148,9 +148,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/sl-issuer.yaml
-issuer.cert-manager.io/solr-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/tls/sl-issuer.yaml
 ```
+issuer.cert-manager.io/solr-ca-issuer created
 
 ### Create SolrOpsRequest
 
@@ -195,24 +195,25 @@ Let's create the `SolrOpsRequest` CR we have shown above,
 > **Note:** For combined Solr, you just need to refer solr combined object in `databaseRef` field. To learn more about combined solr, please visit [here](/docs/guides/solr/clustering/combined_cluster.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/add-tls.yaml
-Solropsrequest.ops.kubedb.com/slops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/add-tls.yaml
 ```
+Solropsrequest.ops.kubedb.com/slops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CRO,
 
 ```bash
-$ kubectl get Solropsrequest -n demo
+kubectl get Solropsrequest -n demo
+```
 NAME            TYPE             STATUS       AGE
 slops-add-tls   ReconfigureTLS   Successful   4m36s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe slops -n demo slops-add-tls
+kubectl describe slops -n demo slops-add-tls
+```
 Name:         slops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -328,12 +329,12 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, Let's exec into a Solr broker pod and verify the configuration that the TLS is enabled.
 
-```bash
- $ kubectl exec -it -n demo solr-cluster-data-0 -- env | grep -i ssl
+ ```bash
+ kubectl exec -it -n demo solr-cluster-data-0 -- env | grep -i ssl
+ ```
 Defaulted container "solr" out of: solr, init-solr (init)
 JAVA_OPTS= -Djavax.net.ssl.trustStore=/var/solr/etc/truststore.p12 -Djavax.net.ssl.trustStorePassword=Ni5tEgfjahzS53D3 -Djavax.net.ssl.keyStore=/var/solr/etc/keystore.p12 -Djavax.net.ssl.keyStorePassword=Ni5tEgfjahzS53D3 -Djavax.net.ssl.keyStoreType=PKCS12 -Djavax.net.ssl.trustStoreType=PKCS12
 SOLR_SSL_KEY_STORE_PASSWORD=Ni5tEgfjahzS53D3
@@ -343,7 +344,6 @@ SOLR_SSL_WANT_CLIENT_AUTH=false
 SOLR_SSL_ENABLED=true
 SOLR_SSL_TRUST_STORE_PASSWORD=Ni5tEgfjahzS53D3
 SOLR_SSL_NEED_CLIENT_AUTH=false
-```
 
 We can see from the above output that, keystore location is `/var/solr/etc/keystore.p12` which means that TLS is enabled.
 
@@ -352,12 +352,11 @@ We can see from the above output that, keystore location is `/var/solr/etc/keyst
 Now we are going to rotate the certificate of this cluster. First let's check the current expiration date of the certificate.
 
 ```bash
-$ $ kubectl exec -it -n demo solr-cluster-data-0 -- keytool -list -v -keystore /var/solr/etc/keystore.p12 -storepass Ni5tEgfjahzS53D3 | grep -E 'Valid from|Alias name'
+kubectl exec -it -n demo solr-cluster-data-0 -- keytool -list -v -keystore /var/solr/etc/keystore.p12 -storepass Ni5tEgfjahzS53D3 | grep -E 'Valid from|Alias name'
+```
 Alias name: 1
 Valid from: Mon Nov 04 09:05:23 UTC 2024 until: Sun Feb 02 09:05:23 UTC 2025
 Valid from: Thu Aug 15 05:59:09 UTC 2024 until: Fri Aug 15 05:59:09 UTC 2025
-
-```
 
 So, the certificate will expire on this time `Sun Feb 02 09:05:23 UTC 2025`.
 
@@ -388,24 +387,25 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/rotate-tls.yaml
-Solropsrequest.ops.kubedb.com/slops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/rotate-tls.yaml
 ```
+Solropsrequest.ops.kubedb.com/slops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CRO,
 
 ```bash
-$ kubectl get slops -n demo slops-rotate
+kubectl get slops -n demo slops-rotate
+```
 NAME           TYPE             STATUS       AGE
 slops-rotate   ReconfigureTLS   Successful   32m
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe slops -n demo slops-rotate
+kubectl describe slops -n demo slops-rotate
+```
 Name:         slops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -539,17 +539,16 @@ Events:
   Normal   RestartNodes                                                         30m   KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                             30m   KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                                           30m   KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: rotate-tls
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo solr-cluster-data-0 -- keytool -list -v -keystore /var/solr/etc/keystore.p12 -storepass Ni5tEgfjahzS53D3 | grep -E 'Valid from|Alias name'
+kubectl exec -it -n demo solr-cluster-data-0 -- keytool -list -v -keystore /var/solr/etc/keystore.p12 -storepass Ni5tEgfjahzS53D3 | grep -E 'Valid from|Alias name'
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 Alias name: 1
 Valid from: Mon Nov 04 12:23:07 UTC 2024 until: Sun Feb 02 12:23:07 UTC 2025
 Valid from: Thu Aug 15 05:59:09 UTC 2024 until: Fri Aug 15 05:59:09 UTC 2025
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -560,23 +559,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated /O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated /O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls Solr-new-ca \
+kubectl create secret tls Solr-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/solr-new-ca created
 ```
+secret/solr-new-ca created
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -594,9 +593,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/sl-new-issuer.yaml
-issuer.cert-manager.io/sl-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/sl-new-issuer.yaml
 ```
+issuer.cert-manager.io/sl-new-issuer created
 
 ### Create SolrOpsRequest
 
@@ -628,24 +627,25 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/reconfigure-tls/sl-update-issuer.yaml
-solrpsrequest.ops.kubedb.com/slops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Solr/reconfigure-tls/sl-update-issuer.yaml
 ```
+solrpsrequest.ops.kubedb.com/slops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CRO,
 
 ```bash
-$ kubectl get solropsrequests -n demo slops-update-issuer
+kubectl get solropsrequests -n demo slops-update-issuer
+```
 NAME                  TYPE             STATUS       AGE
 slops-update-issuer   ReconfigureTLS   Successful   8m6s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe slops -n demo slops-update-issuer 
+kubectl describe slops -n demo slops-update-issuer 
+```
 Name:         slops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -782,18 +782,16 @@ Events:
   Normal   RestartNodes                                                         59s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                             59s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                                           59s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-update-issuer
-```
 
 Now, Let's exec into a Solr node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it -n demo solr-cluster-data-0 -- bash
+kubectl exec -it -n demo solr-cluster-data-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-cluster-data-0:/opt/solr-9.6.1$ keytool -list -v -keystore /var/solr/etc/keystore.p12 -storepass Ni5tEgfjahzS53D3 | grep 'Issuer'
 Issuer: O=kubedb-updated, CN="ca-updated "
 Issuer: O=kubedb-updated, CN="ca-updated "
-
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -828,24 +826,25 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/remove-tls.yaml
-solropsrequest.ops.kubedb.com/slops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/reconfigure-tls/remove-tls.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CRO,
 
 ```bash
-$ kubectl get solropsrequest -n demo slops-remove
+kubectl get solropsrequest -n demo slops-remove
+```
 NAME           TYPE             STATUS        AGE
 slops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe slops -n demo slops-remove
+kubectl describe slops -n demo slops-remove
+```
 Name:         slops-remove
 Namespace:    demo
 Labels:       <none>
@@ -944,14 +943,13 @@ Events:
   Normal   RestartNodes                                                         3m20s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                             3m20s  KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                                           3m20s  KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-remove
-```
 
 Now, Let's exec into one of the broker node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo solr-cluster-data-0 -- env | grep -i ssl
-Defaulted container "solr" out of: solr, init-solr (init)
+kubectl exec -it -n demo solr-cluster-data-0 -- env | grep -i ssl
 ```
+Defaulted container "solr" out of: solr, init-solr (init)
 
 So, we can see from the above that, output that tls is disabled successfully.
 

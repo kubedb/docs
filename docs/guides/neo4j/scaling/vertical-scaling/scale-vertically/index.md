@@ -48,7 +48,7 @@ See also: [Neo4j](/docs/guides/neo4j/concepts/neo4j.md) · [Neo4jOpsRequest](/do
 ## Step 1 — Set Up the Namespace
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
 ```
 
 ---
@@ -90,9 +90,11 @@ spec:
 Apply it and wait for the cluster to become ready:
 
 ```bash
-$ kubectl apply -f neo4j.yaml
+kubectl apply -f neo4j.yaml
+```
 
-$ kubectl get neo4j -n demo neo4j-test -w
+```bash
+kubectl get neo4j -n demo neo4j-test -w
 ```
 
 Wait until `STATUS` shows `Ready` before proceeding.
@@ -109,7 +111,7 @@ neo4j-test   2025.12.1   Ready    3m
 Before scaling, record the existing CPU and memory values so you can confirm the change later.
 
 ```bash
-$ kubectl get pod -n demo neo4j-test-0 \
+kubectl get pod -n demo neo4j-test-0 \
   -o jsonpath='{.spec.containers[0].resources}' | jq .
 ```
 
@@ -154,9 +156,11 @@ spec:
 Apply it and wait for completion:
 
 ```bash
-$ kubectl apply -f neo4j-vertical-scale.yaml
+kubectl apply -f neo4j-vertical-scale.yaml
+```
 
-$ kubectl wait --for=jsonpath='{.status.phase}'=Successful \
+```bash
+kubectl wait --for=jsonpath='{.status.phase}'=Successful \
   neo4jopsrequest/neo4j-vertical-scale \
   -n demo --timeout=600s
 ```
@@ -179,7 +183,7 @@ Once you apply the OpsRequest, KubeDB Ops-manager picks it up and begins the sca
 You can watch the live status with:
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-vertical-scale -w
+kubectl get neo4jopsrequest -n demo neo4j-vertical-scale -w
 ```
 
 ---
@@ -187,9 +191,11 @@ $ kubectl get neo4jopsrequest -n demo neo4j-vertical-scale -w
 ## Step 5 — Verify the New Resources
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-vertical-scale
+kubectl get neo4jopsrequest -n demo neo4j-vertical-scale
+```
 
-$ kubectl get pod -n demo neo4j-test-0 \
+```bash
+kubectl get pod -n demo neo4j-test-0 \
   -o jsonpath='{.spec.containers[0].resources}' | jq .
 ```
 
@@ -231,9 +237,15 @@ If this OpsRequest does not finish, first inspect the affected pod and then chec
 Check the pod that is being restarted and look for scheduling or resource issues:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
-$ kubectl describe pod -n demo neo4j-test-0
-$ kubectl describe node <node-name> | grep -A 10 "Allocated resources"
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
+
+```bash
+kubectl describe pod -n demo neo4j-test-0
+```
+
+```bash
+kubectl describe node <node-name> | grep -A 10 "Allocated resources"
 ```
 
 **OpsRequest moves to `Failed`**

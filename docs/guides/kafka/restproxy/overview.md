@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/restproxy/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/restproxy) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,13 +48,12 @@ demo                 Active   9s
 When you install the KubeDB operator, it registers a CRD named [SchemaRegistryVersion](/docs/guides/kafka/concepts/schemaregistryversion.md). RestProxy uses SchemaRegistryVersions which distribution is `Aiven` to create a RestProxy instance. The installation process comes with a set of tested SchemaRegistryVersion objects. Let's check available SchemaRegistryVersions by,
 
 ```bash
-$ kubectl get ksrversion
-
+kubectl get ksrversion
+```
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 NAME           VERSION   DISTRIBUTION   REGISTRY_IMAGE                                     DEPRECATED   AGE
 2.5.11.final   2.5.11    Apicurio       apicurio/apicurio-registry-kafkasql:2.5.11.Final                3d
 3.15.0         3.15.0    Aiven          ghcr.io/aiven-open/karapace:3.15.0                              3d
-```
 
 > **Note**: Currently RestProxy is supported only for Aiven distribution. Use version with distribution `Aiven` to create Kafka Rest Proxy.
 
@@ -92,26 +93,27 @@ Before create RestProxy, you have to deploy a `Kafka` cluster first. To deploy k
 Let's create the RestProxy CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restproxy/restproxy-quickstart.yaml
-restproxy.kafka.kubedb.com/restproxy-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/restproxy/restproxy-quickstart.yaml
 ```
+restproxy.kafka.kubedb.com/restproxy-quickstart created
 
 The RestProxy's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the RestProxy.
 
 ```bash
-$ kubectl get restproxy -n demo -w
+kubectl get restproxy -n demo -w
+```
 NAME                        TYPE                        VERSION   STATUS         AGE
 restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
 restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
 .
 .
 restproxy-quickstart        kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
-```
 
 Describe the `RestProxy` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe restproxy -n demo restproxy-quickstart
+kubectl describe restproxy -n demo restproxy-quickstart
+```
 Name:         restproxy-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -195,14 +197,14 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a RestProxy CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=restproxy-quickstart'
+kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=restproxy-quickstart'
+```
 NAME                         READY   STATUS    RESTARTS   AGE
 pod/restproxy-quickstart-0   1/1     Running   0          117s
 pod/restproxy-quickstart-1   1/1     Running   0          79s
@@ -216,7 +218,6 @@ secret/restproxy-quickstart-config   Opaque   1      119s
 
 NAME                                                AGE
 petset.apps.k8s.appscode.com/restproxy-quickstart   117s
-```
 
 - `PetSet` - a PetSet named after the RestProxy instance.
 - `Services` -  For a RestProxy instance headless service is created with name `{RestProxy-name}-{pods}` and a primary service created with name `{RestProxy-name}`.
@@ -230,25 +231,24 @@ You can access `Kafka` using the REST API. The RestProxy REST API is available a
 To access the RestProxy REST API, you can use `kubectl port-forward` command to forward the port to your local machine.
 
 ```bash
-$ kubectl port-forward svc/restproxy-quickstart 8082:8082 -n demo
+kubectl port-forward svc/restproxy-quickstart 8082:8082 -n demo
+```
 Forwarding from 127.0.0.1:8082 -> 8082
 Forwarding from [::1]:8082 -> 8082
-```
 
 In another terminal, you can use `curl` to list topics, produce and consume messages from the Kafka cluster.
 
 List topics:
 
 ```bash
-$ curl localhost:8082/topics | jq
+curl localhost:8082/topics | jq
+```
 [
   "order_notification",
   "kafka-health",
   "__consumer_offsets",
   "kafkasql-journal"
 ]
-
-```
 
 #### Produce a message to a topic `order_notification`(replace `order_notification` with your topic name):
 
@@ -291,9 +291,10 @@ To consume messages from a Kafka topic using the Kafka REST Proxy, you'll need t
 Create a Consumer Instance
 
 ```bash
-$ curl -X POST http://localhost:8082/consumers/order_consumer \
+curl -X POST http://localhost:8082/consumers/order_consumer \
   -H "Content-Type: application/vnd.kafka.v2+json" \
   -d '{
+```
     "name": "order_consumer_instance",
     "format": "json",
     "auto.offset.reset": "earliest"
@@ -303,24 +304,23 @@ $ curl -X POST http://localhost:8082/consumers/order_consumer \
   "base_uri": "http://restproxy-quickstart-0:8082/consumers/order_consumer/instances/order_consumer_instance",
   "instance_id": "order_consumer_instance"
 }
-```
 
 Subscribe the Consumer to a Topic
 
 ```bash
-$ curl -X POST http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance/subscription \
+curl -X POST http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance/subscription \
   -H "Content-Type: application/vnd.kafka.v2+json" \
   -d '{
+```
     "topics": ["order_notification"]
   }'
-```
 
 Consume Messages
 
 ```bash
-$ curl -X GET http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance/records \
+curl -X GET http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance/records \
   -H "Accept: application/vnd.kafka.json.v2+json" | jq
-  
+```
 [
   {
     "key": null,
@@ -365,12 +365,11 @@ $ curl -X GET http://localhost:8082/consumers/order_consumer/instances/order_con
     }
   }
 ]
-```
 
 Delete the Consumer Instance
 
 ```bash
-$ curl -X DELETE http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance
+curl -X DELETE http://localhost:8082/consumers/order_consumer/instances/order_consumer_instance
 ```
 
 You can also list brokers, describe topics and more using the Kafka RestProxy.
@@ -380,18 +379,24 @@ You can also list brokers, describe topics and more using the Kafka RestProxy.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo restproxy restproxy-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo restproxy restproxy-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 restproxy.kafka.kubedb.com/restproxy-quickstart patched
 
-$ kubectl delete krp restproxy-quickstart  -n demo
+```bash
+kubectl delete krp restproxy-quickstart  -n demo
+```
 restproxy.kafka.kubedb.com "restproxy-quickstart" deleted
 
-$ kubectl delete kafka kafka-quickstart -n demo
+```bash
+kubectl delete kafka kafka-quickstart -n demo
+```
 kafka.kubedb.com "kafka-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

@@ -31,19 +31,19 @@ Now, install KubeDB CLI on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Find Available StorageClass
 
 You will need to provide a `StorageClass` in the Neo4j CR specification. Check the available `StorageClass` in your cluster using the following command:
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  12d
-```
 
 Here, we have `local-path` as the default StorageClass in our cluster.
 
@@ -52,12 +52,12 @@ Here, we have `local-path` as the default StorageClass in our cluster.
 When KubeDB is installed, it creates `Neo4jVersion` CRDs for all supported Neo4j versions. Check the available versions by running:
 
 ```bash
-$ kubectl get neo4jversions
+kubectl get neo4jversions
+```
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
 2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
 2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
 2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
-```
 
 Notice the `DEPRECATED` column. A `true` value means that version is deprecated for the current KubeDB release and should be avoided. In this tutorial, we will use `2025.12.1`.
 
@@ -94,14 +94,16 @@ Here,
 Now apply the manifest and watch the cluster come up:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/quickstart/neo4j.yaml
+```
 neo4j.kubedb.com/neo4j-test created
 
-$ kubectl get neo4j -n demo neo4j-test -w
+```bash
+kubectl get neo4j -n demo neo4j-test -w
+```
 NAME         VERSION     STATUS         AGE
 neo4j-test   2025.12.1   Provisioning   10s
 neo4j-test   2025.12.1   Ready          2m
-```
 
 > If the status stays `Provisioning` for more than a few minutes, run `kubectl describe neo4j -n demo neo4j-test` and check the `Events` section for errors. Common causes are insufficient cluster resources or a missing StorageClass.
 
@@ -112,27 +114,29 @@ KubeDB operator watches for `Neo4j` objects using the Kubernetes API. When a `Ne
 Once `status.phase` is `Ready`, all three pods are running and the cluster has formed. Let's verify:
 
 ```bash
-$ kubectl get neo4j -n demo
+kubectl get neo4j -n demo
+```
 NAME         VERSION     STATUS   AGE
 neo4j-test   2025.12.1   Ready    3m
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
+```
 NAME           READY   STATUS    RESTARTS   AGE
 neo4j-test-0   1/1     Running   0          3m
 neo4j-test-1   1/1     Running   0          2m
 neo4j-test-2   1/1     Running   0          2m
-```
 
 KubeDB also creates two Services for the Neo4j cluster:
 
 ```bash
-$ kubectl get service -n demo -l app.kubernetes.io/instance=neo4j-test
+kubectl get service -n demo -l app.kubernetes.io/instance=neo4j-test
+```
 NAME           TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                                                 AGE
 neo4j-test     ClusterIP   10.43.86.203   <none>        6362/TCP,7687/TCP,7474/TCP                              11m
 neo4j-test-0   ClusterIP   None           <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   11m
 neo4j-test-1   ClusterIP   None           <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   11m
 neo4j-test-2   ClusterIP   None           <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   11m
-```
 
 - **`neo4j-test`** — the primary ClusterIP Service exposing HTTP (`7474`), Bolt (`7687`), and backup (`6362`) for client access.
 - **`neo4j-test-0`, `neo4j-test-1`, `neo4j-test-2`** — per-pod headless Services exposing all cluster-internal ports including inter-node communication (`7000`), cluster discovery (`6000`), and intra-cluster Bolt (`7688`).
@@ -146,37 +150,41 @@ KubeDB creates a Secret named `{neo4j-name}-auth` containing the `neo4j` superus
 Retrieve the credentials:
 
 ```bash
-$ kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.username}' | base64 -d
+```
 neo4j
 
-$ kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d
-Xk9mR2qLpTz3vYwB
+```bash
+kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+Xk9mR2qLpTz3vYwB
 
 ### Connect via cypher-shell
 
 Exec into any pod and use `cypher-shell` to verify the cluster is accepting queries:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+PASS=$(kubectl get secret -n demo neo4j-test-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
-$ kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" "RETURN 'connected' AS status"
+```bash
+kubectl exec -n demo neo4j-test-0 -- cypher-shell -u neo4j -p "$PASS" "RETURN 'connected' AS status"
+```
 +-------------+
 | status      |
 +-------------+
 | "connected" |
 +-------------+
-```
 
 ### Connect via Neo4j Browser
 
 You can access the Neo4j Browser UI from your local machine by port-forwarding the cluster service:
 
 ```bash
-$ kubectl port-forward -n demo svc/neo4j-test 7474:7474 7687:7687
+kubectl port-forward -n demo svc/neo4j-test 7474:7474 7687:7687
+```
 Forwarding from 127.0.0.1:7474 -> 7474
 Forwarding from 127.0.0.1:7687 -> 7687
-```
 
 Now open your browser and navigate to:
 
@@ -212,12 +220,14 @@ After a successful login, you will land on the Neo4j Browser home. You can run C
 To remove all resources created by this tutorial:
 
 ```bash
-$ kubectl delete neo4j -n demo neo4j-test
+kubectl delete neo4j -n demo neo4j-test
+```
 neo4j.kubedb.com "neo4j-test" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 > Note: Since `deletionPolicy` is set to `WipeOut`, deleting the `Neo4j` CR also removes all associated PVCs and the auth Secret.
 

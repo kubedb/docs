@@ -25,13 +25,15 @@ KubeDB supports providing custom configuration for Memcached. This tutorial will
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
+  kubectl create ns demo
+  ```
   namespace/demo created
-  
-  $ kubectl get ns demo
+
+  ```bash
+  kubectl get ns demo
+  ```
   NAME    STATUS  AGE
   demo    Active  5s
-  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -61,10 +63,10 @@ metadata:
 Here, --con-limit means max simultaneous connections which is default value is 1024.
 and --memory-limit means item memory in megabytes which default value is 64.
 
-```bash
- $ kubectl apply -f mc-configuration.yaml
+ ```bash
+ kubectl apply -f mc-configuration.yaml
+ ```
 secret/mc-configuration created
-```
 
 Let's get the mc-configuration `secret` with custom configuration:
 
@@ -89,9 +91,9 @@ type: Opaque
 Now, create Memcached crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-memcached.yaml
-memcached.kubedb.com/custom-memcached created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/custom-memcached.yaml
 ```
+memcached.kubedb.com/custom-memcached created
 
 Below is the YAML for the Memcached crd we just created.
 
@@ -125,25 +127,26 @@ Now, wait a few minutes. KubeDB operator will create necessary petset, services 
 Check if the database is ready
 
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME               VERSION   STATUS   AGE
 custom-memcached   1.6.40    Ready    17m
-```
 
 Now, we will check if the database has started with the custom configuration we have provided. We will use [stats](https://github.com/memcached/memcached/wiki/ConfiguringServer#inspecting-running-configuration) command to check the configuration.
 
 We will connect to `custom-memcached-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl port-forward -n demo custom-memcached-0 11211
+kubectl port-forward -n demo custom-memcached-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
 ```bash
-$ telnet 127.0.0.1 11211
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -160,7 +163,6 @@ STAT max_connections 500
 STAT limit_maxbytes 536870912
 ...
 END
-```
 
 Here, `limit_maxbytes` is represented in bytes.
 

@@ -24,10 +24,10 @@ KubeDB supports restarting the PgBouncer via a PgBouncerOpsRequest. Restarting i
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -67,9 +67,9 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/restart/pgbouncer.yaml
-pgbouncer.kubedb.com/pgbouncer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/restart/pgbouncer.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer created
 
 ## Apply Restart opsRequest
 
@@ -94,18 +94,21 @@ spec:
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/restart/ops.yaml
-pgbounceropsrequest.ops.kubedb.com/restart-pgbouncer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/restart/ops.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/restart-pgbouncer created
 
 Now the Ops-manager operator will restart the pods one by one.
 
-```shell
-$ kubectl get pbops -n demo
+```bash
+kubectl get pbops -n demo
+```
 NAME                TYPE      STATUS       AGE
 restart-pgbouncer   Restart   Successful   79s
 
-$ kubectl get pbops -n demo -oyaml restart-pgbouncer
+```bash
+kubectl get pbops -n demo -oyaml restart-pgbouncer
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PgBouncerOpsRequest
 metadata:
@@ -167,7 +170,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 
 ## Cleaning up

@@ -30,9 +30,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to reconfigure a We
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/reconfigure](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -106,12 +106,14 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/new-weaviate-config.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/new-weaviate-config.yaml
+```
 secret/new-weaviate-config created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/minio-secret.yaml
-secret/minio-secret created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/minio-secret.yaml
 ```
+secret/minio-secret created
 
 ## Apply Reconfigure OpsRequest
 
@@ -148,22 +150,23 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/reconfigure created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/reconfigure/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/reconfigure created
 
 The Ops Manager prepares the new configuration, updates the PetSet, and restarts the pods one by one.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo reconfigure
+kubectl get weaviateopsrequest -n demo reconfigure
+```
 NAME          TYPE          STATUS       AGE
 reconfigure   Reconfigure   Successful   83s
-```
 
 Let's check the `status.conditions` of the `WeaviateOpsRequest`:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo reconfigure -o yaml
+kubectl get weaviateopsrequest -n demo reconfigure -o yaml
+```
 ...
 status:
   conditions:
@@ -207,12 +210,12 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 Now, let's verify that the new configuration has been applied to the `Weaviate` object:
 
 ```bash
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.configuration}' | jq
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.configuration}' | jq
+```
 {
   "backupConfigSecret": {
     "name": "minio-secret"
@@ -222,7 +225,6 @@ $ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.configuration
   },
   "secretName": "new-weaviate-config"
 }
-```
 
 The reconfigure operation has been applied successfully.
 
@@ -237,7 +239,13 @@ The reconfigure operation has been applied successfully.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo reconfigure
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo reconfigure
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,18 +64,21 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mg-replicaset.yaml
-mongodb.kubedb.com/mg-rs created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mg-replicaset.yaml
 ```
+mongodb.kubedb.com/mg-rs created
 
 Now, wait until `mg-replicaset` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mg -n demo
+kubectl get mg -n demo
+```
 NAME    VERSION    STATUS    AGE
 mg-rs   4.4.26      Ready     10m
 
-$ kubectl dba describe mongodb mg-rs -n demo
+```bash
+kubectl dba describe mongodb mg-rs -n demo
+```
 Name:               mg-rs
 Namespace:          demo
 CreationTimestamp:  Thu, 11 Mar 2021 13:25:05 +0600
@@ -190,19 +193,23 @@ Events:
   Normal  Successful  13m   MongoDB operator  Successfully  stats service
   Normal  Successful  12m   MongoDB operator  Successfully  stats service
   Normal  Successful  12m   MongoDB operator  Successfully patched PetSet demo/mg-rs
-```
 
 Now, we can connect to this database through [mongo-shell](https://docs.mongodb.com/v4.2/mongo/) and verify that the TLS is disabled.
 
 
 ```bash
-$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.username}' | base64 -d
+```
 root
 
-$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.password}' | base64 -d
+```bash
+kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.password}' | base64 -d
+```
 U6(h_pYrekLZ2OOd
 
-$ kubectl exec -it mg-rs-0 -n demo -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
+```bash
+kubectl exec -it mg-rs-0 -n demo -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
+```
 rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 {
 	"sslMode" : "disabled",
@@ -216,7 +223,6 @@ rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 	},
 	"operationTime" : Timestamp(1615468344, 1)
 }
-```
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -227,23 +233,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls mongo-ca \
+kubectl create secret tls mongo-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/mongo-ca created
 ```
+secret/mongo-ca created
 
 Now, Let's create an `Issuer` using the `mongo-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -261,9 +267,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/issuer.yaml
-issuer.cert-manager.io/mg-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/issuer.yaml
 ```
+issuer.cert-manager.io/mg-issuer created
 
 ### Create MongoDBOpsRequest
 
@@ -308,25 +314,26 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-add-tls.yaml
-mongodbopsrequest.ops.kubedb.com/mops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-add-tls.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 mops-add-tls   ReconfigureTLS   Successful    91s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-add-tls 
+kubectl describe mongodbopsrequest -n demo mops-add-tls 
+```
 Name:         mops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -429,17 +436,16 @@ Events:
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs
   Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, Let's exec into a database primary node and find out the username to connect in a mongo shell,
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
+kubectl exec -it mg-rs-2 -n demo bash
+```
 root@mgo-rs-tls-2:/$ ls /var/run/mongodb/tls
 ca.crt  client.pem  mongo.pem
 root@mgo-rs-tls-2:/$ openssl x509 -in /var/run/mongodb/tls/client.pem -inform PEM -subject -nameopt RFC2253 -noout
 subject=CN=root,OU=client,O=mongo
-```
 
 Now, we can connect using `CN=root,OU=client,O=mongo` as root to connect to the mongo shell of the master pod,
 
@@ -473,10 +479,10 @@ We can see from the above output that, `sslMode` is set to `requireSSL`. So, dat
 Now we are going to rotate the certificate of this database. First let's check the current expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
+kubectl exec -it mg-rs-2 -n demo bash
+```
 root@mg-rs-2:/# openssl x509 -in /var/run/mongodb/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 13:32:20 2021 GMT
-```
 
 So, the certificate will expire on this time `Jun  9 13:32:20 2021 GMT`. 
 
@@ -507,25 +513,26 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-rotate.yaml
-mongodbopsrequest.ops.kubedb.com/mops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-rotate.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 mops-rotate    ReconfigureTLS   Successful    112s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-rotate
+kubectl describe mongodbopsrequest -n demo mops-rotate
+```
 Name:         mops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -615,15 +622,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
+kubectl exec -it mg-rs-2 -n demo bash
+```
 root@mg-rs-2:/# openssl x509 -in /var/run/mongodb/tls/client.pem -inform PEM -enddate -nameopt RFC2253 -noout
 notAfter=Jun  9 16:17:55 2021 GMT
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -634,23 +640,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls mongo-new-ca \
+kubectl create secret tls mongo-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/mongo-new-ca created
 ```
+secret/mongo-new-ca created
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -668,9 +674,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/new-issuer.yaml
-issuer.cert-manager.io/mg-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/new-issuer.yaml
 ```
+issuer.cert-manager.io/mg-new-issuer created
 
 ### Create MongoDBOpsRequest
 
@@ -702,25 +708,26 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-change-issuer.yaml
-mongodbopsrequest.ops.kubedb.com/mops-change-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-change-issuer.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-change-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                  TYPE             STATUS        AGE
 mops-change-issuer    ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-change-issuer
+kubectl describe mongodbopsrequest -n demo mops-change-issuer
+```
 Name:         mops-change-issuer
 Namespace:    demo
 Labels:       <none>
@@ -811,15 +818,14 @@ Events:
   Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
   Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
   Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, Let's exec into a database node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it mg-rs-2 -n demo bash
+kubectl exec -it mg-rs-2 -n demo bash
+```
 root@mgo-rs-tls-2:/$ openssl x509 -in /var/run/mongodb/tls/ca.crt -inform PEM -subject -nameopt RFC2253 -noout
 subject=O=kubedb-updated,CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -854,25 +860,26 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-remove.yaml
-mongodbopsrequest.ops.kubedb.com/mops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/reconfigure-tls/mops-remove.yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CRO,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME          TYPE             STATUS        AGE
 mops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-remove
+kubectl describe mongodbopsrequest -n demo mops-remove
+```
 Name:         mops-remove
 Namespace:    demo
 Labels:       <none>
@@ -960,12 +967,12 @@ Events:
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming MongoDB demo/mg-rs
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed MongoDB demo/mg-rs
   Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS
-```
 
 Now, Let's exec into the database primary node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo mg-rs-1 -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
+kubectl exec -it -n demo mg-rs-1 -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
+```
 rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 {
 	"sslMode" : "disabled",
@@ -979,7 +986,6 @@ rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 	},
 	"operationTime" : Timestamp(1615480817, 1)
 }
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

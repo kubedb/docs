@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/guides/elasticsearch/autoscaler/compute/topology/yamls) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -94,23 +94,24 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology.yaml
-elasticsearch.kubedb.com/es-topology created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology.yaml
 ```
+elasticsearch.kubedb.com/es-topology created
 
 Now, wait until `es-topology` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME          VERSION             STATUS         AGE
 es-topology   opensearch-3.4.0   Provisioning   113s
 es-topology   opensearch-3.4.0   Ready          115s
-```
 
 Let's check an ingest node containers resources,
 
 ```bash
-$ kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -121,12 +122,12 @@ $ kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].
     "memory": "1Gi"
   }
 }
-```
 
 Let's check the Elasticsearch CR for the ingest node resources,
 
 ```bash
-$ kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ingest.resources'
+kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ingest.resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -136,8 +137,6 @@ $ kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ing
     "cpu": "500m",
     "memory": "1Gi"
   }
-
-```
 
 You can see from the above outputs that the resources are the same as the ones we have assigned while deploying the Elasticsearch.
 
@@ -187,20 +186,23 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology-auto-scaler.yaml
-elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology-auto-scaler.yaml
 ```
+elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-as created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `elasticsearchautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get elasticsearchautoscaler -n demo
+kubectl get elasticsearchautoscaler -n demo
+```
 NAME             AGE
 es-topology-as   9s
 
-$ kubectl describe elasticsearchautoscaler -n demo es-topology-as 
+```bash
+kubectl describe elasticsearchautoscaler -n demo es-topology-as 
+```
 Name:         es-topology-as
 Namespace:    demo
 Labels:       <none>
@@ -230,18 +232,20 @@ Spec:
   Database Ref:
     Name:  es-topology
 Events:    <none>
-```
 
 So, the `elasticsearchautoscaler` resource is created successfully.
 
 Now, lets verify that the vertical pod autoscaler (vpa) resource is created successfully,
 
 ```bash
-$ kubectl get vpa -n demo
+kubectl get vpa -n demo
+```
 NAME                     MODE   CPU    MEM          PROVIDED   AGE
 vpa-es-topology-ingest   Off    400m   1102117711   True       30s
 
-$ kubectl describe vpa -n demo vpa-es-topology-ingest 
+```bash
+kubectl describe vpa -n demo vpa-es-topology-ingest 
+```
 Name:         vpa-es-topology-ingest
 Namespace:    demo
 Labels:       <none>
@@ -301,31 +305,31 @@ Status:
         Cpu:     2
         Memory:  3Gi
 Events:          <none>
-```
 
 As you can see from the output the vpa has generated a recommendation for the ingest node of the Elasticsearch cluster. Our autoscaler operator continuously watches the recommendation generated and creates an `elasticsearchopsrequest` based on the recommendations, if the Elasticsearch nodes are needed to be scaled up or down.
 
 Let's watch the `elasticsearchopsrequest` in the demo namespace to see if any `elasticsearchopsrequest` object is created. After some time you'll see that an `elasticsearchopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get elasticsearchopsrequest -n demo
+kubectl get elasticsearchopsrequest -n demo
+```
 NAME                                  TYPE              STATUS        AGE
 esops-vpa-es-topology-ingest-37m2wi   VerticalScaling   Progressing   44s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$  kubectl get elasticsearchopsrequest -n demo -w
+ kubectl get elasticsearchopsrequest -n demo -w
+```
 NAME                                  TYPE              STATUS        AGE
 esops-vpa-es-topology-ingest-37m2wi   VerticalScaling   Progressing   8m2s
 esops-vpa-es-topology-ingest-37m2wi   VerticalScaling   Successful    9m20s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ Name:         esops-vpa-es-topology-ingest-37m2wi
+Name:         esops-vpa-es-topology-ingest-37m2wi
+```
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
               app.kubernetes.io/instance=es-topology
@@ -398,12 +402,12 @@ Events:
   Normal  Updating             56s   KubeDB Enterprise Operator  Successfully Updated Elasticsearch
   Normal  ResumeDatabase       56s   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-topology
   Normal  Successful           56s   KubeDB Enterprise Operator  Successfully Updated Database
-```
 
 Now, we are going to verify from the Pod, and the Elasticsearch YAML whether the resources of the ingest node of the cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -415,7 +419,9 @@ $ kubectl get pod -n demo es-topology-ingest-0 -o json | jq '.spec.containers[].
   }
 }
 
-$ kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ingest.resources'
+```bash
+kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ingest.resources'
+```
 {
   "limits": {
     "cpu": "400m",
@@ -426,7 +432,6 @@ $ kubectl get elasticsearch -n demo es-topology -o json | jq '.spec.topology.ing
     "memory": "1102117711"
   }
 }
-```
 
 The above output verifies that we have successfully auto-scaled the resources of the Elasticsearch topology cluster.
 
@@ -435,7 +440,13 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete elasticsearch -n demo es-topology
-$ kubectl delete elasticsearchautoscaler -n demo es-topology-as 
-$ kubectl delete ns demo
+kubectl delete elasticsearch -n demo es-topology
+```
+
+```bash
+kubectl delete elasticsearchautoscaler -n demo es-topology-as 
+```
+
+```bash
+kubectl delete ns demo
 ```

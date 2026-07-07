@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for `Memcached`. This tutorial will
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -61,13 +61,13 @@ We are going to create an example `Issuer` that will be used throughout the dura
 - Start off by generating you ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=Memcached/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=Memcached/O=kubedb"
 ```
 
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-$ kubectl create secret tls memcached-ca \
+kubectl create secret tls memcached-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
@@ -89,9 +89,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/memcached-ca-issuer.yaml
-issuer.cert-manager.io/memcached-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/memcached-ca-issuer.yaml
 ```
+issuer.cert-manager.io/memcached-ca-issuer created
 
 ## TLS/SSL encryption in Memcached Standalone
 
@@ -122,25 +122,26 @@ spec:
 ### Deploy Memcached
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/mc-tls.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/mc-tls.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get memcached -n demo
+watch kubectl get memcached -n demo
+```
 Every 2.0s: kubectl get memcached -n demo
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    19m
-```
 
 ### Verify TLS/SSL in Memcached
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo memcd-quickstart-client-cert
+kubectl describe secret -n demo memcd-quickstart-client-cert
+```
 Name:         memcd-quickstart-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -165,26 +166,26 @@ tls.crt:           1168 bytes
 tls.key:           1675 bytes
 ca.crt:            1159 bytes
 tls-combined.pem:  2844 bytes
-```
 
 Now, we can connect to the Memcached and read/write some data
 
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 orwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 
 Telnet doesn't support TLS. To overcome this, we will use socat:
 ```bash
-$ socat -d -d \
+socat -d -d \
             TCP-LISTEN:12345,reuseaddr,fork \
             OPENSSL:localhost:11211,cert=/path/client.crt,key=/path/client.key,cafile=/path/ca.crt,verify=1
-2024/11/15 12:02:41 socat[46145] N listening on AF=10 [0000:0000:0000:0000:0000:0000:0000:0000]:12345
 ```
+2024/11/15 12:02:41 socat[46145] N listening on AF=10 [0000:0000:0000:0000:0000:0000:0000:0000]:12345
 Now connect to the memcached via socat using telnet:
 ```bash
-$ telnet 127.0.0.1 12345
+telnet 127.0.0.1 12345
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -216,21 +217,24 @@ ssl_ca_cert /usr/certs/ca.crt
 END
 
 quit
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo memcached/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo memcached/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete -n demo memcached memcd-quickstart
+```bash
+kubectl delete -n demo memcached memcd-quickstart
+```
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete issuer -n demo memcached-ca-issuer
-issuer.cert-manager.io "memcached-ca-issuer" deleted
+```bash
+kubectl delete issuer -n demo memcached-ca-issuer
 ```
+issuer.cert-manager.io "memcached-ca-issuer" deleted
 
 ## Next Steps
 

@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Elas
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/guides/elasticsearch/autoscaler/storage/combined/yamls) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -46,11 +46,11 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  9h
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   9h
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
 
@@ -84,33 +84,35 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/combined/yamls/es-combined.yaml
-elasticsearch.kubedb.com/es-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/combined/yamls/es-combined.yaml
 ```
+elasticsearch.kubedb.com/es-combined created
 
 Now, wait until `es-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME          VERSION             STATUS         AGE
 es-combined   xpack-9.2.3   Provisioning   5s
 es-combined   xpack-9.2.3   Ready          50s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1Gi"
   }
 }
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                     STORAGECLASS          REASON   AGE
 pvc-efe67aee-21bf-4320-9873-5d58d68182ae   1Gi        RWO            Delete           Bound    demo/data-es-combined-0   topolvm-provisioner            8m3s
-```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
@@ -151,20 +153,23 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/combined/yamls/es-combined-storage-as.yaml 
-elasticsearchautoscaler.autoscaling.kubedb.com/es-combined-storage-as created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/storage/combined/yamls/es-combined-storage-as.yaml 
 ```
+elasticsearchautoscaler.autoscaling.kubedb.com/es-combined-storage-as created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `elasticsearchautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get elasticsearchautoscaler -n demo
+kubectl get elasticsearchautoscaler -n demo
+```
 NAME                     AGE
 es-combined-storage-as   9s
 
-$ kubectl describe elasticsearchautoscaler -n demo es-combined-storage-as 
+```bash
+kubectl describe elasticsearchautoscaler -n demo es-combined-storage-as 
+```
 Name:         es-combined-storage-as
 Namespace:    demo
 Labels:       <none>
@@ -185,7 +190,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    60
 Events:                   <none>
-```
 
 So, the `elasticsearchautoscaler` resource is created successfully.
 
@@ -194,7 +198,8 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the database pod and fill the database volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo es-combined-0 -- bash
+kubectl exec -it -n demo es-combined-0 -- bash
+```
 [root@es-combined-0 elasticsearch]# df -h /usr/share/elasticsearch/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/026b4152-c7d8-47c1-afe2-0a7c7b708857 1014M   40M  975M   4% /usr/share/elasticsearch/data
@@ -207,30 +212,30 @@ Filesystem                                         Size  Used Avail Use% Mounted
 [root@es-combined-0 elasticsearch]# df -h /usr/share/elasticsearch/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/topolvm/026b4152-c7d8-47c1-afe2-0a7c7b708857 1014M  640M  375M  64% /usr/share/elasticsearch/data
-```
 
 So, from the above output, we can see that the storage usage is 64%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `elasticsearchopsrequest` in the demo namespace to see if any `elasticsearchopsrequest` object is created. After some time you'll see that a `elasticsearchopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$  kubectl get esops -n demo -w
+ kubectl get esops -n demo -w
+```
 NAME                       TYPE              STATUS   AGE
 esops-es-combined-8ub9ca   VolumeExpansion   Progressing   30s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$ kubectl get esops -n demo
+kubectl get esops -n demo
+```
 NAME                       TYPE              STATUS        AGE
 esops-es-combined-8ub9ca   VolumeExpansion   Successful    50s
-```
 
 We can see from the above output that the `ElasticsearchOpsRequest` has succeeded. If we describe the `ElasticsearchOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe esops -n demo esops-es-combined-8ub9ca 
+kubectl describe esops -n demo esops-es-combined-8ub9ca 
+```
 Name:         esops-es-combined-8ub9ca
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -303,22 +308,23 @@ Events:
   Normal  ReadyPetSets       16m   KubeDB Enterprise Operator  PetSet is recreated
   Normal  ResumeDatabase          16m   KubeDB Enterprise Operator  Resuming Elasticsearch demo/es-combined
   Normal  Successful              16m   KubeDB Enterprise Operator  Successfully Updated Database
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1594884096"
   }
 }
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS        CLAIM                     STORAGECLASS          REASON   AGE
 pvc-efe67aee-21bf-4320-9873-5d58d68182ae   2Gi        RWO            Delete           Bound         demo/data-es-combined-0   topolvm-provisioner            43m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the Elasticsearch combined cluster.
 
@@ -327,6 +333,9 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete elasticsearch -n demo es-combined
-$ kubectl delete elasticsearchautoscaler -n demo es-combined-storage-as
+kubectl delete elasticsearch -n demo es-combined
+```
+
+```bash
+kubectl delete elasticsearchautoscaler -n demo es-combined-storage-as
 ```

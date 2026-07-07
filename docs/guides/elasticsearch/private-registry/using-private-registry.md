@@ -23,13 +23,15 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -48,13 +50,27 @@ For Elasticsearch, push the following images to your private registry.
 - [kubedb/yq](https://hub.docker.com/r/kubedb/yq)
 
 ```bash
-$ export DOCKER_REGISTRY=<your-registry>
+export DOCKER_REGISTRY=<your-registry>
+```
 
-$ docker pull kubedb/operator:{{< param "info.version" >}} ; docker tag kubedb/operator:{{< param "info.version" >}} $DOCKER_REGISTRY/operator:{{< param "info.version" >}} ; docker push $DOCKER_REGISTRY/operator:{{< param "info.version" >}}
-$ docker pull kubedb/elasticsearch:7.3.2 ; docker tag kubedb/elasticsearch:7.3.2 $DOCKER_REGISTRY/elasticsearch:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch:7.3.2
-$ docker pull kubedb/elasticsearch-tools:7.3.2 ; docker tag kubedb/elasticsearch-tools:7.3.2 $DOCKER_REGISTRY/elasticsearch-tools:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch-tools:7.3.2
-$ docker pull kubedb/elasticsearch_exporter:1.0.2 ; docker tag kubedb/elasticsearch_exporter:1.0.2 $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2 ; docker push $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2
-$ docker pull kubedb/yq:2.4.0 ; docker tag kubedb/yq:2.4.0 $DOCKER_REGISTRY/yq:2.4.0 ; docker push $DOCKER_REGISTRY/yq:2.4.0
+```bash
+docker pull kubedb/operator:{{< param "info.version" >}} ; docker tag kubedb/operator:{{< param "info.version" >}} $DOCKER_REGISTRY/operator:{{< param "info.version" >}} ; docker push $DOCKER_REGISTRY/operator:{{< param "info.version" >}}
+```
+
+```bash
+docker pull kubedb/elasticsearch:7.3.2 ; docker tag kubedb/elasticsearch:7.3.2 $DOCKER_REGISTRY/elasticsearch:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch:7.3.2
+```
+
+```bash
+docker pull kubedb/elasticsearch-tools:7.3.2 ; docker tag kubedb/elasticsearch-tools:7.3.2 $DOCKER_REGISTRY/elasticsearch-tools:7.3.2 ; docker push $DOCKER_REGISTRY/elasticsearch-tools:7.3.2
+```
+
+```bash
+docker pull kubedb/elasticsearch_exporter:1.0.2 ; docker tag kubedb/elasticsearch_exporter:1.0.2 $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2 ; docker push $DOCKER_REGISTRY/elasticsearch_exporter:1.0.2
+```
+
+```bash
+docker pull kubedb/yq:2.4.0 ; docker tag kubedb/yq:2.4.0 $DOCKER_REGISTRY/yq:2.4.0 ; docker push $DOCKER_REGISTRY/yq:2.4.0
 ```
 
 ## Create ImagePullSecret
@@ -64,13 +80,13 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret docker-registry myregistrykey \
+kubectl create secret docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret "myregistrykey" created.
 ```
+secret "myregistrykey" created.
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -114,9 +130,9 @@ spec:
 Now, create the ElasticsearchVersion crd,
 
 ```bash
-$ kubectl apply -f pvt-elasticsearchversion.yaml
-elasticsearchversion.kubedb.com/xpack-8.19.9 created
+kubectl apply -f pvt-elasticsearchversion.yaml
 ```
+elasticsearchversion.kubedb.com/xpack-8.19.9 created
 
 ## Install KubeDB operator
 
@@ -152,17 +168,17 @@ spec:
 Now run the command to deploy this Elasticsearch object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/private-registry/private-registry.yaml
-elasticsearch.kubedb.com/pvt-reg-elasticsearch created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/private-registry/private-registry.yaml
 ```
+elasticsearch.kubedb.com/pvt-reg-elasticsearch created
 
 To check if the images pulled successfully from the repository, see if the Elasticsearch is in running state:
 
 ```bash
-$ kubectl get es -n demo pvt-reg-elasticsearch -o wide
+kubectl get es -n demo pvt-reg-elasticsearch -o wide
+```
 NAME                    VERSION     STATUS       AGE
 pvt-reg-elasticsearch   xpack-9.2.3   Running      33m
-```
 
 ## Snapshot
 

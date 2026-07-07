@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/cassandra/backup/kubestash/logical/examples](https://github.com/kubedb/docs/tree/master/docs/guides/cassandra/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -108,33 +108,35 @@ Here,
 Create the above `Cassandra` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/cas-sample.yaml
-cassandra.kubedb.com/cas-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/cas-sample.yaml
 ```
+cassandra.kubedb.com/cas-sample created
 
 KubeDB will deploy a Cassandra database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get cassandras.kubedb.com -n demo 
+kubectl get cassandras.kubedb.com -n demo 
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 cas-sample   kubedb.com/v1alpha2   5.0.3     Ready    3m6s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$  kubectl get secret -n demo -l=app.kubernetes.io/instance=cas-sample
+ kubectl get secret -n demo -l=app.kubernetes.io/instance=cas-sample
+```
 NAME                TYPE                       DATA   AGE
 cas-sample-auth     kubernetes.io/basic-auth   2      3m33s
 cas-sample-config   Opaque                     1      3m33s
 
-$  kubectl get service -n demo -l=app.kubernetes.io/instance=cas-sample
+```bash
+ kubectl get service -n demo -l=app.kubernetes.io/instance=cas-sample
+```
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                               AGE
 cas-sample                ClusterIP   10.96.77.149   <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   3m57s
 cas-sample-rack-r0-pods   ClusterIP   None           <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   3m57s
-```
 
 Here, we have to use service `cas-sample` and secret `cas-sample-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/cassandra/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
@@ -143,15 +145,16 @@ Here, we have to use service `cas-sample` and secret `cas-sample-auth` to connec
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$  kubectl get appbindings -n demo
+ kubectl get appbindings -n demo
+```
 NAME         TYPE                   VERSION   AGE
 cas-sample   kubedb.com/cassandra   5.0.3     4m23s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo cas-sample -o yaml
+kubectl get appbindings -n demo cas-sample -o yaml
+```
 apiVersion: appcatalog.appscode.com/v1alpha1
 kind: AppBinding
 metadata:
@@ -191,7 +194,6 @@ spec:
     name: cas-sample-auth
   type: kubedb.com/cassandra
   version: 5.0.7
-```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
 
@@ -204,25 +206,26 @@ KubeStash uses the `AppBinding` CR to connect with the target database. It requi
 Now, we are going to exec into the any  pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$  kubectl get pods -n demo --selector="app.kubernetes.io/instance=cas-sample"
+ kubectl get pods -n demo --selector="app.kubernetes.io/instance=cas-sample"
+```
 NAME                   READY   STATUS    RESTARTS   AGE
 cas-sample-rack-r0-0   1/1     Running   0          5m28s
 cas-sample-rack-r0-1   1/1     Running   0          4m28s
-```
 
 And copy the username and password of the database to access into `cqlsh` shell.
 
 ```bash
-$  kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.username}'| base64 -d
+ kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.username}'| base64 -d
+```
 admin⏎                                         
  kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.password}'| base64 -d
 gkebeP3HJbxubvCM⏎                     
-```
 
 Now, Lets exec into any `Pod` to enter into `cqlsh` shell to create a keyspace and a table,
 
 ```bash
-$ kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
+kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -253,7 +256,6 @@ admin@cqlsh:kubedb> SELECT * FROM kubedb.users;
 (2 rows)
 admin@cqlsh:kubedb> exit
 ⏎  
-```
 
 Now, we are ready to backup the database.
 
@@ -266,13 +268,11 @@ We are going to store our backed up data into a S3 bucket. We have to create a S
 Let's create a secret called `medusa-cred` with access credentials to our desired S3 bucket,
 
 ```bash
-$  kubectl create secret generic -n demo medusa-cred \
+ kubectl create secret generic -n demo medusa-cred \
      --from-file=./AWS_ACCESS_KEY_ID \
      --from-file=./AWS_SECRET_ACCESS_KEY
-secret/medusa-cred created
-
-
 ```
+secret/medusa-cred created
 
 **Create BackupStorage:**
 
@@ -302,9 +302,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -335,9 +335,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -390,27 +390,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-cas-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-cas-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                PHASE   PAUSED   AGE
 sample-cas-backup   Ready            107s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE   PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-cassandra-repo               1                0 B    Ready   2m15s                    2m48s
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the S3 bucket, we will see the `Repository` YAML stored in the `demo/cassandra` directory.
 
@@ -421,20 +421,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$  kubectl get cronjob -n demo
+ kubectl get cronjob -n demo
+```
 NAME                                        SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-cas-backup-frequent-backup   */5 * * * *   <none>     False     0        47s             2m39s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                           INVOKER-TYPE          INVOKER-NAME        PHASE       DURATION   AGE
 sample-cas-backup-frequent-backup-1753682588   BackupConfiguration   sample-cas-backup   Succeeded   2m2s       2m59s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -443,18 +443,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-cas-backup` has been updated by the following command,
 
 ```bash
-$  kubectl get repository -n demo s3-cassandra-repo
+ kubectl get repository -n demo s3-cassandra-repo
+```
 NAME                INTEGRITY   SNAPSHOT-COUNT   SIZE   PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-cassandra-repo               1                0 B    Ready   3m46s                    4m19s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-cassandra-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-cassandra-repo
+```
 NAME                                                             REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 s3-cassandra-repo-sample-cas-backup-frequent-backup-1753682588   s3-cassandra-repo   frequent-backup   2025-07-28T06:03:08Z   Delete            Succeeded   4m12s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -467,7 +467,7 @@ s3-cassandra-repo-sample-cas-backup-frequent-backup-1753682588   s3-cassandra-re
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo s3-cassandra-repo-sample-cas-backup-frequent-backup-1753682588 -oyaml
+kubectl get snapshots -n demo s3-cassandra-repo-sample-cas-backup-frequent-backup-1753682588 -oyaml
 ```
 
 ```yaml
@@ -583,17 +583,17 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-cassandra-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/cassandra/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-cassandra-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$  kubectl get restoresession -n demo
+ kubectl get restoresession -n demo
+```
 NAME                       REPOSITORY          PHASE     DURATION   AGE
 restore-sample-cassandra   s3-cassandra-repo   Running              100s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -605,34 +605,35 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get cassandra -n demo cas-sample
+kubectl get cassandra -n demo cas-sample
+```
 NAME         TYPE                  VERSION   STATUS   AGE
 cas-sample   kubedb.com/v1alpha2   5.0.3     Ready    136m
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=cas-
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=cas-
+```
 sample"
 NAME                             READY   STATUS    RESTARTS   AGE
 cas-sample-rack-r0-0             1/1     Running   0          137m
 cas-sample-rack-r0-1             1/1     Running   0          136m
-```
 
 And then copy the user name and password of the `root` user to access into `cqlsh` shell.
 
 ```bash
-$  kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.username}'| base64 -d
+ kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.username}'| base64 -d
+```
 admin⏎                                         
  kubectl get secret -n demo  cas-sample-auth -o jsonpath='{.data.password}'| base64 -d
 gkebeP3HJbxubvCM⏎    
-```
 
 Now, Lets exec into any `Pod` to enter into `cqlsh` shell and access the previously created table,
 
 ```bash
-$ kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
+kubectl exec -it -n demo cas-sample-rack-r0-0 -- cqlsh -u admin -p gkebeP3HJbxubvCM
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 
 Warning: Using a password on the command line interface can be insecure.
@@ -649,8 +650,6 @@ admin@cqlsh> SELECT * FROM kubedb.users;
  17dd25bd-749f-476b-a29e-f9ae97820224 | kubedb@demo2.com | demo_name2
 
 (2 rows)
-
-```
 
 So, from the above output, we can see that the `users` table we have created earlier in the original database and now, they are restored successfully.
 

@@ -23,9 +23,9 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -36,7 +36,8 @@ namespace/demo created
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For postgres, push `DB_IMAGE`, `TOOLS_IMAGE`, `EXPORTER_IMAGE` of following PostgresVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get postgresversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  kubectl get postgresversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,TOOLS_IMAGE:.spec.tools.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  ```
   NAME       VERSION   DB_IMAGE                   TOOLS_IMAGE                      EXPORTER_IMAGE                    DEPRECATED
   10.2       10.2      kubedb/postgres:10.2       kubedb/postgres-tools:10.2       kubedb/operator:0.8.0             true
   10.2-v1    10.2      kubedb/postgres:10.2-v2    kubedb/postgres-tools:10.2-v2    kubedb/postgres_exporter:v0.4.6   true
@@ -66,7 +67,6 @@ namespace/demo created
   9.6.7-v3   9.6.7     kubedb/postgres:9.6.7-v4   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
   9.6.7-v4   9.6.7     kubedb/postgres:9.6.7-v5   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
   9.6.7-v5   9.6.7     kubedb/postgres:9.6.7-v6   kubedb/postgres-tools:9.6.7-v3   kubedb/postgres_exporter:v0.4.7   <none>
-  ```
 
   Docker hub repositories:
 
@@ -85,13 +85,13 @@ ImagePullSecrets is a type of a Kubernetes Secret whose sole purpose is to pull 
 Run the following command, substituting the appropriate uppercase values to create an image pull secret for your private Docker registry:
 
 ```bash
-$ kubectl create secret generic -n demo docker-registry myregistrykey \
+kubectl create secret generic -n demo docker-registry myregistrykey \
   --docker-server=DOCKER_REGISTRY_SERVER \
   --docker-username=DOCKER_USER \
   --docker-email=DOCKER_EMAIL \
   --docker-password=DOCKER_PASSWORD
-secret/myregistrykey created
 ```
+secret/myregistrykey created
 
 If you wish to follow other ways to pull private images see [official docs](https://kubernetes.io/docs/concepts/containers/images/) of Kubernetes.
 
@@ -137,9 +137,9 @@ spec:
 Now, create the PostgresVersion crd,
 
 ```bash
-$ kubectl apply -f pvt-postgresversion.yaml
-postgresversion.kubedb.com/pvt-10.2 created
+kubectl apply -f pvt-postgresversion.yaml
 ```
+postgresversion.kubedb.com/pvt-10.2 created
 
 ## Deploy PostgreSQL database from Private Registry
 
@@ -171,17 +171,17 @@ spec:
 Now run the command to create this Postgres object:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/private-registry/pvt-reg-postgres.yaml
-postgres.kubedb.com/pvt-reg-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/private-registry/pvt-reg-postgres.yaml
 ```
+postgres.kubedb.com/pvt-reg-postgres created
 
 To check if the images pulled successfully from the repository, see if the PostgreSQL is in Running state:
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-postgres"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=pvt-reg-postgres"
+```
 NAME                 READY     STATUS    RESTARTS   AGE
 pvt-reg-postgres-0   1/1       Running   0          3m
-```
 
 ## Snapshot
 

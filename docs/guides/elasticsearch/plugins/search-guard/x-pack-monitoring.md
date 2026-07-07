@@ -27,13 +27,15 @@ As KubeDB uses [Search Guard](https://search-guard.com/) plugin for authenticati
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -158,7 +160,7 @@ monitor:
 Here, we have used `admin@secret` password for `admin` user and  `monitor@secret` password for `monitor` user. You can use `htpasswd` to generate the bcrypt encrypted password hashes.
 
 ```bash
-$htpasswd -bnBC 12 "" <password_here>| tr -d ':\n'
+htpasswd -bnBC 12 "" <password_here>| tr -d ':\n'
 ```
 
 **sg_roles_mapping.yml:**
@@ -202,8 +204,8 @@ searchguard:
 
 Now, create a secret with these Search Guard configuration files.
 
-```bash
- $ kubectl create secret generic -n demo es-auth \
+ ```bash
+ kubectl create secret generic -n demo es-auth \
              --from-literal=ADMIN_USERNAME=admin \
              --from-literal=ADMIN_PASSWORD=admin@secret \
              --from-file=./sg_action_groups.yml \
@@ -211,8 +213,8 @@ Now, create a secret with these Search Guard configuration files.
              --from-file=./sg_internal_users.yml \
              --from-file=./sg_roles_mapping.yml \
              --from-file=./sg_roles.yml
+ ```
 secret/es-auth created
-```
 
 Verify the secret has desired configuration files,
 
@@ -254,10 +256,10 @@ xpack.monitoring.exporters:
 Create a ConfigMap using this file,
 
 ```bash
-$ kubectl create configmap -n demo es-custom-config \
+kubectl create configmap -n demo es-custom-config \
                         --from-file=./common-config.yaml
-configmap/es-custom-config created
 ```
+configmap/es-custom-config created
 
 Verify that the ConfigMap has desired configuration,
 
@@ -287,9 +289,9 @@ metadata:
 Now, create Elasticsearch crd specifying  `spec.authSecret` and `spec.configuration` field.
 
 ```bash
-$ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-mon-demo.yaml
-elasticsearch.kubedb.com/es-mon-demo created
+kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/x-pack/es-mon-demo.yaml
 ```
+elasticsearch.kubedb.com/es-mon-demo created
 
 Below is the YAML for the Elasticsearch crd we just created.
 
@@ -321,7 +323,8 @@ Now, wait for few minutes. KubeDB will create necessary secrets, services, and p
 Check resources created in demo namespace by KubeDB,
 
 ```bash
-$  kubectl get all -n demo -l=app.kubernetes.io/instance=es-mon-demo
+ kubectl get all -n demo -l=app.kubernetes.io/instance=es-mon-demo
+```
 NAME                READY     STATUS    RESTARTS   AGE
 pod/es-mon-demo-0   1/1       Running   0          37s
 
@@ -331,20 +334,20 @@ service/es-mon-demo-master   ClusterIP   10.104.12.90     <none>        9300/TCP
 
 NAME                           DESIRED   CURRENT   AGE
 petset.apps/es-mon-demo   1         1         39s
-```
 
 Once everything is created, Elasticsearch will go to Running state. Check that Elasticsearch is in running state.
 
 ```bash
-$ kubectl get es -n demo es-mon-demo
+kubectl get es -n demo es-mon-demo
+```
 NAME          VERSION    STATUS    AGE
 es-mon-demo   searchguard-7.9.3   Running   1m
-```
 
 Now, check elasticsearch log to see if the cluster is ready to accept requests,
 
 ```bash
-$ kubectl logs -n demo es-mon-demo-0 -f
+kubectl logs -n demo es-mon-demo-0 -f
+```
 ...
 Starting runit...
 ...
@@ -359,7 +362,6 @@ Number of data nodes: 1
 ...
 Done with success
 ...
-```
 
 Once you see `Done with success` success line in the log, the cluster is ready to accept requests. Now, it is time to connect with Kibana.
 
@@ -401,9 +403,9 @@ configmap/kibana-config created
 Finally, deploy Kibana deployment,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
-deployment.apps/kibana created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/kibana/kibana-deployment.yaml
 ```
+deployment.apps/kibana created
 
 Below is the YAML for the Kibana deployment we just created.
 
@@ -437,19 +439,19 @@ spec:
 
 Now, wait for few minutes. Let the Kibana pod  go in`Running` state. Check pod is in `Running` using this command,
 
-```bash
- $ kubectl get pods -n demo -l app=kibana
+ ```bash
+ kubectl get pods -n demo -l app=kibana
+ ```
 NAME                      READY     STATUS    RESTARTS   AGE
 kibana-84b8cbcf7c-mg699   1/1       Running   0          3m
-```
 
 Now, watch the Kibana pod's log to see if Kibana is ready to access,
 
 ```bash
-$ kubectl logs -n demo kibana-84b8cbcf7c-mg699 -f
+kubectl logs -n demo kibana-84b8cbcf7c-mg699 -f
+```
 ...
 {"type":"log","@timestamp":"2018-08-27T09:50:47Z","tags":["listening","info"],"pid":1,"message":"Server running at http://0.0.0.0:5601"}
-```
 
 Once you see `"message":"Server running at http://0.0.0.0:5601"` in the log, Kibana is ready. Now it is time to access Kibana UI.
 
@@ -458,10 +460,10 @@ Kibana is running on port `5601` in of `kibana-84b8cbcf7c-mg699` pod. In order t
 First, open a new terminal and run,
 
 ```bash
-$ kubectl port-forward -n demo kibana-84b8cbcf7c-mg699 5601
+kubectl port-forward -n demo kibana-84b8cbcf7c-mg699 5601
+```
 Forwarding from 127.0.0.1:5601 -> 5601
 Forwarding from [::1]:5601 -> 5601
-```
 
 Now, open `localhost:5601` in your browser. When you will open the address, you will be greeted with Search Guard login UI. When you will open the address, you will be greeted with Search Guard login UI.
 
@@ -489,17 +491,27 @@ Now, your production clusters will send monitoring data to the monitoring-cluste
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/es-mon-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo es/es-mon-demo -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo es/es-mon-demo
+```bash
+kubectl delete -n demo es/es-mon-demo
+```
 
-$ kubectl delete  -n demo configmap/es-custom-config
+```bash
+kubectl delete  -n demo configmap/es-custom-config
+```
 
-$ kubectl delete -n demo configmap/kibana-config
+```bash
+kubectl delete -n demo configmap/kibana-config
+```
 
-$ kubectl delete -n demo deployment/kibana
+```bash
+kubectl delete -n demo deployment/kibana
+```
 
-$ kubectl delete ns demo
+```bash
+kubectl delete ns demo
 ```
 
 To uninstall KubeDB follow this [guide](/docs/setup/README.md).

@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/rabbitmq](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -69,22 +69,23 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/mg-standalone.yaml
-rabbitmq.kubedb.com/rm-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/mg-standalone.yaml
 ```
+rabbitmq.kubedb.com/rm-standalone created
 
 Now, wait until `mg-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo
+kubectl get rm -n demo
+```
 NAME            VERSION    STATUS    AGE
 rm-standalone   4.2.4      Ready     5m56s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "500m",
@@ -95,7 +96,6 @@ $ kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "1Gi"
   }
 }
-```
 
 You can see the Pod has default resources which is assigned by the KubeDB operator.
 
@@ -142,9 +142,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/vertical-scaling/rmops-vscale-standalone.yaml
-rabbitmqopsrequest.ops.kubedb.com/rmops-vscale-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/vertical-scaling/rmops-vscale-standalone.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rmops-vscale-standalone created
 
 #### Verify RabbitMQ Standalone resources updated successfully 
 
@@ -153,16 +153,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                      TYPE              STATUS       AGE
 rmops-vscale-standalone   VerticalScaling   Successful   108s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-vscale-standalone
+kubectl describe rabbitmqopsrequest -n demo rmops-vscale-standalone
+```
 Name:         rmops-vscale-standalone
 Namespace:    demo
 Labels:       <none>
@@ -273,12 +274,11 @@ Events:
   Normal  ResumeDatabase             3s    KubeDB Ops-manager Operator  Successfully resumed RabbitMQ demo/mg-standalone
   Normal  Successful                 3s    KubeDB Ops-manager Operator  Successfully Vertically Scaled Database
 
-```
-
 Now, we are going to verify from the Pod yaml whether the resources of the standalone database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -289,7 +289,6 @@ $ kubectl get pod -n demo rm-standalone-0 -o json | jq '.spec.containers[].resou
     "memory": "2Gi"
   }
 }
-```
 
 The above output verifies that we have successfully scaled up the resources of the RabbitMQ standalone database.
 

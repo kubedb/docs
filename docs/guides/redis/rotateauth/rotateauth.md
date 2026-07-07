@@ -26,21 +26,23 @@ section_menu_id: guides
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY       VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION              AGE
   standard (default)   rancher.io/local-path      Delete          WaitForFirstConsumer           false                      4h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create namespace demo
+  kubectl create namespace demo
+  ```
   namespace/demo created
 
-  $ kubectl get namespaces
+  ```bash
+  kubectl get namespaces
+  ```
   NAME          STATUS    AGE
   demo          Active    10s
-  ```
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,17 +72,17 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1.yaml
-redis.kubedb.com/redis-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1.yaml
 ```
+redis.kubedb.com/redis-quickstart created
 
 Now, wait until redis-quickstart has status Ready. i.e,
 
-```shell
-$ kubectl get rd -n demo -w
+```bash
+kubectl get rd -n demo -w
+```
 NAME               VERSION   STATUS   AGE
 redis-quickstart   6.2.14    Ready    74m
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
@@ -117,19 +119,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Redis.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/Redis-rotate-auth-generated.yaml
-redisopsrequest.ops.kubedb.com/rdops-rotate-auth-generated created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/Redis-rotate-auth-generated.yaml
 ```
+redisopsrequest.ops.kubedb.com/rdops-rotate-auth-generated created
 Let's wait for `RedisOpsrequest` to be `Successful`. Run the following command to watch `RedisOpsrequest` CRO
-```shell
- $ kubectl get rdops -n demo -w
+ ```bash
+ kubectl get rdops -n demo -w
+ ```
  NAME                          TYPE         STATUS       AGE
 rdops-rotate-auth-generated   RotateAuth   Successful    45s
-```
 If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Redisopsrequest -n demo rdops-rotate-auth-generated 
+```bash
+kubectl describe Redisopsrequest -n demo rdops-rotate-auth-generated 
+```
 Name:         rdops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -214,37 +217,44 @@ Events:
   Normal   ResumeDatabase                                                   3m27s  KubeDB Ops-manager Operator  Resuming Redis demo/redis-quickstart
   Normal   ResumeDatabase                                                   3m27s  KubeDB Ops-manager Operator  Successfully resumed Redis demo/redis-quickstart
   Normal   Successful                                                       3m27s  KubeDB Ops-manager Operator  Succesfully Rotated Auth for Redis
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get rd -n demo redis-quickstart -ojson | jq .spec.authSecret.name
-"redis-quickstart-auth"
-$ kubectl get secret -n demo redis-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-default⏎                         
-$ kubectl get secret -n demo redis-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-jGPx0DDKaOb6hWAb⏎                                      
+```bash
+kubectl get rd -n demo redis-quickstart -ojson | jq .spec.authSecret.name
 ```
+"redis-quickstart-auth"
+
+```bash
+kubectl get secret -n demo redis-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
+```
+default⏎                         
+
+```bash
+kubectl get secret -n demo redis-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
+```
+jGPx0DDKaOb6hWAb⏎                                      
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo redis-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-default⏎       
-$ kubectl get secret -n demo redis-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-nAiZo)pGW1f!se*2⏎                                               
+```bash
+kubectl get secret -n demo redis-quickstart-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+default⏎       
+
+```bash
+kubectl get secret -n demo redis-quickstart-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+nAiZo)pGW1f!se*2⏎                                               
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
-```shell
-$ kubectl create secret generic redis-quickstart-user-auth -n demo \
+```bash
+kubectl create secret generic redis-quickstart-user-auth -n demo \
                                                 --type=kubernetes.io/basic-auth \
                                                 --from-literal=username=admin \
                                                 --from-literal=password=Redis-secret
- secret/redis-quickstart-user-auth created
 ```
+ secret/redis-quickstart-user-auth created
 Now create a `RedisOpsRequest` with `RotateAuth` type. Below is the YAML of the `RedisOpsRequest` that we are going to create,
 
 ```shell
@@ -272,21 +282,22 @@ Here,
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/rotate-auth-user.yaml
-redisopsrequest.ops.kubedb.com/rdops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/rotate-auth-user.yaml
 ```
+redisopsrequest.ops.kubedb.com/rdops-rotate-auth-user created
 Let’s wait for `RedisOpsRequest` to be Successful. Run the following command to watch `RedisOpsRequest` CRO:
 
-```shell
-$ kubectl get rdops -n demo -w
+```bash
+kubectl get rdops -n demo -w
+```
 NAME                          TYPE         STATUS       AGE
 rdops-rotate-auth-generated   RotateAuth   Successful   6m39s
 rdops-rotate-auth-user        RotateAuth   Successful   46s
-```
 We can see from the above output that the `RedisOpsRequest` has succeeded. If we describe the `RedisOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe Redisopsrequest -n demo rdops-rotate-auth-user
+```bash
+kubectl describe Redisopsrequest -n demo rdops-rotate-auth-user
+```
 Name:         rdops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -374,24 +385,31 @@ Events:
   Normal   ResumeDatabase                                                   69s   KubeDB Ops-manager Operator  Resuming Redis demo/redis-quickstart
   Normal   ResumeDatabase                                                   69s   KubeDB Ops-manager Operator  Successfully resumed Redis demo/redis-quickstart
   Normal   Successful                                                       69s   KubeDB Ops-manager Operator  Succesfully Rotated Auth for Redis
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get rd -n demo redis-quickstart -ojson | jq .spec.authSecret.name
+```bash
+kubectl get rd -n demo redis-quickstart -ojson | jq .spec.authSecret.name
+```
 "redis-quickstart-user-auth"
-$kubectl get secret -n demo redis-quickstart-user-auth -o=jsonpath='{.data.username}' | base64 -d
+
+```bash
+kubectl get secret -n demo redis-quickstart-user-auth -o=jsonpath='{.data.username}' | base64 -d
+```
 admin⏎           
-$ kubectl get secret -n demo redis-quickstart-user-auth -o=jsonpath='{.data.password}' | base64 -d
+
+```bash
+kubectl get secret -n demo redis-quickstart-user-auth -o=jsonpath='{.data.password}' | base64 -d
+```
 Redis-secret⏎                                                                                 
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo redis-quickstart-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-default⏎        
-$ kubectl get secret -n demo redis-quickstart-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-jGPx0DDKaOb6hWAb⏎              
+```bash
+kubectl get secret -n demo redis-quickstart-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+default⏎        
+
+```bash
+kubectl get secret -n demo redis-quickstart-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+jGPx0DDKaOb6hWAb⏎              
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -400,14 +418,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Redisopsrequest rdops-rotate-auth-generated rdops-rotate-auth-user -n demo
-Redisopsrequest.ops.kubedb.com "rdops-rotate-auth-generated" "rdops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo  redis-quickstart-user-auth
-secret "redis-quickstart-user-auth" deleted
-$ kubectl delete secret -n demo  redis-quickstart-auth
-secret "redis-quickstart-auth" deleted
+```bash
+kubectl delete Redisopsrequest rdops-rotate-auth-generated rdops-rotate-auth-user -n demo
 ```
+Redisopsrequest.ops.kubedb.com "rdops-rotate-auth-generated" "rdops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo  redis-quickstart-user-auth
+```
+secret "redis-quickstart-user-auth" deleted
+
+```bash
+kubectl delete secret -n demo  redis-quickstart-auth
+```
+secret "redis-quickstart-auth" deleted
 
 
 ## Next Steps

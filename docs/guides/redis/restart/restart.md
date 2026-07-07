@@ -25,9 +25,9 @@ KubeDB supports restarting a Redis/Valkey database via a `RedisOpsRequest`. Rest
 - To keep things isolated, this tutorial uses a namespace called `demo`.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The YAML files used in this tutorial are stored in the [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in the GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,14 +60,15 @@ spec:
 Let’s create the `Redis` custom resource (CR) shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/restart/redis.yaml
-redis.kubedb.com/redis-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/restart/redis.yaml
 ```
+redis.kubedb.com/redis-cluster created
 
 Once the Redis cluster is created, you can check the pods created:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=redis-cluster -w
+kubectl get pods -n demo -l app.kubernetes.io/instance=redis-cluster -w
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 redis-cluster-shard0-0   1/1     Running   0          19h
 redis-cluster-shard0-1   1/1     Running   0          19h
@@ -75,7 +76,6 @@ redis-cluster-shard1-0   1/1     Running   0          19h
 redis-cluster-shard1-1   1/1     Running   0          19h
 redis-cluster-shard2-0   1/1     Running   0          19h
 redis-cluster-shard2-1   1/1     Running   0          19h
-```
 
 ## Apply Restart OpsRequest
 
@@ -101,9 +101,9 @@ spec:
 Let’s create the `RedisOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/restart/restart.yaml
-RedisOpsRequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/restart/restart.yaml
 ```
+RedisOpsRequest.ops.kubedb.com/restart created
 
 ### Restart Process for Redis Cluster
 
@@ -118,11 +118,14 @@ This ensures high availability and minimal disruption during the restart.
 You can check the status of the `RedisOpsRequest` to confirm the restart operation:
 
 ```bash
-$ kubectl get rdops -n demo
+kubectl get rdops -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   6m51s
 
-$ kubectl get rdops -n demo restart -o yaml
+```bash
+kubectl get rdops -n demo restart -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: RedisOpsRequest
 metadata:
@@ -223,16 +226,20 @@ status:
   observedGeneration: 1
   phase: Successful
 
-```
-
 ## Cleaning Up
 
 To clean up the Kubernetes resources created in this tutorial, run:
 
 ```bash
-$ kubectl delete rdops -n demo restart
-$ kubectl delete redis -n demo redis-cluster
-$ kubectl delete ns demo
+kubectl delete rdops -n demo restart
+```
+
+```bash
+kubectl delete redis -n demo redis-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

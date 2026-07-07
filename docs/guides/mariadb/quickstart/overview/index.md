@@ -31,10 +31,10 @@ This tutorial will show you how to use KubeDB to run a MariaDB database.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
 ```bash
-$ kubectl get storageclasses
+kubectl get storageclasses
+```
 NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -48,7 +48,8 @@ namespace/demo created
 When you have installed KubeDB, it has created `MariaDBVersion` crd for all supported MariaDB versions. Check it by using the following command,
 
 ```bash
-$ kubectl get mariadbversions
+kubectl get mariadbversions
+```
 NAME      VERSION   DB_IMAGE                                        DEPRECATED   AGE
 10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                12d
 10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                12d
@@ -70,8 +71,6 @@ NAME      VERSION   DB_IMAGE                                        DEPRECATED  
 KubeDB implements a `MariaDB` CRD to define the specification of a MariaDB database. Below is the `MariaDB` object created in this tutorial.
 
 `Note`: If your `KubeDB version` is less or equal to `v2024.6.4`, You have to use `v1alpha2` apiVersion.
-
-```yaml
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:

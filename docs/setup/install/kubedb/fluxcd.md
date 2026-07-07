@@ -35,8 +35,11 @@ spec:
 Generate a license from the [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) and store it in a Secret so `HelmRelease` can reference it via `valuesFrom`.
 
 ```bash
-$ kubectl create namespace kubedb
-$ kubectl create secret generic kubedb-license \
+kubectl create namespace kubedb
+```
+
+```bash
+kubectl create secret generic kubedb-license \
   --from-file=license=/path/to/the/license.txt \
   -n kubedb
 ```
@@ -100,13 +103,15 @@ Instead of creating a per-cluster license Secret (steps 2–3 above), you can de
 Generate an online license-proxyserver token by following the [License Proxyserver guide](https://kubedb.com/docs/platform/v2026.5.22/guides/license-management/license-proxyserver/), then store it in a Secret that the `HelmRelease` references via `valuesFrom`:
 
 ```bash
-$ cat > license-proxyserver.yaml <<'EOF'
+cat > license-proxyserver.yaml <<'EOF'
 platform:
   baseURL: https://appscode.com
   token: '****************************************'
 EOF
+```
 
-$ kubectl create secret generic ace-licenseserver-cred \
+```bash
+kubectl create secret generic ace-licenseserver-cred \
   --from-file=license-proxyserver.yaml \
   -n kubeops
 ```

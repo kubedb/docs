@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to update the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 Also we need a mysql backend for the proxysql server. So we are  creating one with the below yaml. 
 
@@ -60,9 +60,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created 
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created 
 
 After applying the above yaml wait for the MySQL to be Ready.
 
@@ -94,17 +94,17 @@ spec:
 Let's create the `ProxySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 Now, wait until `proxy-server` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get proxysql -n demo                                                                                                                                             
+kubectl get proxysql -n demo                                                                                                                                             
+```
 NAME             VERSION       STATUS     AGE
 proxy-server   2.7.3-debian    Ready     3m15s
-```
 
 We are now ready to apply the `ProxySQLOpsRequest` CR to update this database.
 
@@ -139,9 +139,9 @@ Here,
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/proxyops-upgrade.yaml
-proxysqlopsrequest.ops.kubedb.com/proxyops-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/update-version/cluster/examples/proxyops-upgrade.yaml
 ```
+proxysqlopsrequest.ops.kubedb.com/proxyops-update created
 
 ### Verify ProxySQL version updated successfully 
 
@@ -150,27 +150,30 @@ If everything goes well, `KubeDB` Enterprise operator will update the image of `
 Let's wait for `ProxySQLOpsRequest` to be `Successful`.  Run the following command to watch `ProxySQLOpsRequest` CR,
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo
+kubectl get proxysqlopsrequest -n demo
+```
 Every 2.0s: kubectl get proxysqlopsrequest -n demo
 NAME                 TYPE            STATUS       AGE
 proxyops-update      UpdateVersion   Successful    84s
-```
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded.
 
 Now, we are going to verify whether the `ProxySQL` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get proxysql -n demo proxy-server -o=jsonpath='{.spec.version}{"\n"}'
+```
 3.0.1-debian
 
-$ kubectl get petset -n demo proxy-server -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-kubedb/proxysql:3.0.1-debian@sha256....
-
-$ kubectl get pods -n demo proxy-server-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-kubedb/proxysql:3.0.1-debian@sha256....
-
+```bash
+kubectl get petset -n demo proxy-server -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 ```
+kubedb/proxysql:3.0.1-debian@sha256....
+
+```bash
+kubectl get pods -n demo proxy-server-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+kubedb/proxysql:3.0.1-debian@sha256....
 
 You can see from above, our `ProxySQL` cluster database has been updated with the new version. So, the update process is successfully completed.
 
@@ -179,6 +182,9 @@ You can see from above, our `ProxySQL` cluster database has been updated with th
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete proxysql -n demo proxy-server
-$ kubectl delete proxysqlopsrequest -n demo proxyops-update
+kubectl delete proxysql -n demo proxy-server
+```
+
+```bash
+kubectl delete proxysqlopsrequest -n demo proxyops-update
 ```

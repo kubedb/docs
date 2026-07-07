@@ -26,9 +26,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Redis Cluster with Announce
@@ -94,23 +94,23 @@ Here,
 Now, wait until `redis-announce` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get rd -n demo
 NAME            VERSION   STATUS   AGE
 redis-announce   7.4.0     Ready    6m56s
-```
 
 To check assigned DNS/IP or port or bust port list for every pod you can run:
 
 ```bash
-$ kubectl exec -it -n demo redis-announce-shard0-0 -- cat /tmp/db-endpoints.txt
+kubectl exec -it -n demo redis-announce-shard0-0 -- cat /tmp/db-endpoints.txt
+```
 redis-announce-shard0-0 rd0-0.kubedb.appscode 10050 10056
 redis-announce-shard0-1 rd0-1.kubedb.appscode 10051 10057
 redis-announce-shard1-0 rd1-0.kubedb.appscode 10052 10058
 redis-announce-shard1-1 rd1-1.kubedb.appscode 10053 10059
 redis-announce-shard2-0 rd2-0.kubedb.appscode 10054 10060
 redis-announce-shard2-1 rd2-1.kubedb.appscode 10055 10061
-```
 
 ## Redis Cluster without Announce
 
@@ -144,30 +144,30 @@ spec:
 Now, wait until `redis` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get rd -n demo
 NAME            VERSION   STATUS   AGE
 redis           7.4.0     Ready    6m56s
-```
 
 To check the endpoint type run:
 
 ```bash
-$ kubectl exec -it -n demo redis-shard0-0 -- cat /tmp/endpoint-type.txt
-ip
+kubectl exec -it -n demo redis-shard0-0 -- cat /tmp/endpoint-type.txt
 ```
+ip
 
 To check assigned DNS/IP or port or bust port list for every pod you can run:
 
 ```bash
-$ kubectl exec -it -n demo redis-shard0-0 -- cat /tmp/db-endpoints.txt
+kubectl exec -it -n demo redis-shard0-0 -- cat /tmp/db-endpoints.txt
+```
 redis-shard0-0 10.244.0.34 6379 16379
 redis-shard0-1 10.244.0.27 6379 16379
 redis-shard1-0 10.244.0.30 6379 16379
 redis-shard1-1 10.244.0.28 6379 16379
 redis-shard2-0 10.244.0.33 6379 16379
 redis-shard2-1 10.244.0.32 6379 16379
-```
 
 ## Cleaning up
 

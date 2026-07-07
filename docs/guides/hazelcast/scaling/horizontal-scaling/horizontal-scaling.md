@@ -30,9 +30,9 @@ This guide will give an overview on how KubeDB Ops-manager operator scales up or
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -79,30 +79,34 @@ spec:
 Let's create the `Hazelcast` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hazelcast.yaml
-hazelcast.kubedb.com/hz-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hz-prod created
 
 Now, wait until `hz-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo
+kubectl get hz -n demo
+```
 NAME      TYPE                  VERSION   STATUS   AGE
 hz-prod   kubedb.com/v1alpha2   5.5.2     Ready    4m
-```
 
 Let's check the number of member nodes this database has from the Hazelcast object, number of pods the Statefulset have,
 
 ```bash
-$ kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
-3
-
-$ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
-3
-
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
-4
+kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
 ```
+3
+
+```bash
+kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
+```
+3
+
+```bash
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
+```
+4
 
 You can see from all the above outputs that the database has 3 member nodes.
 
@@ -139,9 +143,9 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hz-hscale-up.yaml
-hazelcastopsrequest.ops.kubedb.com/hz-hscale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hz-hscale-up.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hz-hscale-up created
 
 ### Verify hazelcast node scaled up successfully
 
@@ -150,15 +154,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the number of 
 Let's wait for `HazelcastOpsRequest` to be `Successful`. Run the following command to watch `HazelcastOpsRequest` CR,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME                   TYPE                STATUS       AGE
 hazelcast-scale-up     HorizontalScaling   Successful   2m5s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe hazelcastopsrequest -n demo hazelcast-scale-up
+kubectl describe hazelcastopsrequest -n demo hazelcast-scale-up
+```
 Name:         hazelcast-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -220,20 +225,23 @@ Events:
   Normal   HorizontalScale                           2m29s  KubeDB Ops-manager Operator  ScaleUp hz-prod nodes
   Normal   Starting                                  2m29s  KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hz-prod
   Normal   Successful                                2m29s  KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hz-prod for HazelcastOpsRequest: hazelcast-scale-up
-```
 
 Now, we are going to verify the number of member nodes this database has from the Hazelcast object, number of pods the Stateful have,
 
 ```bash
-$ kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
-4
-
-$ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
-4
-
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
-5
+kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
 ```
+4
+
+```bash
+kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
+```
+4
+
+```bash
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
+```
+5
 
 From all the above outputs we can see that the number of member nodes are 4. That means we have successfully scaled up the member nodes of the Hazelcast database.
 
@@ -268,9 +276,9 @@ Here,
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hz-hscale-down.yaml
-hazelcastopsrequest.ops.kubedb.com/hz-hscale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/horizontal-scaling/hz-hscale-down.yaml
 ```
+hazelcastopsrequest.ops.kubedb.com/hz-hscale-down created
 
 ### Verify Member nodes scaled down successfully
 
@@ -279,25 +287,29 @@ If everything goes well, `KubeDB` Enterprise operator will update the number of 
 Let's wait for `HazelcastOpsRequest` to be `Successful`. Run the following command to watch `HazelcastOpsRequest` CR,
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME             TYPE                STATUS       AGE
 hz-hscale-down   HorizontalScaling   Successful   2m38s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded.
 
 Now, we are going to verify the number of member nodes this database has from the Hazelcast object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
-2
-
-$ kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
-2
-
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
-3
+kubectl get hazelcast -n demo hz-prod -o json | jq '.spec.replicas'
 ```
+2
+
+```bash
+kubectl get statefulset -n demo hz-prod -o json | jq '.spec.replicas'
+```
+2
+
+```bash
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc -l
+```
+3
 
 From all the above outputs we can see that the number of member nodes are 2. That means we have successfully scaled down the member nodes of the Hazelcast database.
 

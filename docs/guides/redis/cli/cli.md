@@ -23,16 +23,16 @@ KubeDB comes with its own cli. It is called `kubedb` cli. `kubedb` can be used t
 `kubectl create` creates a database CRD object in `default` namespace by default. Following command will create a Redis object as specified in `redis.yaml`.
 
 ```bash
-$ kubectl create -f redis-demo.yaml
-redis.kubedb.com/redis-demo created
+kubectl create -f redis-demo.yaml
 ```
+redis.kubedb.com/redis-demo created
 
 You can provide namespace as a flag `--namespace`. Provided namespace should match with namespace specified in input file.
 
 ```bash
-$ kubectl create -f redis-demo.yaml --namespace=kube-system
-redis.kubedb.com/redis-demo created
+kubectl create -f redis-demo.yaml --namespace=kube-system
 ```
+redis.kubedb.com/redis-demo created
 
 `kubectl create` command also considers `stdin` as input.
 
@@ -45,13 +45,13 @@ cat redis-demo.yaml | kubectl create -f -
 `kubectl get` command allows users to list or find any KubeDB object. To list all Redis objects in `default` namespace, run the following command:
 
 ```bash
-$ kubectl get redis
+kubectl get redis
+```
 NAME         VERSION   STATUS    AGE
 redis-demo   4.0-v1    Running   13s
 redis-dev    4.0-v1    Running   13s
 redis-prod   4.0-v1    Running   13s
 redis-qa     4.0-v1    Running   13s
-```
 
 To get YAML of an object, use `--output=yaml` flag.
 
@@ -103,13 +103,13 @@ kubectl get redis redis-demo --output=json
 To list all KubeDB objects, use following command:
 
 ```bash
-$ kubectl get all -o wide
+kubectl get all -o wide
+```
 NAME                          VERSION   STATUS    AGE
 redis.kubedb.com/redis-demo   4.0-v1    Running   3m
 redis.kubedb.com/redis-dev    4.0-v1    Running   3m
 redis.kubedb.com/redis-prod   4.0-v1    Running   3m
 redis.kubedb.com/redis-qa     4.0-v1    Running   3m
-```
 
 Flag `--output=wide` is used to print additional information.
 
@@ -121,27 +121,28 @@ List command supports short names for each object types. You can use it like `ku
 You can print labels with objects. The following command will list all Redis with their corresponding labels.
 
 ```bash
-$ kubectl get rd --show-labels
+kubectl get rd --show-labels
+```
 NAME         VERSION   STATUS    AGE       LABELS
 redis-demo   4.0-v1    Running   4m        kubedb=cli-demo
-```
 
 To print only object name, run the following command:
 
 ```bash
-$ kubectl get all -o name
+kubectl get all -o name
+```
 redis/redis-demo
 redis/redis-dev
 redis/redis-prod
 redis/redis-qa
-```
 
 ### How to Describe Objects
 
 `kubectl dba describe` command allows users to describe any KubeDB object. The following command will describe Redis server `redis-demo` with relevant information.
 
 ```bash
-$ kubectl dba describe rd redis-demo
+kubectl dba describe rd redis-demo
+```
 Name:               redis-demo
 Namespace:          default
 CreationTimestamp:  Mon, 01 Oct 2018 14:14:27 +0600
@@ -186,7 +187,6 @@ Events:
   Normal  Successful  5m    Redis operator  Successfully created Redis
   Normal  Successful  5m    Redis operator  Successfully patched PetSet
   Normal  Successful  5m    Redis operator  Successfully patched Redis
-```
 
 `kubectl dba describe` command provides following basic information about a Redis server.
 
@@ -230,13 +230,13 @@ To learn about various options of `describe` command, please visit [here](/docs/
 Let's edit an existing running Redis object to setup [Monitoring](/docs/guides/redis/monitoring/using-builtin-prometheus.md). The following command will open Redis `redis-demo` in editor.
 
 ```bash
-$ kubectl edit rd redis-demo
+kubectl edit rd redis-demo
+```
 #spec:
 #  monitor:
 #    agent: prometheus.io/builtin
 
 redis "redis-demo" edited
-```
 
 #### Edit Restrictions
 
@@ -261,16 +261,16 @@ For DormantDatabase, `spec.origin` can't be edited using `kubectl edit`
 `kubectl delete` command will delete an object in `default` namespace by default unless namespace is provided. The following command will delete a Redis `redis-dev` in default namespace
 
 ```bash
-$ kubectl delete redis redis-dev
-redis.kubedb.com "redis-dev" deleted
+kubectl delete redis redis-dev
 ```
+redis.kubedb.com "redis-dev" deleted
 
 You can also use YAML files to delete objects. The following command will delete a redis using the type and name specified in `redis.yaml`.
 
 ```bash
-$ kubectl delete -f redis-demo.yaml
-redis.kubedb.com "redis-dev" deleted
+kubectl delete -f redis-demo.yaml
 ```
+redis.kubedb.com "redis-dev" deleted
 
 `kubectl delete` command also takes input from `stdin`.
 
@@ -288,13 +288,18 @@ kubectl delete redis -l redis.app.kubernetes.io/instance=redis-demo
 
 You can use Kubectl with KubeDB objects like any other CRDs. Below are some common examples of using Kubectl with KubeDB objects.
 
-```bash
 # List objects
-$ kubectl get redis
-$ kubectl get redis.kubedb.com
+```bash
+kubectl get redis
+```
+
+```bash
+kubectl get redis.kubedb.com
+```
 
 # Delete objects
-$ kubectl delete redis <name>
+```bash
+kubectl delete redis <name>
 ```
 
 ## Next Steps

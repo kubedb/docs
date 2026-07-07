@@ -161,11 +161,11 @@ Secrets provided by users are not managed by KubeDB, and therefore, won't be mod
 Example:
 
 ```bash
-$ kubectl create secret generic m1-auth -n demo \
+kubectl create secret generic m1-auth -n demo \
 --from-literal=user=root \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "m1-auth" created
 ```
+secret "m1-auth" created
 
 ```yaml
 apiVersion: v1

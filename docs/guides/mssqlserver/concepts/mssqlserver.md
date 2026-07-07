@@ -188,11 +188,11 @@ spec:
 `spec.version` is a required field that specifies the name of the [MSSQLServerVersion](/docs/guides/mssqlserver/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MSSQLServerVersion` resources,
 
 ```bash
-$ kubectl get msversion
+kubectl get msversion
+```
 NAME        VERSION   DB_IMAGE                                                DEPRECATED   AGE
 2022-cu12   2022      mcr.microsoft.com/mssql/server:2022-CU12-ubuntu-22.04                2d
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                2d
-```
 ### spec.replicas
 
 `spec.replicas` specifies the total number of primary and secondary nodes in SQL Server Availability Group cluster configuration. One pod is selected as Primary and others act as secondary replicas. KubeDB uses `PodDisruptionBudget` to ensure that majority of the replicas are available during [voluntary disruptions](https://kubernetes.io/docs/concepts/workloads/pods/disruptions/#voluntary-and-involuntary-disruptions).
@@ -208,14 +208,15 @@ If you want to use an existing or custom secret, please specify that when creati
 Example:
 
 ```bash
-$ kubectl create secret generic mssqlserver-auth -n demo \
+kubectl create secret generic mssqlserver-auth -n demo \
              --from-literal=username='sa' \
              --from-literal=password='Pa55w0rd!'
-secret/mssqlserver-auth created
 ```
+secret/mssqlserver-auth created
 
 ```bash
-$ kubectl get secret -n demo  mssqlserver-auth -oyaml
+kubectl get secret -n demo  mssqlserver-auth -oyaml
+```
 apiVersion: v1
 data:
   password: UGE1NXcwcmQh
@@ -228,7 +229,6 @@ metadata:
   resourceVersion: "315403"
   uid: dafcce02-b6a2-4e65-bdd1-db6b9b6d4913
 type: Opaque
-```
 
 ### spec.storageType
 

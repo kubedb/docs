@@ -25,9 +25,9 @@ This guide shows how to change the custom `global.ini` configuration of a runnin
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Deploy a HanaDB
 
@@ -64,9 +64,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/reconfigure/standalone-ops.yaml
-hanadb.kubedb.com/hanadb-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/reconfigure/standalone-ops.yaml
 ```
+hanadb.kubedb.com/hanadb-standalone created
 
 Wait until `hanadb-standalone` is `Ready`.
 
@@ -75,15 +75,17 @@ Wait until `hanadb-standalone` is `Ready`.
 Read the current value of `[memorymanager] global_allocation_limit`:
 
 ```bash
-$ HANA_PASSWORD="$(kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+HANA_PASSWORD="$(kubectl get secret hanadb-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)"
+```
 
-$ kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
+```bash
+kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' \
   \"SELECT LAYER_NAME, VALUE FROM M_INIFILE_CONTENTS WHERE FILE_NAME='global.ini' AND SECTION='memorymanager' AND KEY='global_allocation_limit'\""
+```
 LAYER_NAME,VALUE
 "DEFAULT","0"
 1 row selected
-```
 
 The database starts with no custom override (only the `DEFAULT` layer, value `0` = HANA decides).
 
@@ -113,9 +115,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/reconfigure/reconfigure.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-reconfigure created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/reconfigure/reconfigure.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-reconfigure created
 
 Here,
 
@@ -129,13 +131,14 @@ Here,
 Wait for the ops request to reach `Successful`:
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-reconfigure
+kubectl get hdbops -n demo hdbops-reconfigure
+```
 NAME                 TYPE          STATUS       AGE
 hdbops-reconfigure   Reconfigure   Successful   111s
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-reconfigure
+kubectl describe hdbops -n demo hdbops-reconfigure
+```
 ...
 Status:
   Conditions:
@@ -155,20 +158,19 @@ Status:
     Status:  True
     Type:    Successful
   Phase:     Successful
-```
 
 Confirm the new value is live (it shows up under the `SYSTEM` layer once the pod has restarted with the
 updated configuration):
 
 ```bash
-$ kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
+kubectl exec -n demo hanadb-standalone-0 -c hanadb -- /bin/sh -lc \
   "source /usr/sap/HXE/HDB90/HDBSettings.sh; hdbsql -i 90 -d SYSTEMDB -u SYSTEM -p '$HANA_PASSWORD' \
   \"SELECT LAYER_NAME, VALUE FROM M_INIFILE_CONTENTS WHERE FILE_NAME='global.ini' AND SECTION='memorymanager' AND KEY='global_allocation_limit'\""
+```
 LAYER_NAME,VALUE
 "DEFAULT","0"
 "SYSTEM","9663676416"
 2 rows selected
-```
 
 The `SYSTEM` layer now carries the new value `9663676416` (9 GiB).
 
@@ -178,9 +180,15 @@ To **remove** all custom configuration, set `spec.configuration.removeCustomConf
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-reconfigure
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-standalone
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-reconfigure
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

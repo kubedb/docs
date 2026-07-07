@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/singlestore/backup/kubestash/logical/examples](/docs/guides/singlestore/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -55,11 +55,11 @@ This section will demonstrate how to backup a `SingleStore` database. Here, we a
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 
 ### Deploy Sample SingleStore Database
@@ -138,33 +138,34 @@ Here,
 Create the above `SingleStore` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/sdb-sample.yaml
-singlestore.kubedb.com/sdb-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/sdb-sample.yaml
 ```
+singlestore.kubedb.com/sdb-sample created
 
 KubeDB will deploy a SingleStore database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get singlestores.kubedb.com -n demo
+kubectl get singlestores.kubedb.com -n demo
+```
 NAME           VERSION   STATUS    AGE
 sdb-sample      8.9.3   Ready     4m22s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sdb-sample
+kubectl get secret -n demo -l=app.kubernetes.io/instance=sdb-sample
+```
 NAME                   TYPE                       DATA   AGE
 sdb-sample-auth   kubernetes.io/basic-auth   2      4m58s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sdb-sample
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sdb-sample
+```
 NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 sdb-sample        ClusterIP   10.128.230.168   <none>        3306/TCP,8081/TCP   5m10s
 sdb-sample-pods   ClusterIP   None             <none>        3306/TCP            5m10s
-
-```
 
 Here, we have to use service `sdb-sample` and secret `sdb-sample-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/mysql/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
@@ -173,15 +174,15 @@ Here, we have to use service `sdb-sample` and secret `sdb-sample-auth` to connec
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME           AGE
 sdb-sample    9m24s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sdb-sample -o yaml
+kubectl get appbindings -n demo sdb-sample -o yaml
 ```
 
 ```yaml
@@ -251,29 +252,30 @@ KubeStash uses the `AppBinding` CR to connect with the target database. It requi
 Now, we are going to exec into the any aggregator pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sdb-sample"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sdb-sample"
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 sdb-sample-aggregator-0   2/2     Running   0          15m
 sdb-sample-aggregator-1   2/2     Running   0          15m
 sdb-sample-leaf-0         2/2     Running   0          15m
 sdb-sample-leaf-1         2/2     Running   0          15m
 sdb-sample-leaf-2         2/2     Running   0          15m
-```
 
 And copy the username and password of the `root` user to access into `memsql` shell.
 
 ```bash
-$ kubectl get secret -n demo  sdb-sample-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  sdb-sample-auth -o jsonpath='{.data.username}'| base64 -d
+```
 root⏎           
 
 kubectl get secret -n demo  sdb-sample-auth -o jsonpath='{.data.password}'| base64 -d
 xEJv73q3w_m1~H.G⏎ 
-```
 
 Now, Lets exec into the any aggregator `Pod` to enter into `mysql` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo sdb-sample-aggregator-0 -- singlestore --user=root --password=xEJv73q3w_m1~H.G
+kubectl exec -it -n demo sdb-sample-aggregator-0 -- singlestore --user=root --password=xEJv73q3w_m1~H.G
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -331,8 +333,6 @@ singlestore> SELECT * FROM playground.equipment;
 singlestore> exit
 Bye
 
-```
-
 Now, we are ready to backup the database.
 
 ### Prepare Backend
@@ -344,13 +344,19 @@ We are going to store our backed up data into a GCS bucket. We have to create a 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -379,9 +385,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -412,9 +418,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -427,8 +433,11 @@ At first, we need to create a secret with a Restic password for backup data encr
 Let's create a secret called `encrypt-secret` with the Restic password,
 
 ```bash
-$ echo -n 'changeit' > RESTIC_PASSWORD
-$ kubectl create secret generic -n demo encrypt-secret \
+echo -n 'changeit' > RESTIC_PASSWORD
+```
+
+```bash
+kubectl create secret generic -n demo encrypt-secret \
     --from-file=./RESTIC_PASSWORD \
 secret "encrypt-secret" created
 ```
@@ -482,27 +491,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-sdb-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-sdb-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                  PHASE   PAUSED   AGE
 sample-sdb-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME               INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-sdb-repo          0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/singlestore` directory.
 
@@ -513,21 +522,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                          SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-sdb-backup-frequent-backup     */5 * * * *             0        2m45s           3m25s
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
-
+kubectl get backupsession -n demo -w
+```
 NAME                                             INVOKER-TYPE          INVOKER-NAME           PHASE       DURATION   AGE
 sample-sdb-backup-frequent-backup-1724065200   BackupConfiguration   sdb-sample-backup    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -536,18 +544,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `sample-sdb-backup` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-sdb-repo
+kubectl get repository -n demo gcs-sdb-repo
+```
 NAME                    INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-sdb-repo          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-demo-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-demo-repo
+```
 NAME                                                            REPOSITORY            SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-sdb-repo-sample-sdb-backup-frequent-backup-1724065200   sample-sdb-backup   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -560,7 +568,7 @@ gcs-sdb-repo-sample-sdb-backup-frequent-backup-1724065200   sample-sdb-backup   
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo gcs-sdb-repo-sample-sdb-backup-frequent-backup-1724065200 -oyaml
+kubectl get snapshots -n demo gcs-sdb-repo-sample-sdb-backup-frequent-backup-1724065200 -oyaml
 ```
 
 ```yaml
@@ -697,17 +705,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restored-singlestore.yaml
-singlestore.kubedb.com/restored-singlestore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restored-singlestore.yaml
 ```
+singlestore.kubedb.com/restored-singlestore created
 
 If you check the database status, you will see it is stuck in `Provisioning` state.
 
 ```bash
-$ kubectl get singlestore -n demo restored-singlestore
+kubectl get singlestore -n demo restored-singlestore
+```
 NAME                   VERSION     STATUS         AGE
 restored-singlestore   8.9.3     Provisioning    61s
-```
 
 #### Create RestoreSession:
 
@@ -748,19 +756,19 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-singlestore-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-singlestore-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Sep 20 10:44:05 2024
 
 NAME             REPOSITORY        FAILURE-POLICY   PHASE       DURATION   AGE
 sample-restore   gcs-demo-repo                      Succeeded   3s         53s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -772,37 +780,38 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get singlestore -n demo restored-singlestore
+kubectl get singlestore -n demo restored-singlestore
+```
 NAME                   VERSION   STATUS  AGE
 restored-singlestore   8.9.3     Ready   34m
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-singlestore"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-singlestore"
+```
 NAME                                READY   STATUS    RESTARTS   AGE
 restored-singlestore-aggregator-0   2/2     Running   0          34m
 restored-singlestore-aggregator-1   2/2     Running   0          34m
 restored-singlestore-leaf-0         2/2     Running   0          34m
 restored-singlestore-leaf-1         2/2     Running   0          34m
 restored-singlestore-leaf-2         2/2     Running   0          34m
-```
 
 And then copy the user name and password of the `root` user to access into `memsql` shell.
 
 ```bash
-$ kubectl get secret -n demo  restored-singlestore-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  restored-singlestore-auth -o jsonpath='{.data.username}'| base64 -d
+```
 root⏎           
 
 kubectl get secret -n demo  restored-singlestore-auth -o jsonpath='{.data.password}'| base64 -d
 QMm1hi0T*7QFz_yh⏎ 
-```
 
 Now, Lets exec into the any aggregator `Pod` to enter into `mysql` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo restored-singlestore-aggregator-0 -- singlestore --user=root --password=QMm1hi0T*7QFz_yh
+kubectl exec -it -n demo restored-singlestore-aggregator-0 -- singlestore --user=root --password=QMm1hi0T*7QFz_yh
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -850,8 +859,6 @@ singlestore> SELECT * FROM playground.equipment;
 
 singlestore> exit
 Bye
-
-```
 
 So, from the above output, we can see that the `playground` database and the `equipment` table we have created earlier in the original database and now, they are restored successfully.
 

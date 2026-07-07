@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for Elasticsearch. This tutorial wi
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -87,9 +87,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-issuer.yaml
-issuer.cert-manager.io/es-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-issuer.yaml
 ```
+issuer.cert-manager.io/es-ca-issuer created
 
 ## TLS/SSL encryption in Elasticsearch Topology Cluster
 
@@ -142,28 +142,29 @@ spec:
 ### Deploy Elasticsearch Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-topology-tls.yaml
-elasticsearch.kubedb.com/es-topology-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/tls/es-topology-tls.yaml
 ```
+elasticsearch.kubedb.com/es-topology-tls created
 
 Now, wait until `es-topology-tls` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get es -n demo -w
+kubectl get es -n demo -w
+```
 NAME              VERSION        STATUS         AGE
 es-topology-tls   xpack-8.19.9   Provisioning   0s
 es-topology-tls   xpack-8.19.9   Provisioning   18s
 .
 .
 es-topology-tls   xpack-8.19.9   Ready          2m5s
-```
 
 ### Verify TLS/SSL in Elasticsearch Topology Cluster
 
 KubeDB creates a client certificate secret for Elasticsearch. Let's check it:
 
 ```bash
-$ kubectl describe secret -n demo es-topology-tls-client-cert
+kubectl describe secret -n demo es-topology-tls-client-cert
+```
 Name:         es-topology-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -189,13 +190,13 @@ Data
 ca.crt:   1172 bytes
 tls.crt:  1387 bytes
 tls.key:  1704 bytes
-```
 
 Now, let's exec into the master node and verify the configuration that TLS is enabled for both transport and HTTP layers.
 
 ```bash
-$ kubectl exec -n demo es-topology-tls-master-0 -c elasticsearch -- \
+kubectl exec -n demo es-topology-tls-master-0 -c elasticsearch -- \
                                       cat /usr/share/elasticsearch/config/elasticsearch.yml | grep -A 2 -i xpack.security
+```
 xpack.security.enabled: true
 
 xpack.security.transport.ssl.enabled: true
@@ -208,14 +209,14 @@ xpack.security.http.ssl.enabled: true
 xpack.security.http.ssl.key:  certs/http/tls.key
 xpack.security.http.ssl.certificate: certs/http/tls.crt
 xpack.security.http.ssl.certificate_authorities: [ "certs/http/ca.crt" ]
-```
 
 We can see from the above output that both `xpack.security.transport.ssl.enabled: true` and `xpack.security.http.ssl.enabled: true` are set, which means TLS is enabled for both node-to-node and client-to-node communication across all topology node roles.
 
 Now, let's exec into the master node and connect using HTTPS to confirm the topology cluster is accessible with TLS.
 
 ```bash
-$ kubectl exec -it -n demo es-topology-tls-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
+kubectl exec -it -n demo es-topology-tls-master-0 -c elasticsearch -- curl -k -XGET "https://localhost:9200/_cluster/health?pretty" --user "elastic:$ELASTIC_USER_PASSWORD"
+```
 {
   "cluster_name" : "es-topology-tls",
   "status" : "green",
@@ -233,7 +234,6 @@ $ kubectl exec -it -n demo es-topology-tls-master-0 -c elasticsearch -- curl -k 
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 From the above output, we can see that we are able to connect to the Elasticsearch topology cluster using the TLS configuration. The cluster has 4 nodes total (1 master + 2 data + 1 ingest) and is reporting `green` status.
 

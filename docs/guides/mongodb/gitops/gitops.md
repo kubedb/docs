@@ -28,13 +28,14 @@ This guide will show you how to use `KubeDB` GitOps operator to create MongoDB d
 - You need to install GitOps tools like `ArgoCD` or `FluxCD` and configure with your Git Repository to monitor the Git repository and synchronize the state of the Kubernetes cluster with the desired state defined in Git.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/MongoDB](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 We are going to use `ArgoCD` in this tutorial. You can install `ArgoCD` in your cluster by following the steps [here](https://argo-cd.readthedocs.io/en/stable/getting_started/). Also, you need to install `argocd` CLI in your local machine. You can install `argocd` CLI by following the steps [here](https://argo-cd.readthedocs.io/en/stable/cli_installation/).
@@ -94,11 +95,11 @@ spec:
 
 Create a directory like below,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
     └── MongoDB.yaml
 1 directories, 1 files
-```
 
 Now commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MongoDB` CR is created in your cluster.
 
@@ -106,19 +107,19 @@ Our `gitops` operator will create an actual `MongoDB` database CR in the cluster
 
 
 ```bash
-$  kubectl get MongoDB.gitops.kubedb.com,MongoDB.kubedb.com -n demo
+ kubectl get MongoDB.gitops.kubedb.com,MongoDB.kubedb.com -n demo
+```
 NAME                                  AGE
 mongodb.gitops.kubedb.com/mg-gitops   33m
 
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    33m
 
-```
-
 List the resources created by `kubedb` operator created for `kubedb.com/v1` MongoDB.
 
 ```bash
-$ kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+kubectl get petset,pod,secret,service,appbinding -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+```
 NAME                                     AGE
 petset.apps.k8s.appscode.com/mg-gitops   34m
 
@@ -136,8 +137,6 @@ service/mg-gitops-pods   ClusterIP   None            <none>        27017/TCP   3
 
 NAME                                           TYPE                 VERSION   AGE
 appbinding.appcatalog.appscode.com/mg-gitops   kubedb.com/mongodb   8.0.10    34m
-
-```
 
 ## Update MongoDB Database using GitOps
 
@@ -194,7 +193,8 @@ Resource Requests and Limits are updated from `800m` to `1000m` CPU and `2Gi` Me
 Now, `gitops` operator will detect the resource changes and create a `MongoDBOpsRequest` to update the `MongoDB` database. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    13m
 
@@ -203,11 +203,11 @@ mongodb.gitops.kubedb.com/mg-gitops   13m
 
 NAME                                                                TYPE              STATUS       AGE
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm   VerticalScaling   Successful   4m35s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the one of the pod,
 ```bash
-$ kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -217,8 +217,6 @@ $ kubectl get pod -n demo mg-gitops-0 -o json | jq '.spec.containers[0].resource
     "memory": "2Gi"
   }
 }
-
-```
 
 ### Scale MongoDB Replicas
 Update the `MongoDB.yaml` with the following,
@@ -257,7 +255,8 @@ Update the `replicas` to `3`. Commit the changes and push to your Git repository
 Now, `gitops` operator will detect the replica changes and create a `HorizontalScaling` MongoDBOpsRequest to update the `MongoDB` database replicas. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    18m
 
@@ -267,16 +266,15 @@ mongodb.gitops.kubedb.com/mg-gitops   18m
 NAME                                                                  TYPE                STATUS       AGE
 mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   4m2s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   9m5s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the number of pods,
 ```bash
-$ kubectl get pod -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+kubectl get pod -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+```
 NAME          READY   STATUS    RESTARTS   AGE
 mg-gitops-0   2/2     Running   0          8m37s
 mg-gitops-1   2/2     Running   0          9m22s
 mg-gitops-2   2/2     Running   0          4m34s
-```
 
 We can also scale down the replicas by updating the `replicas` fields.
 
@@ -319,7 +317,8 @@ Update the `storage.resources.requests.storage` to `2Gi`. Commit the changes and
 Now, `gitops` operator will detect the volume changes and create a `VolumeExpansion` MongoDBOpsRequest to update the `MongoDB` database volume. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    21m
 
@@ -330,16 +329,15 @@ NAME                                                                  TYPE      
 mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   HorizontalScaling   Successful   7m24s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   12m
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   2m10s
-```
 
 After Ops Request becomes `Successful`, We can validate the changes by checking the pvc size,
 ```bash
-$ kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+kubectl get pvc -n demo -l 'app.kubernetes.io/instance=mg-gitops'
+```
 NAME                  STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 datadir-mg-gitops-0   Bound    pvc-cea7fe6a-dd75-4e81-99d3-9ab2867c6650   2Gi        RWO            longhorn       <unset>                 22m
 datadir-mg-gitops-1   Bound    pvc-bcd63bd2-b3b8-4fb8-8c35-5f6e40031f61   2Gi        RWO            longhorn       <unset>                 21m
 datadir-mg-gitops-2   Bound    pvc-2535f213-28fb-41ef-bdfd-7fbe91859c81   2Gi        RWO            longhorn       <unset>               7m56s
-```
 
 ## Reconfigure MongoDB
 
@@ -400,7 +398,8 @@ Commit the changes and push to your Git repository. Your repository is synced wi
 Now, `gitops` operator will detect the configuration changes and create a `Reconfigure` MongoDBOpsRequest to update the `MongoDB` database configuration. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$  kubectl get mg,mongodb,mgops -n demo
+ kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    32m
 
@@ -412,7 +411,6 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-horizontalscaling-n8xx64   Horizontal
 mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigure         Successful   6m7s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   22m
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   12m
-```
 
 We can also reconfigure the parameters creating another secret and reference the secret in the `configuration.secretName` field. Also you can remove the `configuration` field to use the default parameters.
 
@@ -436,13 +434,13 @@ stringData:
 
 Let's add that to our `kubedb/mg-auth.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── mg-configuration.yaml
 │ ├── mg-auth.yaml
 │ └── mongodb.yaml
 1 directories, 3 files
-```
 
 
 
@@ -488,7 +486,8 @@ Add the secret name in `authSecret` field. Commit the changes and push to your G
 Now, `gitops` operator will detect the auth changes and create a `RotateAuth` MongoDBOpsRequest to update the `MongoDB` database auth. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.10    Ready    41m
 
@@ -501,7 +500,6 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfigure-djow20         Reconfigur
 mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth          Successful   3m10s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   32m
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   22m
-```
 
 ### Update Version
 
@@ -546,7 +544,8 @@ Update the `version` field to `8.0.17`. Commit the changes and push to your Git 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MongoDBOpsRequest to update the `MongoDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    46m
 
@@ -560,19 +559,24 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth
 mongodbopsrequest.ops.kubedb.com/mg-gitops-versionupdate-kkc2gc       UpdateVersion       Successful   2m38s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   36m
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   26m
-```
 
 
 Now, we are going to verify whether the `MongoDB`, `PetSet` and it's `Pod` have updated with new image. Let's check,
 
 ```bash
-$ kubectl get MongoDB -n demo mg-gitops -o=jsonpath='{.spec.version}{"\n"}'
-8.0.17
-$ kubectl get petset -n demo mg-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mongo:8.0.17@sha256:b3e1ae71bd7df56b3497527f2b08549bfccb532d9e26df6d4a1331a71cd085db
-$ kubectl get pod -n demo mg-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mongo:8.0.17@sha256:b3e1ae71bd7df56b3497527f2b08549bfccb532d9e26df6d4a1331a71cd085db
+kubectl get MongoDB -n demo mg-gitops -o=jsonpath='{.spec.version}{"\n"}'
 ```
+8.0.17
+
+```bash
+kubectl get petset -n demo mg-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mongo:8.0.17@sha256:b3e1ae71bd7df56b3497527f2b08549bfccb532d9e26df6d4a1331a71cd085db
+
+```bash
+kubectl get pod -n demo mg-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
+```
+ghcr.io/appscode-images/mongo:8.0.17@sha256:b3e1ae71bd7df56b3497527f2b08549bfccb532d9e26df6d4a1331a71cd085db
 
 ### Enable Monitoring
 
@@ -626,7 +630,8 @@ Add `monitor` field in the spec. Commit the changes and push to your Git reposit
 
 Now, `gitops` operator will detect the monitoring changes and create a `Restart` MongoDBOpsRequest to add the `MongoDB` database monitoring. List the resources created by `gitops` operator in the `demo` namespace.
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    52m
 
@@ -641,7 +646,6 @@ mongodbopsrequest.ops.kubedb.com/mg-gitops-rotate-auth-u75ihg         RotateAuth
 mongodbopsrequest.ops.kubedb.com/mg-gitops-versionupdate-kkc2gc       UpdateVersion       Successful   9m15s
 mongodbopsrequest.ops.kubedb.com/mg-gitops-verticalscaling-ojwxpm     VerticalScaling     Successful   43m
 mongodbopsrequest.ops.kubedb.com/mg-gitops-volumeexpansion-8441ym     VolumeExpansion     Successful   32m
-```
 
 Verify the monitoring is enabled by checking the prometheus targets.
 
@@ -660,7 +664,7 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated.
 
 ```bash
-$ kubectl create secret tls mongo-ca \
+kubectl create secret tls mongo-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
@@ -682,13 +686,14 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/issuer.yaml
-issuer.cert-manager.io/mongo-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/tls/issuer.yaml
 ```
+issuer.cert-manager.io/mongo-ca-issuer created
 
 Let's add that to our `kubedb/mg-issuer.yaml` file. File structure will look like this,
 ```bash
-$ tree .
+tree .
+```
 ├── kubedb
 │ ├── mg-configuration.yaml
 │ ├── mg-auth.yaml
@@ -696,7 +701,6 @@ $ tree .
 │ ├── mg-secret.yaml
 │ └── mongodb.yaml
 1 directories, 5 files
-```
 
 Update the `mongodb.yaml` with the following,
 
@@ -759,7 +763,8 @@ Add `sslMode` and `tls` fields in the spec. Commit the changes and push to your 
 Now, `gitops` operator will detect the tls changes and create a `ReconfigureTLS` ElasticsearchOpsRequest to update the `MongoDB` database tls. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kubectl get mg,mongodb,mgops -n demo
+kubectl get mg,mongodb,mgops -n demo
+```
 NAME                           VERSION   STATUS   AGE
 mongodb.kubedb.com/mg-gitops   8.0.17    Ready    20m
 
@@ -768,7 +773,6 @@ mongodb.gitops.kubedb.com/mg-gitops   20m
 
 NAME                                                               TYPE             STATUS       AGE
 mongodbopsrequest.ops.kubedb.com/mg-gitops-reconfiguretls-2pzvw4   ReconfigureTLS   Successful   10m
-```
 
 
 > We can also rotate the certificates updating `.spec.tls.certificates` field. Also you can remove the `.spec.tls` field to remove tls for MongoDB.

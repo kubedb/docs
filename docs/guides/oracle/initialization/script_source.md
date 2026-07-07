@@ -25,9 +25,9 @@ KubeDB supports initializing an Oracle database with a user provided SQL script.
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/initialization](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/initialization) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -60,9 +60,9 @@ data:
 Let's create the `ConfigMap`,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/initialization/oracle-init-script-config-map.yaml
-configmap/oracle-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/initialization/oracle-init-script-config-map.yaml
 ```
+configmap/oracle-init-script created
 
 > Note: the key inside the ConfigMap (the file name) must be `setup.sql`.
 
@@ -107,9 +107,9 @@ Here,
 Let's create the `Oracle` CR,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/initialization/oracle-init-script.yaml
-oracle.kubedb.com/init-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/initialization/oracle-init-script.yaml
 ```
+oracle.kubedb.com/init-config created
 
 Now, wait until `init-config` has status `Ready` and the pod prints the `DATABASE IS READY TO USE!!!` banner. The initialization script runs once during this first boot.
 
@@ -120,16 +120,17 @@ Now, wait until `init-config` has status `Ready` and the pod prints the `DATABAS
 Once the database is ready, let's connect to it and confirm the `emp` table created by our script exists and contains the seeded row,
 
 ```bash
-$ kubectl get secret -n demo init-config-auth -o jsonpath='{.data.password}' | base64 -d
+kubectl get secret -n demo init-config-auth -o jsonpath='{.data.password}' | base64 -d
+```
 # (use the printed password below)
 
-$ kubectl exec -n demo init-config-0 -c oracle -- bash -lc \
+```bash
+kubectl exec -n demo init-config-0 -c oracle -- bash -lc \
     "echo -e 'SELECT * FROM emp;\nexit;' | sqlplus -s sys/<password>@localhost:1521/ORCL as sysdba"
-
+```
         ID NAME
 ---------- ----------
          1 John
-```
 
 The `emp` table and its row are present, confirming the initialization script ran successfully.
 

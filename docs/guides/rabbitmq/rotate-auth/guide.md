@@ -36,31 +36,31 @@ RabbitMQ CRDs.
 KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this 
 tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 ## Find Available RabbitMQVersion
 
 When you have installed KubeDB, it has created `RabbitMQVersion` CR for all supported RabbitMQ versions. Check it by using the `kubectl get rabbitmqversions` command. You can also use `rmv` shorthand instead of `rabbitmqversions`.
 
 ```bash
-$ kubectl get rabbitmqversion
+kubectl get rabbitmqversion
+```
 NAME      VERSION   DB_IMAGE                                                     DEPRECATED   AGE
 3.12.12   3.12.12   ghcr.io/appscode-images/rabbitmq:3.12.12-management-alpine                3h13m
 3.13.2    3.13.2    ghcr.io/appscode-images/rabbitmq:3.13.2-management-alpine                 3h13m
 4.0.4     4.0.4     ghcr.io/appscode-images/rabbitmq:4.0.4-management-alpine                  3h13m
 4.2.4     4.2.4     ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine                  3h13m
-```
 
 ## Create a RabbitMQ server
 
@@ -87,9 +87,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f rabbit.yaml
-RabbitMQ.kubedb.com/rabbitmq created
+kubectl apply -f rabbit.yaml
 ```
+RabbitMQ.kubedb.com/rabbitmq created
 
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
@@ -104,7 +104,8 @@ $ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.password}' | base
 ````
 Now, you can exec into the pod `rabbitmq-0` and connect to database using `username` and `password`
 ```bash
-$ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+```
 rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
 +---------------+----------+
 |     name      | messages |
@@ -113,7 +114,6 @@ rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
 +---------------+----------+
 rabbitmq-0:/$ exit
 exit
-```
 
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth RabbitMQOpsRequest
@@ -140,19 +140,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on RabbitMQ.
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-generated.yaml
+ ```
  RabbitMQopsrequest.ops.kubedb.com/rm-rotate-auth-generated created
-```
 Let's wait for `RabbitMQOpsrequest` to be `Successful`. Run the following command to watch `RabbitMQOpsrequest` CR
-```shell
- $ kubectl get RabbitMQopsrequest -n demo
+ ```bash
+ kubectl get RabbitMQopsrequest -n demo
+ ```
 NAME                       TYPE         STATUS       AGE
 rm-rotate-auth-generated   RotateAuth   Successful   3m14s
-```
 If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe RabbitMQopsrequest -n demo rm-rotate-auth-generated
+```bash
+kubectl describe RabbitMQopsrequest -n demo rm-rotate-auth-generated
+```
 Name:         rm-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -287,22 +288,26 @@ Events:
   Warning  running pod; ConditionStatus:False                     2m55s  KubeDB Ops-manager Operator  running pod; ConditionStatus:False
   Warning  running pod; ConditionStatus:True; PodName:rabbitmq-2  2m50s  KubeDB Ops-manager Operator  running pod; ConditionStatus:True; PodName:rabbitmq-2
   Normal   RestartNodes                                           2m45s  KubeDB Ops-manager Operator  Successfully restarted all nodes
-
-```
 **Verify Auth is rotated**
-```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
-"rabbitmq-auth"
-$ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
-admin⏎                                        
-$ kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.password}' | base64 -d
-tB7;0ATxvhxeau15⏎                                            
+```bash
+kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 ```
+"rabbitmq-auth"
+
+```bash
+kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.username}' | base64 -d
+```
+admin⏎                                        
+
+```bash
+kubectl get secret -n demo rabbitmq-auth -o jsonpath='{.data.password}' | base64 -d
+```
+tB7;0ATxvhxeau15⏎                                            
 Let's verify if we can connect to the database using the new credentials.
 
-```shell
-$ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
-
+```bash
+kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+```
 rabbitmq-0:/$ rabbitmqadmin -u admin -p 'tB7;0ATxvhxeau15' list queues
 +---------------+----------+
 |     name      | messages |
@@ -311,37 +316,36 @@ rabbitmq-0:/$ rabbitmqadmin -u admin -p 'tB7;0ATxvhxeau15' list queues
 +---------------+----------+
 rabbitmq-0:/$ 
 
-```
-
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo rabbitmq-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-admin⏎                                  
-$ kubectl get secret -n demo rabbitmq-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-4TC.R7hXc1g;kA)P⏎                                             
+```bash
+kubectl get secret -n demo rabbitmq-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+admin⏎                                  
+
+```bash
+kubectl get secret -n demo rabbitmq-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+4TC.R7hXc1g;kA)P⏎                                             
 Now verify whether the previous credential is workable or not 
 
-```shell
-$ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
-
+```bash
+kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+```
 rabbitmq-0:/$ rabbitmqadmin -u admin -p '4TC.R7hXc1g;kA)P' list queues
 *** Access refused: /api/queues?columns=name,messages
-```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
-```shell
-$ kubectl create secret generic rm-auth-user -n demo \
+```bash
+kubectl create secret generic rm-auth-user -n demo \
                                                --type=kubernetes.io/basic-auth \
                                                --from-literal=username=rabbit \
                                                --from-literal=password=RabbitMQ2
-secret/rm-auth-user created
-
 ```
+secret/rm-auth-user created
 Now create a `RabbitMQOpsRequest` with `RotateAuth` type. Below is the YAML of the `RabbitMQOpsRequest` that we are going to create,
 
 ```shell
@@ -370,21 +374,22 @@ Here,
 
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-user.yaml
-RabbitMQopsrequest.ops.kubedb.com/rmops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/rabbitmq/rotate-auth/rotate-auth-user.yaml
 ```
+RabbitMQopsrequest.ops.kubedb.com/rmops-rotate-auth-user created
 Let’s wait for `RabbitMQOpsRequest` to be Successful. Run the following command to watch `RabbitMQOpsRequest` CR:
 
-```shell
-$ kubectl get RabbitMQopsrequest -n demo
+```bash
+kubectl get RabbitMQopsrequest -n demo
+```
 NAME                       TYPE         STATUS       AGE
 rm-rotate-auth-generated   RotateAuth   Successful   28m
 rmops-rotate-auth-user     RotateAuth   Successful   80s
-```
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe RabbitMQopsrequest -n demo rmops-rotate-auth-user 
+```bash
+kubectl describe RabbitMQopsrequest -n demo rmops-rotate-auth-user 
+```
 Name:         rmops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -522,45 +527,48 @@ Events:
   Warning  running pod; ConditionStatus:False                     52s   KubeDB Ops-manager Operator  running pod; ConditionStatus:False
   Warning  running pod; ConditionStatus:True; PodName:rabbitmq-2  47s   KubeDB Ops-manager Operator  running pod; ConditionStatus:True; PodName:rabbitmq-2
   Normal   RestartNodes                                           42s   KubeDB Ops-manager Operator  Successfully restarted all nodes
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
-"rm-auth-user"
-$ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
-rabbit⏎                              
-$ kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.password}' | base64 -d
-RabbitMQ2⏎                                                                                         
+```bash
+kubectl get rm -n demo rabbitmq -ojson | jq .spec.authSecret.name
 ```
+"rm-auth-user"
+
+```bash
+kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.username}' | base64 -d
+```
+rabbit⏎                              
+
+```bash
+kubectl get secret -n demo rm-auth-user -o=jsonpath='{.data.password}' | base64 -d
+```
+RabbitMQ2⏎                                                                                         
 
 Let's verify if we can connect to the database using the new credentials.
-```shell
-$  kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
-
+```bash
+ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+```
 rabbitmq-0:/$ rabbitmqadmin -u rabbit -p 'RabbitMQ2' list queues
 +---------------+----------+
 |     name      | messages |
 +---------------+----------+
 | kubedb_system | 0        |
 +---------------+----------+
-
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo rm-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
-tB7;0ATxvhxeau15⏎           
-$ kubectl get secret -n demo rm-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
-admin⏎                           
+```bash
+kubectl get secret -n demo rm-auth-user -o go-template='{{ index .data "password.prev" }}' | base64 -d
 ```
-Let's confirm that the previous credentials no longer work.
-```shell
-$ kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+tB7;0ATxvhxeau15⏎           
 
+```bash
+kubectl get secret -n demo rm-auth-user -o go-template='{{ index .data "username.prev" }}' | base64 -d
+```
+admin⏎                           
+Let's confirm that the previous credentials no longer work.
+```bash
+kubectl exec -it -n demo rabbitmq-0 -c rabbitmq -- bash
+```
 rabbitmq-0:/$ rabbitmqadmin -u admin -p 'tB7;0ATxvhxeau15' list queues
 *** Access refused: /api/queues?columns=name,messages
-
-```
 The above output shows that the credential has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
 ## Cleaning up
@@ -568,15 +576,20 @@ The above output shows that the credential has been changed successfully. The pr
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete RabbitMQopsrequest rm-rotate-auth-generated rmops-rotate-auth-user -n demo
-RabbitMQopsrequest.ops.kubedb.com "rm-rotate-auth-generated" "rmops-rotate-auth-user" deleted
-$ kubectl delete secret -n rm-auth-user
-secret "rm-auth-user" deleted
-$ kubectl delete secret -n demo   rabbitmq-auth 
-secret "rabbitmq-auth " deleted
-
+```bash
+kubectl delete RabbitMQopsrequest rm-rotate-auth-generated rmops-rotate-auth-user -n demo
 ```
+RabbitMQopsrequest.ops.kubedb.com "rm-rotate-auth-generated" "rmops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n rm-auth-user
+```
+secret "rm-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo   rabbitmq-auth 
+```
+secret "rabbitmq-auth " deleted
 
 ## Next Steps
 

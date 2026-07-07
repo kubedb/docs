@@ -31,9 +31,9 @@ KubeDB supports providing TLS encryption for Qdrant. This tutorial will show you
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/tls](/docs/examples/qdrant/tls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -50,9 +50,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 - Now create a ca-secret using the certificate files you have just generated:
 
 ```bash
-$ kubectl create secret tls qdrant-ca --cert=ca.crt --key=ca.key --namespace=demo
-secret/qdrant-ca created
+kubectl create secret tls qdrant-ca --cert=ca.crt --key=ca.key --namespace=demo
 ```
+secret/qdrant-ca created
 
 Now, create an `Issuer` using the `qdrant-ca` secret you have just created. Below is the YAML of the `Issuer` CR:
 
@@ -70,9 +70,9 @@ spec:
 Let's create the `Issuer` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/issuer.yaml
-issuer.cert-manager.io/qdrant-ca-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/issuer.yaml
 ```
+issuer.cert-manager.io/qdrant-ca-issuer created
 
 ## TLS Encryption in Qdrant
 
@@ -113,44 +113,47 @@ Here,
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/tls-qdrant.yaml
-qdrant.kubedb.com/qdrant-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/tls/tls-qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-tls created
 
 Now, wait until `qdrant-tls` has status `Ready`:
 
 ```bash
-$ watch -n 3 kubectl get qdrant -n demo qdrant-tls
+watch -n 3 kubectl get qdrant -n demo qdrant-tls
+```
 Every 3.0s: kubectl get qdrant -n demo qdrant-tls
 
 NAME          VERSION   STATUS   AGE
 qdrant-tls    1.17.0    Ready    7m
 
-$ watch -n 3 kubectl get pods -n demo -l app.kubernetes.io/instance=qdrant-tls
+```bash
+watch -n 3 kubectl get pods -n demo -l app.kubernetes.io/instance=qdrant-tls
+```
 Every 3.0s: kubectl get pods -n demo -l app.kubernetes.io/instance=qdrant-tls
 
 NAME              READY   STATUS    RESTARTS   AGE
 qdrant-tls-0      1/1     Running   0          7m
 qdrant-tls-1      1/1     Running   0          2m
 qdrant-tls-2      1/1     Running   0          117s
-```
 
 ### Verify TLS Configuration
 
 Now, let's verify the TLS certificates were created for the Qdrant database:
 
 ```bash
-$ kubectl get secrets -n demo | grep qdrant-tls
+kubectl get secrets -n demo | grep qdrant-tls
+```
 qdrant-tls-160bbc          Opaque                     1      7m
 qdrant-tls-auth            Opaque                     2      7m
 qdrant-tls-client-cert     kubernetes.io/tls          4      7m
 qdrant-tls-server-cert     kubernetes.io/tls          3      7m
-```
 
 The `qdrant-tls-client-cert` secret contains the client TLS certificate. Let's inspect it:
 
 ```bash
-$ kubectl describe secret -n demo qdrant-tls-client-cert
+kubectl describe secret -n demo qdrant-tls-client-cert
+```
 Name:         qdrant-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -175,12 +178,12 @@ ca.crt:            1151 bytes
 tls-combined.pem:  2811 bytes
 tls.crt:           1131 bytes
 tls.key:           1679 bytes
-```
 
 We can also verify that the TLS configuration has been applied inside the Qdrant pod:
 
 ```bash
-$ kubectl exec -n demo qdrant-tls-0 -- cat /qdrant/config/config.yaml
+kubectl exec -n demo qdrant-tls-0 -- cat /qdrant/config/config.yaml
+```
 Defaulted container "qdrant" out of: qdrant, update-raft-state (init)
 cluster:
   enabled: true
@@ -195,7 +198,9 @@ tls:
   cert: /tls/cert.pem
   key: /tls/key.pem
 
-$ kubectl exec -n demo qdrant-tls-0 -- ls /tls/
+```bash
+kubectl exec -n demo qdrant-tls-0 -- ls /tls/
+```
 Defaulted container "qdrant" out of: qdrant, update-raft-state (init)
 ca.crt
 ca.pem
@@ -203,7 +208,6 @@ cert.pem
 client.crt
 client.key
 key.pem
-```
 
 The TLS certificates are mounted at `/tls/` inside the container, and the Qdrant config shows `service.enable_tls: true`.
 
@@ -220,24 +224,24 @@ kubectl get secret -n demo qdrant-tls-client-cert -o jsonpath='{.data.tls\.key}'
 Then, port-forward the Qdrant service and connect using TLS:
 
 ```bash
-$ kubectl port-forward -n demo svc/qdrant-tls 6333:6333 &
-Forwarding from 127.0.0.1:6333 -> 6333
+kubectl port-forward -n demo svc/qdrant-tls 6333:6333 &
 ```
+Forwarding from 127.0.0.1:6333 -> 6333
 
 Get the API key from the auth secret:
 
 ```bash
-$ kubectl get secret -n demo qdrant-tls-auth -o jsonpath='{.data.api-key}' | base64 -d
-GuBrzentGdAcZuqh
+kubectl get secret -n demo qdrant-tls-auth -o jsonpath='{.data.api-key}' | base64 -d
 ```
+GuBrzentGdAcZuqh
 
 Now you can connect to the Qdrant cluster using TLS:
 
 ```bash
-$ curl --cacert ca.crt --cert tls.crt --key tls.key -H "api-key: GuBrzentGdAcZuqh" \
+curl --cacert ca.crt --cert tls.crt --key tls.key -H "api-key: GuBrzentGdAcZuqh" \
   'https://localhost:6333/collections'
-{"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":3.63e-6}
 ```
+{"result":{"collections":[{"name":"KubeDBHealthCheckCollection"}]},"status":"ok","time":3.63e-6}
 
 > Without the TLS certificates or the API key, the connection will be rejected.
 

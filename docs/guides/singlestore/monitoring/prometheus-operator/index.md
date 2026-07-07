@@ -32,9 +32,9 @@ The following diagram shows how KubeDB Provisioner operator monitor `SingleStore
 - To keep database resources isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -49,10 +49,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE   NAME         VERSION   REPLICAS   AGE
 default     prometheus             1          2m19s
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -103,20 +103,20 @@ KubeDB creates a `ServiceMonitor` in database namespace `demo`. We need to add l
 Let's add label `prometheus: prometheus` to `demo` namespace,
 
 ```bash
-$ kubectl patch namespace demo -p '{"metadata":{"labels": {"prometheus":"prometheus"}}}'
-namespace/demo patched
+kubectl patch namespace demo -p '{"metadata":{"labels": {"prometheus":"prometheus"}}}'
 ```
+namespace/demo patched
 
 ## Create SingleStore License Secret
 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Deploy SingleStore with Monitoring Enabled
 
@@ -196,30 +196,27 @@ Here,
 Let's create the SingleStore object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/monitoring/prometheus-operator/yamls/prom-operator-singlestore.yaml
-singlestore.kubedb.com/prom-operator-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/monitoring/prometheus-operator/yamls/prom-operator-singlestore.yaml
 ```
+singlestore.kubedb.com/prom-operator-sdb created
 
 Now, wait for the database to go into `Running` state.
 
 ```bash
-$ watch -n 3 kubectl get singlestore -n demo prom-operator-sdb
-
+watch -n 3 kubectl get singlestore -n demo prom-operator-sdb
+```
 NAME                TYPE                  VERSION   STATUS   AGE
 prom-operator-sdb   kubedb.com/v1alpha2   8.9.3    Ready    10m
-
-```
 
 KubeDB will create a separate stats service with name `{SingleStore crd name}-stats` for monitoring purpose.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=prom-operator-sdb"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=prom-operator-sdb"
+```
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 prom-operator-sdb         ClusterIP   10.128.249.124   <none>        3306/TCP,8081/TCP   12m
 prom-operator-sdb-pods    ClusterIP   None             <none>        3306/TCP            12m
 prom-operator-sdb-stats   ClusterIP   10.128.25.236    <none>        9104/TCP            12m
-
-```
 
 Here, `prom-operator-sdb-stats` service has been created for monitoring purpose.
 
@@ -254,11 +251,10 @@ Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these informati
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `prom-operator-sdb-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                      AGE
 prom-operator-sdb-stats   32m
-
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of SingleStore crd.
 
@@ -313,20 +309,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n default -l=app=prometheus
+kubectl get pod -n default -l=app=prometheus
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          121m
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n default prometheus-prometheus-0 9090
+kubectl port-forward -n default prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `prom-operator-sdb-stats` service as one of the targets.
 

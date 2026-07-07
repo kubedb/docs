@@ -29,9 +29,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgbouncer](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgbouncer) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -42,15 +42,13 @@ namespace/demo created
 When you have installed KubeDB, it has created `PgBouncerVersion` crd for all supported PgBouncer versions. Let's check available PgBouncerVersion by,
 
 ```bash
-$ kubectl get pgbouncerversions
-
+kubectl get pgbouncerversions
+```
   NAME     VERSION   PGBOUNCER_IMAGE                   DEPRECATED   AGE
   1.17.0   1.17.0    ghcr.io/kubedb/pgbouncer:1.17.0                22h
   1.18.0   1.18.0    ghcr.io/kubedb/pgbouncer:1.18.0                22h
   1.23.1   1.23.1    ghcr.io/kubedb/pgbouncer:1.23.1                22h
   1.24.0   1.24.0    ghcr.io/kubedb/pgbouncer:1.24.0                22h
-  
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this PgBouncerVersion is deprecated for current KubeDB version. KubeDB will not work for deprecated PgBouncerVersion.
 
@@ -65,9 +63,9 @@ Luckily PostgreSQL is readily available in KubeDB as crd and can easily be deplo
 In this tutorial, we will use a Postgres named `quick-postgres` in the `demo` namespace.
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
-postgres.kubedb.com/quick-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/quick-postgres.yaml
 ```
+postgres.kubedb.com/quick-postgres created
 
 KubeDB creates all the necessary resources including services, secrets, and appbindings to get this server up and running. A default database `postgres` is created in `quick-postgres`. Database secret `quick-postgres-auth` holds this user's username and password. Following is the yaml file for it.
 
@@ -97,31 +95,36 @@ type: kubernetes.io/basic-auth
 For the purpose of this tutorial, we will need to extract the username and password from database secret `quick-postgres-auth`.
 
 ```bash
-$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 RoX*L8I;8R7v32ti⏎  
 
-$ kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
-postgres⏎ 
+```bash
+kubectl get secrets -n demo quick-postgres-auth -o jsonpath='{.data.\username}' | base64 -d
 ```
+postgres⏎ 
 
 Now, to test connection with this database using the credentials obtained above, we will expose the service port associated with `quick-postgres`  to localhost.
 
 ```bash
-$ kubectl port-forward -n demo svc/quick-postgres 5432
+kubectl port-forward -n demo svc/quick-postgres 5432
+```
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
-```
 
 With that done , we should now be able to connect to `postgres` database using username `postgres`, and password `RoX*L8I;8R7v32ti`.
 
 ```bash
-$ export PGPASSWORD='RoX*L8I;8R7v32ti'
-$ psql --host=localhost --port=5432 --username=postgres postgres
+export PGPASSWORD='RoX*L8I;8R7v32ti'
+```
+
+```bash
+psql --host=localhost --port=5432 --username=postgres postgres
+```
 psql (14.9 (Ubuntu 14.9-0ubuntu0.22.04.1), server 13.2)
 Type "help" for help.
 
 postgres=# 
-```
 
 After establishing connection successfully, we will create a table in `postgres` database and populate it with data.
 
@@ -183,9 +186,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
-pgbouncer.kubedb.com/pgbouncer-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer-server created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -210,9 +213,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
-pgbouncer.kubedb.com/pgbouncer-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server-v1.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer-server created
 
 Here,
 
@@ -269,57 +272,56 @@ Now that we've been introduced to the pgBouncer crd, let's create it,
 
 > For more details visit [here](https://appscode.com/blog/post/deletion-policy/)
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server.yaml
-
-pgbouncer.kubedb.com/pgbouncer-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/quickstart/pgbouncer-server.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer-server created
 
 ## Connect via PgBouncer
 
 To connect via pgBouncer we have to expose its service to localhost.
 
 ```bash
-$ kubectl port-forward -n demo svc/pgbouncer-server 5432
-
+kubectl port-forward -n demo svc/pgbouncer-server 5432
+```
 Forwarding from 127.0.0.1:5432 -> 5432
 Forwarding from [::1]:5432 -> 5432
-```
 
 Now, let's connect to `postgres` database via PgBouncer using psql.
 
-``` bash
-$ env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username=postgres postgres
+```bash
+env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username=postgres postgres
+```
 psql (14.9 (Ubuntu 14.9-0ubuntu0.22.04.1), server 13.2)
 Type "help" for help.
 
 postgres=# \q
-```
 
 If everything goes well, we'll be connected to the `postgres` database and be able to execute commands. Let's confirm if the company data we inserted in the  `postgres` database before are available via PgBouncer:
 
 ```bash
-$ env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
+env PGPASSWORD='RoX*L8I;8R7v32ti' psql --host=localhost --port=5432 --username=postgres postgres --command='SELECT * FROM company ORDER BY name;'
+```
   name  | employee
 --------+----------
  Apple  |       10
  Google |       15
 (2 rows)
-```
 
 KubeDB operator watches for PgBouncer objects using Kubernetes api. When a PgBouncer object is created, KubeDB operator will create a new PetSet and a Service with the matching name. KubeDB operator will also create a governing service for PetSet with the name `kubedb`, if one is not already present.
 
 KubeDB operator sets the `status.phase` to `Running` once the connection-pooling mechanism is ready.
 
 ```bash
-$ kubectl get pb -n demo pgbouncer-server -o wide
+kubectl get pb -n demo pgbouncer-server -o wide
+```
 NAME               VERSION   STATUS    AGE
 pgbouncer-server   1.18.0    Ready     2h
-```
 
 Let's describe PgBouncer object `pgbouncer-server`
 
 ```bash
-$ kubectl dba describe pb -n demo pgbouncer-server
+kubectl dba describe pb -n demo pgbouncer-server
+```
 Name:         pgbouncer-server
 Namespace:    demo
 Labels:       <none>
@@ -476,16 +478,15 @@ Status:
   Observed Generation:     2
   Phase:                   Ready
 Events:                    <none>
-```
 
 KubeDB has created a service for the PgBouncer object.
 
 ```bash
-$ kubectl get service -n demo --selector=app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
+kubectl get service -n demo --selector=app.kubernetes.io/name=pgbouncers.kubedb.com,app.kubernetes.io/instance=pgbouncer-server
+```
 NAME                    TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)    AGE
 pgbouncer-server        ClusterIP   10.96.36.35   <none>        5432/TCP   141m
 pgbouncer-server-pods   ClusterIP   None          <none>        5432/TCP   141m
-```
 
 Here, Service *`pgbouncer-server`* targets random pods to carry out connection-pooling.
 
@@ -494,15 +495,19 @@ Here, Service *`pgbouncer-server`* targets random pods to carry out connection-p
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete -n demo pg/quick-postgres
+kubectl delete -n demo pg/quick-postgres
+```
 postgres.kubedb.com "quick-postgres" deleted
 
-$ kubectl delete -n demo pb/pgbouncer-server
+```bash
+kubectl delete -n demo pb/pgbouncer-server
+```
 pgbouncer.kubedb.com "pgbouncer-server" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Next Steps
 

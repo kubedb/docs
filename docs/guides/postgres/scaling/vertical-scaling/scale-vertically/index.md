@@ -30,9 +30,9 @@ This guide will show you how to use `kubeDB-Ops-Manager` to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls) directory of [kubedb/doc](https://github.com/kubedb/docs) repository.
 
@@ -45,7 +45,8 @@ Here, we are going to deploy a `Postgres` instance using a supported version by 
 When you have installed `KubeDB`, it has created `PostgresVersion` CR for all supported `Postgres` versions. Let's check the supported Postgres versions,
 
 ```bash
-$ kubectl get postgresversion
+kubectl get postgresversion
+```
 NAME                       VERSION   DISTRIBUTION   DB_IMAGE                               DEPRECATED   AGE
 10.16                      10.16     Official       postgres:10.16-alpine                               63s
 10.16-debian               10.16     Official       postgres:10.16                                      63s
@@ -77,7 +78,6 @@ timescaledb-2.1.0-pg11     11.11     TimescaleDB    timescale/timescaledb:2.1.0-
 timescaledb-2.1.0-pg12     12.6      TimescaleDB    timescale/timescaledb:2.1.0-pg12-oss                63s
 timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-pg13-oss                63s
 timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
-```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a postgres using non-deprecated `Postgres` version `18.3`.
 
@@ -109,9 +109,9 @@ spec:
 Let's create the `Postgres` cr we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/postgres.yaml
-postgres.kubedb.com/pg created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/postgres.yaml
 ```
+postgres.kubedb.com/pg created
 
 **Check postgres Ready to Scale:**
 
@@ -119,19 +119,24 @@ postgres.kubedb.com/pg created
 Now, watch `Postgres` is going to be in `Running` state and also watch `PetSet` and its pod is created and going to be in `Running` state,
 
 ```bash
-$ watch -n 3 kubectl get postgres -n demo pg
+watch -n 3 kubectl get postgres -n demo pg
+```
 Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu Dec  2 10:53:54 2021
 
 NAME   VERSION   STATUS   AGE
 pg     18.3      Ready    3m16s
 
-$ watch -n 3 kubectl get petset -n demo pg
+```bash
+watch -n 3 kubectl get petset -n demo pg
+```
 Every 3.0s: kubectl get petset -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021
 
 NAME   READY   AGE
 pg     3/3     3m54s
 
-$ watch -n 3 kubectl get pod -n demo
+```bash
+watch -n 3 kubectl get pod -n demo
+```
 Every 3.0s: kubectl get pod -n demo                                 emon-r7: Thu Dec  2 10:55:29 2021
 
 NAME   READY   STATUS    RESTARTS   AGE
@@ -139,12 +144,11 @@ pg-0   2/2     Running   0          4m51s
 pg-1   2/2     Running   0          3m50s
 pg-2   2/2     Running   0          3m46s
 
-```
-
 Let's check the `pg-0` Pod's postgres container's resources, As there are two containers, And Postgres container is the first container So it's index will be 0.
 
 ```bash
-$ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -154,8 +158,6 @@ $ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
     "memory": "1Gi"
   }
 }
-
-```
 
 Now, We are ready to apply a vertical scale on this postgres database.
 
@@ -197,9 +199,9 @@ Here,
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/pg-vertical-scaling.yaml
-postgresopsrequest.ops.kubedb.com/pg-scale-vertical created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/pg-vertical-scaling.yaml
 ```
+postgresopsrequest.ops.kubedb.com/pg-scale-vertical created
 
 **Verify Postgres resources updated successfully:**
 
@@ -208,19 +210,18 @@ If everything goes well, `KubeDB-Ops-Manager` will update the resources of the P
 First, we will wait for `PostgresOpsRequest` to be successful. Run the following command to watch `PostgresOpsRequest` cr,
 
 ```bash
-$ watch kubectl get postgresopsrequest -n demo pg-scale-vertical
-
+watch kubectl get postgresopsrequest -n demo pg-scale-vertical
+```
 Every 2.0s: kubectl get postgresopsrequest -n demo pg-scale-ve...  emon-r7: Thu Dec  2 11:09:49 2021
 
 NAME                TYPE              STATUS       AGE
 pg-scale-vertical   VerticalScaling   Successful   3m42s
 
-```
-
 We can see from the above output that the `PostgresOpsRequest` has succeeded. If we describe the `PostgresOpsRequest`, we will see that the postgres resources are updated.
 
 ```bash
-$ kubectl describe postgresopsrequest -n demo pg-scale-vertical
+kubectl describe postgresopsrequest -n demo pg-scale-vertical
+```
 Name:         pg-scale-vertical
 Namespace:    demo
 Labels:       <none>
@@ -322,12 +323,11 @@ Events:
   Normal  ResumeDatabase   2m22s  KubeDB Enterprise Operator  Successfully resumed PostgreSQL demo/pg
   Normal  Successful       2m22s  KubeDB Enterprise Operator  Successfully Vertically Scaled Database
 
-```
-
 Now, we are going to verify whether the resources of the postgres instance has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "700m",
@@ -338,8 +338,6 @@ $ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
     "memory": "1200Mi"
   }
 }
-
-```
 
 The above output verifies that we have successfully scaled up the resources of the Postgres.
 

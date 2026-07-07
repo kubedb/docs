@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` Migration to migrate an existing `M
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Source Database
 
@@ -77,7 +77,7 @@ See the official [MariaDB Binary Log](https://mariadb.com/kb/en/binary-log/) doc
 ### Verify prerequisites
 
 ```bash
-$ mysql -h <rds-endpoint>.rds.amazonaws.com -u admin -p
+mysql -h <rds-endpoint>.rds.amazonaws.com -u admin -p
 ```
 
 ```sql
@@ -162,7 +162,7 @@ SELECT * FROM orders;
 First, create an authentication secret using the `migrator` user credentials:
 
 ```bash
-$ kubectl create secret generic source-mariadb-auth -n demo \
+kubectl create secret generic source-mariadb-auth -n demo \
                 --type=kubernetes.io/basic-auth \
                 --from-literal=username=migrator \
                 --from-literal=password=<password>
@@ -230,9 +230,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/target-mariadb.yaml
-mariadb.kubedb.com/target-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/target-mariadb.yaml
 ```
+mariadb.kubedb.com/target-mariadb created
 
 > Note: Adjust the `resources.requests.storage` based on the source database size.
 
@@ -284,9 +284,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/mariadb-migrate.yaml
-migration.courier.kubedb.com/mariadb-migrate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/migration/mariadb-migrate.yaml
 ```
+migration.courier.kubedb.com/mariadb-migrate created
 
 Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migration CRD reference](/docs/guides/mariadb/concepts/migrator/).
 
@@ -306,7 +306,7 @@ mariadb-migrate   Running   mariadb   Streaming   0B    100%       4h36m
 Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
 
 ```bash
-$ kubectl exec -it -n demo target-mariadb-0 -- mysql -u root -p<root-password>
+kubectl exec -it -n demo target-mariadb-0 -- mysql -u root -p<root-password>
 ```
 
 ```sql
@@ -327,7 +327,7 @@ SELECT * FROM orders;
 With the migration still running, connect to the **source RDS** instance and run some DML:
 
 ```bash
-$ mysql -h <rds-endpoint>.rds.amazonaws.com -u migrator -p
+mysql -h <rds-endpoint>.rds.amazonaws.com -u migrator -p
 ```
 
 ```sql
@@ -366,8 +366,8 @@ Once the `LAG` drops to near zero, stop all writes to the source database. Wait 
 Now delete the `Migration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migration -n demo mariadb-migrate
-migration.courier.kubedb.com "mariadb-migrate" deleted
+kubectl delete migration -n demo mariadb-migrate
 ```
+migration.courier.kubedb.com "mariadb-migrate" deleted
 
 Finally, update your application's connection string to point to the target KubeDB-managed `MariaDB` database. The migration is complete.

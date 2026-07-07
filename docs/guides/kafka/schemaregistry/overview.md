@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [examples/kafka/schemaregistry/](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/schemaregistry) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,13 +48,12 @@ demo                 Active   9s
 When you install the KubeDB operator, it registers a CRD named [SchemaRegistryVersion](/docs/guides/kafka/concepts/schemaregistryversion.md). The installation process comes with a set of tested SchemaRegistryVersion objects. Let's check available SchemaRegistryVersions by,
 
 ```bash
-$ kubectl get ksrversion
-
+kubectl get ksrversion
+```
 NAME    VERSION   DB_IMAGE                                    DEPRECATED   AGE
 NAME           VERSION   DISTRIBUTION   REGISTRY_IMAGE                                     DEPRECATED   AGE
 2.5.11.final   2.5.11    Apicurio       apicurio/apicurio-registry-kafkasql:2.5.11.Final                3d
 3.15.0         3.15.0    Aiven          ghcr.io/aiven-open/karapace:3.15.0                              3d
-```
 
 > **Note**: Currently Schema Registry is supported only for Apicurio distribution. Use version with distribution `Apicurio` to create Schema Registry.
 
@@ -94,26 +95,27 @@ Before create SchemaRegistry, you have to deploy a `Kafka` cluster first. To dep
 Let's create the SchemaRegistry CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/schemaregistry/schemaregistry-apicurio.yaml
-schemaregistry.kafka.kubedb.com/schemaregistry-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/schemaregistry/schemaregistry-apicurio.yaml
 ```
+schemaregistry.kafka.kubedb.com/schemaregistry-quickstart created
 
 The SchemaRegistry's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the SchemaRegistry.
 
 ```bash
-$ kubectl get schemaregistry -n demo -w
+kubectl get schemaregistry -n demo -w
+```
 NAME                        TYPE                        VERSION   STATUS         AGE
 schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   2s
 schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   4s
 .
 .
 schemaregistry-quickstart   kafka.kubedb.com/v1alpha1   3.9.0     Ready          112s
-```
 
 Describe the `SchemaRegistry` object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe schemaregistry -n demo schemaregistry-quickstart
+kubectl describe schemaregistry -n demo schemaregistry-quickstart
+```
 Name:         schemaregistry-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -197,14 +199,14 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a SchemaRegistry CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=schemaregistry-quickstart'
+kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=schemaregistry-quickstart'
+```
 NAME                              READY   STATUS    RESTARTS   AGE
 pod/schemaregistry-quickstart-0   1/1     Running   0          4m14s
 pod/schemaregistry-quickstart-1   1/1     Running   0          3m28s
@@ -218,7 +220,6 @@ secret/schemaregistry-quickstart-config   Opaque   1      4m17s
 
 NAME                                                     AGE
 petset.apps.k8s.appscode.com/schemaregistry-quickstart   4m14s
-```
 
 - `PetSet` - a PetSet named after the SchemaRegistry instance.
 - `Services` -  For a SchemaRegistry instance headless service is created with name `{SchemaRegistry-name}-{pods}` and a primary service created with name `{SchemaRegistry-name}`.
@@ -232,21 +233,21 @@ You can access the Schema Registry using the REST API. The Schema Registry REST 
 To access the Schema Registry REST API, you can use `kubectl port-forward` command to forward the port to your local machine.
 
 ```bash
-$ kubectl port-forward service/schemaregistry-quickstart 8080:8080 -n demo
+kubectl port-forward service/schemaregistry-quickstart 8080:8080 -n demo
+```
 Forwarding from 127.0.0.1:8080 -> 8080
 Forwarding from [::1]:8080 -> 8080
-```
 
 In another terminal, you can use `curl` to get, create or update schema using the Schema Registry REST API.
 
 Create a new schema with the following command:
 
 ```bash
-$ curl -X POST -H "Content-Type: application/json; artifactType=AVRO" -H "X-Registry-ArtifactId: share-price" \
+curl -X POST -H "Content-Type: application/json; artifactType=AVRO" -H "X-Registry-ArtifactId: share-price" \
                                       --data '{"type":"record","name":"price","namespace":"com.example", \
                                      "fields":[{"name":"symbol","type":"string"},{"name":"price","type":"string"}]}' \
                                         localhost:8080/apis/registry/v2/groups/quickstart-group/artifacts | jq
-
+```
 {
   "createdBy": "",
   "createdOn": "2024-09-02T05:53:03+0000",
@@ -261,12 +262,12 @@ $ curl -X POST -H "Content-Type: application/json; artifactType=AVRO" -H "X-Regi
   "contentId": 2,
   "references": []
 }
-```
 
 Get all the groups:
 
 ```bash
-$ curl localhost:8080/apis/registry/v2/groups | jq .
+curl localhost:8080/apis/registry/v2/groups | jq .
+```
 {
   "groups": [
     {
@@ -278,12 +279,12 @@ $ curl localhost:8080/apis/registry/v2/groups | jq .
   ],
   "count": 1
 }
-```
 
 Get all the artifacts in the group `quickstart-group`:
 
 ```bash
-$ curl localhost:8080/apis/registry/v2/groups/quickstart-group/artifacts | jq
+curl localhost:8080/apis/registry/v2/groups/quickstart-group/artifacts | jq
+```
 {
   "artifacts": [
     {
@@ -299,7 +300,6 @@ $ curl localhost:8080/apis/registry/v2/groups/quickstart-group/artifacts | jq
   ],
   "count": 1
 }
-```
 
 > **Note**: You can also use Schema Registry with Confluent 7 compatible REST APIs. To use confluent compatible REST APIs, you have to add `apis/ccompat/v7` after url address.(e.g. `localhost:8081/subjects` -> `localhost:8080/apis/ccompat/v7/subjects`)
 
@@ -321,18 +321,24 @@ From the UI, you can create, update, delete, and view the schema. Also add compa
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo schemaregistry schemaregistry-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo schemaregistry schemaregistry-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 schemaregistry.kafka.kubedb.com/schemaregistry-quickstart patched
 
-$ kubectl delete ksr schemaregistry-quickstart  -n demo
+```bash
+kubectl delete ksr schemaregistry-quickstart  -n demo
+```
 schemaregistry.kafka.kubedb.com "schemaregistry-quickstart" deleted
 
-$ kubectl delete kafka kafka-quickstart -n demo
+```bash
+kubectl delete kafka kafka-quickstart -n demo
+```
 kafka.kubedb.com "kafka-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

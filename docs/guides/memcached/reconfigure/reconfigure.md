@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -61,9 +61,9 @@ Here, `maxclients` is set to `500`, whereas the default value is `1024`.
 
 Now, we will apply the secret with custom configuration.
 ```bash
-$ kubectl create -f mc-configuration
-secret/mc-configuration created
+kubectl create -f mc-configuration
 ```
+secret/mc-configuration created
 
 In this section, we are going to create a Memcached object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Memcahced` CR that we are going to create,
 
@@ -84,32 +84,33 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/memcached-config.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/memcached-config.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME               VERSION     STATUS    AGE
 memcd-quickstart   1.6.40      Ready     23s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
 ```bash
-$ telnet 127.0.0.1 11211
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -123,7 +124,6 @@ stats
 STAT max_connections 500
 ...
 END
-```
 
 As we can see from the configuration of running memcached, the value of `maxclients` has been set to `500`.
 
@@ -148,9 +148,9 @@ Here, `maxclients` is set to `2000`.
 
 Now, we will apply the secret with custom configuration.
 ```bash
-$ kubectl create -f new-configuration
-secret/new-configuration created
+kubectl create -f new-configuration
 ```
+secret/new-configuration created
 
 #### Create MemcachedOpsRequest
 
@@ -180,9 +180,9 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/config-secret-reconfigure.yaml
-memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/config-secret-reconfigure.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
 
 #### Verify the new configuration is working 
 
@@ -191,16 +191,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcahcedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                          TYPE          STATUS       AGE
 memcd-reconfig                Reconfigure   Successful   1m
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcachedOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe memcachedopsrequest -n demo memcd-reconfig
+kubectl describe memcachedopsrequest -n demo memcd-reconfig
+```
 Name:         memcd-reconfig
 Namespace:    demo
 Labels:       <none>
@@ -272,32 +273,31 @@ Events:
   Normal   ResumeDatabase                                                  38s   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
   Normal   Successful                                                      38s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
 
-```
-
 Now need to check the new configuration we have provided.
 
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME               VERSION     STATUS    AGE
 memcd-quickstart   1.6.40      Ready     20s
-```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
 ```bash
-$ telnet 127.0.0.1 11211
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -311,7 +311,6 @@ stats
 STAT max_connections 2000
 ...
 END
-```
 
 As we can see from the configuration of running memcached, the value of `maxclients` has been updated to `2000`.
 
@@ -351,9 +350,9 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/apply-config-reconfigure.yaml
-memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/apply-config-reconfigure.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
 
 #### Verify the new configuration is working 
 
@@ -362,16 +361,17 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `MemcachedOpsRequest` to be `Successful`.  Run the following command to watch `MemcachedOpsRequest` CR,
 
 ```bash
-$ watch kubectl get memcachedopsrequest -n demo
+watch kubectl get memcachedopsrequest -n demo
+```
 Every 2.0s: kubectl get memcachedopsrequest -n demo
 NAME                   TYPE          STATUS       AGE
 memcd-apply-reconfig   Reconfigure   Successful   38s
-```
 
 We can see from the above output that the `MemcachedOpsRequest` has succeeded. If we describe the `MemcahcedOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe memcachedopsrequest -n demo memcd-apply-reconfig
+kubectl describe memcachedopsrequest -n demo memcd-apply-reconfig
+```
 Name:         memcd-apply-reconfig
 Namespace:    demo
 Labels:       <none>
@@ -444,22 +444,21 @@ Events:
   Normal   ResumeDatabase    13s   KubeDB Ops-manager Operator  Successfully resumed Memcached demo/memcd-quickstart
   Normal   Successful        13s   KubeDB Ops-manager Operator  Successfully Reconfigured Database
 
-```
-
 Now let's check the new configuration we have provided.
 
 We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding.
 
 ```bash
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
-```
 
 Now, connect to the memcached server from a different terminal through `telnet`.
 
 ```bash
-$ telnet 127.0.0.1 11211
+telnet 127.0.0.1 11211
+```
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
@@ -473,7 +472,6 @@ stats
 STAT max_connections 3000
 ...
 END
-```
 
 As we can see from the configuration of running memcached, the value of `maxclients` has been changed from `2000` to `3000`. So, the reconfiguration of the database using the `applyConfig` field is successful.
 

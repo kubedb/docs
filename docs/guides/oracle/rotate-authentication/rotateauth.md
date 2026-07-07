@@ -25,9 +25,9 @@ KubeDB supports rotating the authentication credentials (the database password) 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/rotate-auth](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -70,11 +70,14 @@ Let's create the `Oracle` CR we have shown above and wait until it is `Ready`.
 KubeDB stores the database credentials in a Secret named `<db-name>-auth`. For our database that is `oracle-sa-sample-auth`,
 
 ```bash
-$ kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.username}' | base64 -d
-sys
-$ kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
-LbK!aQQ3zkcOC3~u
+kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+sys
+
+```bash
+kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
+```
+LbK!aQQ3zkcOC3~u
 
 > **Note:** The privileged user for Oracle is `SYS`. Oracle does **not** allow renaming the `SYS` user, so rotate authentication changes the **password** only.
 
@@ -108,22 +111,23 @@ Here,
 Let's create the `OracleOpsRequest`,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth/standalone-rotate-auth.yaml
-oracleopsrequest.ops.kubedb.com/standalone-rotate-auth created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth/standalone-rotate-auth.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-rotate-auth created
 
 Let's wait until the `OracleOpsRequest` becomes `Successful`,
 
 ```bash
-$ kubectl get oracleopsrequest -n demo standalone-rotate-auth
+kubectl get oracleopsrequest -n demo standalone-rotate-auth
+```
 NAME                     TYPE         STATUS       AGE
 standalone-rotate-auth   RotateAuth   Successful   2m7s
-```
 
 The full progress is shown by `kubectl describe`,
 
 ```bash
-$ kubectl describe oracleopsrequest -n demo standalone-rotate-auth
+kubectl describe oracleopsrequest -n demo standalone-rotate-auth
+```
 Name:         standalone-rotate-auth
 Namespace:    demo
 ...
@@ -159,21 +163,21 @@ Status:
     Status:                True
     Type:                  Successful
   Phase:                   Successful
-```
 
 **Verify auth is rotated:**
 
 After the operation succeeds, the operator has generated a new password and stored it in the auth secret. The previous credential is kept under the `authData.prev` keys so applications have a grace window to migrate,
 
 ```bash
-$ kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
-VYWX2Wu!Sx1JdqKl
+kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+VYWX2Wu!Sx1JdqKl
 
 The auth secret now also holds the previous credentials under the `.prev` keys,
 
 ```bash
-$ kubectl get secret -n demo oracle-sa-sample-auth -o json | jq '.data | keys'
+kubectl get secret -n demo oracle-sa-sample-auth -o json | jq '.data | keys'
+```
 [
   "password",
   "password.prev",
@@ -181,32 +185,32 @@ $ kubectl get secret -n demo oracle-sa-sample-auth -o json | jq '.data | keys'
   "username.prev"
 ]
 
-$ kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password\.prev}' | base64 -d
-LbK!aQQ3zkcOC3~u
+```bash
+kubectl get secret -n demo oracle-sa-sample-auth -o jsonpath='{.data.password\.prev}' | base64 -d
 ```
+LbK!aQQ3zkcOC3~u
 
 Finally, let's confirm the new password works by connecting to the database,
 
 ```bash
-$ kubectl exec -n demo oracle-sa-sample-0 -c oracle -- bash -lc \
+kubectl exec -n demo oracle-sa-sample-0 -c oracle -- bash -lc \
     "echo -e 'SELECT USER FROM DUAL;\nexit;' | sqlplus -s sys/<new-password>@localhost:1521/ORCL as sysdba"
-
+```
 USER
 ------------------------------
 SYS
-```
 
 #### 2. Using user created credentials
 
 If you want to set a specific password, first create a Secret of type `kubernetes.io/basic-auth` containing the `username` (`sys`) and your desired `password`:
 
 ```bash
-$ kubectl create secret generic oracle-user-auth -n demo \
+kubectl create secret generic oracle-user-auth -n demo \
     --type=kubernetes.io/basic-auth \
     --from-literal=username=sys \
     --from-literal=password='New-Strong-Pass-123'
-secret/oracle-user-auth created
 ```
+secret/oracle-user-auth created
 
 > **Note:** The `username` must remain `sys`; only the password can change.
 
@@ -230,9 +234,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth/standalone-rotate-auth-user.yaml
-oracleopsrequest.ops.kubedb.com/standalone-rotate-auth-user created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/rotate-auth/standalone-rotate-auth-user.yaml
 ```
+oracleopsrequest.ops.kubedb.com/standalone-rotate-auth-user created
 
 Once the ops request succeeds, the database password is updated to the value from your `oracle-user-auth` secret, and the `Oracle` object's `spec.authSecret` is pointed at it.
 

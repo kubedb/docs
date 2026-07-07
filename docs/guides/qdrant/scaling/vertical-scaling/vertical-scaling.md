@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to update the resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/scaling/vertical-scaling](/docs/examples/qdrant/scaling/vertical-scaling) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -66,38 +66,43 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 **Wait for the cluster to be ready:**
 
 ```bash
-$ watch -n 3 kubectl get qdrant -n demo qdrant-sample
+watch -n 3 kubectl get qdrant -n demo qdrant-sample
+```
 Every 3.0s: kubectl get qdrant -n demo qdrant-sample
 
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    3m16s
 
-$ watch -n 3 kubectl get petset -n demo qdrant-sample
+```bash
+watch -n 3 kubectl get petset -n demo qdrant-sample
+```
 Every 3.0s: kubectl get petset -n demo qdrant-sample
 
 NAME              READY   AGE
 qdrant-sample     3/3     3m54s
 
-$ watch -n 3 kubectl get pod -n demo
+```bash
+watch -n 3 kubectl get pod -n demo
+```
 Every 3.0s: kubectl get pod -n demo
 
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-0     1/1     Running   0          4m51s
 qdrant-sample-1     1/1     Running   0          3m50s
 qdrant-sample-2     1/1     Running   0          3m46s
-```
 
 Let's check the resources of the `qdrant-sample-0` pod:
 
 ```bash
-$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -107,7 +112,6 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
     "memory": "1Gi"
   }
 }
-```
 
 We are ready to apply the `QdrantOpsRequest` CR to vertically scale the cluster.
 
@@ -149,9 +153,9 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/vscale.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-vscale created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/vscale.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-vscale created
 
 #### Verify Qdrant vertical scaling completed successfully
 
@@ -160,17 +164,18 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `QdrantOpsRequest` to be `Successful`:
 
 ```bash
-$ watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-vscale
+watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-vscale
+```
 Every 3.0s: kubectl get QdrantOpsRequest -n demo qdops-vscale
 
 NAME            TYPE              STATUS       AGE
 qdops-vscale    VerticalScaling   Successful   3m12s
-```
 
 Now, let's verify that the resources of the pods have been updated:
 
 ```bash
-$ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].resources'
+kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -181,7 +186,6 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
     "memory": "1Gi"
   }
 }
-```
 
 You can see from the above output that the resources of the `qdrant-sample-0` pod have been updated successfully. All pods in the cluster will have the same updated resource configuration.
 

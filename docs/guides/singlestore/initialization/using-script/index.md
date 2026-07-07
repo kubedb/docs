@@ -26,9 +26,9 @@ In this tutorial we will use .sql script stored in GitHub repository [kubedb/sin
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare Initialization Scripts
 
@@ -41,21 +41,21 @@ At first, we will create a ConfigMap from `init.sql` file. Then, we will provide
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo sdb-init-script \
+kubectl create configmap -n demo sdb-init-script \
 --from-literal=init.sql="$(curl -fsSL https://github.com/kubedb/singlestore-init-scripts/raw/master/init.sql)"
-configmap/sdb-init-script created
 ```
+configmap/sdb-init-script created
 
 ## Create SingleStore License Secret
 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Create a SingleStore database with Init-Script
 
@@ -122,9 +122,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/Initialization/demo-1.yaml
-singlestore.kubedb.com/singlestore-init-script created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/Initialization/demo-1.yaml
 ```
+singlestore.kubedb.com/singlestore-init-script created
 
 Here,
 
@@ -343,9 +343,10 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 
 Now, we will connect to this database and check the data inserted by the initlization script.
 
-```bash
 # Connecting to the database
-$ kubectl exec -it -n demo sdb-sample-aggregator-0 -- bash
+```bash
+kubectl exec -it -n demo sdb-sample-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sdb-sample-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
@@ -393,16 +394,16 @@ singlestore> select * from kubedb_write_check;
 singlestore> exit
 Bye
 
-
-```
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete sdb -n demo sdb-sample
-singlestore.kubedb.com "sdb-sample" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete sdb -n demo sdb-sample
 ```
+singlestore.kubedb.com "sdb-sample" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

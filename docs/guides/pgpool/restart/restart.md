@@ -24,10 +24,10 @@ KubeDB supports restarting the Pgpool via a PgpoolOpsRequest. Restarting is usef
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -56,9 +56,9 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/restart/pgpool.yaml
-pgpool.kubedb.com/pgpool created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/restart/pgpool.yaml
 ```
+pgpool.kubedb.com/pgpool created
 
 ## Apply Restart opsRequest
 
@@ -83,18 +83,21 @@ spec:
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/restart/ops.yaml
-pgpoolopsrequest.ops.kubedb.com/restart-pgpool created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/restart/ops.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/restart-pgpool created
 
 Now the Ops-manager operator will restart the pods one by one.
 
-```shell
-$ kubectl get ppops -n demo
+```bash
+kubectl get ppops -n demo
+```
 NAME             TYPE      STATUS       AGE
 restart-pgpool   Restart   Successful   79s
 
-$ kubectl get ppops -n demo -oyaml restart-pgpool
+```bash
+kubectl get ppops -n demo -oyaml restart-pgpool
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PgpoolOpsRequest
 metadata:
@@ -156,7 +159,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 
 ## Cleaning up

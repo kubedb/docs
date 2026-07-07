@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/mongodb](/docs/examples/mongodb) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -69,17 +69,17 @@ spec:
 Let's create the `MongoDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/update-version/mg-replicaset.yaml
-mongodb.kubedb.com/mg-replicaset created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/update-version/mg-replicaset.yaml
 ```
+mongodb.kubedb.com/mg-replicaset created
 
 Now, wait until `mg-replicaset` created has status `Ready`. i.e,
 
 ```bash
-$ k get mongodb -n demo                                                                                                                                             
+k get mongodb -n demo                                                                                                                                             
+```
 NAME            VERSION    STATUS    AGE
 mg-replicaset   7.0.28   Ready     109s
-```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
 
@@ -120,9 +120,9 @@ Here,
 Let's create the `MongoDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/update-version/mops-update-replicaset .yaml
-mongodbopsrequest.ops.kubedb.com/mops-replicaset-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/update-version/mops-update-replicaset .yaml
 ```
+mongodbopsrequest.ops.kubedb.com/mops-replicaset-update created
 
 #### Verify MongoDB version updated successfully 
 
@@ -131,16 +131,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `MongoDBOpsRequest` to be `Successful`.  Run the following command to watch `MongoDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mongodbopsrequest -n demo
+kubectl get mongodbopsrequest -n demo
+```
 Every 2.0s: kubectl get mongodbopsrequest -n demo
 NAME                      TYPE            STATUS       AGE
 mops-replicaset-update   UpdateVersion   Successful   84s
-```
 
 We can see from the above output that the `MongoDBOpsRequest` has succeeded. If we describe the `MongoDBOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe mongodbopsrequest -n demo mops-replicaset-update
+kubectl describe mongodbopsrequest -n demo mops-replicaset-update
+```
 Name:         mops-replicaset-update
 Namespace:    demo
 Labels:       <none>
@@ -238,20 +239,23 @@ Events:
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Resuming MongoDB demo/mg-replicaset
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Successfully resumed MongoDB demo/mg-replicaset
   Normal  Successful             38s    KubeDB Ops-manager Operator  Successfully Updated Database
-```
 
 Now, we are going to verify whether the `MongoDB` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'
+```
 8.0.17
 
-$ kubectl get petset -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 mongo:8.0.17
 
-$ kubectl get pods -n demo mg-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mongo:8.0.17
+```bash
+kubectl get pods -n demo mg-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+mongo:8.0.17
 
 You can see from above, our `MongoDB` replicaset database has been updated with the new version. So, the updateVersion process is successfully completed.
 

@@ -31,9 +31,9 @@ In this example, we will initialize PgBouncer using a `.sh` script from the GitH
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -94,16 +94,16 @@ The `git-sync` container has one required flags:
 Now, wait until `pb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get PgBouncer -n demo
+kubectl get PgBouncer -n demo
+```
 NAME   VERSION   STATUS   AGE
 pb     1.24.0    Ready    49m
-
-```
 
 Next, we will connect to the PgBouncer database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
+kubectl exec -it -n demo pb-0 -- sh
+```
 Defaulted container "pgbouncer" out of: pgbouncer, git-sync (init)
 
 / $ cd init-scripts/
@@ -119,8 +119,6 @@ postgres=# \dt
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
 (2 rows)
-
-```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
 ## From Private Git Repository
 
@@ -131,7 +129,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -146,7 +144,7 @@ This secret will be used by git-sync to authenticate with the Git repository.
 >Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also you can use any name instead of `git-creds` to create the secret.
 
 ```bash
-$ kubectl create secret generic -n demo <secret_name> \
+kubectl create secret generic -n demo <secret_name> \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -204,13 +202,13 @@ The `git-sync` container has two required flags:
 
 Once the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
-$ kubectl get PgBouncer -n demo
+kubectl get PgBouncer -n demo
+```
 NAME   VERSION   STATUS   AGE
 pb     1.24.0    Ready    8m
-
-```
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
+kubectl exec -it -n demo pb-0 -- sh
+```
 Defaulted container "pgbouncer" out of: pgbouncer, git-sync (init)
 
 / $ cd init-scripts/
@@ -226,8 +224,6 @@ postgres=# \dt
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
 (2 rows)
-
-```
 `my_table` is created by the `init-script.sh` script stored in the Git repository.
 
 ### 2. Using Username and Personal Access Token(PAT)
@@ -236,7 +232,7 @@ First, create a `Personal Access Token (PAT)` on your Git host server with the r
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 > Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -289,13 +285,13 @@ Here,
 
 OOnce the database reaches the `Ready` state, you can verify the data using the method described above.
 ```bash
-$ kubectl get PgBouncer -n demo
+kubectl get PgBouncer -n demo
+```
 NAME   VERSION   STATUS   AGE
 pb     1.24.0    Ready    19m
-
-```
 ```bash
-$ kubectl exec -it -n demo pb-0 -- sh
+kubectl exec -it -n demo pb-0 -- sh
+```
 Defaulted container "pgbouncer" out of: pgbouncer, git-sync (init)
 
 / $ cd init-scripts/
@@ -311,8 +307,6 @@ postgres=# \dt
  public | kubedb_write_check_pgbouncer | table | postgres
  public | my_table                     | table | postgres
 (2 rows)
-
-```
 `my_table` is created by the `init-script.sh` script stored in the Private Git repository.
 
 ## CleanUp
@@ -320,7 +314,13 @@ postgres=# \dt
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete PgBouncer -n demo pb
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete PgBouncer -n demo pb
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

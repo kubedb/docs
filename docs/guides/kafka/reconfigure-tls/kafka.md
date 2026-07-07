@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -75,37 +75,37 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   9s
 .
 .
 kafka-prod    kubedb.com/v1   3.9.0     Ready          2m10s
-```
 
 Now, we can exec one kafka broker pod and verify configuration that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=null sensitive=false synonyms={}
-  ssl.keystore.password=null sensitive=true synonyms={}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=null sensitive=false synonyms={}
-  ssl.keystore.password=null sensitive=true synonyms={}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
 ```
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=null sensitive=false synonyms={}
+  ssl.keystore.password=null sensitive=true synonyms={}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=null sensitive=false synonyms={}
+  ssl.keystore.password=null sensitive=true synonyms={}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
 
 We can verify from the above output that TLS is disabled for this cluster.
 
@@ -116,23 +116,23 @@ Now, We are going to create an example `Issuer` that will be used to enable SSL/
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls kafka-ca \
+kubectl create secret tls kafka-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/kafka-ca created
 ```
+secret/kafka-ca created
 
 Now, Let's create an `Issuer` using the `kafka-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -150,9 +150,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-issuer.yaml
-issuer.cert-manager.io/kf-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-issuer.yaml
 ```
+issuer.cert-manager.io/kf-issuer created
 
 ### Create KafkaOpsRequest
 
@@ -196,24 +196,25 @@ Let's create the `KafkaOpsRequest` CR we have shown above,
 > **Note:** For combined kafka, you just need to refer kafka combined object in `databaseRef` field. To learn more about combined kafka, please visit [here](/docs/guides/kafka/clustering/combined-cluster/index.md).
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-add-tls.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-add-tls.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME            TYPE             STATUS       AGE
 kfops-add-tls   ReconfigureTLS   Successful   4m36s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-add-tls 
+kubectl describe kafkaopsrequest -n demo kfops-add-tls 
+```
 Name:         kfops-add-tls
 Namespace:    demo
 Labels:       <none>
@@ -394,23 +395,22 @@ Events:
   Normal   RestartNodes                                                               76s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   76s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 76s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-add-tls
-```
 
 Now, Let's exec into a kafka broker pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
-  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
-  ssl.keystore.key=null sensitive=true synonyms={}
-  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
-  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
-  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
 ```
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
+  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
+  ssl.keystore.certificate.chain=null sensitive=true synonyms={}
+  ssl.keystore.key=null sensitive=true synonyms={}
+  ssl.keystore.location=/var/private/ssl/server.keystore.jks sensitive=false synonyms={STATIC_BROKER_CONFIG:ssl.keystore.location=/var/private/ssl/server.keystore.jks}
+  ssl.keystore.password=null sensitive=true synonyms={STATIC_BROKER_CONFIG:ssl.keystore.password=null}
+  ssl.keystore.type=JKS sensitive=false synonyms={DEFAULT_CONFIG:ssl.keystore.type=JKS}
 
 We can see from the above output that, keystore location is `/var/private/ssl/server.keystore.jks` which means that TLS is enabled.
 
@@ -419,12 +419,12 @@ We can see from the above output that, keystore location is `/var/private/ssl/se
 Now we are going to rotate the certificate of this cluster. First let's check the current expiration date of the certificate.
 
 ```bash
-$ $ kubectl exec -it -n demo kafka-prod-broker-0 -- keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass wt6f5pwxpg84 | grep -E 'Valid from|Alias name'
+kubectl exec -it -n demo kafka-prod-broker-0 -- keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass wt6f5pwxpg84 | grep -E 'Valid from|Alias name'
+```
 Alias name: ca
 Valid from: Wed Jul 31 06:11:30 UTC 2024 until: Thu Jul 31 06:11:30 UTC 2025
 Alias name: certificate
 Valid from: Wed Jul 31 06:36:31 UTC 2024 until: Tue Oct 29 06:36:31 UTC 2024
-```
 
 So, the certificate will expire on this time `Tue Oct 29 06:36:31 UTC 2024`.
 
@@ -455,24 +455,25 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-rotate.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-rotate.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequests -n demo kfops-rotate
+kubectl get kafkaopsrequests -n demo kfops-rotate
+```
 NAME            TYPE             STATUS       AGE
 kfops-rotate    ReconfigureTLS   Successful   4m4s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-rotate
+kubectl describe kafkaopsrequest -n demo kfops-rotate
+```
 Name:         kfops-rotate
 Namespace:    demo
 Labels:       <none>
@@ -640,17 +641,16 @@ Events:
   Normal   RestartNodes                                                               97s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   97s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 97s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-rotate
-```
 
 Now, let's check the expiration date of the certificate.
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass wt6f5pwxpg84 | grep -E 'Valid from|Alias name'
+kubectl exec -it -n demo kafka-prod-broker-0 -- keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass wt6f5pwxpg84 | grep -E 'Valid from|Alias name'
+```
 Alias name: ca
 Valid from: Wed Jul 31 06:11:30 UTC 2024 until: Thu Jul 31 06:11:30 UTC 2025
 Alias name: certificate
 Valid from: Wed Jul 31 07:05:40 UTC 2024 until: Tue Oct 29 07:05:40 UTC 2024
-```
 
 As we can see from the above output, the certificate has been rotated successfully.
 
@@ -661,23 +661,23 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca-updated/O=kubedb-updated"
+```
 Generating a RSA private key
 ..............................................................+++++
 ......................................................................................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls kafka-new-ca \
+kubectl create secret tls kafka-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/kafka-new-ca created
 ```
+secret/kafka-new-ca created
 
 Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -695,9 +695,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-new-issuer.yaml
-issuer.cert-manager.io/kf-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-new-issuer.yaml
 ```
+issuer.cert-manager.io/kf-new-issuer created
 
 ### Create KafkaOpsRequest
 
@@ -729,24 +729,25 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-update-tls-issuer.yaml
-kafkapsrequest.ops.kubedb.com/kfops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-update-tls-issuer.yaml
 ```
+kafkapsrequest.ops.kubedb.com/kfops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequests -n demo kfops-update-issuer
+kubectl get kafkaopsrequests -n demo kfops-update-issuer
+```
 NAME                  TYPE             STATUS       AGE
 kfops-update-issuer   ReconfigureTLS   Successful   8m6s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-update-issuer
+kubectl describe kafkaopsrequest -n demo kfops-update-issuer
+```
 Name:         kfops-update-issuer
 Namespace:    demo
 Labels:       <none>
@@ -878,16 +879,15 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, Let's exec into a kafka node and find out the ca subject to see if it matches the one we have provided.
 
 ```bash
-$ kubectl exec -it kafka-prod-broker-0 -- bash
+kubectl exec -it kafka-prod-broker-0 -- bash
+```
 kafka@kafka-prod-broker-0:~$ keytool -list -v -keystore /var/private/ssl/server.keystore.jks -storepass wt6f5pwxpg84 | grep 'Issuer'
 Issuer: O=kubedb-updated, CN=ca-updated
 Issuer: O=kubedb-updated, CN=ca-updated
-```
 
 We can see from the above output that, the subject name matches the subject name of the new ca certificate that we have created. So, the issuer is changed successfully.
 
@@ -922,24 +922,25 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-remove-tls.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-remove-tls.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CRO,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo kfops-remove
+kubectl get kafkaopsrequest -n demo kfops-remove
+```
 NAME           TYPE             STATUS        AGE
 kfops-remove   ReconfigureTLS   Successful    105s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kfops-remove
+kubectl describe kafkaopsrequest -n demo kfops-remove
+```
 Name:         kfops-remove
 Namespace:    demo
 Labels:       <none>
@@ -1047,12 +1048,12 @@ Status:
   Observed Generation:     1
   Phase:                   Successful
 Events:                    <none>
-```
 
 Now, Let's exec into one of the broker node and find out that TLS is disabled or not.
 
 ```bash
-$$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-server localhost:9092 --command-config /opt/kafka/config/clientauth.properties --describe --entity-type brokers --all | grep 'ssl.keystore'
+```
   ssl.keystore.certificate.chain=null sensitive=true synonyms={}
   ssl.keystore.key=null sensitive=true synonyms={}
   ssl.keystore.location=null sensitive=false synonyms={}
@@ -1062,7 +1063,6 @@ $$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-configs.sh --bootstrap-
   ssl.keystore.key=null sensitive=true synonyms={}
   ssl.keystore.location=null sensitive=false synonyms={}
   ssl.keystore.password=null sensitive=true synonyms={}
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 

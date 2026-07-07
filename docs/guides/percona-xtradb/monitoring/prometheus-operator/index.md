@@ -25,9 +25,9 @@ section_menu_id: guides
 - To keep database resources isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 - We need a [Prometheus operator](https://github.com/prometheus-operator/prometheus-operator) instance running. If you don't already have a running instance, deploy one following the docs from [here](https://github.com/appscode/third-party-tools/blob/master/monitoring/prometheus/operator/README.md).
 
@@ -42,10 +42,10 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE   NAME         VERSION   REPLICAS   AGE
 default     prometheus             1          2m19s
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
@@ -96,9 +96,9 @@ KubeDB creates a `ServiceMonitor` in database namespace `demo`. We need to add l
 Let's add label `prometheus: prometheus` to `demo` namespace,
 
 ```bash
-$ kubectl patch namespace demo -p '{"metadata":{"labels": {"prometheus":"prometheus"}}}'
-namespace/demo patched
+kubectl patch namespace demo -p '{"metadata":{"labels": {"prometheus":"prometheus"}}}'
 ```
+namespace/demo patched
 
 ## Deploy PerconaXtraDB with Monitoring Enabled
 
@@ -140,34 +140,35 @@ Here,
 Let's create the PerconaXtraDB object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/monitoring/prometheus-operator/examples/prom-operator-px.yaml
-perconaxtradb.kubedb.com/coreos-prom-px created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/monitoring/prometheus-operator/examples/prom-operator-px.yaml
 ```
+perconaxtradb.kubedb.com/coreos-prom-px created
 
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get perconaxtradb -n demo coreos-prom-px
+kubectl get perconaxtradb -n demo coreos-prom-px
+```
 NAME             VERSION   STATUS   AGE
 coreos-prom-px   8.4.3    Ready    59s
-```
 
 KubeDB will create a separate stats service with name `{PerconaXtraDB crd name}-stats` for monitoring purpose.
 
 ```bash
-$ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-px"
+kubectl get svc -n demo --selector="app.kubernetes.io/instance=coreos-prom-px"
+```
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 coreos-prom-px         ClusterIP   10.99.96.226    <none>        3306/TCP    107s
 coreos-prom-px-pods    ClusterIP   None            <none>        3306/TCP    107s
 coreos-prom-px-stats   ClusterIP   10.101.190.67   <none>        56790/TCP   107s
-```
 
 Here, `coreos-prom-px-stats` service has been created for monitoring purpose.
 
 Let's describe this stats service.
 
 ```bash
-$ kubectl describe svc -n demo coreos-prom-px-stats
+kubectl describe svc -n demo coreos-prom-px-stats
+```
 Name:              coreos-prom-px-stats
 Namespace:         demo
 Labels:            app.kubernetes.io/instance=coreos-prom-px
@@ -183,22 +184,22 @@ TargetPort:        metrics/TCP
 Endpoints:         10.244.0.31:56790
 Session Affinity:  None
 Events:            <none>
-```
 
 Notice the `Labels` and `Port` fields. `ServiceMonitor` will use these information to target its endpoints.
 
 KubeDB will also create a `ServiceMonitor` crd in `demo` namespace that select the endpoints of `coreos-prom-px-stats` service. Verify that the `ServiceMonitor` crd has been created.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+kubectl get servicemonitor -n demo
+```
 NAME                   AGE
 coreos-prom-px-stats   4m8s
-```
 
 Let's verify that the `ServiceMonitor` has the label that we had specified in `spec.monitor` section of PerconaXtraDB crd.
 
 ```bash
-$ kubectl get servicemonitor -n demo coreos-prom-px-stats -o yaml
+kubectl get servicemonitor -n demo coreos-prom-px-stats -o yaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -241,7 +242,6 @@ spec:
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: perconaxtradbs.kubedb.com
       kubedb.com/role: stats
-```
 
 Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in PerconaXtraDB crd.
 
@@ -252,22 +252,22 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n default -l=app=prometheus
+kubectl get pod -n default -l=app=prometheus
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 prometheus-prometheus-0   3/3     Running   1          16m
 prometheus-prometheus-1   3/3     Running   1          16m
 prometheus-prometheus-2   3/3     Running   1          16m
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-prometheus-0` pod,
 
 ```bash
-$ kubectl port-forward -n default prometheus-prometheus-0 9090
+kubectl port-forward -n default prometheus-prometheus-0 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `coreos-prom-px-stats` service as one of the targets.
 

@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale MaxSc
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Apply Horizontal Scaling on MaxScale Server
 
@@ -77,26 +77,29 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/md-replication.yaml
-mariadb.kubedb.com/md-replication created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/md-replication.yaml
 ```
+mariadb.kubedb.com/md-replication created
 
 Now, wait until `md-replication` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 md-replication   11.8.5   Ready    2m8s
-```
 
 Let's check the number of replicas `Maxscale` has from the MariaDB object, also the number of replicas the petset have,
 
 ```bash
-$ kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
-3
-$ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
-3
+kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
 ```
+3
+
+```bash
+kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
+```
+3
 
 We can see from both command that the `MaxScale` has 3 replicas in the cluster.
 
@@ -133,9 +136,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/horizontal-scaling/mx-hscale-up.yaml
-mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/horizontal-scaling/mx-hscale-up.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-up created
 
 #### Verify Cluster replicas scaled up successfully
 
@@ -144,20 +147,23 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mariadbopsrequest -n demo
+watch kubectl get mariadbopsrequest -n demo
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 maxscale-horizontal-scale-up   HorizontalScaling   Successful   2m31s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas this database has from the MariaDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
-4
-$ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
-4 
+kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
 ```
+4
+
+```bash
+kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
+```
+4 
 
 From all the above outputs we can see that the replicas of the `MaxScale` server is `4`. That means we have successfully scaled up the replicas of the MaxScale server.
 
@@ -194,9 +200,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/horizontal-scaling/mx-hscale-down.yaml
-mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mariadb/scaling/horizontal-scaling/mx-hscale-down.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/maxscale-horizontal-scale-down created
 
 #### Verify Cluster replicas scaled down successfully
 
@@ -205,20 +211,23 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ watch kubectl get mariadbopsrequest -n demo
+watch kubectl get mariadbopsrequest -n demo
+```
 Every 2.0s: kubectl get mariadbopsrequest -n demo
 NAME                             TYPE                STATUS       AGE
 maxscale-horizontal-scale-down   HorizontalScaling   Successful   55s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. Now, we are going to verify the number of replicas `MaxScale` server has from the MariaDB object, number of pods the petset have,
 
 ```bash
-$ kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
-3
-$ kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
-3
+kubectl get mariadb -n demo md-replication -o json | jq '.spec.topology.maxscale.replicas'
 ```
+3
+
+```bash
+kubectl get petset -n demo md-replication-mx -o json | jq '.spec.replicas'
+```
+3
 
 From all the above outputs we can see that the replicas of the cluster is `3`. That means we have successfully scaled down the replicas of the MaxScale server.
 
@@ -227,7 +236,13 @@ From all the above outputs we can see that the replicas of the cluster is `3`. T
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo md-replication
-$ kubectl delete mariadbopsrequest -n demo  maxscale-horizontal-scale-up maxscale-horizontal-scale-down
-$ kubectl delete ns demo
+kubectl delete mariadb -n demo md-replication
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo  maxscale-horizontal-scale-up maxscale-horizontal-scale-down
+```
+
+```bash
+kubectl delete ns demo
 ```

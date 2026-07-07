@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -65,17 +65,17 @@ spec:
 Let's create the `RedisSentinel` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sentinel.yaml
-redissentinel.kubedb.com/sen-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sentinel.yaml
 ```
+redissentinel.kubedb.com/sen-sample created
 
 Now, wait until `sen-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME         VERSION   STATUS   AGE
 sen-sample   6.2.14     Ready    5m20s
-```
 
 ### Deploy Redis without TLS
 
@@ -108,24 +108,24 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-sentinel.yaml
-redis.kubedb.com/rd-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-sentinel.yaml
 ```
+redis.kubedb.com/rd-sample created
 
 Now, wait until `redis-standalone` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get rd -n demo
 NAME        VERSION   STATUS   AGE
 rd-sample   6.2.14     Ready    88s
-```
 
 Now, we can connect to this database through redis-cli verify that the TLS is disabled.
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 root@rd-sample-0:/data# redis-cli
 
 127.0.0.1:6379> config get tls-cert-file
@@ -133,7 +133,6 @@ root@rd-sample-0:/data# redis-cli
 2) ""
 127.0.0.1:6379> exit
 root@rd-sample-0:/data# 
-```
 
 We can verify from the above output that TLS is disabled for this database.
 
@@ -144,18 +143,18 @@ Now, We are going to create an example `ClusterIssuer` that will be used to enab
 - Start off by generating a ca certificates using openssl.
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=ca/O=kubedb"
+```
 Generating a RSA private key
 ................+++++
 ........................+++++
 writing new private key to './ca.key'
 -----
-```
 
 - Now create a ca-secret using the certificate files you have just generated. The secret should be created in `cert-manager` namespace to create the `ClusterIssuer`.
 
 ```bash
-$ kubectl create secret tls redis-ca \
+kubectl create secret tls redis-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=cert-manager
@@ -176,9 +175,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/clusterissuer.yaml
-clusterissuer.cert-manager.io/redis-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/clusterissuer.yaml
 ```
+clusterissuer.cert-manager.io/redis-ca-issuer created
 
 ### Create RedisOpsRequest
 There are two basic things to keep in mind when securing Redis using TLS in Sentinel Mode.
@@ -230,33 +229,34 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-add-tls.yaml
-redisopsrequest.ops.kubedb.com/rd-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-add-tls.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-add-tls created
 
 #### Verify TLS Enabled Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 rd-add-tls     ReconfigureTLS   Successful    9m
-```
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
 Let's check if new sentinel named `sen-demo-tls` is created 
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME           VERSION   STATUS   AGE
 sen-demo-tls   6.2.14     Ready    17m
-```
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo rd-sample-client-cert
+kubectl describe secret -n demo rd-sample-client-cert
+```
 Name:         rd-sample-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -279,13 +279,12 @@ Data
 ca.crt:   1139 bytes
 tls.crt:  1168 bytes
 tls.key:  1675 bytes
-```
 
 Now, Lets exec into a redis container and find out the username to connect in a redis shell,
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
-
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 root@rd-sample-0:/data# ls /certs
 ca.crt	client.crt  client.key	server.crt  server.key
 
@@ -293,12 +292,11 @@ root@rd-sample-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs
 1) "tls-cert-file"
 2) "/certs/server.crt
 
-```
-
 Now, we can connect using tls-certs to the redis and write some data
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 # Trying to connect without tls certificates
 root@rd-sample-0:/data# redis-cli
 127.0.0.1:6379> 
@@ -312,7 +310,6 @@ root@rd-sample-0:/data# redis-cli --tls --cert "/certs/client.crt" --key "/certs
 127.0.0.1:6379> set hello world
 OK
 127.0.0.1:6379> exit
-```
 
 ## Rotate Certificate
 
@@ -345,20 +342,20 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-rotate.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/rd-ops-rotate.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get redisopsrequest -n demo
+watch kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME             TYPE             STATUS        AGE
 rd-ops-rotate    ReconfigureTLS   Successful    5m5s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
@@ -389,20 +386,20 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sen-ops-rotate.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sen-ops-rotate.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ watch kubectl get redissentinelopsrequest -n demo
+watch kubectl get redissentinelopsrequest -n demo
+```
 Every 2.0s: kubectl get redissentinelopsrequest -n demo
 NAME             TYPE             STATUS       AGE
 sen-ops-rotate   ReconfigureTLS   Successful   78s
-```
 
 We can see from the above output that the `RedisSentinelOpsRequest` has succeeded.
 
@@ -447,33 +444,34 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sen-ops-remove.yaml
-redisopsrequest.ops.kubedb.com/rd-ops-remove created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/reconfigure-tls/sen-ops-remove.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-ops-remove created
 
 #### Verify TLS Removed Successfully
 
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CRO,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 Every 2.0s: kubectl get redisopsrequest -n demo
 NAME            TYPE             STATUS        AGE
 rd-ops-remove   ReconfigureTLS   Successful    2m5s
-```
 We can see from the above output that the `RedisOpsRequest` has succeeded.
 
 Let's check if new sentinel named `sen-sample` is created
 ```bash
-$ kubectl get redissentinel -n demo
+kubectl get redissentinel -n demo
+```
 NAME         VERSION   STATUS   AGE
 sen-sample   6.2.14     Ready    7m56s
-```
 
 Now, Lets exec into the database primary node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+kubectl exec -it -n demo rd-sample-0 -c redis -- bash
+```
 #
 root@rd-sample-0:/data# redis-cli
 
@@ -482,7 +480,6 @@ root@rd-sample-0:/data# redis-cli
 2) ""
 127.0.0.1:6379> exit
 root@rd-sample-0:/data# 
-```
 
 So, we can see from the above that, output that tls is disabled successfully.
 
@@ -490,29 +487,39 @@ So, we can see from the above that, output that tls is disabled successfully.
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
-```bash
 # Delete Redis and RedisOpsRequest
-$ kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo rd/rd-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/rd-sample patched
 
-$ kubectl delete -n demo redis rd-sample
+```bash
+kubectl delete -n demo redis rd-sample
+```
 redis.kubedb.com "rd-sample" deleted
 
-$ kubectl delete -n demo redisopsrequest rd-add-tls rd-ops-remove rd-ops-rotate
+```bash
+kubectl delete -n demo redisopsrequest rd-add-tls rd-ops-remove rd-ops-rotate
+```
 redisopsrequest.ops.kubedb.com "rd-add-tls" deleted
 redisopsrequest.ops.kubedb.com "rd-ops-remove" deleted
 redisopsrequest.ops.kubedb.com "rd-ops-rotate" deleted
 
 # Delete RedisSentinel and RedisSentinelOpsRequest
-$ kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo redissentinel/sen-sample -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redissentinel.kubedb.com/sen-sample patched
 
-$ kubectl delete -n demo redissentinel sen-sample
+```bash
+kubectl delete -n demo redissentinel sen-sample
+```
 redissentinel.kubedb.com "sen-sample" deleted
 
-$ kubectl delete -n demo redissentinelopsrequests sen-ops-rotate
-redissentinelopsrequest.ops.kubedb.com "sen-ops-rotate" deleted
+```bash
+kubectl delete -n demo redissentinelopsrequests sen-ops-rotate
 ```
+redissentinelopsrequest.ops.kubedb.com "sen-ops-rotate" deleted
 
 ## Next Steps
 

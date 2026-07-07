@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/solr](/docs/examples/solr) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -90,22 +90,23 @@ spec:
 Let's create the `Solr` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/topology/solr.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/topology/solr.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    63m
-```
 
 Let's check the Pod containers resources for `data`, `overseer` and `coordinator` of the solr topology cluster. Run the following command to get the resources of the `broker` and `controller` containers of the Solr topology cluster
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -115,10 +116,10 @@ $ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].r
     "memory": "2Gi"
   }
 }
-```
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -128,10 +129,10 @@ $ kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers
     "memory": "2Gi"
   }
 }
-```
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-coordinator-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-cluster-coordinator-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -141,7 +142,6 @@ $ kubectl get pod -n demo solr-cluster-coordinator-0 -o json | jq '.spec.contain
     "memory": "2Gi"
   }
 }
-```
 This is the default resources of the Solr topology cluster set by the `KubeDB` operator.
 
 We are now ready to apply the `SolrOpsRequest` CR to update the resources of this database.
@@ -200,9 +200,9 @@ Here,
 Let's create the `SolrOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/topology/scaling.yaml
-solropsrequest.ops.kubedb.com/slops-slops-vscale-topology-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/topology/scaling.yaml
 ```
+solropsrequest.ops.kubedb.com/slops-slops-vscale-topology-topology created
 
 #### Verify Solr Topology cluster resources updated successfully
 
@@ -211,15 +211,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the resources
 Let's wait for `SolrOpsRequest` to be `Successful`.  Run the following command to watch `SolrOpsRequest` CR,
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME     TYPE              STATUS       AGE
 slops-vscale-topology   VerticalScaling   Successful   3m9s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe slops -n demo slops-vscale-topology 
+kubectl describe slops -n demo slops-vscale-topology 
+```
 Name:         slops-vscale-topology
 Namespace:    demo
 Labels:       <none>
@@ -339,33 +340,11 @@ Events:
   Normal   RestartPods                                                          80s    KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                             80s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                                           80s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-vscale-topology
-```
 Now, we are going to verify from one of the Pod yaml whether the resources of the topology cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-coordinator-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  }
-}
-$ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  }
-}
-$ kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-cluster-coordinator-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -377,7 +356,33 @@ $ kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers
   }
 }
 
+```bash
+kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  }
+}
+
+```bash
+kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers[].resources'
+```
+{
+  "limits": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  }
+}
 
 The above output verifies that we have successfully scaled up the resources of the Solr topology cluster.
 

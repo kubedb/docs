@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for ClickHouse. This tutorial will 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -83,9 +83,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-issuer.yaml
-issuer.cert-manager.io/clickhouse-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-issuer.yaml
 ```
+issuer.cert-manager.io/clickhouse-ca-issuer created
 
 ## TLS/SSL encryption in ClickHouse Cluster
 
@@ -158,9 +158,9 @@ spec:
 ### Deploy ClickHouse Topology Cluster with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-cluster-tls.yaml
-clickhouse.kubedb.com/clickhouse-prod-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/tls/clickhouse-cluster-tls.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod-tls created
 
 Now, wait until `clickhouse-prod-tls created` has status `Ready`. i.e,
 

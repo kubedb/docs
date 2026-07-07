@@ -45,8 +45,11 @@ parameters:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/longhorn-single.yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/longhorn-single-migrated.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/longhorn-single.yaml
+```
+
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/longhorn-single-migrated.yaml
 ```
 
 ## Deploy a HanaDB on the Source StorageClass
@@ -55,20 +58,20 @@ The base manifest places the data on `longhorn-single` and adds an init containe
 permissions (HANA runs as `12000:79`):
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/storage-migration-base.yaml
-hanadb.kubedb.com/hanadb-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/storage-migration-base.yaml
 ```
+hanadb.kubedb.com/hanadb-cluster created
 
 Wait until `hanadb-cluster` is `Ready`, then note the source StorageClass of the PVCs:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-cluster \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-cluster \
   -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+```
 NAME                            SC                SIZE
 data-hanadb-cluster-0           longhorn-single   64Gi
 data-hanadb-cluster-1           longhorn-single   64Gi
 data-hanadb-cluster-arbiter-0   longhorn-single   2Gi
-```
 
 ## Create a StorageMigration HanaDBOpsRequest
 
@@ -89,9 +92,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/storage-migration.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-storage-migration created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/storage-migration/storage-migration.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-storage-migration created
 
 Here,
 
@@ -101,13 +104,14 @@ Here,
 ## Verify the Migration
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-storage-migration
+kubectl get hdbops -n demo hdbops-storage-migration
+```
 NAME                       TYPE               STATUS       AGE
 hdbops-storage-migration   StorageMigration   Successful   14m
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-storage-migration
+kubectl describe hdbops -n demo hdbops-storage-migration
+```
 ...
 Status:
   Conditions:
@@ -120,31 +124,38 @@ Status:
     Status:   True
     Type:     Successful
   Phase:      Successful
-```
 
 KubeDB migrates the data PVCs one node at a time (the primary last); the small arbiter volume is left on
 its original StorageClass. Confirm the data PVCs are now bound to the target StorageClass and the database
 is `Ready`:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-cluster \
+kubectl get pvc -n demo -l app.kubernetes.io/instance=hanadb-cluster \
   -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+```
 NAME                            SC                         SIZE
 data-hanadb-cluster-0           longhorn-single-migrated   64Gi
 data-hanadb-cluster-1           longhorn-single-migrated   64Gi
 data-hanadb-cluster-arbiter-0   longhorn-single            2Gi
 
-$ kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+```bash
+kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+```
 NAME             VERSION   STATUS   AGE
 hanadb-cluster   2.0.82    Ready    26m
-```
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-storage-migration
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-storage-migration
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

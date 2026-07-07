@@ -24,10 +24,10 @@ KubeDB supports restarting the MySQL database via a `MySQLOpsRequest`. Restartin
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
+  ```bash
+  kubectl create ns demo
+  ```
   namespace/demo created
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mysql](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mysql) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -59,9 +59,9 @@ spec:
 Let's create the `mysql` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/restart/mysql.yaml
-mysql.kubedb.com/mysql created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/restart/mysql.yaml
 ```
+mysql.kubedb.com/mysql created
 
 ## Apply Restart opsRequest
 
@@ -87,9 +87,9 @@ spec:
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/restart/restart.yaml
-MySQLOpsRequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/restart/restart.yaml
 ```
+MySQLOpsRequest.ops.kubedb.com/restart created
 In MySQL, pods follow a `primary-standby` architecture:
 
 - `Standby` pods are restarted **first**, one by one.
@@ -97,12 +97,15 @@ In MySQL, pods follow a `primary-standby` architecture:
 - During the primary pod restart, one of the standby pods is automatically promoted to primary to ensure continuous availability.
 
 Now, let's see the status of the `MySQLOpsRequest` we just created.
-```shell
-$ kubectl get myops -n demo
+```bash
+kubectl get myops -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   64m
 
-$ kubectl get myops -n demo restart -oyaml
+```bash
+kubectl get myops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MySQLOpsRequest
 metadata:
@@ -163,8 +166,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 
 
 ## Cleaning up

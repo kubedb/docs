@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the K
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -72,31 +72,33 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-combined.yaml
-kafka.kubedb.com/kafka-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-combined.yaml
 ```
+kafka.kubedb.com/kafka-dev created
 
 Now, wait until `kafka-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-dev    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-dev    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check the number of replicas has from kafka object, number of pods the petset have,
 
 ```bash
-$ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas'
+kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas'
+```
 2
 
-$ kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
 ```
+2
 
 We can see from both command that the cluster has 2 replicas.
 
@@ -105,7 +107,8 @@ Also, we can verify the replicas of the combined from an internal kafka command 
 Now let's exec to a instance and run a kafka internal command to check the number of replicas,
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-dev-0.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -236,7 +239,6 @@ kafka-dev-1.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 1 rack: null) -> (
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 We can see from the above output that the kafka has 2 nodes.
 
@@ -273,9 +275,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-up-combined.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-hscale-up-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-up-combined.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-hscale-up-combined created
 
 #### Verify Combined cluster replicas scaled up successfully
 
@@ -284,15 +286,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `KafkaOpsRequest` to be `Successful`. Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 NAME                        TYPE                STATUS       AGE
 kfops-hscale-up-combined    HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-hscale-up-combined
+kubectl describe kafkaopsrequests -n demo kfops-hscale-up-combined
+```
 Name:         kfops-hscale-up-combined
 Namespace:    demo
 Labels:       <none>
@@ -400,21 +403,23 @@ Events:
   Normal   ScaleUpCombined                                                2m16s  KubeDB Ops-manager Operator  Successfully Scaled Up Server Node
   Normal   Starting                                                       2m16s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     2m16s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-hscale-up-combined
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Kafka object, number of pods the petset have,
 
 ```bash
-$ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas'
+kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
 ```
+3
 
 Now let's connect to a kafka instance and run a kafka internal command to check the number of replicas,
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-dev-0.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -610,7 +615,6 @@ kafka-dev-2.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 2 rack: null) -> (
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 From all the above outputs we can see that the brokers of the combined kafka is `3`. That means we have successfully scaled up the replicas of the Kafka combined cluster.
 
@@ -645,9 +649,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-down-combined.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-hscale-down-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-down-combined.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-hscale-down-combined created
 
 #### Verify Combined cluster replicas scaled down successfully
 
@@ -656,15 +660,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `KafkaOpsRequest` to be `Successful`. Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 NAME                          TYPE                STATUS       AGE
 kfops-hscale-down-combined    HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-hscale-down-combined
+kubectl describe kafkaopsrequests -n demo kfops-hscale-down-combined
+```
 Name:         kfops-hscale-down-combined
 Namespace:    demo
 Labels:       <none>
@@ -799,22 +804,24 @@ Events:
   Normal   RestartNodes                                                   20s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                       20s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-dev
   Normal   Successful                                                     20s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-dev for KafkaOpsRequest: kfops-hscale-down-combined
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Kafka object, number of pods the petset have,
 
 ```bash
-$ kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas' 
+kubectl get kafka -n demo kafka-dev -o json | jq '.spec.replicas' 
+```
 2
 
-$ kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-dev -o json | jq '.spec.replicas'
 ```
+2
 
 Now let's connect to a kafka instance and run a kafka internal command to check the number of replicas,
 
 ```bash
-$ kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-dev-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-dev-0.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -945,7 +952,6 @@ kafka-dev-1.kafka-dev-pods.demo.svc.cluster.local:9092 (id: 1 rack: null) -> (
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 From all the above outputs we can see that the replicas of the combined cluster is `2`. That means we have successfully scaled down the replicas of the Kafka combined cluster.
 

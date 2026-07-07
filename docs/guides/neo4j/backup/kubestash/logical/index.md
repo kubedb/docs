@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/neo4j/backup/kubestash/logical/examples](/docs/guides/neo4j/backup/kubestash/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -80,34 +80,36 @@ spec:
 Create the above `Neo4j` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/sample-neo4j.yaml
-neo4j.kubedb.com/sample-neo4j created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/sample-neo4j.yaml
 ```
+neo4j.kubedb.com/sample-neo4j created
 
 KubeDB will deploy a `Neo4j` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get neo4j -n demo sample-neo4j
+kubectl get neo4j -n demo sample-neo4j
+```
 NAME           VERSION     STATUS   AGE
 sample-neo4j   2025.12.1   Ready    5m1s
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-neo4j
+kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-neo4j
+```
 NAME                 TYPE     DATA   AGE
 sample-neo4j-auth    Opaque   2      5m20s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-neo4j
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-neo4j
+```
 NAME             TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
 sample-neo4j     ClusterIP   10.43.214.193   <none>        6362/TCP,7687/TCP,7474/TCP                              5m55s
 sample-neo4j-0   ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   5m55s
 sample-neo4j-1   ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   5m55s
 sample-neo4j-2   ClusterIP   None            <none>        6362/TCP,7687/TCP,7474/TCP,7688/TCP,7000/TCP,6000/TCP   5m55s
-```
 
 Here, we have to use service `sample-neo4j` and secret `sample-neo4j-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/neo4j/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
@@ -116,15 +118,15 @@ Here, we have to use service `sample-neo4j` and secret `sample-neo4j-auth` to co
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME           TYPE               VERSION                AGE
 sample-neo4j   kubedb.com/Neo4j   2025.12.1-enterprise   86s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-neo4j -o yaml
+kubectl get appbindings -n demo sample-neo4j -o yaml
 ```
 
 ```yaml
@@ -182,31 +184,36 @@ Here,
 Now, we are going to exec into one of the database pods and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-neo4j"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-neo4j"
+```
 NAME             READY   STATUS    RESTARTS   AGE
 sample-neo4j-0   1/1     Running   0          118s
 sample-neo4j-1   1/1     Running   0          112s
 sample-neo4j-2   1/1     Running   0          106s
-```
 
 Retrieve the auth credentials so we can connect using `cypher-shell`,
 
 ```bash
-$ kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.username}' | base64 -d
+```
 neo4j
 
-$ kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.password}' | base64 -d
-UEke.988YxVdJbGq
+```bash
+kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+UEke.988YxVdJbGq
 
 Now, let's exec into the pod and create some nodes,
 
 ```bash
-$ export PASS=$(kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.password}' | base64 -d)
+export PASS=$(kubectl get secret -n demo sample-neo4j-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
 # create a few Person nodes and a relationship in the default "neo4j" database
-$ kubectl exec -it -n demo sample-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -it -n demo sample-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
     "CREATE (alice:Person {name: 'Alice', age: 30})
+```
      CREATE (bob:Person {name: 'Bob', age: 25})
      CREATE (alice)-[:KNOWS]->(bob);"
 0 rows
@@ -214,8 +221,10 @@ ready to start consuming query after 25 ms, results consumed after another 0 ms
 Added 2 nodes, Created 1 relationships, Set 4 properties, Added 2 labels
 
 # verify that the data has been inserted
-$ kubectl exec -it -n demo sample-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -it -n demo sample-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
     "MATCH (p:Person) RETURN p.name AS name, p.age AS age ORDER BY name;"
+```
 +---------------+
 | name    | age |
 +---------------+
@@ -224,7 +233,6 @@ $ kubectl exec -it -n demo sample-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
 +---------------+
 
 2 rows
-```
 
 Now, we are ready to backup the database.
 
@@ -237,13 +245,19 @@ We are going to store our backed up data into an `S3` bucket. We have to create 
 Let's create a secret called `s3-secret` with access credentials to our desired S3 bucket,
 
 ```bash
-$ echo -n '<your-access-key-id>' > AWS_ACCESS_KEY_ID
-$ echo -n '<your-secret-access-key>' > AWS_SECRET_ACCESS_KEY
-$ kubectl create secret generic -n demo s3-secret \
+echo -n '<your-access-key-id>' > AWS_ACCESS_KEY_ID
+```
+
+```bash
+echo -n '<your-secret-access-key>' > AWS_SECRET_ACCESS_KEY
+```
+
+```bash
+kubectl create secret generic -n demo s3-secret \
     --from-file=./AWS_ACCESS_KEY_ID \
     --from-file=./AWS_SECRET_ACCESS_KEY
-secret/s3-secret created
 ```
+secret/s3-secret created
 
 **Create BackupStorage:**
 
@@ -274,9 +288,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/s3-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/s3-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -307,9 +321,9 @@ spec:
 Let's create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -363,27 +377,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-neo4j-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-neo4j-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                  PHASE   PAUSED   AGE
 sample-neo4j-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME            INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-neo4j-repo                0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the S3 bucket, we will see the `Repository` YAML stored in the `demo/backup` directory.
 
@@ -394,21 +408,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                          SCHEDULE      TIMEZONE   SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-neo4j-backup-frequent-backup   */5 * * * *   <none>     False     0        <none>          2m18s
-
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                             INVOKER-TYPE          INVOKER-NAME          PHASE       DURATION   AGE
 sample-neo4j-backup-frequent-backup-1782108669   BackupConfiguration   sample-neo4j-backup   Succeeded   44s        119s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -417,18 +430,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `s3-neo4j-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo s3-neo4j-repo
+kubectl get repository -n demo s3-neo4j-repo
+```
 NAME            INTEGRITY   SNAPSHOT-COUNT   SIZE   PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 s3-neo4j-repo               1                0 B    Ready   2m46s                    2m57s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-neo4j-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-neo4j-repo
+```
 NAME                                                           REPOSITORY      SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1782108669   s3-neo4j-repo   frequent-backup   2026-06-22T06:11:20Z   Delete            Succeeded   3m2s
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubedb.com/db-version: <db-version>`
@@ -442,7 +455,7 @@ s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1782108669   s3-neo4j-repo   f
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1782108669 -oyaml
+kubectl get snapshots -n demo s3-neo4j-repo-sample-neo4j-backup-frequent-backup-1782108669 -oyaml
 ```
 
 ```yaml
@@ -563,17 +576,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/restored-neo4j.yaml
-neo4j.kubedb.com/restored-neo4j created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/restored-neo4j.yaml
 ```
+neo4j.kubedb.com/restored-neo4j created
 
 Let's wait for the database to be ready to use,
 
 ```bash
-$ kubectl get neo4j -n demo restored-neo4j
+kubectl get neo4j -n demo restored-neo4j
+```
 NAME            VERSION     STATUS   AGE
 restored-neo4j   2025.12.1   Ready    5m1s
-```
 
 The database is `Ready`. Now, we are going to restore the backed up data into this database.
 
@@ -630,18 +643,18 @@ Here,
 Let's create the RestoreSession CR object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-neo4j-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-neo4j-restore created
 
 Once you have created the `RestoreSession` object, KubeStash will create a restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restoresession -n demo
 NAME                   REPOSITORY      FAILURE-POLICY   PHASE       DURATION   AGE
 sample-neo4j-restore   s3-neo4j-repo                    Succeeded   18s        116s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -652,29 +665,32 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into **`Ready`** state by the following command,
 
 ```bash
-$ kubectl get neo4j -n demo restored-neo4j
+kubectl get neo4j -n demo restored-neo4j
+```
 NAME            VERSION     STATUS   AGE
 restored-neo4j   2025.12.1   Ready    6m31s
-```
 
 Now, find out the database `Pod` by the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-neo4j"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-neo4j"
+```
 NAME              READY   STATUS    RESTARTS   AGE
 restored-neo4j-0   1/1     Running   0          6m7s
 restored-neo4j-1   1/1     Running   0          6m1s
 restored-neo4j-2   1/1     Running   0          5m55s
-```
 
 Now, let's exec into one of the `Pod` and verify the restored data.
 
 ```bash
-$ export PASS=$(kubectl get secret -n demo restored-neo4j-auth -o jsonpath='{.data.password}' | base64 -d)
+export PASS=$(kubectl get secret -n demo restored-neo4j-auth -o jsonpath='{.data.password}' | base64 -d)
+```
 
 # verify that the Person nodes have been restored
-$ kubectl exec -it -n demo restored-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
+```bash
+kubectl exec -it -n demo restored-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" \
     "MATCH (p:Person) RETURN p.name AS name, p.age AS age ORDER BY name;"
+```
 +---------------+
 | name    | age |
 +---------------+
@@ -683,7 +699,6 @@ $ kubectl exec -it -n demo restored-neo4j-0 -- cypher-shell -u neo4j -p "$PASS" 
 +---------------+
 
 2 rows
-```
 
 So, from the above output, we can see the nodes we had created in the original database `sample-neo4j` have been restored in the `restored-neo4j` database.
 

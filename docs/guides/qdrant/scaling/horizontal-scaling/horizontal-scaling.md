@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops Manager to increase/decrease th
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/qdrant/scaling/horizontal-scaling](/docs/examples/qdrant/scaling/horizontal-scaling) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -71,9 +71,9 @@ spec:
 Let's create the `Qdrant` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/qdrant.yaml
-qdrant.kubedb.com/qdrant-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/qdrant.yaml
 ```
+qdrant.kubedb.com/qdrant-sample created
 
 **Wait for the cluster to be ready:**
 
@@ -82,35 +82,37 @@ qdrant.kubedb.com/qdrant-sample created
 Now, watch `Qdrant` is going to `Running` state and also watch `PetSet` and its pods:
 
 ```bash
-$ watch -n 3 kubectl get qdrant -n demo qdrant-sample
+watch -n 3 kubectl get qdrant -n demo qdrant-sample
+```
 Every 3.0s: kubectl get qdrant -n demo qdrant-sample
 
 NAME             VERSION   STATUS   AGE
 qdrant-sample    1.17.0    Ready    4m40m
 
-
-$ watch -n 3 kubectl get petset -n demo qdrant-sample
+```bash
+watch -n 3 kubectl get petset -n demo qdrant-sample
+```
 Every 3.0s: kubectl get petset -n demo qdrant-sample
 
 NAME              READY   AGE
 qdrant-sample     3/3     4m41m
 
-
-$ watch -n 3 kubectl get pods -n demo
+```bash
+watch -n 3 kubectl get pods -n demo
+```
 Every 3.0s: kubectl get pod -n demo
 
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-0     1/1     Running   0          4m25m
 qdrant-sample-1     1/1     Running   0          4m26m
 qdrant-sample-2     1/1     Running   0          4m26m
-```
 
 Let's check the current number of nodes:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
-3
+kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
 ```
+3
 
 We are ready to apply the `QdrantOpsRequest` CR to scale horizontally.
 
@@ -147,34 +149,36 @@ Here,
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-up.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-hscale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-up.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-hscale-up created
 
 **Verify Qdrant scale-up completed successfully:**
 
 ```bash
-$ watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-hscale-up
+watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-hscale-up
+```
 Every 3.0s: kubectl get QdrantOpsRequest -n demo qdops-hscale-up
 
 NAME               TYPE               STATUS       AGE
 qdops-hscale-up    HorizontalScaling  Successful   3m57s
-```
 
 Now let's verify that the number of nodes has increased:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
+kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
+```
 5
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-0     1/1     Running   0          10m
 qdrant-sample-1     1/1     Running   0          10m
 qdrant-sample-2     1/1     Running   0          10m
 qdrant-sample-3     1/1     Running   0          2m
 qdrant-sample-4     1/1     Running   0          1m
-```
 
 ### Scale Down
 
@@ -199,33 +203,35 @@ spec:
 Let's create the `QdrantOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-down.yaml
-qdrantopsrequest.ops.kubedb.com/qdops-hscale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/horizontal-scaling/hscale-down.yaml
 ```
+qdrantopsrequest.ops.kubedb.com/qdops-hscale-down created
 
 **Verify Qdrant scale-down completed successfully:**
 
 ```bash
-$ watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-hscale-down
+watch -n 3 kubectl get QdrantOpsRequest -n demo qdops-hscale-down
+```
 Every 3.0s: kubectl get QdrantOpsRequest -n demo qdops-hscale-down
 
 NAME                 TYPE               STATUS       AGE
 qdops-hscale-down    HorizontalScaling  Successful   2m15s
-```
 
 Now let's verify that the number of nodes has decreased:
 
 ```bash
-$ kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
+kubectl get qdrant -n demo qdrant-sample -o=jsonpath='{.spec.replicas}{"\n"}'
+```
 4
 
-$ kubectl get pods -n demo
+```bash
+kubectl get pods -n demo
+```
 NAME                READY   STATUS    RESTARTS   AGE
 qdrant-sample-0     1/1     Running   0          14m
 qdrant-sample-1     1/1     Running   0          14m
 qdrant-sample-2     1/1     Running   0          14m
 qdrant-sample-3     1/1     Running   0          6m
-```
 
 We have successfully performed horizontal scaling on the Qdrant cluster.
 

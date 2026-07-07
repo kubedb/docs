@@ -34,9 +34,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of MSSQLServer Availability Group Cluster
 
@@ -47,12 +47,12 @@ Here, we are going to deploy a  `MSSQLServer` cluster using a supported version 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  2d
 standard (default)     driver.standard.io      Delete          Immediate              true                   3m25s
 standard-static        driver.standard.io      Delete          Immediate              true                   3m19s
-```
 
 We can see from the output that `standard (default)` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. 
 
@@ -73,9 +73,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -91,9 +91,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 In this section, we are going to deploy a MSSQLServer Cluster with 1GB volume. Then, in the next section we will expand its volume to 2GB using `MSSQLServerOpsRequest` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
@@ -141,30 +141,32 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mssqlserver-ag-cluster.yaml
-mssqlserver.kubedb.com/mssqlserver-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mssqlserver-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Now, wait until `mssqlserver-ag-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mssqlserver -n demo mssqlserver-ag-cluster
+kubectl get mssqlserver -n demo mssqlserver-ag-cluster
+```
 NAME                     VERSION     STATUS   AGE
 mssqlserver-ag-cluster   2022-cu12   Ready    5m1s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-059f186a-01a4-441d-85f1-95aef34934be   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          82s
 pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          52s
 pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   1Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          35s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -208,9 +210,9 @@ During `Online` VolumeExpansion KubeDB expands volume without deleting the pods,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mops-volume-exp-ag-cluster.yaml
-mssqlserveropsrequest.ops.kubedb.com/mops-volume-exp-ag-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mops-volume-exp-ag-cluster.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/mops-volume-exp-ag-cluster created
 
 #### Verify MSSQLServer volume expanded successfully
 
@@ -219,25 +221,27 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `MSSQLServerOpsRequest` to be `Successful`.  Run the following command to watch `MSSQLServerOpsRequest` CR,
 
 ```bash
-$ kubectl get mssqlserveropsrequest -n demo
+kubectl get mssqlserveropsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 mops-volume-exp-ag-cluster   VolumeExpansion   Successful   8m30s
-```
 
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. 
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo mssqlserver-ag-cluster -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-059f186a-01a4-441d-85f1-95aef34934be   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-0   standard       <unset>                          29m
 pvc-87bea35f-4a55-4aa5-903a-e4da9f548241   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-1   standard       <unset>                          29m
 pvc-9d1c3c9c-f928-4fa2-a2e1-becf2ab9c564   2Gi        RWO            Delete           Bound    demo/data-mssqlserver-ag-cluster-2   standard       <unset>                          29m
-```
 
 The above output verifies that we have successfully expanded the volume of the MSSQLServer database.
 
@@ -252,19 +256,23 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 
 ```bash
-$ kubectl patch -n demo ms/mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo ms/mssqlserver-ag-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 mssqlserver.kubedb.com/mssqlserver-ag-cluster patched
 
-$ kubectl delete -n demo mssqlserver mssqlserver-ag-cluster
+```bash
+kubectl delete -n demo mssqlserver mssqlserver-ag-cluster
+```
 mssqlserver.kubedb.com "mssqlserver-ag-cluster" deleted
 
-$ kubectl delete -n demo mssqlserveropsrequest mops-volume-exp-ag-cluster
+```bash
+kubectl delete -n demo mssqlserveropsrequest mops-volume-exp-ag-cluster
+```
 mssqlserveropsrequest.ops.kubedb.com "mops-volume-exp-ag-cluster" deleted
 
 kubectl delete issuer -n demo mssqlserver-ca-issuer
 kubectl delete secret -n demo mssqlserver-ca
 kubectl delete ns demo
-```
 
 ## Next Steps
 

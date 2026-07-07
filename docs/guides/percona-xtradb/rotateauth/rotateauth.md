@@ -26,10 +26,10 @@ section_menu_id: guides
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
 ```bash
-$ kubectl get storageclasses
+kubectl get storageclasses
+```
 NAME                 PROVISIONER             RECLAIMPOLICY     VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete            WaitForFirstConsumer   false                  6h22m
-```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
@@ -64,17 +64,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1.yaml
-perconaxtradb.kubedb.com/sample-pxc created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/quickstart/overview/examples/sample-pxc-v1.yaml
 ```
+perconaxtradb.kubedb.com/sample-pxc created
 
 Now, wait until sample-pxc has status Ready. i.e,
 
-```shell
-$  kubectl get perconaxtradb -n demo
+```bash
+ kubectl get perconaxtradb -n demo
+```
 NAME         VERSION   STATUS   AGE
 sample-pxc   8.4.3    Ready    43m
-```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the secret.
 
@@ -92,13 +92,14 @@ Q!IsZ7.NXM.ZIxvT⏎
 Here, we will connect to PerconaXtraDB server from local-machine through port-forwarding.
 We will connect to `sample-pxc-0` pod from local-machine using port-forwarding and it must be running in separate terminal.
 ```bash
-$ kubectl port-forward -n demo sample-pxc-0 3306
+kubectl port-forward -n demo sample-pxc-0 3306
+```
 Forwarding from 127.0.0.1:3306 -> 3306
 Forwarding from [::1]:3306 -> 3306
-```
 Now, you can exec into the pod `sample-pxc` and connect to database using `username` and `password`
-```shell
-$ kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='Q!IsZ7.NXM.ZIxvT'
+```bash
+kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='Q!IsZ7.NXM.ZIxvT'
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -130,8 +131,6 @@ Query OK, 1 row affected (0.03 sec)
 
 mysql> EXIT
 Bye
-
-```
 If you can access the data table and run queries, it means the secrets are working correctly.
 ## Create RotateAuth PerconaXtraDBOpsRequest
 
@@ -157,19 +156,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on PerconaXtraDB.
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
-```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/rotateauth/yamls/PerconaXtraDB-rotate-auth-generated.yaml
+ ```bash
+ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/rotateauth/yamls/PerconaXtraDB-rotate-auth-generated.yaml
+ ```
  PerconaXtraDBopsrequest.ops.kubedb.com/pxops-rotate-auth-generated created
-```
 Let's wait for `PerconaXtraDBOpsrequest` to be `Successful`. Run the following command to watch `PerconaXtraDBOpsrequest` CRO
-```shell
- $ kubectl get PerconaXtraDBopsrequest -n demo
+ ```bash
+ kubectl get PerconaXtraDBopsrequest -n demo
+ ```
 NAME                          TYPE         STATUS       AGE
 pxops-rotate-auth-generated   RotateAuth   Successful   6m44s
-```
 If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe PerconaXtraDBopsrequest -n demo pxops-rotate-auth-generated
+```bash
+kubectl describe PerconaXtraDBopsrequest -n demo pxops-rotate-auth-generated
+```
 Name:         pxops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -253,37 +253,44 @@ Status:
   Phase:                   Successful
 Events:                    <none>
 
-```
-
 **Verify Auth is rotated**
-```shell
-$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
-"sample-pxc-auth"
-$ kubectl get secret -n demo sample-pxc-auth -o=jsonpath='{.data.username}' | base64 -d
-root⏎                         
-$  kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
-0o~37yrZq(363vDz⏎                                       
+```bash
+kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
 ```
+"sample-pxc-auth"
+
+```bash
+kubectl get secret -n demo sample-pxc-auth -o=jsonpath='{.data.username}' | base64 -d
+```
+root⏎                         
+
+```bash
+ kubectl get secrets -n demo sample-pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+0o~37yrZq(363vDz⏎                                       
 Also, there will be two more new keys in the secret that stores the previous credentials. The key is `authData.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n demo sample-pxc-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎   
-$ kubectl get secret -n demo sample-pxc-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-Q!IsZ7.NXM.ZIxvT⏎                                         
+```bash
+kubectl get secret -n demo sample-pxc-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎   
+
+```bash
+kubectl get secret -n demo sample-pxc-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+Q!IsZ7.NXM.ZIxvT⏎                                         
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 > Note: The `username` must be fixed as `root`. 
-```shell
-$  kubectl create secret generic quick-pcx-user-auth -n demo \
+```bash
+ kubectl create secret generic quick-pcx-user-auth -n demo \
                                            --type=kubernetes.io/basic-auth \
                                            --from-literal=username=root \
                                            --from-literal=password=PerconaXtraDB2
-secret/quick-pcx-user-auth created
 ```
+secret/quick-pcx-user-auth created
 Now create a `PerconaXtraDBOpsRequest` with `RotateAuth` type. Below is the YAML of the `PerconaXtraDBOpsRequest` that we are going to create,
 
 ```shell
@@ -311,22 +318,22 @@ Here,
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/rotateauth/yamls/rotate-auth-user.yaml
-PerconaXtraDBopsrequest.ops.kubedb.com/pxops-rotate-auth-user created
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/rotateauth/yamls/rotate-auth-user.yaml
 ```
+PerconaXtraDBopsrequest.ops.kubedb.com/pxops-rotate-auth-user created
 Let’s wait for `PerconaXtraDBOpsRequest` to be Successful. Run the following command to watch `PerconaXtraDBOpsRequest` CRO:
 
-```shell
-$ kubectl get PerconaXtraDBopsrequest -n demo
+```bash
+kubectl get PerconaXtraDBopsrequest -n demo
+```
 NAME                          TYPE         STATUS       AGE
 pxops-rotate-auth-generated   RotateAuth   Successful    55m
 pxops-rotate-auth-user        RotateAuth   Successful    3m44s
-
-```
 We can see from the above output that the `PerconaXtraDBOpsRequest` has succeeded. If we describe the `PerconaXtraDBOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe PerconaXtraDBopsrequest -n demo pxops-rotate-auth-user
+```bash
+kubectl describe PerconaXtraDBopsrequest -n demo pxops-rotate-auth-user
+```
 Name:         pxops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -498,24 +505,31 @@ Events:
   Normal   Starting                                               36m   KubeDB Ops-manager Operator  Resuming PerconaXtraDB database: demo/sample-pxc
   Normal   Successful                                             36m   KubeDB Ops-manager Operator  Successfully resumed PerconaXtraDB database: demo/sample-pxc
   Normal   Successful                                             36m   KubeDB Ops-manager Operator  Controller has successfully rotate PerconaXtraDB auth secret
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
+```bash
+kubectl get perconaxtradb -n demo sample-pxc -ojson | jq .spec.authSecret.name
+```
 "quick-pcx-user-auth "
-$ kubectl get secrets -n demo quick-pcx-user-auth -o jsonpath='{.data.\username}' | base64 -d
+
+```bash
+kubectl get secrets -n demo quick-pcx-user-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 root⏎                                                                                     
-$ kubectl get secrets -n demo quick-pcx-user-auth -o jsonpath='{.data.\password}' | base64 -d
+
+```bash
+kubectl get secrets -n demo quick-pcx-user-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 PerconaXtraDB2⏎                                                                                                               
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$ kubectl get secret -n demo quick-pcx-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-root⏎                                                                                                                  
-$ kubectl get secret -n demo quick-pcx-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-0o~37yrZq(363vDz⏎                     
+```bash
+kubectl get secret -n demo quick-pcx-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+root⏎                                                                                                                  
+
+```bash
+kubectl get secret -n demo quick-pcx-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+0o~37yrZq(363vDz⏎                     
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -524,11 +538,17 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete PerconaXtraDBopsrequest pxops-rotate-auth-generated pxops-rotate-auth-user -n demo
-PerconaXtraDBopsrequest.ops.kubedb.com "pxops-rotate-auth-generated" "pxops-rotate-auth-user" deleted
-$ kubectl delete secret -n demo sample-pxc-auth
-secret "sample-pxc-auth" deleted
-$ kubectl delete secret -n demo   quick-pcx-user-auth 
-secret "quick-pcx-user-auth " deleted
+```bash
+kubectl delete PerconaXtraDBopsrequest pxops-rotate-auth-generated pxops-rotate-auth-user -n demo
 ```
+PerconaXtraDBopsrequest.ops.kubedb.com "pxops-rotate-auth-generated" "pxops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n demo sample-pxc-auth
+```
+secret "sample-pxc-auth" deleted
+
+```bash
+kubectl delete secret -n demo   quick-pcx-user-auth 
+```
+secret "quick-pcx-user-auth " deleted

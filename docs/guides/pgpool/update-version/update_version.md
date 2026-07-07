@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -65,17 +65,17 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/update-version/pp-update.yaml
-pgpool.kubedb.com/pp-update created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/update-version/pp-update.yaml
 ```
+pgpool.kubedb.com/pp-update created
 
 Now, wait until `pp-update` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pp -n demo
+kubectl get pp -n demo
+```
  NAME        TYPE                  VERSION   STATUS   AGE
  pp-update   kubedb.com/v1alpha2   4.4.5     Ready    26s
-```
 
 We are now ready to apply the `PgpoolOpsRequest` CR to update this Pgpool.
 
@@ -111,9 +111,9 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/update-version/ppops-update.yaml
-pgpoolopsrequest.ops.kubedb.com/pgpool-version-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/update-version/ppops-update.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/pgpool-version-update created
 
 #### Verify Pgpool version updated successfully :
 
@@ -122,16 +122,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `PgpoolOpsRequest` to be `Successful`.  Run the following command to watch `PgpoolOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgpoolopsrequest -n demo
+watch kubectl get pgpoolopsrequest -n demo
+```
 Every 2.0s: kubectl get pgpoolopsrequest -n demo
 NAME                      TYPE                STATUS       AGE
 pgpool-version-update     UpdateVersion       Successful   93s
-```
 
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed to update the Pgpool.
 
 ```bash
-$ kubectl describe pgpoolopsrequest -n demo pgpool-version-update
+kubectl describe pgpoolopsrequest -n demo pgpool-version-update
+```
 Name:         pgpool-version-update
 Namespace:    demo
 Labels:       <none>
@@ -219,20 +220,23 @@ Events:
   Normal   RestartPods                                                    2m1s   KubeDB Ops-manager Operator  Successfully Restarted Pgpool pods
   Normal   Starting                                                       2m1s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/pp-update
   Normal   Successful                                                     2m1s   KubeDB Ops-manager Operator  Successfully resumed Pgpool database: demo/pp-update for PgpoolOpsRequest: pgpool-version-update
-```
 
 Now, we are going to verify whether the `Pgpool` and the related `PetSets` their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get pp -n demo pp-update -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
+kubectl get pp -n demo pp-update -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
+```
 4.5.0
 
-$ kubectl get petset -n demo pp-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+```bash
+kubectl get petset -n demo pp-update -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+```
 ghcr.io/appscode-images/pgpool2:4.5.0
 
-$ kubectl get pods -n demo pp-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-ghcr.io/appscode-images/pgpool2:4.5.0@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
+```bash
+kubectl get pods -n demo pp-update-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
 ```
+ghcr.io/appscode-images/pgpool2:4.5.0@sha256:2697fcad9e11bdc704f6ae0fba85c4451c6b0243140aaaa33e719c3af548bda1
 
 You can see from above, our `Pgpool` has been updated with the new version. So, the update process is successfully completed.
 

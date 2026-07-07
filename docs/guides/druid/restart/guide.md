@@ -24,10 +24,10 @@ KubeDB supports restarting the Druid database via a DruidOpsRequest. Restarting 
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/druid](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/druid) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -42,19 +42,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -80,9 +86,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 Now, lets go ahead and create a druid database.
 
@@ -107,9 +113,9 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/update-version/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 ## Apply Restart opsRequest
 
@@ -134,18 +140,21 @@ spec:
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/restart.yaml
-druidopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/restart/restart.yaml
 ```
+druidopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the controller pods, then broker of the referenced druid.
 
-```shell
-$ kubectl get drops -n demo
+```bash
+kubectl get drops -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   2m11s
 
-$ kubectl get drops -n demo restart -oyaml
+```bash
+kubectl get drops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: DruidOpsRequest
 metadata:
@@ -261,7 +270,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Cleaning up
 

@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for `Hazelcast`. This tutorial will
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/Hazelcast](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Hazelcast) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -85,9 +85,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hz-issuer.yaml
-issuer.cert-manager.io/self-signed-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hz-issuer.yaml
 ```
+issuer.cert-manager.io/self-signed-issuer created
 
 ## TLS/SSL encryption in Hazelcast
 
@@ -139,22 +139,23 @@ spec:
 ### Deploy Hazelcast with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-sample created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/tls/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-sample created
 
 Now, wait until `hazelcast-sample` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo
+kubectl get hz -n demo
+```
 NAME               TYPE                  VERSION   STATUS   AGE
 hazelcast-sample   kubedb.com/v1alpha2   5.5.2     Ready    165m
-```
 
 ### Verify TLS/SSL in Hazelcast 
 
 ```bash
-$ kubectl describe secret hazelcast-sample-client-cert -n demo
+kubectl describe secret hazelcast-sample-client-cert -n demo
+```
 Name:         hazelcast-sample-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -182,7 +183,6 @@ keystore.p12:    3615 bytes
 tls.crt:         1627 bytes
 tls.key:         1675 bytes
 truststore.p12:  1114 bytes
-```
 
 We can see from the above output that, keystore location is `/var/Hazelcast/etc` which means that TLS is enabled.
 

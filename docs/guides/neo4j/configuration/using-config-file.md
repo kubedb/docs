@@ -21,9 +21,9 @@ KubeDB supports providing custom configuration for Neo4j. This tutorial will sho
 > Prerequisites: A running Kubernetes cluster with KubeDB installed. See the [quickstart guide](/docs/guides/neo4j/quickstart/quickstart.md) if you need to set up your environment.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Overview
 
@@ -65,17 +65,17 @@ metadata:
 ```
 
 ```bash
-$ kubectl apply -f neo4j-configuration-secret.yaml
-secret/neo4j-configuration created
+kubectl apply -f neo4j-configuration-secret.yaml
 ```
+secret/neo4j-configuration created
 
 Verify the Secret was created:
 
 ```bash
-$ kubectl get secret -n demo neo4j-configuration
+kubectl get secret -n demo neo4j-configuration
+```
 NAME                 TYPE     DATA   AGE
 neo4j-configuration  Opaque   3      10s
-```
 
 Now, create the Neo4j CRD specifying `spec.configuration.secretName`:
 
@@ -102,39 +102,39 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/configuration/neo4j-configuration.yaml
-neo4j.kubedb.com/custom-neo4j created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/configuration/neo4j-configuration.yaml
 ```
+neo4j.kubedb.com/custom-neo4j created
 
 Now, wait for the Neo4j cluster to be ready:
 
 ```bash
-$ kubectl get neo4j -n demo custom-neo4j -w
+kubectl get neo4j -n demo custom-neo4j -w
+```
 NAME           VERSION     STATUS   AGE
 custom-neo4j   2025.12.1   Ready    3m
-```
 
 ## Verify the Applied Configuration
 
 To confirm the settings are active, connect to Neo4j via `cypher-shell` and run a `SHOW SETTINGS` query. First, get the default auth credentials:
 
 ```bash
-$ kubectl get secret -n demo custom-neo4j-auth \
+kubectl get secret -n demo custom-neo4j-auth \
     -o jsonpath='{.data.password}' | base64 -d
-<your-password>
 ```
+<your-password>
 
 Then exec into a Neo4j pod and run `cypher-shell`:
 
 ```bash
-$ kubectl exec -it -n demo custom-neo4j-0 -- \
+kubectl exec -it -n demo custom-neo4j-0 -- \
     cypher-shell -u neo4j -p <your-password> \
     "SHOW SETTINGS
+```
      YIELD name, value
      WHERE name STARTS WITH 'dbms.logs.query'
      RETURN name, value
      ORDER BY name;"
-```
 
 Expected output:
 
@@ -152,15 +152,15 @@ Expected output:
 You can also query other setting groups. For example, to check the Neo4j data directory paths:
 
 ```bash
-$ kubectl exec -it -n demo custom-neo4j-0 -- \
+kubectl exec -it -n demo custom-neo4j-0 -- \
     cypher-shell -u neo4j -p <your-password> \
     "SHOW SETTINGS
+```
      YIELD name, value
      WHERE name STARTS WITH 'server.jvm.additional'
      RETURN name, value
      ORDER BY name
      LIMIT 3;"
-```
 
 Expected output:
 

@@ -29,9 +29,9 @@ This guide will show you how to use `KubeDB` to auto-scale the compute resources
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > A DocumentDB exposes the MongoDB wire protocol (port `10260`, TLS) backed by an internal PostgreSQL engine. Every pod runs two containers — `documentdb` (the data plane that the autoscaler tunes) and `documentdb-coordinator`. The `DocumentDBAutoscaler` `spec.compute.documentdb` block targets the `documentdb` container.
 
@@ -83,24 +83,24 @@ spec:
 Let's create the `DocumentDB` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/documentdb/autoscaler/compute/autoscaling-compute-object.yaml
-documentdb.kubedb.com/dcdb created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/documentdb/autoscaler/compute/autoscaling-compute-object.yaml
 ```
+documentdb.kubedb.com/dcdb created
 
 Now, wait until `dcdb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get docdb -n demo
+kubectl get docdb -n demo
+```
 NAME   NAMESPACE   VERSION        STATUS   AGE
 dcdb   demo        pg17-0.109.0   Ready    113s
-```
 
 Let's check the `documentdb` container's resources of the pod,
 
 ```bash
-$ kubectl get pod -n demo dcdb-0 -o jsonpath='{range .spec.containers[?(@.name=="documentdb")]}{.resources}{"\n"}{end}'
-{"limits":{"cpu":"500m","memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
+kubectl get pod -n demo dcdb-0 -o jsonpath='{range .spec.containers[?(@.name=="documentdb")]}{.resources}{"\n"}{end}'
 ```
+{"limits":{"cpu":"500m","memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
 
 You can see from the above output that the resources are the same as the ones we assigned while deploying the DocumentDB.
 
@@ -157,20 +157,23 @@ Here,
 Let's create the `DocumentDBAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/documentdb/autoscaler/compute/autoscaling-compute.yaml
-documentdbautoscaler.autoscaling.kubedb.com/dcdb-compute-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/documentdb/autoscaler/compute/autoscaling-compute.yaml
 ```
+documentdbautoscaler.autoscaling.kubedb.com/dcdb-compute-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `documentdbautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get documentdbautoscaler -n demo
+kubectl get documentdbautoscaler -n demo
+```
 NAME                      AGE
 dcdb-compute-autoscaler   11s
 
-$ kubectl describe documentdbautoscaler dcdb-compute-autoscaler -n demo
+```bash
+kubectl describe documentdbautoscaler dcdb-compute-autoscaler -n demo
+```
 Name:         dcdb-compute-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -270,7 +273,6 @@ Status:
           Memory:  3Gi
     Vpa Name:      dcdb
 Events:            <none>
-```
 
 So, the `documentdbautoscaler` resource is created successfully.
 
@@ -281,23 +283,24 @@ The Autoscaler operator continuously watches the recommendation and creates a `D
 Let's watch the `documentdbopsrequest` in the demo namespace to see if any `documentdbopsrequest` object is created.
 
 ```bash
-$ kubectl get documentdbopsrequest -n demo
+kubectl get documentdbopsrequest -n demo
+```
 NAME                TYPE              STATUS        AGE
 dcops-dcdb-y87ecq   VerticalScaling   Progressing   13s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get documentdbopsrequest -n demo
+kubectl get documentdbopsrequest -n demo
+```
 NAME                TYPE              STATUS       AGE
 dcops-dcdb-y87ecq   VerticalScaling   Successful   2m55s
-```
 
 We can see from the above output that the `DocumentDBOpsRequest` has succeeded. If we describe the `DocumentDBOpsRequest` (or print its YAML) we get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl get documentdbopsrequest -n demo dcops-dcdb-y87ecq -o yaml
+kubectl get documentdbopsrequest -n demo dcops-dcdb-y87ecq -o yaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: DocumentDBOpsRequest
 metadata:
@@ -357,32 +360,36 @@ status:
     type: UnsetRaftKeyOpsRequestProgressing
   observedGeneration: 1
   phase: Successful
-```
 
 Notice that the ops request body carries exactly the floored target (`600m`/`1536Mi`), and the rollout walks the cluster pod by pod (`SetRaftKeyOpsRequestProgressing` → `UpdatePetSets` → per-pod readiness checks → `RestartReadReplicas`) so the DocumentDB cluster stays available throughout.
 
 Now, let's verify from the Pod and the DocumentDB object that the resources of the cluster database have been updated to the desired state.
 
 ```bash
-$ kubectl get pod -n demo dcdb-0 -o jsonpath='{range .spec.containers[?(@.name=="documentdb")]}{.resources}{"\n"}{end}'
+kubectl get pod -n demo dcdb-0 -o jsonpath='{range .spec.containers[?(@.name=="documentdb")]}{.resources}{"\n"}{end}'
+```
 {"limits":{"cpu":"600m","memory":"1536Mi"},"requests":{"cpu":"600m","memory":"1536Mi"}}
 
-$ kubectl get docdb -n demo dcdb -o json | jq -c '.spec.podTemplate.spec.containers[] | {name:.name, resources:.resources}'
+```bash
+kubectl get docdb -n demo dcdb -o json | jq -c '.spec.podTemplate.spec.containers[] | {name:.name, resources:.resources}'
+```
 {"name":"documentdb","resources":{"limits":{"cpu":"600m","memory":"1536Mi"},"requests":{"cpu":"600m","memory":"1536Mi"}}}
 {"name":"documentdb-coordinator","resources":{"limits":{"memory":"256Mi"},"requests":{"cpu":"200m","memory":"256Mi"}}}
-```
 
 The above output verifies that we have successfully autoscaled the compute resources of the DocumentDB cluster database from `500m`/`1Gi` to `600m`/`1.5Gi`.
 
 Finally, let's confirm the database is healthy over the MongoDB wire protocol:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo dcdb-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo dcdb-0 -c documentdb -- mongosh \
+PASS=$(kubectl get secret -n demo dcdb-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo dcdb-0 -c documentdb -- mongosh \
     "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 ## Cleaning Up
 

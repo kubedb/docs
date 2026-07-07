@@ -32,13 +32,13 @@ To uninstall KubeDB, run the following command:
 In Helm 3, release names are [scoped to a namespace](https://helm.sh/docs/v3/faq/changes_since_helm2/). So, provide the namespace you used to install the operator when installing.
 
 ```bash
-$ helm uninstall kubedb --namespace kubedb
+helm uninstall kubedb --namespace kubedb
 ```
 
 Helm does not delete CRD objects. You can delete the ones KubeDB created with the following commands:
 
 ```bash
-$ kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
+kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
 ```
 
 </div>
@@ -49,7 +49,7 @@ $ kubectl get crd -o name | grep kubedb.com | xargs kubectl delete
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and uninstall using `kubectl`.
 
 ```bash
-$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb | kubectl delete -f -
 ```
 

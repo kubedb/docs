@@ -31,9 +31,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the K
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -83,43 +83,47 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-topology.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/kafka-topology.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w
+kubectl get kf -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   0s
 kafka-prod    kubedb.com/v1   3.9.0     Provisioning   24s
 .
 .
 kafka-prod    kubedb.com/v1   3.9.0     Ready          92s
-```
 
 Let's check the number of replicas has from kafka object, number of pods the petset have,
 
 **Broker Replicas**
 
 ```bash
-$ kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas'
+kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas'
+```
 2
 
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
 ```
+2
 
 **Controller Replicas**
 
 ```bash
-$ kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.controller.replicas'
+kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.controller.replicas'
+```
 2
 
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.replicas'
 ```
+2
 
 We can see from commands that the cluster has 2 replicas for both broker and controller.
 
@@ -130,7 +134,8 @@ Now let's exec to a broker instance and run a kafka internal command to check th
 **Broker**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-prod-broker-0.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -261,14 +266,13 @@ kafka-prod-broker-1.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 1 rack: nul
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 **Controller**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
-CurrentObservers:       [0,1]
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
 ```
+CurrentObservers:       [0,1]
 
 We can see from the above output that the kafka has 2 nodes for broker and 2 nodes for controller.
 
@@ -308,9 +312,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-up-topology.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-hscale-up-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-up-topology.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-hscale-up-topology created
 
 > **Note:** If you want to scale down only broker or controller, you can specify the desired replicas for only broker or controller in the `KafkaOpsRequest` CR. You can specify one at a time. If you want to scale broker only, no node will need restart to apply the changes. But if you want to scale controller, all nodes will need restart to apply the changes.
 
@@ -321,15 +325,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `KafkaOpsRequest` to be `Successful`. Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 NAME                        TYPE                STATUS       AGE
 kfops-hscale-up-topology    HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-hscale-up-topology 
+kubectl describe kafkaopsrequests -n demo kfops-hscale-up-topology 
+```
 Name:         kfops-hscale-up-topology
 Namespace:    demo
 Labels:       <none>
@@ -491,26 +496,28 @@ Events:
   Normal   ScaleUpController                                                          115s   KubeDB Ops-manager Operator  Successfully Scaled Up Controller
   Normal   Starting                                                                   115s   KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 115s   KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-hscale-up-topology
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Kafka object, number of pods the petset have,
 
 **Broker Replicas**
 
 ```bash
-$ kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas'
+kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas'
+```
 3
 
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
 ```
+3
 
 Now let's connect to a kafka instance and run a kafka internal command to check the number of replicas of topology cluster for both broker and controller.,
 
 **Broker**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-prod-broker-0.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -706,14 +713,13 @@ kafka-prod-broker-2.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 2 rack: nul
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 **Controller**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
-CurrentObservers:       [0,1,2]
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
 ```
+CurrentObservers:       [0,1,2]
 
 From all the above outputs we can see that the both brokers and controller of the topology kafka is `3`. That means we have successfully scaled up the replicas of the Kafka topology cluster.
 
@@ -751,9 +757,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-down-topology.yaml
-kafkaopsrequest.ops.kubedb.com/kfops-hscale-down-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/horizontal-scaling/kafka-hscale-down-topology.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kfops-hscale-down-topology created
 
 #### Verify Topology cluster replicas scaled down successfully
 
@@ -762,15 +768,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `KafkaOpsRequest` to be `Successful`. Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ watch kubectl get kafkaopsrequest -n demo
+watch kubectl get kafkaopsrequest -n demo
+```
 NAME                          TYPE                STATUS       AGE
 kfops-hscale-down-topology    HorizontalScaling   Successful   2m32s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe kafkaopsrequests -n demo kfops-hscale-down-topology
+kubectl describe kafkaopsrequests -n demo kfops-hscale-down-topology
+```
 Name:         kfops-hscale-down-topology
 Namespace:    demo
 Labels:       <none>
@@ -960,36 +967,40 @@ Events:
   Normal   RestartNodes                                                               5m35s  KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                                   5m35s  KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 5m34s  KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kfops-hscale-down-topology
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Kafka object, number of pods the petset have,
 
 **Broker Replicas**
 
 ```bash
-$ kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas' 
+kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.broker.replicas' 
+```
 2
 
-$ kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-prod-broker -o json | jq '.spec.replicas'
 ```
+2
 
 **Controller Replicas**
 
 ```bash
-$ kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.controller.replicas'
+kubectl get kafka -n demo kafka-prod -o json | jq '.spec.topology.controller.replicas'
+```
 2
 
-$ kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo kafka-prod-controller -o json | jq '.spec.replicas'
 ```
+2
 
 Now let's connect to a kafka instance and run a kafka internal command to check the number of replicas for both broker and controller nodes,
 
 **Broker**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+kubectl exec -it -n demo kafka-prod-broker-0 -- kafka-broker-api-versions.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties
+```
 kafka-prod-broker-0.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 0 rack: null) -> (
 	Produce(0): 0 to 9 [usable: 9],
 	Fetch(1): 0 to 15 [usable: 15],
@@ -1120,14 +1131,13 @@ kafka-prod-broker-1.kafka-prod-pods.demo.svc.cluster.local:9092 (id: 1 rack: nul
 	AllocateProducerIds(67): UNSUPPORTED,
 	ConsumerGroupHeartbeat(68): UNSUPPORTED
 )
-```
 
 **Controller**
 
 ```bash
-$ kubectl exec -it -n demo kafka-prod-controller-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
-CurrentObservers:       [0,1]
+kubectl exec -it -n demo kafka-prod-controller-0 -- kafka-metadata-quorum.sh --bootstrap-server localhost:9092 --command-config config/clientauth.properties describe --status | grep CurrentObservers
 ```
+CurrentObservers:       [0,1]
 
 From all the above outputs we can see that the replicas of both broker and controller of the topology cluster is `2`. That means we have successfully scaled down the replicas of the Kafka topology cluster.
 

@@ -29,13 +29,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/druid/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Druid CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -58,10 +60,10 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [DruidVersion](/docs/guides/druid/concepts/druidversion.md). The installation process comes with a set of tested DruidVersion objects. Let's check available DruidVersions by,
 
 ```bash
-$ kubectl get druidversion
+kubectl get druidversion
+```
 NAME     VERSION   DB_IMAGE                               DEPRECATED   AGE
 36.0.0   36.0.0    ghcr.io/appscode-images/druid:36.0.0                4h47m
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this DruidVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated DruidVersion. You can also use the short from `drversion` to check available DruidVersions.
 
@@ -76,19 +78,25 @@ One of the external dependency of Druid is deep storage where the segments are s
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -114,9 +122,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 You can also use options like **Amazon S3**, **Google Cloud Storage**, **Azure Blob Storage** or **HDFS** and create a connection information `Secret` like this, and you are good to go.
 
@@ -194,26 +202,27 @@ Here,
 Let's create the Druid CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
-druid.kubedb.com/druid-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/quickstart/druid-quickstart.yaml
 ```
+druid.kubedb.com/druid-quickstart created
 
 The Druid's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the newly provisioned Druid cluster.
 
 ```bash
-$ kubectl get druid -n demo -w
+kubectl get druid -n demo -w
+```
 NAME               TYPE                  VERSION   STATUS         AGE
 druid-quickstart   kubedb.com/v1alpha2   36.0.0    Provisioning   17s
 druid-quickstart   kubedb.com/v1alpha2   36.0.0    Provisioning   28s
 .
 .
 druid-quickstart   kubedb.com/v1alpha2   36.0.0    Ready          82s
-```
 
 Describe the Druid object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe druid -n demo druid-quickstart
+kubectl describe druid -n demo druid-quickstart
+```
 Name:         druid-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -585,14 +594,14 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a Druid CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=druid-quickstart'
+kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=druid-quickstart'
+```
 NAME                                    READY   STATUS    RESTARTS   AGE
 pod/druid-quickstart-brokers-0          1/1     Running   0          2m4s
 pod/druid-quickstart-coordinators-0     1/1     Running   0          2m10s
@@ -619,8 +628,6 @@ petset.apps.k8s.appscode.com/druid-quickstart-historicals      2m8s
 petset.apps.k8s.appscode.com/druid-quickstart-middlemanagers   2m6s
 petset.apps.k8s.appscode.com/druid-quickstart-routers          2m1s
 
-```
-
 - `PetSet` - In topology mode, the operator may create 4 to 6 petSets (depending on the topology you provide as overlords and routers are optional) with name `{Druid-Name}-{Sufix}`.
 - `Services` -  For topology mode, a headless service with name `{Druid-Name}-{pods}`. Other than that, 2 to 4 more services (depending on the specified topology) with name `{Druid-Name}-{Sufix}` can be created.  
     - `{Druid-Name}-{brokers}` - The primary service which is used to connect the brokers with external clients.
@@ -639,17 +646,17 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `8888` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/druid-quickstart-routers 8888
+kubectl port-forward -n demo svc/druid-quickstart-routers 8888
+```
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
-```
 
 Now, the Druid cluster is accessible at `localhost:8888`. Let's check the [Service Health](https://druid.apache.org/docs/latest/api-reference/service-status-api/#get-service-health) of Routers of the Druid database.
 
 ```bash
-$ curl "http://localhost:8888/status/health"
-true
+curl "http://localhost:8888/status/health"
 ```
+true
 From the retrieved health information above, we can see that our Druid cluster’s status is `true`,  indicating that the service can receive API calls and is healthy. In the same way it is possible to check the health of other druid nodes by port-forwarding the appropriate services.
 
 ### Access the web console
@@ -663,16 +670,16 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-  LzJtVRX5E8MorFaf
+  kubectl get secret -n demo druid-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  LzJtVRX5E8MorFaf
 
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
@@ -687,15 +694,19 @@ You can use this web console for loading data, managing datasources and tasks, a
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo druid druid-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo druid druid-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 kafka.kubedb.com/druid-quickstart patched
 
-$ kubectl delete dr druid-quickstart  -n demo
+```bash
+kubectl delete dr druid-quickstart  -n demo
+```
 druid.kubedb.com "druid-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

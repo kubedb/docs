@@ -32,13 +32,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/initialization/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -69,17 +71,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Wait for the MySQL cluster to be `Ready`:
 
 ```bash
-$ kubectl get mysql -n demo mysql-server
+kubectl get mysql -n demo mysql-server
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8     Ready    5m
-```
 
 ## Option 1: Bootstrap using a raw configuration Secret
 
@@ -167,34 +169,37 @@ Here,
 Apply the Secret and the ProxySQL object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/proxysql-init-secret.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/proxysql-init-secret.yaml
+```
 secret/proxysql-init-raw created
 proxysql.kubedb.com/proxy-init-secret created
-```
 
 Wait until ProxySQL goes into the `Ready` state:
 
 ```bash
-$ kubectl get proxysql -n demo proxy-init-secret
+kubectl get proxysql -n demo proxy-init-secret
+```
 NAME                VERSION        STATUS   AGE
 proxy-init-secret   3.0.1-debian   Ready    2m
-```
 
 ### Verify
 
 Get the admin credentials and connect to the ProxySQL admin interface (port `6032`):
 
 ```bash
-$ kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.username}' | base64 -d
+```
 cluster
 
-$ kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.password}' | base64 -d
-S3cur3P@ssw0rd
+```bash
+kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+S3cur3P@ssw0rd
 
 ```bash
-$ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT username, active, default_hostgroup, default_schema FROM mysql_users;"
+```
 +-----------+--------+-------------------+------------------+
 | username  | active | default_hostgroup | default_schema   |
 +-----------+--------+-------------------+------------------+
@@ -202,8 +207,10 @@ $ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw
 | superman  |      1 |                 3 |                  |
 +-----------+--------+-------------------+------------------+
 
-$ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+```bash
+kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT rule_id, match_pattern, destination_hostgroup FROM mysql_query_rules;"
+```
 +---------+---------------+------------------------+
 | rule_id | match_pattern | destination_hostgroup |
 +---------+---------------+------------------------+
@@ -211,8 +218,10 @@ $ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw
 |     101 | ^SELECT       |                      3 |
 +---------+---------------+------------------------+
 
-$ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+```bash
+kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT variable_name, variable_value FROM global_variables WHERE variable_name IN ('mysql-max_connections','mysql-threads','mysql-default_query_timeout','admin-restapi_enabled','admin-restapi_port','admin-refresh_interval');"
+```
 +------------------------------+----------------+
 | variable_name                | variable_value |
 +------------------------------+----------------+
@@ -223,7 +232,6 @@ $ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw
 | admin-restapi_port           | 6090           |
 | admin-refresh_interval       | 3500           |
 +------------------------------+----------------+
-```
 
 The `mysql_users`, `mysql_query_rules` and the global variables all reflect exactly what was written in the `proxysql-init-raw` Secret.
 
@@ -288,31 +296,34 @@ See the [Declarative Configuration](/docs/guides/proxysql/concepts/declarative-c
 Apply the YAML:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/proxysql-init-inline.yaml
-proxysql.kubedb.com/proxy-init-inline created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/proxysql-init-inline.yaml
 ```
+proxysql.kubedb.com/proxy-init-inline created
 
 Wait until ProxySQL goes into the `Ready` state:
 
 ```bash
-$ kubectl get proxysql -n demo proxy-init-inline
+kubectl get proxysql -n demo proxy-init-inline
+```
 NAME                VERSION        STATUS   AGE
 proxy-init-inline   3.0.1-debian   Ready    2m
-```
 
 ### Verify
 
 ```bash
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
+kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
+```
 cluster
 
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
-S3cur3P@ssw0rd
+```bash
+kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
 ```
+S3cur3P@ssw0rd
 
 ```bash
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT username, active, default_hostgroup, default_schema FROM mysql_users;"
+```
 +-----------+--------+-------------------+------------------+
 | username  | active | default_hostgroup | default_schema   |
 +-----------+--------+-------------------+------------------+
@@ -320,8 +331,10 @@ $ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw
 | superman  |      1 |                 3 |                  |
 +-----------+--------+-------------------+------------------+
 
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+```bash
+kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT rule_id, match_pattern, destination_hostgroup FROM mysql_query_rules;"
+```
 +---------+----------------------------+------------------------+
 | rule_id | match_pattern              | destination_hostgroup |
 +---------+----------------------------+------------------------+
@@ -329,8 +342,10 @@ $ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw
 |       2 | ^SELECT                    |                      3 |
 +---------+----------------------------+------------------------+
 
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
+```bash
+kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
   -e "SELECT variable_name, variable_value FROM global_variables WHERE variable_name IN ('mysql-max_connections','mysql-threads','admin-restapi_enabled','admin-restapi_port');"
+```
 +------------------------+----------------+
 | variable_name          | variable_value |
 +------------------------+----------------+
@@ -339,7 +354,6 @@ $ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw
 | admin-restapi_enabled  | true           |
 | admin-restapi_port     | 6070           |
 +------------------------+----------------+
-```
 
 Since `wolverine` and `superman` also exist on the MySQL backend, ProxySQL was able to log in and fetch their passwords automatically - you can verify a client can actually connect through ProxySQL using those credentials without ever having put a password in the YAML.
 
@@ -348,17 +362,35 @@ Since `wolverine` and `superman` also exist on the MySQL backend, ProxySQL was a
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo proxysql/proxy-init-secret -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo proxysql/proxy-init-secret
+kubectl patch -n demo proxysql/proxy-init-secret -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl patch -n demo proxysql/proxy-init-inline -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo proxysql/proxy-init-inline
+```bash
+kubectl delete -n demo proxysql/proxy-init-secret
+```
 
-$ kubectl patch -n demo mysql/mysql-server -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo mysql/mysql-server
+```bash
+kubectl patch -n demo proxysql/proxy-init-inline -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete -n demo secret/proxysql-init-raw
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo proxysql/proxy-init-inline
+```
+
+```bash
+kubectl patch -n demo mysql/mysql-server -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
+
+```bash
+kubectl delete -n demo mysql/mysql-server
+```
+
+```bash
+kubectl delete -n demo secret/proxysql-init-raw
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

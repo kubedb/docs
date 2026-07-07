@@ -36,11 +36,11 @@ primary last) so the cluster stays available.
 ## Resources before
 
 ```bash
-$ kubectl get docdb -n demo documentdb-cls-sample \
+kubectl get docdb -n demo documentdb-cls-sample \
     -o jsonpath='{range .spec.podTemplate.spec.containers[*]}{.name}: requests={.resources.requests} limits={.resources.limits}{"\n"}{end}'
+```
 documentdb: requests={"cpu":"500m","memory":"2Gi"} limits={"memory":"2Gi"}
 documentdb-coordinator: requests={"cpu":"200m","memory":"256Mi"} limits={"memory":"256Mi"}
-```
 
 ## Create the VerticalScaling OpsRequest
 
@@ -74,20 +74,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f cluster-vertical-scaling.yaml
+kubectl apply -f cluster-vertical-scaling.yaml
+```
 documentdbopsrequest.ops.kubedb.com/documentdb-cls-vscale created
 
-$ kubectl get dcops -n demo documentdb-cls-vscale
+```bash
+kubectl get dcops -n demo documentdb-cls-vscale
+```
 NAME                    TYPE              STATUS       AGE
 documentdb-cls-vscale   VerticalScaling   Successful   3m33s
-```
 
 The status conditions show the PetSet being patched and each pod being evicted and re-checked
 for readiness before the next is touched:
 
 ```bash
-$ kubectl get dcops -n demo documentdb-cls-vscale \
+kubectl get dcops -n demo documentdb-cls-vscale \
     -o jsonpath='{range .status.conditions[*]}{.type}={.status} :: {.message}{"\n"}{end}'
+```
 Running=True :: Vertical Scaling is in progress
 UpdatePetSets=True :: Successfully updated petsets resources
 EvictPod=True :: evict pod; ConditionStatus:True
@@ -96,7 +99,6 @@ CheckReplicaFunc=True :: check replica func; ConditionStatus:True
 VerticalScale=True :: VerticalScaleSucceeded
 RestartReadReplicas=True :: Successfully Restarted Read Replicas
 Successful=True :: Successfully Vertically Scaled Database
-```
 
 ## Resources after
 
@@ -104,30 +106,33 @@ Both containers reflect the new sizing (note `2.5Gi` is normalized to its binary
 `2560Mi`, and the `documentdb` container now carries a CPU limit of `1`):
 
 ```bash
-$ kubectl get docdb -n demo documentdb-cls-sample \
+kubectl get docdb -n demo documentdb-cls-sample \
     -o jsonpath='{range .spec.podTemplate.spec.containers[*]}{.name}: requests={.resources.requests} limits={.resources.limits}{"\n"}{end}'
+```
 documentdb: requests={"cpu":"600m","memory":"2560Mi"} limits={"cpu":"1","memory":"2560Mi"}
 documentdb-coordinator: requests={"cpu":"100m","memory":"256Mi"} limits={"memory":"256Mi"}
-```
 
 The live pod spec matches — the change propagated all the way to the running containers:
 
 ```bash
-$ kubectl get pod -n demo documentdb-cls-sample-0 \
+kubectl get pod -n demo documentdb-cls-sample-0 \
     -o jsonpath='{range .spec.containers[*]}{.name}: req={.resources.requests} lim={.resources.limits}{"\n"}{end}'
+```
 documentdb: req={"cpu":"600m","memory":"2560Mi"} lim={"cpu":"1","memory":"2560Mi"}
 documentdb-coordinator: req={"cpu":"100m","memory":"256Mi"} lim={"memory":"256Mi"}
-```
 
 The cluster remains healthy and accepts MongoDB traffic after the rollout:
 
 ```bash
-$ PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
-$ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
+PASS=$(kubectl get secret -n demo documentdb-cls-sample-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
+```bash
+kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     mongosh "mongodb://default_user:${PASS}@localhost:10260/?tls=true&tlsAllowInvalidCertificates=true" \
     --quiet --eval 'db.runCommand({ ping: 1 })'
-{ ok: 1 }
 ```
+{ ok: 1 }
 
 ## Standalone
 

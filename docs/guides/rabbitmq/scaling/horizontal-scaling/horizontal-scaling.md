@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the R
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/rabbitmq](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -66,27 +66,29 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/rabbitmq-cluster.yaml
-rabbitmq.kubedb.com/rabbitmq created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/rabbitmq-cluster.yaml
 ```
+rabbitmq.kubedb.com/rabbitmq created
 
 Now, wait until `rabbitmq` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo
+kubectl get rm -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 rabbitmq        kubedb.com/v1alpha2   4.2.4     Ready    2m
-```
 
 Let's check the number of replicas this rabbitmq has from the RabbitMQ object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get rabbitmq -n demo rabbitmq -o json | jq '.spec.replicas'
+kubectl get rabbitmq -n demo rabbitmq -o json | jq '.spec.replicas'
+```
 1
 
-$ kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
-1
+```bash
+kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
 ```
+1
 
 We can see from both command that the rabbitmq has 3 replicas. 
 
@@ -123,9 +125,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/horizontal-scaling/rm-hscale-up-ops.yaml
-rabbitmqopsrequest.ops.kubedb.com/rabbitmq-horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/horizontal-scaling/rm-hscale-up-ops.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rabbitmq-horizontal-scale-up created
 
 #### Verify replicas scaled up successfully 
 
@@ -134,16 +136,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ watch kubectl get rabbitmqopsrequest -n demo
+watch kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 rabbitmq-horizontal-scale-up   HorizontalScaling   Successful   2m49s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to scale the rabbitmq.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rabbitmq-horizontal-scale-up
+kubectl describe rabbitmqopsrequest -n demo rabbitmq-horizontal-scale-up
+```
 Name:         rabbitmq-horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -225,17 +228,18 @@ Events:
   Normal   UpdatePetSets                              7m42s  KubeDB Ops-manager Operator  successfully reconciled the RabbitMQ with modified node
   Normal   Starting                                   7m42s  KubeDB Ops-manager Operator  Resuming RabbitMQ database: demo/rabbitmq
   Normal   Successful                                 7m42s  KubeDB Ops-manager Operator  Successfully resumed RabbitMQ database: demo/rabbitmq for RabbitMQOpsRequest: rabbitmq-horizontal-scale-up
-```
 
 Now, we are going to verify the number of replicas this rabbitmq has from the Pgpool object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get rm -n demo rabbitmq -o json | jq '.spec.replicas'
+kubectl get rm -n demo rabbitmq -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
 ```
+3
 From all the above outputs we can see that the replicas of the rabbitmq is `3`. That means we have successfully scaled up the replicas of the RabbitMQ.
 
 
@@ -270,9 +274,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/horizontal-scaling/rmops-hscale-down-ops.yaml
-rabbitmqopsrequest.ops.kubedb.com/rabbitmq-horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/scaling/horizontal-scaling/rmops-hscale-down-ops.yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rabbitmq-horizontal-scale-down created
 
 #### Verify replicas scaled down successfully
 
@@ -281,16 +285,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ watch kubectl get rabbitmqopsrequest -n demo
+watch kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 rabbitmq-horizontal-scale-down   HorizontalScaling   Successful   75s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to scale the rabbitmq.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rabbitmq-horizontal-scale-down
+kubectl describe rabbitmqopsrequest -n demo rabbitmq-horizontal-scale-down
+```
 Name:         rabbitmq-horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -377,17 +382,18 @@ Events:
   Normal   UpdateDatabase                                               48s   KubeDB Ops-manager Operator  Successfully updated RabbitMQ
   Normal   Starting                                                     48s   KubeDB Ops-manager Operator  Resuming Pgpool database: demo/rabbitmq
   Normal   Successful                                                   48s   KubeDB Ops-manager Operator  Successfully resumed RabbitMQ database: demo/rabbitmq for RabbitMQOpsRequest: rabbitmq-horizontal-scale-down
-```
 
 Now, we are going to verify the number of replicas this rabbitmq has from the RabbitMQ object, number of pods the petset have,
 
 ```bash
-$ kubectl get rm -n demo rabbitmq -o json | jq '.spec.replicas'
+kubectl get rm -n demo rabbitmq -o json | jq '.spec.replicas'
+```
 2
 
-$ kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo rabbitmq -o json | jq '.spec.replicas'
 ```
+2
 From all the above outputs we can see that the replicas of the rabbitmq is `2`. That means we have successfully scaled up the replicas of the RabbitMQ.
 
 ## Cleaning Up

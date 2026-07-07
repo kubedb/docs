@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the r
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -79,27 +79,29 @@ spec:
 Let's create the `PgBouncer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-horizontal.yaml
-pgbouncer.kubedb.com/pb-horizontal created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-horizontal.yaml
 ```
+pgbouncer.kubedb.com/pb-horizontal created
 
 Now, wait until `pb-horizontal ` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME            VERSION   STATUS   AGE
 pb-horizontal   1.18.0    Ready    2m19s
-```
 
 Let's check the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
 
 ```bash
-$ kubectl get pgbouncer -n demo pb-horizontal -o json | jq '.spec.replicas'
+kubectl get pgbouncer -n demo pb-horizontal -o json | jq '.spec.replicas'
+```
 1
 
-$ kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
-1
+```bash
+kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
 ```
+1
 
 We can see from both command that the pgbouncer has 1 replicas. 
 
@@ -136,9 +138,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-ops.yaml
-pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-ops.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-up created
 
 #### Verify replicas scaled up successfully 
 
@@ -147,16 +149,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                           TYPE                STATUS       AGE
 pgbouncer-horizontal-scale-up  HorizontalScaling   Successful   2m49s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to scale the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pgbouncer-horizontal-scale-up
+kubectl describe pgbounceropsrequest -n demo pgbouncer-horizontal-scale-up
+```
 Name:         pgbouncer-horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -238,17 +241,18 @@ Events:
   Normal   Starting                                                              95s    KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
   Normal   Successful                                                            95s    KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal
   Normal   Successful                                                            95s    KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-horizontal
-```
 
 Now, we are going to verify the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
 
 ```bash
-$ kubectl get pb -n demo pb-horizontal -o json | jq '.spec.replicas'
+kubectl get pb -n demo pb-horizontal -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
 ```
+3
 From all the above outputs we can see that the replicas of the pgbouncer is `3`. That means we have successfully scaled up the replicas of the PgBouncer.
 
 
@@ -283,9 +287,9 @@ Here,
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-down-ops.yaml
-pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/horizontal-scaling-down-ops.yaml
 ```
+pgbounceropsrequest.ops.kubedb.com/pgbouncer-horizontal-scale-down created
 
 #### Verify replicas scaled down successfully
 
@@ -294,16 +298,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `PgBouncerOpsRequest` to be `Successful`.  Run the following command to watch `PgBouncerOpsRequest` CR,
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                              TYPE                STATUS       AGE
 pgbouncer-horizontal-scale-down   HorizontalScaling   Successful   75s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to scale the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pgbouncer-horizontal-scale-down
+kubectl describe pgbounceropsrequest -n demo pgbouncer-horizontal-scale-down
+```
 Name:         pgbouncer-horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -373,17 +378,18 @@ Events:
   Normal   Starting                                                  2m10s  KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pb-horizontal
   Normal   Successful                                                2m10s  KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pb-horizontal
   Normal   Successful                                                2m10s  KubeDB Ops-manager Operator  Controller has Successfully scaled the PgBouncer database: demo/pb-horizontal
-```
 
 Now, we are going to verify the number of replicas this pgbouncer has from the PgBouncer object, number of pods the petset have,
 
 ```bash
-$ kubectl get pb -n demo pb-horizontal -o json | jq '.spec.replicas'
+kubectl get pb -n demo pb-horizontal -o json | jq '.spec.replicas'
+```
 2
 
-$ kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
-2
+```bash
+kubectl get petset -n demo pb-horizontal -o json | jq '.spec.replicas'
 ```
+2
 From all the above outputs we can see that the replicas of the pgbouncer is `2`. That means we have successfully scaled down the replicas of the PgBouncer.
 
 ## Cleaning Up

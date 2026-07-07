@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/pgbouncer](/docs/examples/pgbouncer) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -79,22 +79,23 @@ spec:
 Let's create the `PgBouncer` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/autoscaling/compute/pgbouncer-autoscale.yaml
-pgbouncer.kubedb.com/pgbouncer-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/autoscaling/compute/pgbouncer-autoscale.yaml
 ```
+pgbouncer.kubedb.com/pgbouncer-autoscale created
 
 Now, wait until `pgbouncer-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get pb -n demo
+kubectl get pb -n demo
+```
 NAME                  TYPE                  VERSION   STATUS   AGE
 pgbouncer-autoscale   kubedb.com/v1         1.18.0    Ready    22s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "300Mi"
@@ -104,11 +105,11 @@ $ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[]
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the PgBouncer resources,
 ```bash
-$ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "300Mi"
@@ -118,7 +119,6 @@ $ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTempl
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the pgbouncer.
 
@@ -172,20 +172,23 @@ Here,
 Let's create the `PgBouncerAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/autoscaling/compute/pgbouncer-autoscaler.yaml
-pgbouncerautoscaler.autoscaling.kubedb.com/pgbouncer-autoscaler-ops created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/autoscaling/compute/pgbouncer-autoscaler.yaml
 ```
+pgbouncerautoscaler.autoscaling.kubedb.com/pgbouncer-autoscaler-ops created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `pgbouncerautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get pgbouncerautoscaler -n demo
+kubectl get pgbouncerautoscaler -n demo
+```
 NAME                      AGE
 pgbouncer-autoscale-ops   6m55s
 
-$ kubectl describe pgbouncerautoscaler pgbouncer-autoscale-ops -n demo
+```bash
+kubectl describe pgbouncerautoscaler pgbouncer-autoscale-ops -n demo
+```
 Name:         pgbouncer-autoscale-ops
 Namespace:    demo
 Labels:       <none>
@@ -268,7 +271,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      pgbouncer-autoscale
 Events:            <none>
-```
 So, the `pgbouncerautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our pgbouncer. Our autoscaler operator continuously watches the recommendation generated and creates an `pgbounceropsrequest` based on the recommendations, if the pgbouncer pods are needed to scaled up or down.
@@ -276,25 +278,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `pgbounceropsrequest` in the demo namespace to see if any `pgbounceropsrequest` object is created. After some time you'll see that a `pgbounceropsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                               TYPE              STATUS        AGE
 pbops-pgbouncer-autoscale-zzell6   VerticalScaling   Progressing   1m48s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get pgbounceropsrequest -n demo
+watch kubectl get pgbounceropsrequest -n demo
+```
 Every 2.0s: kubectl get pgbounceropsrequest -n demo
 NAME                               TYPE              STATUS       AGE
 pbops-pgbouncer-autoscale-zzell6   VerticalScaling   Successful   3m40s
-```
 
 We can see from the above output that the `PgBouncerOpsRequest` has succeeded. If we describe the `PgBouncerOpsRequest` we will get an overview of the steps that were followed to scale the pgbouncer.
 
 ```bash
-$ kubectl describe pgbounceropsrequest -n demo pbops-pgbouncer-autoscale-zzell6
+kubectl describe pgbounceropsrequest -n demo pbops-pgbouncer-autoscale-zzell6
+```
 Name:         pbops-pgbouncer-autoscale-zzell6
 Namespace:    demo
 Labels:       app.kubernetes.io/component=connection-pooler
@@ -393,12 +396,12 @@ Events:
   Normal   RestartPods                                                              7m31s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                                 7m31s  KubeDB Ops-manager Operator  Resuming PgBouncer database: demo/pgbouncer-autoscale
   Normal   Successful                                                               7m30s  KubeDB Ops-manager Operator  Successfully resumed PgBouncer database: demo/pgbouncer-autoscale for PgBouncerOpsRequest: pbops-pgbouncer-autoscale-zzell6
-```
 
 Now, we are going to verify from the Pod, and the PgBouncer yaml whether the resources of the pgbouncer has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "400Mi"
@@ -409,7 +412,9 @@ $ kubectl get pod -n demo pgbouncer-autoscale-0 -o json | jq '.spec.containers[]
   }
 }
 
-$ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```bash
+kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "400Mi"
@@ -419,7 +424,6 @@ $ kubectl get pgbouncer -n demo pgbouncer-autoscale -o json | jq '.spec.podTempl
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto-scaled the resources of the PgBouncer.

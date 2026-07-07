@@ -263,13 +263,13 @@ spec:
 You can also restore a specific snapshot. At first, list the available snapshot as bellow,
 
 ```bash
-$ kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-redis-repo
+kubectl get snapshots.storage.kubestash.com -n demo -l=kubestash.com/repo-name=gcs-redis-repo
+```
 NAME                                                                    REPOSITORY          SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-redis-repo-sample-redis-backup-frequent-backup-1725257849           gcs-redis-repo      frequent-backup   2024-09-02T06:18:01Z   Delete            Succeeded   15m
 gcs-redis-repo-sample-redis-backup-frequent-backup-1725258000           gcs-redis-repo      frequent-backup   2024-09-02T06:20:00Z   Delete            Succeeded   13m
 gcs-redis-repo-sample-redis-backup-frequent-backup-1725258300           gcs-redis-repo      frequent-backup   2024-09-02T06:25:00Z   Delete            Succeeded   8m34s
 gcs-redis-repo-sample-redis-backup-frequent-backup-1725258600           gcs-redis-repo      frequent-backup   2024-09-02T06:30:00Z   Delete            Succeeded   3m34s
-```
 
 The below example shows how you can pass a specific snapshot name in `.spec.dataSource` section.
 

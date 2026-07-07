@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 ### Prepare MySQL backend
 
 We need a mysql backend for the proxysql server. So we are creating one with the below yaml.
@@ -63,17 +63,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's wait for the MySQL to be Ready. 
 
 ```bash
-$ kubectl get mysql -n demo 
+kubectl get mysql -n demo 
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8    Ready    3m51s
-```
 
 ## Autoscaling of ProxySQL Cluster
 
@@ -112,22 +112,23 @@ spec:
 Let's create the `ProxySQL` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxy-server created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxy-server created
 
 Now, wait until `proxy-server` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get proxysql -n demo
+kubectl get proxysql -n demo
+```
 NAME             VERSION       STATUS   AGE
 proxy-server   3.0.1-debian    Ready    4m
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -138,11 +139,11 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
     "memory": "300Mi"
   }
 }
-```
 
 Let's check the ProxySQL resources,
 ```bash
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
+kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
+```
 {
   "limits": {
     "cpu": "200m",
@@ -153,7 +154,6 @@ $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec
     "memory": "300Mi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the proxysql.
 
@@ -214,20 +214,23 @@ If a step doesn't finish within the specified timeout, the ops request will resu
 Let's create the `ProxySQLAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/proxy-as-compute.yaml
-proxysqlautoscaler.autoscaling.kubedb.com/proxy-as-compute created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/proxy-as-compute.yaml
 ```
+proxysqlautoscaler.autoscaling.kubedb.com/proxy-as-compute created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `proxysqlautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get proxysqlautoscaler -n demo
+kubectl get proxysqlautoscaler -n demo
+```
 NAME               AGE
 proxy-as-compute   5m56s
 
-$ kubectl describe proxysqlautoscaler proxy-as-compute -n demo
+```bash
+kubectl describe proxysqlautoscaler proxy-as-compute -n demo
+```
 Name:         proxy-as-compute
 Namespace:    demo
 Labels:       <none>
@@ -380,8 +383,6 @@ Status:
           Memory:  1Gi
     Vpa Name:      proxy-server
 Events:            <none>
-
-```
 So, the `proxysqlautoscaler` resource is created successfully.
 
 We can verify from the above output that `status.vpas` contains the `RecommendationProvided` condition to true. And in the same time, `status.vpas.recommendation.containerRecommendations` contain the actual generated recommendation.
@@ -391,23 +392,24 @@ Our autoscaler operator continuously watches the recommendation generated and cr
 Let's watch the `proxysqlopsrequest` in the demo namespace to see if any `proxysqlopsrequest` object is created. After some time you'll see that a `proxysqlopsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo
+kubectl get proxysqlopsrequest -n demo
+```
 NAME                          TYPE              STATUS       AGE
 prxops-proxy-server-6xc1kc   VerticalScaling   Progressing  7s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get proxysqlopsrequest -n demo
+kubectl get proxysqlopsrequest -n demo
+```
 NAME                              TYPE              STATUS       AGE
 prxops-vpa-proxy-server-z43wc8   VerticalScaling   Successful   3m32s
-```
 
 We can see from the above output that the `ProxySQLOpsRequest` has succeeded. If we describe the `ProxySQLOpsRequest` we will get an overview of the steps that were followed to scale the proxysql server.
 
 ```bash
-$ kubectl describe proxysqlopsrequest -n demo prxops-vpa-proxy-server-z43wc8
+kubectl describe proxysqlopsrequest -n demo prxops-vpa-proxy-server-z43wc8
+```
 Name:         prxops-proxy-server-6xc1kc
 Namespace:    demo
 Labels:       <none>
@@ -525,12 +527,12 @@ Events:
   Normal  Starting    5m8s   KubeDB Enterprise Operator  Resuming ProxySQL database: demo/proxy-server
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Successfully resumed ProxySQL database: demo/proxy-server
   Normal  Successful  5m8s   KubeDB Enterprise Operator  Controller has Successfully scaled the ProxySQL database: demo/proxy-server
-```
 
 Now, we are going to verify from the Pod, and the ProxySQL yaml whether the resources of the replicaset database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -542,7 +544,9 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
   }
 }
 
-$ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
+```bash
+kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "proxysql") | .resources'
+```
 {
   "limits": {
     "cpu": "250m",
@@ -553,7 +557,6 @@ $ kubectl get proxysql -n demo proxy-server -o json | jq '.spec.podTemplate.spec
     "memory": "400Mi"
   }
 }
-```
 
 
 The above output verifies that we have successfully autoscaled the resources of the ProxySQL replicaset database.

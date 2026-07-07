@@ -36,7 +36,8 @@ KubeDB watches the versions you actually have running and generates a `Recommend
 Let's walk through a complete demo. First, list the Elasticsearch versions provided by KubeDB:
 
 ```bash
-$ kubectl get elasticsearchversions | grep xpack
+kubectl get elasticsearchversions | grep xpack
+```
 xpack-6.8.23        6.8.23    ElasticStack   ghcr.io/appscode-images/elastic:6.8.23                                  12d
 xpack-7.17.15       7.17.15   ElasticStack   ghcr.io/appscode-images/elastic:7.17.15                                 12d
 xpack-7.17.28       7.17.28   ElasticStack   ghcr.io/appscode-images/elastic:7.17.28                                 12d
@@ -52,7 +53,6 @@ xpack-9.0.8         9.0.8     ElasticStack   ghcr.io/appscode-images/elastic:9.0
 xpack-9.1.4         9.1.4     ElasticStack   ghcr.io/appscode-images/elastic:9.1.4                                   12d
 xpack-9.1.9         9.1.9     ElasticStack   ghcr.io/appscode-images/elastic:9.1.9                                   12d
 xpack-9.2.3         9.2.3     ElasticStack   ghcr.io/appscode-images/elastic:9.2.3                                   12d
-```
 
 We will deliberately deploy an older version, `xpack-9.1.9`, so KubeDB will recommend the upgrade to `xpack-9.2.3`:
 
@@ -79,7 +79,8 @@ spec:
 Wait until the Elasticsearch cluster reports `Ready`. The required time depends on image pull speed and node specs.
 
 ```bash
-$ kubectl get elasticsearch,pods -n demo
+kubectl get elasticsearch,pods -n demo
+```
 NAME                                           VERSION       STATUS   AGE
 elasticsearch.kubedb.com/es-vurecommendation   xpack-9.1.9   Ready    3m43s
 
@@ -87,15 +88,14 @@ NAME                        READY   STATUS    RESTARTS   AGE
 pod/es-vurecommendation-0   1/1     Running   0          3m37s
 pod/es-vurecommendation-1   1/1     Running   0          3m30s
 pod/es-vurecommendation-2   1/1     Running   0          3m25s
-```
 
 Once the Elasticsearch instance is `Ready`, the KubeDB Ops-manager creates a `Recommendation` automatically. It can take a couple of minutes for the create-event to be reconciled.
 
 ```bash
-$ kubectl get recommendation -n demo
+kubectl get recommendation -n demo
+```
 NAME                                                          STATUS    OUTDATED   AGE
 es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o   Pending   false      2m49s
-```
 
 The Recommendation name follows the pattern `<DB-name>-x-<DB-type>-x-<recommendation-type>-<random-suffix>`. Initially the Supervisor sets `status.phase: Pending`. Let's look at the full manifest:
 
@@ -164,57 +164,57 @@ What this manifest tells you:
 Approve via the AppsCode UI, or with `kubectl`:
 
 ```bash
-$ kubectl patch Recommendation es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o \
+kubectl patch Recommendation es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o \
      -n demo \
      --type merge \
      --subresource='status' \
      -p '{"status":{"approvalStatus":"Approved","approvedWindow":{"window":"Immediate"}}}'
-recommendation.supervisor.appscode.com/es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o patched
 ```
+recommendation.supervisor.appscode.com/es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o patched
 
 A new condition appears almost immediately confirming the OpsRequest was created:
 
 ```bash
-$ kubectl get recommendation -n demo es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o -o jsonpath='{.status}'
-{"approvalStatus":"Approved","approvedWindow":{"window":"Immediate"},"conditions":[{"lastTransitionTime":"2026-06-08T16:47:29Z","message":"OpsRequest is successfully created","reason":"SuccessfullyCreatedOperation","status":"True","type":"SuccessfullyCreatedOperation"}],"createdOperationRef":{"name":"es-vurecommendation-1780937248-update-version-auto"},"failedAttempt":0,"outdated":false,"parallelism":"Namespace","phase":"InProgress","reason":"StartedExecutingOperation"}
+kubectl get recommendation -n demo es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o -o jsonpath='{.status}'
 ```
+{"approvalStatus":"Approved","approvedWindow":{"window":"Immediate"},"conditions":[{"lastTransitionTime":"2026-06-08T16:47:29Z","message":"OpsRequest is successfully created","reason":"SuccessfullyCreatedOperation","status":"True","type":"SuccessfullyCreatedOperation"}],"createdOperationRef":{"name":"es-vurecommendation-1780937248-update-version-auto"},"failedAttempt":0,"outdated":false,"parallelism":"Namespace","phase":"InProgress","reason":"StartedExecutingOperation"}
 
 The Supervisor has now created an `ElasticsearchOpsRequest` and is upgrading the cluster to `xpack-9.2.3` with negligible downtime. The Supervisor will keep retrying on transient failures up to `spec.backoffLimit` attempts.
 
 ```bash
-$ kubectl get elasticsearchopsrequest -n demo
+kubectl get elasticsearchopsrequest -n demo
+```
 NAME                                                 TYPE            STATUS       AGE
 es-vurecommendation-1780937248-update-version-auto   UpdateVersion   Successful   2m39s
-```
 
 Once the OpsRequest succeeds, the Recommendation rolls into `Succeeded`:
 
 ```bash
-$ kubectl get recommendation -n demo es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o
+kubectl get recommendation -n demo es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o
+```
 NAME                                                          STATUS      OUTDATED   AGE
 es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o   Succeeded   false      5m55s
-```
 
 The Elasticsearch cluster is now on the target version:
 
 ```bash
-$ kubectl get es es-vurecommendation -n demo
+kubectl get es es-vurecommendation -n demo
+```
 NAME                  VERSION       STATUS   AGE
 es-vurecommendation   xpack-9.2.3   Ready    6m50s
-```
 
 ## Rejecting a recommendation
 
 If you do not want a recommendation to run, set its `approvalStatus` to `Rejected`:
 
 ```bash
-$ kubectl patch Recommendation es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o \
+kubectl patch Recommendation es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o \
      -n demo \
      --type merge \
      --subresource='status' \
      -p '{"status":{"approvalStatus":"Rejected"}}'
-recommendation.supervisor.appscode.com/es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o patched
 ```
+recommendation.supervisor.appscode.com/es-vurecommendation-x-elasticsearch-x-update-version-t7dy9o patched
 
 ## Automating execution
 

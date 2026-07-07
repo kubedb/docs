@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Prerequisites
@@ -102,9 +102,9 @@ spec:
 > If you want to use `NodePort` service. Update `.spec.provider.kubernetes.envoyService.type` to `NodePort` in the above YAML.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/envoyproxy.yaml
-envoyproxy.gateway.envoyproxy.io/ace created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/envoyproxy.yaml
 ```
+envoyproxy.gateway.envoyproxy.io/ace created
 
 Create `GatewayClass` using the following command:
 ```yaml
@@ -135,16 +135,16 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/gatewayclass.yaml
-gatewayclass.gateway.networking.k8s.io/ace created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/gatewayclass.yaml
 ```
+gatewayclass.gateway.networking.k8s.io/ace created
 
 Check the `GatewayClass` status `True`.
 ```bash
-$ kubectl get gatewayclass 
+kubectl get gatewayclass 
+```
 NAME   CONTROLLER                                      ACCEPTED   AGE
 ace    gateway.envoyproxy.io/gatewayclass-controller   True       16s
-```
 
 ### Install `FluxCD` in your cluster
 Install `FluxCD` in your cluster using the following command:
@@ -160,16 +160,20 @@ helm upgrade -i flux2 \
 
 Install `Keda` in your cluster using the following command:
 ```bash
-$ kubectl create ns kubeops
+kubectl create ns kubeops
+```
 namespace/kubeops created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/helmrepo.yaml
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/helmrepo.yaml
+```
 helmrepository.source.toolkit.fluxcd.io/appscode-charts-oci created
 
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/keda.yaml
+```bash
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/keda.yaml
+```
 helmrelease.helm.toolkit.fluxcd.io/keda created
 helmrelease.helm.toolkit.fluxcd.io/keda-add-ons-http created
-```
 
 ### Install `Catalog Manager`
 
@@ -256,18 +260,18 @@ Here,
 ### Deploy Redis Cluster Announce
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/redis.yaml
-redis.kubedb.com/redis-announce created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/redis.yaml
 ```
+redis.kubedb.com/redis-announce created
 
 Now, wait until `redis-announce` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+watch kubectl get rd -n demo
+```
 Every 2.0s: kubectl get rd -n demo
 NAME            VERSION   STATUS   AGE
 redis-announce   7.4.0     Ready    6m56s
-```
 
 
 Now, create `RedisBinding` object to configure the whole process.
@@ -283,20 +287,20 @@ spec:
     namespace: demo                                                                                                               
 ```                                                                                                                               
 
-```bash                                                                                                                           
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/binding.yaml 
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/announce/binding.yaml 
+```
 redisbinding.catalog.appscode.com/redis-bind created                                                                          
-```                                                                                                                               
 Now, check the status of `redisbinding` objects and ops requests.
 
 ```bash
-$ kubectl get redisbinding,rdopsrequest -n demo
+kubectl get redisbinding,rdopsrequest -n demo
+```
 NAME                                               SRC_NS   SRC_NAME           STATUS   AGE
 redisbinding.catalog.appscode.com/redis-bind       demo     redis-announce      Current  3m28s
 
 NAME                                                       TYPE       STATUS       AGE
 redisopsrequest.ops.kubedb.com/redis-announce-jddiql        Announce   Successful   2m58s
-```
 
 ### Connect to Redis as Cluster
 
@@ -304,7 +308,8 @@ To connect to the Redis replica set, you can use the following command:
 
 Collect the announces from the `redis` object:
 ```bash
-$ kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce
+kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce
+```
 {
   "shards": [
     {
@@ -327,20 +332,19 @@ $ kubectl get redis -n demo redis-announce -ojson | jq .spec.cluster.announce
     }
   ],
 }
-```
 
 Connect with the database:
 ```bash
-$ redis-cli -h rd0-0.kubedb.appscode -p 10050 -a <password> -c ping
-PONG
+redis-cli -h rd0-0.kubedb.appscode -p 10050 -a <password> -c ping
 ```
+PONG
 
 Set data in different shards:
 
 ```bash
-$ redis-cli -h rd1-0.kubedb.appscode -p 10051 -a <password> -c set batman appscode
--> Redirected to slot [13947] located at rd0-0.kubedb.appscode:10050
+redis-cli -h rd1-0.kubedb.appscode -p 10051 -a <password> -c set batman appscode
 ```
+-> Redirected to slot [13947] located at rd0-0.kubedb.appscode:10050
 
 
 ## Cleaning up

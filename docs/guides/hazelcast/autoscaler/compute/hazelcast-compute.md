@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/hazelcast](/docs/examples/hazelcast) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -89,26 +89,27 @@ spec:
 Let's create the `Hazelcast` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
-hazelcast.kubedb.com/hazelcast-dev created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/hazelcast.yaml
 ```
+hazelcast.kubedb.com/hazelcast-dev created
 
 Now, wait until `hazelcast-dev` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get hz -n demo -w
+kubectl get hz -n demo -w
+```
 NAME             TYPE                    VERSION   STATUS         AGE
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2     Provisioning   0s
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2     Provisioning   24s
 .
 .
 hazelcast-dev    kubedb.com/v1alpha2     5.5.2     Ready          92s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo hazelcast-dev-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo hazelcast-dev-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -118,11 +119,11 @@ $ kubectl get pod -n demo hazelcast-dev-0 -o json | jq '.spec.containers[].resou
     "memory": "1Gi"
   }
 }
-```
 
 Let's check the Hazelcast resources,
 ```bash
-$ kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "1Gi"
@@ -132,7 +133,6 @@ $ kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.sp
     "memory": "1Gi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the hazelcast.
 
@@ -191,16 +191,17 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/compute/hazelcast-autoscaler.yaml
-hazelcastautoscaler.autoscaling.kubedb.com/hz-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/compute/hazelcast-autoscaler.yaml
 ```
+hazelcastautoscaler.autoscaling.kubedb.com/hz-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `hazelcastautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl describe hazelcastautoscaler hz--autoscaler -n demo
+kubectl describe hazelcastautoscaler hz--autoscaler -n demo
+```
 Name:         hz-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -291,8 +292,6 @@ Status:
           Memory:  2Gi
     Vpa Name:      hazelcast-dev
 Events:            <none>
-
-```
 So, the `hazelcastautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our database. Our autoscaler operator continuously watches the recommendation generated and creates an `hazelcastopsrequest` based on the recommendations, if the database pods resources are needed to scaled up or down.
@@ -300,24 +299,25 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `hazelcastopsrequest` in the demo namespace to see if any `hazelcastopsrequest` object is created. After some time you'll see that a `hazelcastopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get hazelcastopsrequest -n demo
+watch kubectl get hazelcastopsrequest -n demo
+```
 Every 2.0s: kubectl get hazelcastopsrequest -n demo
 NAME                         TYPE              STATUS       AGE
 hzops-hazelcast-dev-68lrza   VerticalScaling   Progressing  10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get hazelcastopsrequest -n demo
+kubectl get hazelcastopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 hzops-hazelcast-dev-68lrza VerticalScaling   Successful   3m2s
-```
 
 We can see from the above output that the `HazelcastOpsRequest` has succeeded. If we describe the `HazelcastOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$kubectl describe hzops -n demo hzops-hazelcast-dev-68lrza 
+kubectl describe hzops -n demo hzops-hazelcast-dev-68lrza 
+```
 Name:         hzops-hazelcast-dev-68lrza
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -421,36 +421,34 @@ Events:
   Normal   RestartPods                                               2m27s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                  2m27s  KubeDB Ops-manager Operator  Resuming Hazelcast database: demo/hazelcast-dev
   Normal   Successful                                                2m27s  KubeDB Ops-manager Operator  Successfully resumed Hazelcast database: demo/hazelcast-dev for HazelcastOpsRequest: hzops-hazelcast-dev-68lrza
-```
 
 Now, we are going to verify from the Pod, and the Hazelcast yaml whether the resources of the database has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo hazelcast-dev-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1717986918"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1717986918"
-  }
-}
-
-
-
-$ kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "1717986918"
-  },
-  "requests": {
-    "cpu": "600m",
-    "memory": "1717986918"
-  }
-}
-
+kubectl get pod -n demo hazelcast-dev-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "memory": "1717986918"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1717986918"
+  }
+}
+
+```bash
+kubectl get hazelcast -n demo hazelcast-dev -o json | jq '.spec.podTemplate.spec.containers[].resources'
+```
+{
+  "limits": {
+    "memory": "1717986918"
+  },
+  "requests": {
+    "cpu": "600m",
+    "memory": "1717986918"
+  }
+}
 
 
 The above output verifies that we have successfully auto-scaled the resources of the Hazelcast  cluster.

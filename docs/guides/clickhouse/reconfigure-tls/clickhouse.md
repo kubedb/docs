@@ -27,9 +27,9 @@ KubeDB supports reconfigure i.e. add, remove, update and rotation of TLS/SSL cer
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -94,9 +94,9 @@ spec:
 Let's create the `ClickHouse` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-cluster.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-cluster.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 Now, wait until `clickhouse-prod` has status `Ready`. i.e,
 
@@ -165,9 +165,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-issuer.yaml
-issuer.cert-manager.io/clickhouse-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-issuer.yaml
 ```
+issuer.cert-manager.io/clickhouse-ca-issuer created
 
 ### Create ClickHouseOpsRequest
 
@@ -212,9 +212,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-add-tls.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-add-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-add-tls.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-add-tls created
 
 #### Verify TLS Enabled Successfully
 
@@ -458,9 +458,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-rotate-tls.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-rotate created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-rotate-tls.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-rotate created
 
 #### Verify Certificate Rotated Successfully
 
@@ -648,21 +648,21 @@ Now, we are going to change the issuer of this database.
 - Let's create a new ca certificate and key using a different subject `CN=ca-update,O=kubedb-updated`.
 
 ```bash
-$  openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=clickhouse-updated/O=kubedb-updated"
+ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=clickhouse-updated/O=kubedb-updated"
+```
 ....+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.......+.....+..........+...+...+..+...+....+............+...........+....+........+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+..........+..+.......+...+.....+......+.......+...+..+....+.....+.............+..+.+.....+.......+..+.+...+....................+.........+...+..........+.......................+.....................+.+........+....+..+...+.......+.........+..+...+.+......+..+.............+........+......+......+.......+...........+.+.....+................+...+......+........+.......+...+........+...+....+.....+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 .....+.....+....+.....+...+....+........+.+..+.......+........+...+.......+........+......+.+..+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++*.....+...+........+.........+....+......+...+..+....+..+....+........+............+.+...+............+.........+.....+...+...+.........+.+...+..+.......+........+......................+.....+..........+...+..+......+.+.........+......+....................+.+...+.....+......+.+..............+...+.+..+....+.........+......+......+........+......+....+..+....+......+..+............+.+.................+...+....+...+............+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 -----
-```
 
 - Now we are going to create a new ca-secret using the certificate files that we have just generated.
 
 ```bash
-$ kubectl create secret tls clickhouse-new-ca \
+kubectl create secret tls clickhouse-new-ca \
      --cert=ca.crt \
      --key=ca.key \
      --namespace=demo
-secret/clickhouse-new-ca created
 ```
+secret/clickhouse-new-ca created
 
 Now, Let's create a new `Issuer` using the `clickhouse-new-ca` secret that we have just created. The `YAML` file looks like this:
 
@@ -680,9 +680,9 @@ spec:
 Let's apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-new-issuer.yaml
-issuer.cert-manager.io/ch-new-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-new-issuer.yaml
 ```
+issuer.cert-manager.io/ch-new-issuer created
 
 ### Create ClickHouseOpsRequest
 
@@ -716,9 +716,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-update-issuer.yaml
-clickhouseopsrequest.ops.kubedb.com/chops-update-issuer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-update-issuer.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-update-issuer created
 
 #### Verify Issuer is changed successfully
 
@@ -937,9 +937,9 @@ Here,
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-remove-tls.yaml 
-clickhouseopsrequest.ops.kubedb.com/chops-remove-tls created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/reconfigure-tls/clickhouse-remove-tls.yaml 
 ```
+clickhouseopsrequest.ops.kubedb.com/chops-remove-tls created
 
 #### Verify TLS Removed Successfully
 

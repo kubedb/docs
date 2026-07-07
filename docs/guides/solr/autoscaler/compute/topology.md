@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscale compute resources i.e.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/examples/solr/autoscaler/compute) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -90,22 +90,23 @@ spec:
 Let's create the `Solr` CRD we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/topology.yaml
-solr.kubedb.com/solr-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/topology.yaml
 ```
+solr.kubedb.com/solr-cluster created
 
 Now, wait until `solr-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME           TYPE                  VERSION   STATUS   AGE
 solr-cluster   kubedb.com/v1alpha2   9.4.1     Ready    82s
-```
 
 Let's check an data node containers resources,
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -115,12 +116,12 @@ $ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].r
     "memory": "2Gi"
   }
 }
-```
 
 Let's check the Solr CR for the data node resources,
 
 ```bash
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.podTemplate.spec.containers[0].resources'
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "memory": "2Gi"
@@ -130,7 +131,6 @@ $ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.podTem
     "memory": "2Gi"
   }
 }
-```
 
 You can see from the above outputs that the resources are the same as the ones we have assigned while deploying the Solr.
 
@@ -185,20 +185,23 @@ Here,
 Let's create the `SolrAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/compute/topology-scaler.yaml
-solrautoscaler.autoscaling.kubedb.com/sl-data-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/compute/topology-scaler.yaml
 ```
+solrautoscaler.autoscaling.kubedb.com/sl-data-autoscaler created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `Solrautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get solrautoscaler -n demo
+kubectl get solrautoscaler -n demo
+```
 NAME                 AGE
 sl-data-autoscaler   94s
 
-$ kubectl describe solrautoscaler -n demo sl-data-autoscaler
+```bash
+kubectl describe solrautoscaler -n demo sl-data-autoscaler
+```
 Name:         sl-data-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -301,8 +304,6 @@ Status:
     Vpa Name:      solr-cluster-overseer
 Events:            <none>
 
-```
-
 So, the `solrautoscaler` resource is created successfully.
 
 
@@ -311,23 +312,24 @@ As you can see from the output the vpa has generated a recommendation for the da
 Let's watch the `solropsrequest` in the demo namespace to see if any `solropsrequest` object is created. After some time you'll see that an `Solropsrequest` will be created based on the recommendation.
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                             TYPE              STATUS        AGE
 slops-solr-cluster-data-n3vjgi   VerticalScaling   Progressing   2m7s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                             TYPE              STATUS       AGE
 slops-solr-cluster-data-n3vjgi   VerticalScaling   Successful   2m38s
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to scale the database.
 
 ```bash
-$ kubectl describe slops -n demo slops-solr-cluster-data-n3vjgi 
+kubectl describe slops -n demo slops-solr-cluster-data-n3vjgi 
+```
 Name:         slops-solr-cluster-data-n3vjgi
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -443,34 +445,34 @@ Events:
   Normal   RestartPods                                                          32s    KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                             32s    KubeDB Ops-manager Operator  Resuming Solr database: demo/solr-cluster
   Normal   Successful                                                           32s    KubeDB Ops-manager Operator  Successfully resumed Solr database: demo/solr-cluster for SolrOpsRequest: slops-solr-cluster-data-n3vjgi
-```
 
 Now, we are going to verify from the Pod, and the Solr YAML whether the resources of the data node of the cluster has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
-{
-  "limits": {
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  }
-}
-
-$ kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.podTemplate.spec.containers[0].resources'
-{
-  "limits": {
-    "memory": "2560Mi"
-  },
-  "requests": {
-    "cpu": "1",
-    "memory": "2560Mi"
-  }
-}
-
+kubectl get pod -n demo solr-cluster-data-0 -o json | jq '.spec.containers[].resources'
 ```
+{
+  "limits": {
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  }
+}
+
+```bash
+kubectl get solr -n demo solr-cluster -o json | jq '.spec.topology.data.podTemplate.spec.containers[0].resources'
+```
+{
+  "limits": {
+    "memory": "2560Mi"
+  },
+  "requests": {
+    "cpu": "1",
+    "memory": "2560Mi"
+  }
+}
 
 The above output verifies that we have successfully auto-scaled the resources of the Solr topology cluster.
 
@@ -479,7 +481,13 @@ The above output verifies that we have successfully auto-scaled the resources of
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete solr -n demo solr-cluster
-$ kubectl delete solrautoscaler -n demo sl-data-autoscaler
-$ kubectl delete ns demo
+kubectl delete solr -n demo solr-cluster
+```
+
+```bash
+kubectl delete solrautoscaler -n demo sl-data-autoscaler
+```
+
+```bash
+kubectl delete ns demo
 ```

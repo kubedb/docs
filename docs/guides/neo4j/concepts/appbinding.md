@@ -105,7 +105,7 @@ For in-cluster Neo4j deployments, KubeDB sets `spec.clientConfig.service`.
 You can inspect the generated AppBinding with:
 
 ```bash
-$ kubectl get appbinding -n demo neo4j-test -o yaml
+kubectl get appbinding -n demo neo4j-test -o yaml
 ```
 
 ## Next Steps

@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Oracle. This tutorial will sh
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/oracle/configuration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/oracle/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -64,9 +64,9 @@ stringData:
 Let's create the Secret,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/configuration/oracle-custom-config-secret.yaml
-secret/oracle-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/configuration/oracle-custom-config-secret.yaml
 ```
+secret/oracle-custom-config created
 
 Now, create an `Oracle` CR that references this Secret through `spec.configuration.secretName`. The following is a **Standalone** example:
 
@@ -105,9 +105,9 @@ Here,
 Create the database,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/configuration/standalone-cus-conf.yaml
-oracle.kubedb.com/standalone-cus-conf created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/configuration/standalone-cus-conf.yaml
 ```
+oracle.kubedb.com/standalone-cus-conf created
 
 For a **DataGuard** cluster the configuration is supplied the same way — only `mode`, `replicas`, and the name change:
 
@@ -219,19 +219,21 @@ Once the database is `Ready` (and the pod has printed the `DATABASE IS READY TO 
 First, KubeDB projects the configuration file into the database pod at `/etc/config/oracle.cnf`,
 
 ```bash
-$ kubectl exec -n demo standalone-cus-conf-0 -c oracle -- cat /etc/config/oracle.cnf
-PROCESSES = 800
+kubectl exec -n demo standalone-cus-conf-0 -c oracle -- cat /etc/config/oracle.cnf
 ```
+PROCESSES = 800
 
 Now, let's connect to the database and confirm that the `processes` parameter has actually been set to `800`,
 
 ```bash
-$ kubectl get secret -n demo standalone-cus-conf-auth -o jsonpath='{.data.password}' | base64 -d
+kubectl get secret -n demo standalone-cus-conf-auth -o jsonpath='{.data.password}' | base64 -d
+```
 # (use the printed password below)
 
-$ kubectl exec -n demo standalone-cus-conf-0 -c oracle -- bash -lc \
+```bash
+kubectl exec -n demo standalone-cus-conf-0 -c oracle -- bash -lc \
     "echo -e 'SHOW PARAMETER processes;\nexit;' | sqlplus -s sys/<password>@localhost:1521/ORCL as sysdba"
-
+```
 NAME                                 TYPE        VALUE
 ------------------------------------ ----------- ------------------------------
 aq_tm_processes                      integer     1
@@ -241,7 +243,6 @@ global_txn_processes                 integer     1
 job_queue_processes                  integer     308
 log_archive_max_processes            integer     30
 processes                            integer     800
-```
 
 The `processes` parameter is now `800`, confirming that our custom configuration was applied successfully.
 

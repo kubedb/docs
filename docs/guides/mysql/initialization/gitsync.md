@@ -25,9 +25,9 @@ In this example, we will initialize MySQL using a `.sql` script from the GitHub 
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## From Public Git Repository
 
@@ -78,16 +78,16 @@ The `--link` argument creates a symlink that always points to the latest synced 
 Now, wait until `sample-mysql` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mysql -n demo 
+kubectl get mysql -n demo 
+```
 NAME           VERSION   STATUS   AGE
 sample-mysql   8.4.8     Ready    42m
-```
 
 Next, we will connect to the MySQL database and verify the data inserted from the `*.sql` script stored in the Git repository.
 
 ```bash
-
-$  kubectl exec -it -n demo sample-mysql-0 -- bash
+ kubectl exec -it -n demo sample-mysql-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-init (init), git-sync (init)
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -139,10 +139,6 @@ mysql> select * from kubedb_table;
 |  3 | name3 |
 +----+-------+
 3 rows in set (0.00 sec)
-
-
-
-```
 ## From Private Git Repository
 
 ### 1. Using SSH Key
@@ -152,7 +148,7 @@ Git-sync supports using SSH protocol for pulling git content.
 First, Obtain the host keys for your git server:
 
 ```bash
-$ ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
+ssh-keyscan $YOUR_GIT_HOST > /tmp/known_hosts
 ```
 
 > `$YOUR_GIT_HOST` refers to the hostname of your Git server. <br>
@@ -167,7 +163,7 @@ This secret will be used by git-sync to authenticate with the Git repository.
 >Here, we are using the default SSH key file located at `$HOME/.ssh/id_rsa`. If your SSH key is stored in a different location, please update the command accordingly. Also you can use any name instead of `git-creds` to create the secret.
 
 ```bash
-$ kubectl create secret generic -n demo git-creds \
+kubectl create secret generic -n demo git-creds \
     --from-file=ssh=$HOME/.ssh/id_rsa \
     --from-file=known_hosts=/tmp/known_hosts
 ```
@@ -220,7 +216,7 @@ First, create a `Personal Access Token (PAT)` on your Git host server with the r
 Then create a Kubernetes secret using the `Personal Access Token (PAT)`:
 > Here, you can use any key name instead of `git-pat` to store the token in the secret.
 ```bash
-$ kubectl create secret generic -n demo git-pat \
+kubectl create secret generic -n demo git-pat \
     --from-literal=github-pat=<ghp_yourpersonalaccesstoken>
 ```
 
@@ -271,7 +267,13 @@ Once the database reaches the `Ready` state, you can verify the data using the m
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete MySQL -n demo sample-mysql
-$ kubectl delete secret -n demo git-pat git-creds
-$ kubectl delete ns demo
+kubectl delete MySQL -n demo sample-mysql
+```
+
+```bash
+kubectl delete secret -n demo git-pat git-creds
+```
+
+```bash
+kubectl delete ns demo
 ```

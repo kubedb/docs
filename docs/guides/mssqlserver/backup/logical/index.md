@@ -38,9 +38,9 @@ You should be familiar with the following `KubeStash` concepts:
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/guides/mssqlserver/backup/logical/examples](/docs/guides/mssqlserver/backup/logical/examples) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -63,15 +63,15 @@ By following the below steps, we are going to create our desired issuer,
 - Start off by generating our ca-certificates using openssl,
 
 ```bash
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=mssqlserver/O=kubedb"
 ```
 
 - create a secret using the certificate files we have just generated,
 
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 
 Now, we are going to create an `Issuer` CR using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` cr that we are going to create,
 
@@ -89,9 +89,9 @@ spec:
 Let’s create the `Issuer` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer.yaml created
 
 **Create MSSQLServer CR:**
 
@@ -134,34 +134,36 @@ spec:
 Create the above `MSSQLServer` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/sample-mssqlserver.yaml
-mssqlserver.kubedb.com/sample-mssqlserver created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/sample-mssqlserver.yaml
 ```
+mssqlserver.kubedb.com/sample-mssqlserver created
 KubeDB will deploy a `Microsoft SQL Server` database according to the above specification. It will also create the necessary `Secrets` and `Services` to access the database.
 
 Let's check if the database is ready to use,
 
 ```bash
-$ kubectl get mssqlserver -n demo sample-mssqlserver
+kubectl get mssqlserver -n demo sample-mssqlserver
+```
 NAME                 VERSION     STATUS   AGE
 sample-mssqlserver   2022-cu12   Ready    3m27
-```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
 
 ```bash
-$ kubectl get secret -n demo
+kubectl get secret -n demo
+```
 NAME                                    TYPE                       DATA   AGE
 mssqlserver-ca                          kubernetes.io/tls          2      2d20h
 sample-mssqlserver-auth                 kubernetes.io/basic-auth   2      3m44s
 sample-mssqlserver-client-cert          kubernetes.io/tls          3      3m14s
 sample-mssqlserver-server-cert          kubernetes.io/tls          3      3m14s
 
-$ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mssqlserver
+```bash
+kubectl get service -n demo -l=app.kubernetes.io/instance=sample-mssqlserver
+```
 NAME                      TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
 sample-mssqlserver        ClusterIP   10.96.165.94   <none>        1433/TCP   4m32s
 sample-mssqlserver-pods   ClusterIP   None           <none>        1433/TCP   4m32s
-```
 
 Here, we have to use service `sample-mssqlserver` and secret `sample-mssqlserver-auth` to connect with the database. `KubeDB` creates an AppBinding CR that holds the necessary information to connect with the database.
 
@@ -170,15 +172,15 @@ Here, we have to use service `sample-mssqlserver` and secret `sample-mssqlserver
 Verify that the `AppBinding` has been created successfully using the following command,
 
 ```bash
-$ kubectl get appbindings -n demo
+kubectl get appbindings -n demo
+```
 NAME                 TYPE                     VERSION   AGE
 sample-mssqlserver   kubedb.com/mssqlserver   2022      4m18s
-```
 
 Let's check the YAML of the above `AppBinding`,
 
 ```bash
-$ kubectl get appbindings -n demo sample-mssqlserver -o yaml
+kubectl get appbindings -n demo sample-mssqlserver -o yaml
 ```
 
 ```yaml
@@ -239,25 +241,28 @@ Here,
 Now, we are going to exec into one of the database pod and create some sample data. At first, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mssqlserver"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-mssqlserver"
+```
 NAME                   READY   STATUS    RESTARTS   AGE
 sample-mssqlserver-0   1/1     Running   0          4m44s
-```
 
 And copy the username and password of the `sa` user to access into `mssqlserver` shell.
 
 ```bash
-$ kubectl get secret -n demo  sample-mssqlserver-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  sample-mssqlserver-auth -o jsonpath='{.data.username}'| base64 -d
+```
 sa⏎
 
-$ kubectl get secret -n demo  sample-mssqlserver-auth -o jsonpath='{.data.password}'| base64 -d
-kkvAFfl8sIxRO2i3⏎
+```bash
+kubectl get secret -n demo  sample-mssqlserver-auth -o jsonpath='{.data.password}'| base64 -d
 ```
+kkvAFfl8sIxRO2i3⏎
 
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and create a database and a table,
 
 ```bash
-$ kubectl exec -it -n demo sample-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3" -No
+kubectl exec -it -n demo sample-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S sample-mssqlserver -U sa -P "kkvAFfl8sIxRO2i3" -No
+```
 # list available databases
 1> SELECT name from sys.databases;
 2> GO
@@ -311,7 +316,6 @@ id          type                                               quant       color
 
 # exit from the pod
 1> exit
-```
 
 Now, we are ready to backup the database.
 
@@ -324,13 +328,19 @@ We are going to store our backed up data into a `GCS` bucket. We have to create 
 Let's create a secret called `gcs-secret` with access credentials to our desired GCS bucket,
 
 ```bash
-$ echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
-$ cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-$ kubectl create secret generic -n demo gcs-secret \
+echo -n '<your-project-id>' > GOOGLE_PROJECT_ID
+```
+
+```bash
+cat /path/to/downloaded-sa-key.json > GOOGLE_SERVICE_ACCOUNT_JSON_KEY
+```
+
+```bash
+kubectl create secret generic -n demo gcs-secret \
     --from-file=./GOOGLE_PROJECT_ID \
     --from-file=./GOOGLE_SERVICE_ACCOUNT_JSON_KEY
-secret/gcs-secret created
 ```
+secret/gcs-secret created
 
 **Create BackupStorage:**
 
@@ -359,9 +369,9 @@ spec:
 Let's create the BackupStorage we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/backupstorage.yaml
-backupstorage.storage.kubestash.com/gcs-storage created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/backupstorage.yaml
 ```
+backupstorage.storage.kubestash.com/gcs-storage created
 
 Now, we are ready to backup our database to our desired backend.
 
@@ -392,9 +402,9 @@ spec:
 Let’s create the above `RetentionPolicy`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/retentionpolicy.yaml
-retentionpolicy.storage.kubestash.com/demo-retention created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/retentionpolicy.yaml
 ```
+retentionpolicy.storage.kubestash.com/demo-retention created
 
 ### Backup
 
@@ -450,27 +460,27 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/logical/examples/backupconfiguration.yaml
-backupconfiguration.core.kubestash.com/sample-mssqlserver-backup created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/logical/examples/backupconfiguration.yaml
 ```
+backupconfiguration.core.kubestash.com/sample-mssqlserver-backup created
 
 **Verify Backup Setup Successful**
 
 If everything goes well, the phase of the `BackupConfiguration` should be `Ready`. The `Ready` phase indicates that the backup setup is successful. Let's verify the `Phase` of the BackupConfiguration,
 
 ```bash
-$ kubectl get backupconfiguration -n demo
+kubectl get backupconfiguration -n demo
+```
 NAME                        PHASE   PAUSED   AGE
 sample-mssqlserver-backup   Ready            2m50s
-```
 
 Additionally, we can verify that the `Repository` specified in the `BackupConfiguration` has been created using the following command,
 
 ```bash
-$ kubectl get repo -n demo
+kubectl get repo -n demo
+```
 NAME                     INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mssqlserver-repo                 0                0 B      Ready                            3m
-```
 
 KubeStash keeps the backup for `Repository` YAMLs. If we navigate to the GCS bucket, we will see the `Repository` YAML stored in the `demo/mssqlserver` directory.
 
@@ -481,20 +491,20 @@ It will also create a `CronJob` with the schedule specified in `spec.sessions[*]
 Verify that the `CronJob` has been created using the following command,
 
 ```bash
-$ kubectl get cronjob -n demo
+kubectl get cronjob -n demo
+```
 NAME                                                SCHEDULE      SUSPEND   ACTIVE   LAST SCHEDULE   AGE
 trigger-sample-mssqlserver-backup-frequent-backup   */5 * * * *   False     0        4m52s           15m
-```
 
 **Verify BackupSession:**
 
 KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
 
 ```bash
-$ kubectl get backupsession -n demo -w
+kubectl get backupsession -n demo -w
+```
 NAME                                                   INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
 sample-mssqlserver-backup-frequent-backup-1725449400   BackupConfiguration   sample-mssqlserver-backup    Succeeded              7m22s
-```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
 
@@ -503,18 +513,18 @@ We can see from the above output that the backup session has succeeded. Now, we 
 Once a backup is complete, KubeStash will update the respective `Repository` CR to reflect the backup. Check that the repository `gcs-mssqlserver-repo` has been updated by the following command,
 
 ```bash
-$ kubectl get repository -n demo gcs-mssqlserver-repo
+kubectl get repository -n demo gcs-mssqlserver-repo
+```
 NAME                          INTEGRITY   SNAPSHOT-COUNT   SIZE    PHASE   LAST-SUCCESSFUL-BACKUP   AGE
 gcs-mssqlserver-repo          true        1                806 B   Ready   8m27s                    9m18s
-```
 
 At this moment we have one `Snapshot`. Run the following command to check the respective `Snapshot` which represents the state of a backup run for an application.
 
 ```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-mssqlserver-repo
+kubectl get snapshots -n demo -l=kubestash.com/repo-name=gcs-mssqlserver-repo
+```
 NAME                                                              REPOSITORY             SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
 gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1725449400   gcs-mssqlserver-repo   frequent-backup   2024-01-23T13:10:54Z   Delete            Succeeded   16h
-```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
 > - `kubestash.com/app-ref-kind: <target-kind>`
@@ -527,7 +537,7 @@ gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1725449400   gcs-mssqlserve
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the Database.
 
 ```bash
-$ kubectl get snapshots -n demo gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1725449400 -oyaml
+kubectl get snapshots -n demo gcs-mssqlserver-repo-sample-mssqckup-frequent-backup-1725449400 -oyaml
 ```
 
 ```yaml
@@ -649,17 +659,17 @@ spec:
 Let's create the above database,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/restored-mssqlserver.yaml
-mssqlserver.kubedb.com/restored-mssqlserver created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/restored-mssqlserver.yaml
 ```
+mssqlserver.kubedb.com/restored-mssqlserver created
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.
 
 ```bash
-$ kubectl get mssqlserver -n demo restored-mssqlserver
+kubectl get mssqlserver -n demo restored-mssqlserver
+```
 NAME                   VERSION     STATUS          AGE
 restored-mssqlserver   2022-cu12   Provisioning    7m37
-```
 
 #### Create RestoreSession:
 
@@ -703,18 +713,18 @@ Here,
 Let's create the RestoreSession CRD object we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/restoresession.yaml
-restoresession.core.kubestash.com/sample-mssqlserver-restore created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mssqlserver/backup/logical/examples/restoresession.yaml
 ```
+restoresession.core.kubestash.com/sample-mssqlserver-restore created
 
 Once, you have created the `RestoreSession` object, KubeStash will create restore Job. Run the following command to watch the phase of the `RestoreSession` object,
 
 ```bash
-$ watch kubectl get restoresession -n demo
+watch kubectl get restoresession -n demo
+```
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY            FAILURE-POLICY    PHASE       DURATION   AGE
 sample-mssql-restore      gcs-mssqlserver-repo                    Succeeded   12s        8m7s
-```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
@@ -725,33 +735,36 @@ In this section, we are going to verify whether the desired data has been restor
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
-$ kubectl get mssqlserver -n demo restored-mssqlserver
+kubectl get mssqlserver -n demo restored-mssqlserver
+```
 NAME                   VERSION     STATUS   AGE
 restored-mssqlserver   2022-cu12   Ready    13m
-```
 
 Now, find out the database `Pod` using the following command,
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mssqlserver"
+kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-mssqlserver"
+```
 NAME                         READY   STATUS      RESTARTS   AGE
 restored-mssqlserver-0       1/1     Running     0          16m
-```
 
 And copy the username and password of the `sa` user to access into `mssqlserver` shell.
 
 ```bash
-$ kubectl get secret -n demo  restored-mssqlserver-auth -o jsonpath='{.data.username}'| base64 -d
+kubectl get secret -n demo  restored-mssqlserver-auth -o jsonpath='{.data.username}'| base64 -d
+```
 sa⏎
 
-$ kubectl get secret -n demo  restored-mssqlserver-auth -o jsonpath='{.data.password}'| base64 -d
-Ag9qi8zQiFew0xHo⏎
+```bash
+kubectl get secret -n demo  restored-mssqlserver-auth -o jsonpath='{.data.password}'| base64 -d
 ```
+Ag9qi8zQiFew0xHo⏎
 
 Now, Lets exec into the `Pod` to enter into `mssqlserver` shell and verify restored data,
 
 ```bash
-$ kubectl exec -it -n demo restored-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo" -No
+kubectl exec -it -n demo restored-mssqlserver-0 -c mssql -- /opt/mssql-tools18/bin/sqlcmd -S restored-mssqlserver -U sa -P "Ag9qi8zQiFew0xHo" -No
+```
 1> SELECT name from sys.databases;
 2> GO
 name                                                                                                                            
@@ -785,7 +798,6 @@ id          type                                               quant       color
 
 (3 rows affected)
 > exit
-```
 So, from the above output, we can see that the `playground` database and the `equipment` table we have created earlier in the original database and now, they are restored successfully.
 
 ## Cleanup

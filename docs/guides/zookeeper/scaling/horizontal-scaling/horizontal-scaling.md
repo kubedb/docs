@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the Z
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -66,27 +66,29 @@ spec:
 Let's create the `ZooKeeper` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zookeeper.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zookeeper.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get zk -n demo
+kubectl get zk -n demo
+```
 NAME            VERSION    STATUS    AGE
 zk-quickstart   3.9.1      Ready     5m56s
-```
 
 Let's check the number of replicas this zookeeper has from the ZooKeeper object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
 ```
+3
 
 We can see from both command that the zookeeper has 3 replicas.
 
@@ -123,9 +125,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-up-ops.yaml
-zookeeperopsrequest.ops.kubedb.com/horizontal-scale-up created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-up-ops.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/horizontal-scale-up created
 
 #### Verify replicas scaled up successfully
 
@@ -134,15 +136,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ watch kubectl get zookeeperopsrequest -n demo
+watch kubectl get zookeeperopsrequest -n demo
+```
 NAME                            TYPE                STATUS       AGE
 horizontal-scale-up   HorizontalScaling   Successful   2m49s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to scale the zookeeper.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo horizontal-scale-up
+kubectl describe zookeeperopsrequest -n demo horizontal-scale-up
+```
 Name:         horizontal-scale-up
 Namespace:    demo
 Labels:       <none>
@@ -222,17 +225,18 @@ Events:
   Normal   UpdateDatabase                                                  27s   KubeDB Ops-manager Operator  Successfully updated ZooKeeper
   Normal   Starting                                                        27s   KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                      27s   KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: horizontal-scale-up
-```
 
 Now, we are going to verify the number of replicas this zookeeper has from the ZooKeeper object, number of pods the PetSet have,
 
 ```bash
-$ kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+```
 5
 
-$ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
-5
+```bash
+kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
 ```
+5
 From all the above outputs we can see that the replicas of the zookeeper is `5`. That means we have successfully scaled up the replicas of the ZooKeeper.
 
 
@@ -268,9 +272,9 @@ Here,
 Let's create the `ZooKeeperOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-down-ops.yaml
-zookeeperopsrequest.ops.kubedb.com/horizontal-scale-down created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/scaling/zk-hscale-down-ops.yaml
 ```
+zookeeperopsrequest.ops.kubedb.com/horizontal-scale-down created
 
 #### Verify replicas scaled down successfully
 
@@ -279,15 +283,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `ZooKeeperOpsRequest` to be `Successful`.  Run the following command to watch `ZooKeeperOpsRequest` CR,
 
 ```bash
-$ watch kubectl get zookeeperopsrequest -n demo
+watch kubectl get zookeeperopsrequest -n demo
+```
 NAME                              TYPE                STATUS       AGE
 horizontal-scale-down   HorizontalScaling   Successful   75s
-```
 
 We can see from the above output that the `ZooKeeperOpsRequest` has succeeded. If we describe the `ZooKeeperOpsRequest` we will get an overview of the steps that were followed to scale the zookeeper.
 
 ```bash
-$ kubectl describe zookeeperopsrequest -n demo horizontal-scale-down
+kubectl describe zookeeperopsrequest -n demo horizontal-scale-down
+```
 Name:         horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -396,17 +401,18 @@ Events:
   Normal   UpdateDatabase                                               109s   KubeDB Ops-manager Operator  Successfully updated ZooKeeper
   Normal   Starting                                                     109s   KubeDB Ops-manager Operator  Resuming ZooKeeper database: demo/zk-quickstart
   Normal   Successful                                                   109s   KubeDB Ops-manager Operator  Successfully resumed ZooKeeper database: demo/zk-quickstart for ZooKeeperOpsRequest: horizontal-scale-down
-```
 
 Now, we are going to verify the number of replicas this zookeeper has from the ZooKeeper object, number of pods the petset have,
 
 ```bash
-$ kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+kubectl get zookeeper -n demo zk-quickstart -o json | jq '.spec.replicas'
+```
 3
 
-$ kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
-3
+```bash
+kubectl get petset -n demo zk-quickstart -o json | jq '.spec.replicas'
 ```
+3
 From all the above outputs we can see that the replicas of the zookeeper is `3`. That means we have successfully scaled up the replicas of the ZooKeeper.
 
 ## Cleaning Up

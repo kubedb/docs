@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Druid
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/druid](/docs/examples/druid) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,12 +48,12 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  28h
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   28h
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   28h
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -66,18 +66,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+helm repo add minio https://operator.min.io/
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm repo update minio
+```
+
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -103,9 +110,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 ### Deploy Druid Cluster
 
@@ -157,34 +164,40 @@ spec:
 Let's create the `Druid` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 Now, wait until `druid-cluster` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get dr -n demo -w
+kubectl get dr -n demo -w
+```
 NAME          TYPE            VERSION   STATUS         AGE
 druid-cluster    kubedb.com/v1alpha2    36.0.0          Provisioning   0s
 druid-cluster    kubedb.com/v1alpha2    36.0.0          Provisioning   24s
 .
 .
 druid-cluster    kubedb.com/v1alpha2   36.0.0           Ready          2m20s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          95s
 pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          96s
-```
 
 You can see the petset for both historicals and middleManagers has 1GB storage, and the capacity of all the persistent volume is also 1GB.
 
@@ -231,20 +244,23 @@ Here,
 Let's create the `DruidAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/druid-storage-autoscaler.yaml
-druidautoscaler.autoscaling.kubedb.com/druid-storage-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/autoscaler/storage/yamls/druid-storage-autoscaler.yaml
 ```
+druidautoscaler.autoscaling.kubedb.com/druid-storage-autoscaler created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `druidautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get druidautoscaler -n demo
+kubectl get druidautoscaler -n demo
+```
 NAME                       AGE
 druid-storage-autoscaler   34s
 
-$ kubectl describe druidautoscaler -n demo druid-storage-autoscaler 
+```bash
+kubectl describe druidautoscaler -n demo druid-storage-autoscaler 
+```
 Name:         druid-storage-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -324,7 +340,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    60
 Events:                   <none>
-```
 So, the `druidautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` using `dd` command to see if storage autoscaling is working or not.
@@ -334,7 +349,8 @@ We are autoscaling volume for both historicals and middleManagers. So we need to
 1. Lets exec into the historicals pod and fill the cluster volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo druid-cluster-historicals-0 -- bash
+kubectl exec -it -n demo druid-cluster-historicals-0 -- bash
+```
 bash-5.1$ df -h /druid/data/segments
 Filesystem                                                Size       Used     Available   Use%  Mounted on
 /dev/longhorn/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb    973.4M     92.0K    957.3M      0%    /druid/data/segment
@@ -347,12 +363,12 @@ bash-5.1$ dd if=/dev/zero of=/druid/data/segments/file.img bs=600M count=1
 bash-5.1$ df -h /druid/data/segments                                      
 Filesystem                                                 Size      Used      Available   Use%    Mounted on
 /dev/longhorn/pvc-d4ef15ef-b1af-4a1f-ad25-ad9bc990a2fb     973.4M    600.1M    357.3M      63%     /druid/data/segments
-```
 
 2. Let's exec into the middleManagers pod and fill the cluster volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo druid-cluster-middleManagers-0 -- bash
+kubectl exec -it -n demo druid-cluster-middleManagers-0 -- bash
+```
 druid@druid-cluster-middleManagers-0:~$ df -h /var/druid/task
 Filesystem                                              Size       Used     Available   Use%    Mounted on
 /dev/longhorn/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M     24.0K    957.4M      0%      /var/druid/task
@@ -363,7 +379,6 @@ druid@druid-cluster-middleManagers-0:~$ dd if=/dev/zero of=/var/druid/task/file.
 druid@druid-cluster-middleManagers-0:~$ df -h /var/druid/task
 Filesystem                                              Size      Used      Available   Use%  Mounted on
 /dev/longhorn/pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a  973.4M    600.0M    357.4M      63%   /var/druid/task
-```
 
 So, from the above output we can see that the storage usage is 63% for both nodes, which exceeded the `usageThreshold` 60%.
 
@@ -371,25 +386,26 @@ There will be two `DruidOpsRequest` created for both historicals and middleManag
 Let's watch the `druidopsrequest` in the demo namespace to see if any `druidopsrequest` object is created. After some time you'll see that a `druidopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get druidopsrequest -n demo
+watch kubectl get druidopsrequest -n demo
+```
 NAME                                                        TYPE              STATUS        AGE
 druidopsrequest.ops.kubedb.com/drops-druid-cluster-gq9huj   VolumeExpansion   Progressing   46s
 druidopsrequest.ops.kubedb.com/drops-druid-cluster-kbw4fd   VolumeExpansion   Successful    4m46s
-```
 
 Once ops request has succeeded. Let's wait for the other one to become successful.
 
 ```bash
-$ kubectl get druidopsrequest -n demo 
+kubectl get druidopsrequest -n demo 
+```
 NAME                                                        TYPE              STATUS       AGE
 druidopsrequest.ops.kubedb.com/drops-druid-cluster-gq9huj   VolumeExpansion   Successful   3m18s
 druidopsrequest.ops.kubedb.com/drops-druid-cluster-kbw4fd   VolumeExpansion   Successful   7m18s
-```
 
 We can see from the above output that the both `DruidOpsRequest` has succeeded. If we describe the `DruidOpsRequest` one by one we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe druidopsrequest -n demo drops-druid-cluster-kbw4fd
+kubectl describe druidopsrequest -n demo drops-druid-cluster-kbw4fd
+```
 Name:         drops-druid-cluster-kbw4fd
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -624,10 +640,10 @@ Events:
   Normal   UpdatePetSets                             5m18s  KubeDB Ops-manager Operator  successfully reconciled the Druid resources
   Normal   UpdatePetSets                             5m8s   KubeDB Ops-manager Operator  successfully reconciled the Druid resources
   Normal   UpdatePetSets                             4m57s  KubeDB Ops-manager Operator  successfully reconciled the Druid resources
-```
 
 ```bash
-$ kubectl describe druidopsrequest -n demo drops-druid-cluster-gq9huj 
+kubectl describe druidopsrequest -n demo drops-druid-cluster-gq9huj 
+```
 Name:         drops-druid-cluster-gq9huj
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -859,20 +875,25 @@ Events:
   Normal   ReadyPetSets                              2m35s  KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                  2m35s  KubeDB Ops-manager Operator  Resuming Druid database: demo/druid-cluster
   Normal   Successful                                2m35s  KubeDB Ops-manager Operator  Successfully resumed Druid database: demo/druid-cluster for DruidOpsRequest: drops-druid-cluster-gq9huj
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the topology cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo druid-cluster-historicals -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2041405440"
-$ kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+
+```bash
+kubectl get petset -n demo druid-cluster-middleManagers -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2041405440"
-$ kubectl get pv -n demo
+
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                             STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-2c0ef2aa-0438-4d75-9cb2-c12a176bae6a   1948Mi     RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   longhorn       <unset>                          19m
 pvc-5f4cea5f-e0c8-4339-b67c-9cb8b02ba49d   1948Mi     RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0      longhorn       <unset>                          19m
-```
 
 The above output verifies that we have successfully autoscaled the volume of the Druid topology cluster for both historicals and middleManagers.
 

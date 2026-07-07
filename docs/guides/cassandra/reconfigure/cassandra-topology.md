@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/cassandra](/docs/examples/cassandra) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -70,9 +70,9 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology-custom-config-secret.yaml
-secret/cas-topology-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology-custom-config-secret.yaml
 ```
+secret/cas-topology-custom-config created
 
 
 In this section, we are going to create a Cassandra object specifying `spec.configuration` field to apply this custom configuration. Below is the YAML of the `Cassandra` CR that we are going to create,
@@ -115,27 +115,28 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-topology.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   48s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   81s
 .
 .
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready          105s
-```
 
 Now, we will check if the cassandra has started with the custom configuration we have provided.
 
 Exec into the Cassandra pod and execute the following commands to see the configurations:
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 [cassandra@cassandra-prod-rack-r0-0 /]$ cat /etc/cassandra/cassandra.yaml | grep request_timeout
 read_request_timeout: 6000ms
@@ -144,7 +145,6 @@ write_request_timeout: 2500ms
 counter_write_request_timeout: 5000ms
 truncate_request_timeout: 60000ms
 request_timeout: 10000ms
-```
 Here, we can see that our given configuration is applied to the Cassandra cluster . `read_request_timeout` is set to `6000ms` from the default value `5000ms`.
 
 ### Reconfigure using new config secret
@@ -164,21 +164,21 @@ Then, we will create a new secret with this configuration file.
 At first, create `cassandra.yaml` file containing required configuration settings.
 
 ```bash
-$ cat cassandra.yaml
-read_request_timeout: 6500ms
+cat cassandra.yaml
 ```
+read_request_timeout: 6500ms
 
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo  new-cas-topology-custom-config --from-file=./cassandra.yaml
-secret/new-cas-topology-custom-config created
+kubectl create secret generic -n demo  new-cas-topology-custom-config --from-file=./cassandra.yaml
 ```
+secret/new-cas-topology-custom-config created
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/new-cassandra-topology-custom-config-secret.yaml
-secret/new-cas-topology-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/new-cassandra-topology-custom-config-secret.yaml
 ```
+secret/new-cas-topology-custom-config created
 
 #### Create CassandraOpsRequest
 
@@ -210,9 +210,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-update-topology-ops.yaml
-cassandraopsrequest.ops.kubedb.com/casops-reconfigure-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-update-topology-ops.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-reconfigure-topology created
 
 #### Verify the new configuration is working
 
@@ -221,15 +221,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the `configSe
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ kubectl get cassandraopsrequests -n demo 
+kubectl get cassandraopsrequests -n demo 
+```
 NAME                          TYPE          STATUS       AGE
 casops-reconfigure-topology   Reconfigure   Successful   2m53s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$  kubectl describe cassandraopsrequest -n demo casops-reconfigure-topology
+ kubectl describe cassandraopsrequest -n demo casops-reconfigure-topology
+```
 Name:         casops-reconfigure-topology
 Namespace:    demo
 Labels:       <none>
@@ -322,12 +323,12 @@ Events:
   Normal   RestartNodes                                                       25s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           25s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         25s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-reconfigure-topology
-```
 
 Now let's exec one of the instance to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 [cassandra@cassandra-prod-rack-r0-0 /]$ cat /etc/cassandra/cassandra.yaml | grep request_timeout
 read_request_timeout: 6500ms
@@ -336,7 +337,6 @@ write_request_timeout: 2500ms
 counter_write_request_timeout: 5000ms
 truncate_request_timeout: 60000ms
 request_timeout: 10000ms
-```
 
 As we can see from the configuration of ready cassandra, the value of `read_request_timeout` has been changed from `6000ms` to `6500ms`. So the reconfiguration of the cluster is successful.
 
@@ -376,9 +376,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-apply-topology.yaml
-cassandraopsrequest.ops.kubedb.com/casops-reconfigure-apply-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/reconfigure/cassandra-reconfigure-apply-topology.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-reconfigure-apply-topology created
 
 #### Verify the new configuration is working
 
@@ -387,17 +387,18 @@ If everything goes well, `KubeDB` Ops-manager operator will merge this new confi
 Let's wait for `CassandraOpsRequest` to be `Successful`.  Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ kubectl get cassandraopsrequests -n demo casops-reconfigure-apply-topology 
+kubectl get cassandraopsrequests -n demo casops-reconfigure-apply-topology 
+```
 NAME                                TYPE          STATUS       AGE
 casops-reconfigure-apply-topology   Reconfigure   Successful   55s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to reconfigure the cluster.
 
 
 
 ```bash
-$ kubectl describe cassandraopsrequest -n demo casops-reconfigure-apply-topology 
+kubectl describe cassandraopsrequest -n demo casops-reconfigure-apply-topology 
+```
 Name:         casops-reconfigure-apply-topology
 Namespace:    demo
 Labels:       <none>
@@ -496,12 +497,12 @@ Events:
   Normal   RestartNodes                                                       37s    KubeDB Ops-manager Operator  Successfully restarted all nodes
   Normal   Starting                                                           37s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                                                         37s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: casops-reconfigure-apply-topology
-```
 
 Now let's exec into one of the instance to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+kubectl exec -it -n demo cassandra-prod-rack-r0-0  -- bash
+```
 Defaulted container "cassandra" out of: cassandra, cassandra-init (init), medusa-init (init)
 [cassandra@cassandra-prod-rack-r0-0 /]$ cat /etc/cassandra/cassandra.yaml | grep request_timeout
 read_request_timeout: 5500ms
@@ -517,8 +518,6 @@ As we can see from the configuration of ready cassandra, the value of `read_requ
 ## Cleaning Up
 
 To clean up the Kubernetes resources created by this tutorial, run:
-
-```bash
 kubectl delete cas -n demo cassandra-prod
 kubectl delete cassandraopsrequest -n demo casops-reconfigure-apply-topology casops-reconfigure-topology
 kubectl delete secret -n demo cas-topology-custom-config new-cas-topology-custom-config

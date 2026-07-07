@@ -24,10 +24,10 @@ KubeDB supports restarting the Memcached database via a MemcachedOpsRequest. Res
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -61,9 +61,9 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/restart/memcached.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/restart/memcached.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 ## Apply Restart opsRequest
 
@@ -86,18 +86,21 @@ spec:
 Let's create the `MemcachedOpsRequest` CR we have shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/restart/opsrequest-restart.yaml
-memcachedopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/restart/opsrequest-restart.yaml
 ```
+memcachedopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the pods one by one.
 
-```shell
-$ kubectl get mcops -n demo restart 
+```bash
+kubectl get mcops -n demo restart 
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   3m25s
 
-$ kubectl get mcops -n demo restart -oyaml
+```bash
+kubectl get mcops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MemcachedOpsRequest
 metadata:
@@ -152,7 +155,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Cleaning up
 

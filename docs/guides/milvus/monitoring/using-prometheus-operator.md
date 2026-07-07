@@ -54,24 +54,25 @@ Deploy the database and wait until it is `Ready`.
 When monitoring is enabled, KubeDB creates a dedicated **stats service** named `<db>-stats` exposing the metrics port `9091`:
 
 ```bash
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
+kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
+```
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
 milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP   91s
 milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP    91s
-```
 
 ## ServiceMonitor
 
 KubeDB also creates a `ServiceMonitor` named `<db>-stats` that selects the stats service:
 
 ```bash
-$ kubectl get servicemonitor -n demo -l app.kubernetes.io/instance=milvus-standalone
+kubectl get servicemonitor -n demo -l app.kubernetes.io/instance=milvus-standalone
+```
 NAME                      AGE
 milvus-standalone-stats   90s
-```
 
 ```bash
-$ kubectl get servicemonitor milvus-standalone-stats -n demo -o yaml
+kubectl get servicemonitor milvus-standalone-stats -n demo -o yaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
@@ -105,7 +106,6 @@ spec:
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: milvuses.kubedb.com
       kubedb.com/role: stats
-```
 
 Key points:
 
@@ -121,7 +121,8 @@ Once the Prometheus Operator reconciles this `ServiceMonitor`, Milvus metrics be
 Monitoring works identically for a distributed Milvus. A single stats service and `ServiceMonitor` named `milvus-cluster-stats` are created, and metrics are scraped from the distributed components (each role's pods expose port `9091`).
 
 ```bash
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
+kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
+```
 NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
 milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP   3m
 milvus-cluster-datanode        ClusterIP   None          <none>        9091/TCP    3m
@@ -130,7 +131,9 @@ milvus-cluster-querynode       ClusterIP   None          <none>        9091/TCP 
 milvus-cluster-stats           ClusterIP   10.43.95.57   <none>        9091/TCP    3m
 milvus-cluster-streamingnode   ClusterIP   None          <none>        9091/TCP    3m
 
-$ kubectl get servicemonitor milvus-cluster-stats -n demo -o yaml
+```bash
+kubectl get servicemonitor milvus-cluster-stats -n demo -o yaml
+```
 ...
 spec:
   endpoints:
@@ -148,13 +151,15 @@ spec:
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: milvuses.kubedb.com
       kubedb.com/role: stats
-```
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

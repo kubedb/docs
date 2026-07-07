@@ -33,9 +33,9 @@ This guide will show you how to use `KubeDB` to autoscaling compute resources i.
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/rabbitmq](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -81,22 +81,23 @@ spec:
 Let's create the `RabbitMQ` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/autoscaling/compute/rabbitmq-autoscale.yaml
-rabbitmq.kubedb.com/rabbitmq-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/autoscaling/compute/rabbitmq-autoscale.yaml
 ```
+rabbitmq.kubedb.com/rabbitmq-autoscale created
 
 Now, wait until `rabbitmq-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo
+kubectl get rm -n demo
+```
 NAME                 TYPE                  VERSION   STATUS   AGE
 rabbitmq-autoscale   kubedb.com/v1alpha2   4.2.4     Ready    22s
-```
 
 Let's check the Pod containers resources,
 
 ```bash
-$ kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -107,11 +108,11 @@ $ kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].
     "memory": "1Gi"
   }
 }
-```
 
 Let's check the RabbitMQ resources,
 ```bash
-$ kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -122,7 +123,6 @@ $ kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplat
     "memory": "1Gi"
   }
 }
-```
 
 You can see from the above outputs that the resources are same as the one we have assigned while deploying the rabbitmq.
 
@@ -176,20 +176,23 @@ Here,
 Let's create the `RabbitMQAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/autoscaling/compute/rabbitmq-autoscaler.yaml
-rabbitmqautoscaler.autoscaling.kubedb.com/rabbitmq-autoscaler-ops created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/autoscaling/compute/rabbitmq-autoscaler.yaml
 ```
+rabbitmqautoscaler.autoscaling.kubedb.com/rabbitmq-autoscaler-ops created
 
 #### Verify Autoscaling is set up successfully
 
 Let's check that the `rabbitmqautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get rabbitmqautoscaler -n demo
+kubectl get rabbitmqautoscaler -n demo
+```
 NAME                   AGE
 rabbitmq-autoscale-ops   6m55s
 
-$ kubectl describe rabbitmqautoscaler rabbitmq-autoscale-ops -n demo
+```bash
+kubectl describe rabbitmqautoscaler rabbitmq-autoscale-ops -n demo
+```
 Name:         rabbitmq-autoscale-ops
 Namespace:    demo
 Labels:       <none>
@@ -272,7 +275,6 @@ Status:
           Memory:  2Gi
     Vpa Name:      rabbitmq-autoscale
 Events:            <none>
-```
 So, the `RabbitMQautoscaler` resource is created successfully.
 
 you can see in the `Status.VPAs.Recommendation` section, that recommendation has been generated for our RabbitMQ. Our autoscaler operator continuously watches the recommendation generated and creates an `rabbitmqopsrequest` based on the recommendations, if the rabbitmq pods are needed to scaled up or down.
@@ -280,25 +282,26 @@ you can see in the `Status.VPAs.Recommendation` section, that recommendation has
 Let's watch the `rabbitmqopsrequest` in the demo namespace to see if any `rabbitmqopsrequest` object is created. After some time you'll see that a `rabbitmqopsrequest` will be created based on the recommendation.
 
 ```bash
-$ watch kubectl get rabbitmqopsrequest -n demo
+watch kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                            TYPE              STATUS        AGE
 rmops-rabbitmq-autoscale-zzell6   VerticalScaling   Progressing   1m48s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get rabbitmqopsrequest -n demo
+watch kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                            TYPE              STATUS       AGE
 rmops-rabbitmq-autoscale-zzell6   VerticalScaling   Successful   3m40s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to scale the RabbitMQ.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-rabbitmq-autoscale-zzell6
+kubectl describe rabbitmqopsrequest -n demo rmops-rabbitmq-autoscale-zzell6
+```
 Name:         rmops-rabbitmq-autoscale-zzell6
 Namespace:    demo
 Labels:       app.kubernetes.io/component=connection-pooler
@@ -397,12 +400,12 @@ Events:
   Normal   RestartPods                                                           7m31s  KubeDB Ops-manager Operator  Successfully Restarted Pods With Resources
   Normal   Starting                                                              7m31s  KubeDB Ops-manager Operator  Resuming rabbitmq database: demo/rabbitmq-autoscale
   Normal   Successful                                                            7m30s  KubeDB Ops-manager Operator  Successfully resumed RabbitMQ database: demo/rabbitmq-autoscale for RabbitMQOpsRequest: rmops-rabbitmq-autoscale-zzell6
-```
 
 Now, we are going to verify from the Pod, and the RabbitMQ yaml whether the resources of the RabbitMQ has updated to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].resources'
+kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -414,7 +417,9 @@ $ kubectl get pod -n demo rabbitmq-autoscale-0 -o json | jq '.spec.containers[].
   }
 }
 
-$ kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```bash
+kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplate.spec.containers[0].resources'
+```
 {
   "limits": {
     "cpu": "1",
@@ -425,7 +430,6 @@ $ kubectl get rabbitmq -n demo rabbitmq-autoscale -o json | jq '.spec.podTemplat
     "memory": "1.2Gi"
   }
 }
-```
 
 
 The above output verifies that we have successfully auto-scaled the resources of the rabbitmq.

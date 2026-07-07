@@ -23,13 +23,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   7s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -38,10 +40,10 @@ demo                 Active   7s
 We will have to provide `StorageClass` in Elasticsearch CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  1h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -108,22 +110,23 @@ Here,
 Let's deploy the above example by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/yamls/es-cluster.yaml
-elasticsearch.kubedb.com/es-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/clustering/topology-cluster/simple-dedicated-cluster/yamls/es-cluster.yaml
 ```
+elasticsearch.kubedb.com/es-cluster created
 KubeDB will create the necessary resources to deploy the Elasticsearch cluster according to the above specification. Let’s wait until the database to be ready to use,
 
 ```bash
-$ watch kubectl get elasticsearch -n demo
+watch kubectl get elasticsearch -n demo
+```
 NAME         VERSION              STATUS   AGE
 es-cluster   xpack-9.2.3   Ready    3m32s
-```
 Here, Elasticsearch is in `Ready` state. It means the database is ready to accept connections.
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe elasticsearch -n demo es-cluster
+kubectl describe elasticsearch -n demo es-cluster
+```
 Name:         es-cluster
 Namespace:    demo
 Labels:       <none>
@@ -276,7 +279,6 @@ Events:
   Normal  Successful  30m   KubeDB Operator  Successfully created Elasticsearch
   Normal  Successful  30m   KubeDB Operator  Successfully created appbinding
   Normal  Successful  30m   KubeDB Operator  Successfully  governing service
-```
 - Here, in `Status.Conditions` 
   - `Conditions.Status` is `True` for the `Condition.Type:ProvisioningStarted` which means database provisioning has been started successfully.
   - `Conditions.Status` is `True` for the `Condition.Type:ReplicaReady` which specifies all replicas are ready in the cluster.
@@ -289,7 +291,8 @@ Events:
 Let's check the Kubernetes resources created by the operator on the deployment of Elasticsearch CRO:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-cluster'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-cluster'
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/es-cluster-data-0     1/1     Running   0          31m
 pod/es-cluster-data-1     1/1     Running   0          29m
@@ -329,8 +332,6 @@ persistentvolumeclaim/data-es-cluster-ingest-1   Bound    pvc-18420ed8-8455-4b18
 persistentvolumeclaim/data-es-cluster-master-0   Bound    pvc-6892422b-e399-44e1-9fdb-884b68fc66b5   1Gi        RWO            standard       31m
 persistentvolumeclaim/data-es-cluster-master-1   Bound    pvc-ed4a704c-7b13-421e-85e1-d710e556ca4e   1Gi        RWO            standard       29m
 
-```
-
 - `PetSet` - 3 PetSets are created for 3 types Elasticsearch nodes. The PetSets are named after the Elasticsearch instance with given suffix: `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
   - `{Elasticsearch-Name}` - the client service which is used to connect to the database. It points to the `ingest` nodes.
@@ -351,19 +352,19 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 KubeDB will create few Services to connect with the database. Let’s check the Services by following command,
 
 ```bash
-$ kubectl get service -n demo
+kubectl get service -n demo
+```
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 es-cluster             ClusterIP   10.96.67.225    <none>        9200/TCP   11m
 es-cluster-master      ClusterIP   None            <none>        9300/TCP   11m
 es-cluster-pods        ClusterIP   None            <none>        9200/TCP   11m
-```
 Here, we are going to use `es-cluster` Service to connect with the database. Now, let’s port-forward the `es-cluster` Service to the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es-cluster 9200
+kubectl port-forward -n demo svc/es-cluster 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
 #### Export the Credentials
@@ -371,7 +372,8 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 KubeDB also create some Secrets for the database. Let’s check which Secrets have been created by KubeDB for our `es-cluster`.
 
 ```bash
-$ kubectl get secret -n demo | grep es-cluster
+kubectl get secret -n demo | grep es-cluster
+```
 es-cluster-archiver-cert           kubernetes.io/tls                     3      12m
 es-cluster-ca-cert                 kubernetes.io/tls                     2      12m
 es-cluster-config                  Opaque                                1      12m
@@ -379,7 +381,6 @@ es-cluster-auth            kubernetes.io/basic-auth              2      12m
 es-cluster-http-cert               kubernetes.io/tls                     3      12m
 es-cluster-token-hx5mn             kubernetes.io/service-account-token   3      12m
 es-cluster-transport-cert          kubernetes.io/tls                     3      12m
-```
 Now, we can connect to the database with `es-cluster-auth` which contains the admin level credentials to connect with the database.
 
 ### Accessing Database Through CLI
@@ -387,17 +388,21 @@ Now, we can connect to the database with `es-cluster-auth` which contains the ad
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
-elastic
-$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
-tS$k!2IBI.ASI7FJ
+kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+elastic
+
+```bash
+kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
+```
+tS$k!2IBI.ASI7FJ
 
 Now, let's check the health of our Elasticsearch cluster
 
-```bash
 # curl -XGET -k -u 'username:password' https://localhost:9200/_cluster/health?pretty"
-$ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cluster/health?pretty"
+```bash
+curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cluster/health?pretty"
+```
 {
   "cluster_name" : "es-cluster",
   "status" : "green",
@@ -416,29 +421,26 @@ $ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_clust
   "active_shards_percent_as_number" : 100.0
 }
 
-```
-
 ## Insert Sample Data
 
 Now, we are going to insert some data into Elasticsearch.
 
 ```bash
-$ curl -XPOST -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_doc?pretty" -H 'Content-Type: application/json' -d'
+curl -XPOST -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_doc?pretty" -H 'Content-Type: application/json' -d'
+```
          {
              "Company": "AppsCode Inc",
              "Product": "KubeDB"
          }
          '
-
-```
 Now, let’s verify that the index have been created successfully.
 
 ```bash
-$ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/_cat/indices?v&s=index&pretty"
+```
 health status index            uuid                   pri rep docs.count docs.deleted store.size pri.store.size
 green  open   .geoip_databases FsJlvTyRSsuRWTpX8OpkOA   1   1         40            0       76mb           38mb
 green  open   info             9Z2Cl5fjQWGBAfjtF9LqBw   1   1          1            0      8.9kb          4.4kb
-```
 Also, let’s verify the data in the indexes:
 
 ```bash
@@ -481,12 +483,16 @@ curl -XGET -k --user 'elastic:tS$k!2IBI.ASI7FJ' "https://localhost:9200/info/_se
 To cleanup the k8s resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo elasticsearch es-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete elasticsearch -n demo es-cluster 
+```bash
+kubectl delete elasticsearch -n demo es-cluster 
+```
 
 # Delete namespace
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

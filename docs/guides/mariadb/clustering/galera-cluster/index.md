@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/clustering/galera-cluster/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -62,9 +62,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/clustering/galera-cluster/examples/demo-1.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Here,
 
@@ -74,7 +74,8 @@ Here,
 KubeDB operator watches for `MariaDB` objects using Kubernetes API. When a `MariaDB` object is created, KubeDB operator will create a new PetSet and a Service with the matching MariaDB object name. KubeDB operator will also create a governing service for the PetSet with the name `<mariadb-object-name>-pods`.
 
 ```bash
-$ kubectl get mariadb -n demo sample-mariadb -o yaml
+kubectl get mariadb -n demo sample-mariadb -o yaml
+```
 apiVersion: kubedb.com/v1
 kind: MariaDB
 metadata:
@@ -138,8 +139,9 @@ status:
   observedGeneration: 2
   phase: Ready
 
-
-$ kubectl get petset,svc,secret,pvc,pv,pod -n demo
+```bash
+kubectl get petset,svc,secret,pvc,pv,pod -n demo
+```
 NAME                              READY   AGE
 petset.apps/sample-mariadb   3/3     116m
 
@@ -166,15 +168,15 @@ NAME                   READY   STATUS    RESTARTS   AGE
 pod/sample-mariadb-0   1/1     Running   0          116m
 pod/sample-mariadb-1   1/1     Running   0          116m
 pod/sample-mariadb-2   1/1     Running   0          116m
-```
 
 ## Connect with MariaDB database
 
 Once the database is in running state we can conncet to each of three nodes. We will use login credentials `MYSQL_ROOT_USERNAME` and `MYSQL_ROOT_PASSWORD` saved as container's environment variable.
 
-```bash
 # First Node
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
@@ -195,9 +197,10 @@ MariaDB [(none)]> SELECT 1;
 MariaDB [(none)]> quit;
 Bye
 
-
 # Second Node
-$ kubectl exec -it -n demo sample-mariadb-1 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-1 -- bash
+```
 root@sample-mariadb-1:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
@@ -218,9 +221,10 @@ MariaDB [(none)]> SELECT 1;
 MariaDB [(none)]> quit;
 Bye
 
-
 # Third Node
-$ kubectl exec -it -n demo sample-mariadb-2 -- bash
+```bash
+kubectl exec -it -n demo sample-mariadb-2 -- bash
+```
 root@sample-mariadb-2:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 78
@@ -240,14 +244,14 @@ MariaDB [(none)]> SELECT 1;
 
 MariaDB [(none)]> quit;
 Bye
-```
 
 ## Check the Cluster Status
 
 Now, we are ready to check newly created cluster status. Connect and run the following commands from any of the hosts and you will get the same result, that is the cluster size is three.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 137
@@ -264,7 +268,6 @@ MariaDB [(none)]> show status like 'wsrep_cluster_size';
 | wsrep_cluster_size | 3     |
 +--------------------+-------+
 1 row in set (0.001 sec)
-```
 
 ## Data Availability
 
@@ -273,7 +276,8 @@ In a MariaDB Galera Cluster, Each member can read and write. In this section, we
 > Read the comment written for the following commands. They contain the instructions and explanations of the commands.
 
 ```bash
-$ kubectl exec -it -n demo sample-mariadb-0 -- bash
+kubectl exec -it -n demo sample-mariadb-0 -- bash
+```
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 202
@@ -373,7 +377,6 @@ MariaDB [(none)]> quit
 Bye
 root@sample-mariadb-2:/# exit
 exit
-```
 
 ## Automatic Failover
 
@@ -453,8 +456,11 @@ Bye
 Clean what we created in this tutorial.
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-mariadb.kubedb.com "sample-mariadb" deleted
-$ kubectl delete ns demo
-namespace "demo" deleted
+kubectl delete mariadb -n demo sample-mariadb
 ```
+mariadb.kubedb.com "sample-mariadb" deleted
+
+```bash
+kubectl delete ns demo
+```
+namespace "demo" deleted

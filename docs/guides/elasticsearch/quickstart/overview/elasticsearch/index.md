@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/elasticsearch/quickstart/overview/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Elasticsearch CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  5d2h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -58,7 +60,8 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [ElasticsearchVersion](/docs/guides/elasticsearch/concepts/catalog/index.md). The installation process comes with a set of tested ElasticsearchVersion objects. Let's check available ElasticsearchVersions by,
 
 ```bash
-$ kubectl get elasticsearchversions
+kubectl get elasticsearchversions
+```
 NAME                        VERSION   DISTRIBUTION   DB_IMAGE                                              DEPRECATED   AGE
 kubedb-searchguard-5.6.16   5.6.16    KubeDB         kubedb/elasticsearch:5.6.16-searchguard-v2022.02.22                4h24m
 kubedb-xpack-7.12.0         7.12.0    KubeDB         kubedb/elasticsearch:7.12.0-xpack-v2021.08.23                      4h24m
@@ -127,7 +130,6 @@ xpack-8.19.9                7.9.1     ElasticStack   elasticsearch:7.9.1        
 xpack-7.9.1-v2              7.9.1     ElasticStack   elasticsearch:7.9.1                                                4h24m
 xpack-8.2.3                 8.2.0     ElasticStack   elasticsearch:8.2.0                                                4h24m
 xpack-8.5.2                 8.5.2     ElasticStack   elasticsearch:8.5.2                                                4h24m
-```
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
@@ -165,9 +167,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
-elasticsearch.kubedb.com/es-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
@@ -183,17 +185,18 @@ Here,
 The Elasticsearch's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the database.
 
 ```bash
-$ kubectl get elasticsearch -n demo -w
+kubectl get elasticsearch -n demo -w
+```
 NAME            VERSION       STATUS         AGE
 es-quickstart   xpack-9.2.3   Provisioning   7s
 ... ...
 es-quickstart   xpack-9.2.3   Ready          39s
-```
 
 Describe the Elasticsearch object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe elasticsearch -n demo  es-quickstart
+kubectl describe elasticsearch -n demo  es-quickstart
+```
 Name:         es-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -419,14 +422,14 @@ Events:
   Normal  Successful  82s    KubeDB Operator  Successfully  governing service
   Normal  Successful  74s    KubeDB Operator  Successfully  governing service
   Normal  Successful  66s    KubeDB Operator  Successfully  governing service
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of an Elasticsearch CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
+```
 NAME                  READY   STATUS    RESTARTS   AGE
 pod/es-quickstart-0   1/1     Running   0          8m2s
 pod/es-quickstart-1   1/1     Running   0          5m15s
@@ -460,7 +463,6 @@ NAME                                         STATUS   VOLUME                    
 persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-e5227633-2fc0-4a50-a599-57cba8b31d14   1Gi        RWO            standard       8m2s
 persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-fbacd36c-4132-4e2a-a5c5-91149054044c   1Gi        RWO            standard       5m15s
 persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-9f9c6eaf-1ba6-4167-a37d-86eaf1f7e103   1Gi        RWO            standard       5m8s
-```
 
 - `PetSet` - a PetSet named after the Elasticsearch instance. In topology mode, the operator creates 3 petSets with name `{Elasticsearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each Elasticsearch database.
@@ -481,10 +483,10 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `9200` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/es-quickstart 9200
+kubectl port-forward -n demo svc/es-quickstart 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 
@@ -494,22 +496,22 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
-  elastic
+  kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  elastic
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
-  vIHoIfHn=!Z8F4gP
+  kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  vIHoIfHn=!Z8F4gP
 
 Now let's check the health of our Elasticsearch database.
 
 ```bash
-$ curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/health?pretty"
-
+curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/health?pretty"
+```
 {
   "cluster_name" : "es-quickstart",
   "status" : "green",
@@ -527,7 +529,6 @@ $ curl -XGET -k -u 'elastic:vIHoIfHn=!Z8F4gP' "https://localhost:9200/_cluster/h
   "task_max_waiting_in_queue_millis" : 0,
   "active_shards_percent_as_number" : 100.0
 }
-```
 
 From the health information above, we can see that our Elasticsearch cluster's status is `green` which means the cluster is healthy.
 
@@ -538,23 +539,23 @@ KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or lat
 To halt the database, we have to set `spec.deletionPolicy:` to `Halt` by updating it,
 
 ```bash
-$ kubectl edit elasticsearch -n demo es-quickstart
-
+kubectl edit elasticsearch -n demo es-quickstart
+```
 >> spec:
 >>   deletionPolicy: Halt
-```
 
 Now, if you delete the Elasticsearch object, the KubeDB operator will delete every resource created for this Elasticsearch CR, but leaves the auth secrets, and PVCs.
 
 ```bash
-$  kubectl delete elasticsearch -n demo es-quickstart 
-elasticsearch.kubedb.com "es-quickstart" deleted
+ kubectl delete elasticsearch -n demo es-quickstart 
 ```
+elasticsearch.kubedb.com "es-quickstart" deleted
 
 Check resources:
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=es-quickstart'
+```
 NAME                                               TYPE                       DATA   AGE
 secret/es-quickstart-apm-system-cred               kubernetes.io/basic-auth   2      5m39s
 secret/es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      5m39s
@@ -568,8 +569,6 @@ persistentvolumeclaim/data-es-quickstart-0   Bound    pvc-5b657e2a-6c32-4631-bac
 persistentvolumeclaim/data-es-quickstart-1   Bound    pvc-e44d7ab8-fc2b-4cfe-9bef-74f2a2d875f5   1Gi        RWO            standard       5m23s
 persistentvolumeclaim/data-es-quickstart-2   Bound    pvc-dad75b1b-37ed-4318-a82a-5e38f04d36bc   1Gi        RWO            standard       5m18s
 
-```
-
 ## Resume Elasticsearch
 
 Say, the Elasticsearch CR was deleted with `spec.deletionPolicy` to `Halt` and you want to re-create the Elasticsearch cluster using the existing auth secrets and the PVCs.
@@ -577,24 +576,28 @@ Say, the Elasticsearch CR was deleted with `spec.deletionPolicy` to `Halt` and y
 You can do it by simpily re-deploying the original Elasticsearch object:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
-elasticsearch.kubedb.com/es-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/quickstart/overview/elasticsearch/yamls/elasticsearch-v1.yaml
 ```
+elasticsearch.kubedb.com/es-quickstart created
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo elasticsearch es-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo elasticsearch es-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 elasticsearch.kubedb.com/es-quickstart patched
 
-$ kubectl delete -n demo es/es-quickstart
+```bash
+kubectl delete -n demo es/es-quickstart
+```
 elasticsearch.kubedb.com "es-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

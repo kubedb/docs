@@ -27,12 +27,14 @@ section_menu_id: guides
 - To keep Prometheus resources isolated, we are going to use a separate namespace called `monitoring` to deploy the prometheus operator helm chart. Alternatively, you can use `--create-namespace` flag while deploying prometheus. We are going to deploy database in `demo` namespace.
 
   ```bash
-  $ kubectl create ns monitoring
+  kubectl create ns monitoring
+  ```
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 
 
@@ -45,17 +47,18 @@ We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd
 At first, let's find out the available Prometheus server in our cluster.
 
 ```bash
-$ kubectl get prometheus --all-namespaces
+kubectl get prometheus --all-namespaces
+```
 NAMESPACE    NAME                                    VERSION   DESIRED   READY   RECONCILED   AVAILABLE   AGE
 monitoring   prometheus-kube-prometheus-prometheus   v3.4.2    1         1       True         True        7h43m
-```
 
 > If you don't have any Prometheus server running in your cluster, deploy one following the guide specified in **Before You Begin** section.
 
 Now, let's view the YAML of the available Prometheus server `prometheus` in `monitoring` namespace.
 
 ```bash
-$ kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
+kubectl get prometheus -n monitoring prometheus-kube-prometheus-prometheus -o yaml
+```
 apiVersion: monitoring.coreos.com/v1
 kind: Prometheus
 metadata:
@@ -180,7 +183,6 @@ status:
   shards: 1
   unavailableReplicas: 0
   updatedReplicas: 1
-```
 
 Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of ClickHouse crd.
 
@@ -254,9 +256,9 @@ Here,
 Let's create the clickhouse object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/coreos-prom-clickhouse.yaml
-clickhouses.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/coreos-prom-clickhouse.yaml
 ```
+clickhouses.kubedb.com/clickhouse-prod created
 
 Now, wait for the database to go into `Running` state.
 
@@ -369,20 +371,20 @@ Also notice that the `ServiceMonitor` has selector which match the labels we hav
 At first, let's find out the respective Prometheus pod for `prometheus` Prometheus server.
 
 ```bash
-$ kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+kubectl get pod -n monitoring -l=app.kubernetes.io/name=prometheus
+```
 NAME                                                 READY   STATUS    RESTARTS      AGE
 prometheus-prometheus-kube-prometheus-prometheus-0   2/2     Running   2 (18m ago)   24h
-```
 
 Prometheus server is listening to port `9090` of `prometheus-prometheus-kube-prometheus-prometheus-0` pod. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
 
 Run following command on a separate terminal to forward the port 9090 of `prometheus-kube-prometheus-prometheus` service which is pointing to the prometheus pod,
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090
+```
 Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
-```
 
 Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `clickhouse-stats` service as one of the targets.
 

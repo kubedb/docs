@@ -37,21 +37,21 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Cassa
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Cluster Database
 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  6h2m
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   9m41s
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   9m24s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -103,26 +103,28 @@ spec:
 Let's create the `Cassandra` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
-cassandra.kubedb.com/cassandra-autoscale created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
 ```
+cassandra.kubedb.com/cassandra-autoscale created
 
 Now, wait until `cassandra-autoscale` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get cassandra -n demo
+kubectl get cassandra -n demo
+```
 NAME                  TYPE                  VERSION   STATUS   AGE
 cassandra-autoscale   kubedb.com/v1alpha2   5.0.3     Ready    16m
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+```
 "600Mi"
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                       STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   longhorn       <unset>                          21m
 pvc-86ece3c8-520a-4d41-834e-66108867ca36   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 longhorn       <unset>                          21m
@@ -130,7 +132,6 @@ pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete     
 pvc-cc932132-de53-425f-bd31-91af255a47e8   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 longhorn       <unset>                          21m
 pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             longhorn       <unset>                          21m
 pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             longhorn       <unset>                          21m
-```
 
 You can see the petset has 600Mi storage, and the capacity of all the persistent volume is also 600Mi.
 
@@ -172,20 +173,23 @@ Here,
 Let's create the `cassandraAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscaler-ops.yaml
-cassandraautoscaler.autoscaling.kubedb.com/cassandra-storage-autosclaer created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscaler-ops.yaml
 ```
+cassandraautoscaler.autoscaling.kubedb.com/cassandra-storage-autosclaer created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `cassandraautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get cassandraautoscaler -n demo
+kubectl get cassandraautoscaler -n demo
+```
 NAME                           AGE
 cassandra-storage-autoscaler   1m25s
 
-$ kubectl describe cassandraautoscaler cassandra-storage-autoscaler -n demo
+```bash
+kubectl describe cassandraautoscaler cassandra-storage-autoscaler -n demo
+```
 Name:         cassandra-storage-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -219,29 +223,29 @@ Spec:
       Trigger:            On
       Usage Threshold:    2
 Events:                   <none>
-```
 So, the `cassandraautoscaler` resource is created successfully.
 
 Let's watch the `cassandraopsrequest` in the demo namespace to see if any `cassandraopsrequest` object is created. After some time you'll see that a `cassandraopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                              TYPE              STATUS        AGE
 casops-cassandra-autoscale-xojkua   VolumeExpansion   Progressing   15s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ kubectl get cassandraopsrequest -n demo
+kubectl get cassandraopsrequest -n demo
+```
 NAME                                TYPE              STATUS       AGE
 casops-cassandra-autoscale-9ah2rp   VolumeExpansion   Successful   10m
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$kubectl describe cassandraopsrequest -n demo casops-cassandra-autoscale-9ah2rp 
+kubectl describe cassandraopsrequest -n demo casops-cassandra-autoscale-9ah2rp 
+```
 Name:         casops-cassandra-autoscale-9ah2rp
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -549,15 +553,17 @@ Events:
   Normal   ReadyPetSets                              63s    KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                  63s    KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-autoscale
   Normal   Successful                                63s    KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-autoscale for CassandraOpsRequest: casops-cassandra-autoscale-9ah2rp
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+kubectl get petset -n demo cassandra-autoscale-rack-r0 -o json | jq '.spec.volumeClaimTemplates[0].spec.resources.requests.storage'
+```
 "1203126272"
 
-$  kubectl get pv -n demo
+```bash
+ kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                                       STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-394fefad-d4ad-4dfa-ba11-df96e015da30   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-main-config-volume-cassandra-autoscale-rack-r0-1   longhorn       <unset>                          45m
 pvc-86ece3c8-520a-4d41-834e-66108867ca36   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-1                 longhorn       <unset>                          45m
@@ -565,8 +571,6 @@ pvc-c35bb138-9f13-4098-b2b0-cc151f013f6d   600Mi      RWO            Delete     
 pvc-cc932132-de53-425f-bd31-91af255a47e8   1148Mi     RWO            Delete           Bound    demo/cassandra-autoscale-data-cassandra-autoscale-rack-r0-0                 longhorn       <unset>                          45m
 pvc-cd57fb5f-b2f3-48de-b9d2-03059b05113f   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-1             longhorn       <unset>                          45m
 pvc-e550c573-60c7-4ec0-9e01-cf22683c502c   600Mi      RWO            Delete           Bound    demo/cassandra-autoscale-nodetool-cassandra-autoscale-rack-r0-0             longhorn       <unset>                          45m
-
-```
 
 The above output verifies that we have successfully autoscaled the volume related to data of the cassandra cluster.
 

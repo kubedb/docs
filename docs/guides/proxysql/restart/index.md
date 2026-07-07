@@ -25,9 +25,9 @@ KubeDB supports restarting the ProxySQL database via a `ProxySQLOpsRequest`. Res
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 > Note: YAML files used in this tutorial are stored in the [docs/examples/proxysql](https://github.com/kubedb/docs/tree/{{
 < param "info.version" >}}/docs/examples/proxysql) folder in the GitHub repository kubedb/docs.
 
@@ -61,17 +61,17 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's wait for the MySQL to be Ready.
 
 ```bash
-$ kubectl get my -n demo 
+kubectl get my -n demo 
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.3    Ready    7m6s
-```
 > Here you can use MariaDB or PerconXtraDB as well as backend. Have a look at other [ProxySQL backend examples](/docs/guides/proxysql/backends/)
 
 Now we are ready to deploy and test our ProxySQL server.
@@ -98,18 +98,18 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
-proxysql.kubedb.com/mysql-proxy created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/mysql-proxy created
 
 
 Let's wait for the ProxySQL to be Ready.
 
 ```bash
-$ kubectl get proxysql -n demo
+kubectl get proxysql -n demo
+```
 NAME          VERSION        STATUS   AGE
 mysql-proxy   3.0.1-debian   Ready    3m45s
-``` 
 ## Apply Restart opsRequest
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -176,12 +176,15 @@ mysql-server-2   2/2     Running   0          16m
 
 ```
 Now let's check the status of our `ProxySQLOpsRequest` and the Yaml output of the created `ProxySQLOpsRequest` CR.
-```shell
-$ kubectl get Proxysqlopsrequest -n demo 
+```bash
+kubectl get Proxysqlopsrequest -n demo 
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   31m
 
-$ kubectl get Proxysqlopsrequest -n demo restart -oyaml
+```bash
+kubectl get Proxysqlopsrequest -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ProxySQLOpsRequest
 metadata:
@@ -252,8 +255,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 
 ## Cleaning up
 

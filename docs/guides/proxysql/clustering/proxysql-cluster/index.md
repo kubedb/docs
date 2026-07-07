@@ -29,9 +29,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to set up a `Pr
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ### Prepare MySQL backend
 
@@ -60,22 +60,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/clustering/proxysql-cluster/examples/sample-mysql.yaml
-mysql.kubedb.com/mysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/clustering/proxysql-cluster/examples/sample-mysql.yaml
 ```
+mysql.kubedb.com/mysql-server created
 
 Let's wait for the MySQL to be Ready. 
 
 ```bash
-$ kubectl get mysql -n demo 
+kubectl get mysql -n demo 
+```
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8    Ready    3m51s
-```
 
 Let's first create an user in the backend mysql server and a database to test test the proxy traffic . 
 
 ```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash
+kubectl exec -it -n demo mysql-server-0 -- bash
+```
 Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
 root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -114,7 +115,6 @@ Query OK, 0 rows affected (0.00 sec)
 
 mysql> exit
 Bye
-```
 
 ## Deploy ProxySQL Cluster
 
@@ -139,26 +139,26 @@ To deploy a simple proxysql cluster all you need to do is just set the `.spec.re
 Let's apply the yaml. 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/clustering/proxysql-cluster/examples/sample-proxysql.yaml
-proxysql.kubedb.com/proxysql-server created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/clustering/proxysql-cluster/examples/sample-proxysql.yaml
 ```
+proxysql.kubedb.com/proxysql-server created
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
-$ kubectl get proxysql -n demo
+kubectl get proxysql -n demo
+```
 NAME           VERSION        STATUS   AGE
 proxy-server   3.0.1-debian   Ready    4m
-```
 
 Let's see the pods 
 
 ```bash
-$ kubectl get pods -n demo | grep proxy
+kubectl get pods -n demo | grep proxy
+```
 proxy-server-0   1/1     Running   3          4m
 proxy-server-1   1/1     Running   3          4m
 proxy-server-2   1/1     Running   3          4m
-```
 
 We can see that three nodes are up now. 
 
@@ -166,9 +166,10 @@ We can see that three nodes are up now.
 
 Let's check the proxysql_servers table inside the ProxySQL pods.
 
-```bash 
 #first node
-$ kubectl exec -it -n demo proxy-server-0 -- bash 
+```bash
+kubectl exec -it -n demo proxy-server-0 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
@@ -190,10 +191,10 @@ ProxySQLAdmin > select * from runtime_proxysql_servers;
 
 ProxySQLAdmin > exit
 Bye
-```
-```bash 
 #second node
-$ kubectl exec -it -n demo proxy-server-1 -- bash 
+```bash
+kubectl exec -it -n demo proxy-server-1 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
@@ -215,11 +216,11 @@ ProxySQLAdmin > select * from runtime_proxysql_servers;
 
 ProxySQLAdmin >exit
 Bye
-```
 
-```bash 
 #third node
-$ kubectl exec -it -n demo proxy-server-2 -- bash 
+```bash
+kubectl exec -it -n demo proxy-server-2 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
@@ -241,7 +242,6 @@ ProxySQLAdmin > select * from runtime_proxysql_servers;
 
 ProxySQLAdmin >exit
 Bye
-```
 
 From the above output we can see that the proxysql_servers tables has been successfuly set up. 
 
@@ -250,7 +250,8 @@ From the above output we can see that the proxysql_servers tables has been succe
 Let's insert the test user inside the proxysql server 
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-1 -- bash 
+kubectl exec -it -n demo proxy-server-1 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
@@ -269,8 +270,6 @@ Query OK, 0 rows affected (0.000 sec)
 ProxySQLAdmin > SAVE MYSQL USERS TO DISK;
 Query OK, 0 rows affected (0.009 sec)
 
-```
-
 ## Check load balance
 
 Now lets check the load balancing through the cluster. 
@@ -278,7 +277,8 @@ Now lets check the load balancing through the cluster.
 First we need to create a script to sent load over the ProxySQL. We will use the test user and the test table to check and send the load.
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-1 -- bash
+kubectl exec -it -n demo proxy-server-1 -- bash
+```
 root@proxy-server-1:/# apt update
 ... ... ... 
 root@proxy-server-1:/# apt install nano
@@ -309,12 +309,12 @@ done
 root@proxy-server-1:/# chmod +x load.sh
 
 root@proxy-server-1:/# ./load.sh
-```
 
 > You can find the load.sh file [here](/docs/guides/proxysql/clustering/proxysql-cluster/examples/load.sh)
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-1 -- bash 
+kubectl exec -it -n demo proxy-server-1 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin >"
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 316
@@ -342,7 +342,6 @@ ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_po
 | 3         | mysql-server-standby.demo.svc | 100     |
 | 3         | mysql-server.demo.svc         | 34      |
 +-----------+-------------------------------+---------+
-```
 
 From the above output we can see that the loads are properly distributed over the proxysql servers and the backend mysqls. 
 
@@ -355,7 +354,8 @@ We will change the `admin-restapi_enabled` in one cluster and observe the change
 First check the current status. 
 
 ```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash 
+kubectl exec -it -n demo proxy-server-0 -- bash 
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -365,7 +365,9 @@ root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 root@proxy-server-0:/# exit
 exit 
 
-$ kubectl exec -it -n demo proxy-server-1 -- bash 
+```bash
+kubectl exec -it -n demo proxy-server-1 -- bash 
+```
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -375,7 +377,9 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 root@proxy-server-1:/# exit
 exit 
 
-$ kubectl exec -it -n demo proxy-server-2 -- bash 
+```bash
+kubectl exec -it -n demo proxy-server-2 -- bash 
+```
 root@proxy-server-2:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -385,13 +389,11 @@ root@proxy-server-2:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 root@proxy-server-2:/# exit
 exit 
 
-```
-
 Now set the value to `true` in server 0 . 
 
 ```bash
-
-$ kubectl exec -it -n demo proxy-server-0 -- bash
+kubectl exec -it -n demo proxy-server-0 -- bash
+```
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "set admin-restapi_enabled='true';"
 root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
@@ -402,7 +404,9 @@ root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 root@proxy-server-0:/# exit
 exit 
 
-$ kubectl exec -it -n demo proxy-server-1 -- bash
+```bash
+kubectl exec -it -n demo proxy-server-1 -- bash
+```
 root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -412,7 +416,9 @@ root@proxy-server-1:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 root@proxy-server-1:/# exit
 exit 
 
-$ kubectl exec -it -n demo proxy-server-2 -- bash
+```bash
+kubectl exec -it -n demo proxy-server-2 -- bash
+```
 root@proxy-server-2:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variables like 'admin-restapi_enabled';"
 +-----------------------+-------+
 | Variable_name         | Value |
@@ -421,8 +427,6 @@ root@proxy-server-2:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 -e "show variabl
 +-----------------------+-------+
 root@proxy-server-2:/# exit
 exit 
-
-```
 From the above output we can see that the cluster is always in sync and the configuration change is always propagated to other cluster nodes. 
 
 ## Cluster failover recovery 
@@ -445,9 +449,9 @@ ProxySQLAdmin > SELECT hostname, checksum, FROM_UNIXTIME(changed_at) changed_at,
 Now let's delete the pod-2. 
 
 ```bash
-$ kubectl delete pod -n demo proxy-server-2
-pod "proxy-server-2" deleted
+kubectl delete pod -n demo proxy-server-2
 ```
+pod "proxy-server-2" deleted
 
 Let's watch the cluster status now. 
 ```bash
@@ -500,10 +504,10 @@ From the above output we can see that the third server is out of sync as it is n
 Wait for the new pod come up. 
 
 ```bash
-$ kubectl get pod -n demo proxy-server-2
+kubectl get pod -n demo proxy-server-2
+```
 NAME             READY   STATUS    RESTARTS   AGE
 proxy-server-2   1/1     Running   0          94s
-```
 
 Now check the status again. 
 
@@ -536,8 +540,11 @@ From the above output we can see that the new pod is now in sync with the two ot
 ## Cleaning up 
 
 ```bash
-$ kubectl delete proxysql -n demo proxy-server
-proxysql.kubedb.com "proxy-server" deleted
-$ kubectl delete mysql -n demo mysql-server
-mysql.kubedb.com "mysql-server" deleted
+kubectl delete proxysql -n demo proxy-server
 ```
+proxysql.kubedb.com "proxy-server" deleted
+
+```bash
+kubectl delete mysql -n demo mysql-server
+```
+mysql.kubedb.com "mysql-server" deleted

@@ -56,19 +56,20 @@ Here,
 - `spec.type` specifies that we are performing `RotateAuth` on Pgpool.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
-```shell
- $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauth.yaml
+ ```bash
+ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauth.yaml
+ ```
  pgpoolopsrequest.ops.kubedb.com/pgpops-rotate-auth-generated created
-```
 Let's wait for `PgpoolOpsrequest` to be `Successful`. Run the following command to watch `PgpoolOpsrequest` CR
-```shell
- $ kubectl get PgpoolOpsRequest -n pool
+ ```bash
+ kubectl get PgpoolOpsRequest -n pool
+ ```
 NAME                           TYPE         STATUS       AGE
 pgpops-rotate-auth-generated   RotateAuth   Successful   52s
-```
 If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$ kubectl describe pgpoolopsrequest -n pool pgpops-rotate-auth-generated
+```bash
+kubectl describe pgpoolopsrequest -n pool pgpops-rotate-auth-generated
+```
 Name:         pgpops-rotate-auth-generated
 Namespace:    pool
 Labels:       <none>
@@ -156,37 +157,45 @@ Events:
   Normal   RestartPods                                                       2m32s  KubeDB Ops-manager Operator  Successfully Restarted Pods With New User
   Normal   Starting                                                          2m32s  KubeDB Ops-manager Operator  Resuming Pgpool database: pool/quick-pgpool
   Normal   Successful                                                        2m32s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: pool/quick-pgpool for PgpoolOpsRequest: pgpops-rotate-auth-generated
-```
 
 **Verify Auth is rotated**
-```shell
-$  kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
-"quick-pgpool-auth"
-$ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
-pcp⏎     
-$ kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\password}' | base64 -d
-h1yPX0CjgGXNjpKY⏎                                                                      
+```bash
+ kubectl get Pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
 ```
+"quick-pgpool-auth"
+
+```bash
+kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\username}' | base64 -d
+```
+pcp⏎     
+
+```bash
+kubectl get secrets -n pool quick-pgpool-auth -o jsonpath='{.data.\password}' | base64 -d
+```
+h1yPX0CjgGXNjpKY⏎                                                                      
 Also, there will be two more new keys in the secret that stores the previous credentials. The key is `authData.prev`. You can find the secret and its data by running the following command:
 
-```shell
-$ kubectl get secret -n pool quick-pgpool-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-pcp⏎         
-$ kubectl get secret -n pool quick-pgpool-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-gZoAOjr0iUkH07ku⏎                                                              
+```bash
+kubectl get secret -n pool quick-pgpool-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+pcp⏎         
+
+```bash
+kubectl get secret -n pool quick-pgpool-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+gZoAOjr0iUkH07ku⏎                                                              
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
 #### 2. Using user created credentials
 
 At first, we need to create a secret with kubernetes.io/basic-auth type using custom username and password. Below is the command to create a secret with kubernetes.io/basic-auth type,
 
-```shell
-$ kubectl create secret generic quick-pp-user-auth -n pool \
+```bash
+kubectl create secret generic quick-pp-user-auth -n pool \
         --type=kubernetes.io/basic-auth \
         --from-literal=username=user \
         --from-literal=password=Pgpool2
-secret/quick-pp-user-auth created
 ```
+secret/quick-pp-user-auth created
 Now create a `PgpoolOpsRequest` with `RotateAuth` type. Below is the YAML of the `PgpoolOpsRequest` that we are going to create,
 
 ```shell
@@ -214,21 +223,22 @@ Here,
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
-```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauthuser.yaml
-pgpoolopsrequest.ops.kubedb.com/ppops-rotate-auth-user created
+```bash
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauthuser.yaml
 ```
+pgpoolopsrequest.ops.kubedb.com/ppops-rotate-auth-user created
 Let’s wait for `PgpoolOpsRequest` to be Successful. Run the following command to watch `PgpoolOpsRequest` CR:
 
-```shell
-$ kubectl get PgpoolOpsRequest -n pool
+```bash
+kubectl get PgpoolOpsRequest -n pool
+```
 NAME                           TYPE         STATUS       AGE
 pgpops-rotate-auth-generated   RotateAuth   Successful   56m
 ppops-rotate-auth-user         RotateAuth   Successful   44m
-```
 We can see from the above output that the `PgpoolOpsRequest` has succeeded. If we describe the `PgpoolOpsRequest` we will get an overview of the steps that were followed.
-```shell
-$  kubectl describe Pgpoolopsrequest -n pool ppops-rotate-auth-user
+```bash
+ kubectl describe Pgpoolopsrequest -n pool ppops-rotate-auth-user
+```
 Name:         ppops-rotate-auth-user
 Namespace:    pool
 Labels:       <none>
@@ -319,24 +329,31 @@ Events:
   Normal   RestartPods                                                       4m16s  KubeDB Ops-manager Operator  Successfully Restarted Pods With New User
   Normal   Starting                                                          4m16s  KubeDB Ops-manager Operator  Resuming Pgpool database: pool/quick-pgpool
   Normal   Successful                                                        4m16s  KubeDB Ops-manager Operator  Successfully resumed Pgpool database: pool/quick-pgpool for PgpoolOpsRequest: ppops-rotate-auth-user
-
-```
 **Verify auth is rotate**
-```shell
-$ kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
+```bash
+kubectl get pgpool -n pool quick-pgpool -ojson | jq .spec.authSecret.name
+```
 "quick-pp-user-auth"
-$ kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\username}' | base64 -d
+
+```bash
+kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 user⏎                                                                                       
-$ kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\password}' | base64 -d
+
+```bash
+kubectl get secrets -n pool quick-pp-user-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 Pgpool2⏎                                                                                                                                        
-```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:
-```shell
-$  kubectl get secret -n pool quick-pp-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
-pcp⏎                                                                                                                                                            
-$ kubectl get secret -n pool quick-pp-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
-gZoAOjr0iUkH07ku⏎                                
+```bash
+ kubectl get secret -n pool quick-pp-user-auth -o go-template='{{ index .data "username.prev" }}' | base64 -d
 ```
+pcp⏎                                                                                                                                                            
+
+```bash
+kubectl get secret -n pool quick-pp-user-auth -o go-template='{{ index .data "password.prev" }}' | base64 -d
+```
+gZoAOjr0iUkH07ku⏎                                
 
 The above output shows that the password has been changed successfully. The previous username & password is stored in the secret for rollback purpose.
 
@@ -345,14 +362,20 @@ The above output shows that the password has been changed successfully. The prev
 To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
-```shell
-$ kubectl delete Pgpoolopsrequest pgpops-rotate-auth-generated ppops-rotate-auth-user -n pool
-Pgpoolopsrequest.ops.kubedb.com "pgpops-rotate-auth-generated" "ppops-rotate-auth-user" deleted
-$ kubectl delete secret -n pool quick-pp-user-auth
-secret "quick-pp-user-auth" deleted
-$ kubectl delete secret -n pool   quick-pgpool-auth
-secret "quick-pgpool-auth " deleted
+```bash
+kubectl delete Pgpoolopsrequest pgpops-rotate-auth-generated ppops-rotate-auth-user -n pool
 ```
+Pgpoolopsrequest.ops.kubedb.com "pgpops-rotate-auth-generated" "ppops-rotate-auth-user" deleted
+
+```bash
+kubectl delete secret -n pool quick-pp-user-auth
+```
+secret "quick-pp-user-auth" deleted
+
+```bash
+kubectl delete secret -n pool   quick-pgpool-auth
+```
+secret "quick-pgpool-auth " deleted
 
 ## Next Steps
 

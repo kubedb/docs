@@ -80,9 +80,10 @@ status:
 
 The Supervisor evaluates the rules against the **operation resource** (not the recommendation itself). For example, given this `spec.operation`:
 
-```shell
-$ kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee \
+```bash
+kubectl get recommendation -n es elastic-x-elasticsearch-x-update-version-2juuee \
     -o jsonpath='{.spec.operation}' | yq -y
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: ElasticsearchOpsRequest
 metadata:
@@ -95,7 +96,6 @@ spec:
   updateVersion:
     targetVersion: xpack-9.2.3
 status: {}
-```
 
 the rules are evaluated against the OpsRequest's `status`:
 

@@ -25,9 +25,9 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,9 +46,9 @@ This guide will show you how to create custom `Service Account`, `Role`, and `Ro
 At first, let's create a `Service Acoount` in `demo` namespace.
 
 ```bash
-$ kubectl create serviceaccount -n demo my-custom-serviceaccount
-serviceaccount/my-custom-serviceaccount created
+kubectl create serviceaccount -n demo my-custom-serviceaccount
 ```
+serviceaccount/my-custom-serviceaccount created
 
 It should create a service account.
 
@@ -70,9 +70,9 @@ secrets:
 Now, we need to create a role that has necessary access permissions for the Elasticsearch instance named `quick-elasticsearch`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-role.yaml
-role.rbac.authorization.k8s.io/my-custom-role created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-role.yaml
 ```
+role.rbac.authorization.k8s.io/my-custom-role created
 
 Below is the YAML for the Role we just created.
 
@@ -98,10 +98,9 @@ This permission is required for Elasticsearch pods running on PSP enabled cluste
 Now create a `RoleBinding` to bind this `Role` with the already created service account.
 
 ```bash
-$ kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
-rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
-
+kubectl create rolebinding my-custom-rolebinding --role=my-custom-role --serviceaccount=demo:my-custom-serviceaccount --namespace=demo
 ```
+rolebinding.rbac.authorization.k8s.io/my-custom-rolebinding created
 
 It should bind `my-custom-role` and `my-custom-serviceaccount` successfully.
 
@@ -129,9 +128,9 @@ subjects:
 Now, create an Elasticsearch crd specifying `spec.podTemplate.spec.serviceAccountName` field to `my-custom-serviceaccount`.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
-elasticsearch.kubedb.com/quick-elasticsearch created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db.yaml
 ```
+elasticsearch.kubedb.com/quick-elasticsearch created
 
 Below is the YAML for the Elasticsearch crd we just created.
 
@@ -158,20 +157,20 @@ spec:
 ```
 
 ```bash
-$ kubectl get es -n demo
+kubectl get es -n demo
+```
 NAME                  VERSION   STATUS    AGE
 quick-elasticsearch   9.2.3     Running   74s
-```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-elasticsearch-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo quick-elasticsearch-0
+kubectl get pod -n demo quick-elasticsearch-0
+```
 NAME                    READY   STATUS    RESTARTS   AGE
 quick-elasticsearch-0   1/1     Running   0          93s
-```
 
 ## Reusing Service Account
 
@@ -180,9 +179,9 @@ An existing service account can be reused in another Elasticsearch Database. No 
 Now, create Elasticsearch crd `minute-elasticsearch` using the existing service account name `my-custom-serviceaccount` in the `spec.podTemplate.spec.serviceAccountName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db-two.yaml
-elasticsearch.kubedb.com/quick-elasticsearch created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/custom-rbac/es-custom-db-two.yaml
 ```
+elasticsearch.kubedb.com/quick-elasticsearch created
 
 Below is the YAML for the Elasticsearch crd we just created.
 
@@ -209,21 +208,21 @@ spec:
 ```
 
 ```bash
-$ kubectl get es -n demo
+kubectl get es -n demo
+```
 NAME                   VERSION   STATUS    AGE
 minute-elasticsearch   9.2.3     Running   59s
 quick-elasticsearch    9.2.3     Running   3m17s
-```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-elasticsearch-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo minute-elasticsearch-0
+kubectl get pod -n demo minute-elasticsearch-0
+```
 NAME                     READY   STATUS    RESTARTS   AGE
 minute-elasticsearch-0   1/1     Running   0          71s
-```
 
 ## Cleaning up
 

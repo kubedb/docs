@@ -34,9 +34,9 @@ This guide will show you how to use `KubeDB` to auto-scale the storage of a Weav
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Storage Autoscaling of Database
 
@@ -69,12 +69,12 @@ spec:
 Let's create the `Weaviate` CR and wait for it to become `Ready`. Then check the current storage:
 
 ```bash
-$ kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+```
 NAME                     SIZE
 data-weaviate-sample-0   1Gi
 data-weaviate-sample-1   1Gi
 data-weaviate-sample-2   1Gi
-```
 
 ### Create WeaviateAutoscaler
 
@@ -112,16 +112,17 @@ Here,
 Let's create the `WeaviateAutoscaler`:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/autoscaler/storage/weaviate-storage-autoscaler.yaml
-weaviateautoscaler.autoscaling.kubedb.com/weaviate-storage-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/autoscaler/storage/weaviate-storage-autoscaler.yaml
 ```
+weaviateautoscaler.autoscaling.kubedb.com/weaviate-storage-autoscaler created
 
 ### Verify Autoscaler is Set Up
 
 Let's describe the `WeaviateAutoscaler` to confirm it is configured and watching the volumes:
 
 ```bash
-$ kubectl describe weaviateautoscaler -n demo weaviate-storage-autoscaler
+kubectl describe weaviateautoscaler -n demo weaviate-storage-autoscaler
+```
 Name:         weaviate-storage-autoscaler
 Namespace:    demo
 API Version:  autoscaling.kubedb.com/v1alpha1
@@ -146,7 +147,6 @@ Spec:
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
-```
 
 The autoscaler is now watching the PVC usage of the Weaviate pods.
 
@@ -154,30 +154,30 @@ The autoscaler is now watching the PVC usage of the Weaviate pods.
 
 When a volume's used space crosses the `usageThreshold` (20%), the autoscaler operator creates a `WeaviateOpsRequest` of type `VolumeExpansion` that grows the volume by `scalingThreshold` (50%). For example, after writing enough data to fill more than 20% of a `1Gi` volume:
 
-```bash
 # usage on each node's data volume crosses 20%
-$ kubectl exec -n demo weaviate-sample-0 -c weaviate -- df -h /var/lib/weaviate
+```bash
+kubectl exec -n demo weaviate-sample-0 -c weaviate -- df -h /var/lib/weaviate
+```
 Filesystem                Size      Used Available Use% Mounted on
 /dev/longhorn/pvc-...   973.4M    401.7M    555.7M  42% /var/lib/weaviate
-```
 
 the autoscaler creates a `VolumeExpansion` ops request:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo
+kubectl get weaviateopsrequest -n demo
+```
 NAME                                TYPE              STATUS       AGE
 wvops-weaviate-sample-xxxxxx        VolumeExpansion   Successful   3m
-```
 
 and the PVCs are expanded (here, from `1Gi` to `1.5Gi` — a 50% increase):
 
 ```bash
-$ kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+```
 NAME                     SIZE
 data-weaviate-sample-0   1531584Ki
 data-weaviate-sample-1   1531584Ki
 data-weaviate-sample-2   1531584Ki
-```
 
 > **Note:** The auto-trigger relies on the `volume_used_percentage` metric being available through KubeDB's metrics API. If that metric is not exposed in your cluster, the autoscaler will stay configured and watching but will not generate an ops request. The underlying `VolumeExpansion` mechanism it uses is the same one demonstrated step-by-step in the [Volume Expansion](/docs/guides/weaviate/volume-expansion/volume-expansion.md) guide.
 
@@ -186,7 +186,13 @@ data-weaviate-sample-2   1531584Ki
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateautoscaler -n demo weaviate-storage-autoscaler
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateautoscaler -n demo weaviate-storage-autoscaler
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

@@ -26,10 +26,10 @@ KubeDB supports restarting the MSSQLServer via a MSSQLServerOpsRequest. Restarti
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mssqlserver](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,9 +47,9 @@ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.c
 ```
 - Create a secret using the certificate files we have just generated,
 ```bash
-$ kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
-secret/mssqlserver-ca created
+kubectl create secret tls mssqlserver-ca --cert=ca.crt  --key=ca.key --namespace=demo 
 ```
+secret/mssqlserver-ca created
 Now, we are going to create an `Issuer` using the `mssqlserver-ca` secret that contains the ca-certificate we have just created. Below is the YAML of the `Issuer` CR that we are going to create,
 
 ```yaml
@@ -65,9 +65,9 @@ spec:
 
 Let’s create the `Issuer` CR we have shown above,
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/ag-cluster/mssqlserver-ca-issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 In this section, we are going to deploy a MSSQLServer database using KubeDB.
 
@@ -115,16 +115,16 @@ spec:
 Let's create the `MSSQLServer` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/restart/mssqlserver-ag-cluster.yaml
-mssqlserver.kubedb.com/mssqlserver-ag-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/restart/mssqlserver-ag-cluster.yaml
 ```
+mssqlserver.kubedb.com/mssqlserver-ag-cluster created
 
 Check the database is provisioned successfully
 ```bash
-$ kubectl get ms -n demo mssqlserver-ag-cluster
+kubectl get ms -n demo mssqlserver-ag-cluster
+```
 NAME                     VERSION     STATUS   AGE
 mssqlserver-ag-cluster   2022-cu12   Ready    4m
-```
 
 
 ## Apply Restart opsRequest
@@ -152,18 +152,21 @@ spec:
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/restart/msops-restart.yaml
-mssqlserveropsrequest.ops.kubedb.com/msops-restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/restart/msops-restart.yaml
 ```
+mssqlserveropsrequest.ops.kubedb.com/msops-restart created
 
 Now the Ops-manager operator will first restart the general secondary pods and lastly will restart the Primary pod of the database.
 
-```shell
-$ kubectl get msops -n demo msops-restart
+```bash
+kubectl get msops -n demo msops-restart
+```
 NAME            TYPE      STATUS       AGE
 msops-restart   Restart   Successful   5m23s
 
-$ kubectl get msops -n demo msops-restart -oyaml
+```bash
+kubectl get msops -n demo msops-restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MSSQLServerOpsRequest
 metadata:
@@ -249,14 +252,13 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 We can see that, the database is ready after restarting the pods  
 ```bash
-$ kubectl get ms -n demo mssqlserver-ag-cluster
+kubectl get ms -n demo mssqlserver-ag-cluster
+```
 NAME                     VERSION     STATUS   AGE
 mssqlserver-ag-cluster   2022-cu12   Ready    14m
-```
 
 ## Cleaning up
 

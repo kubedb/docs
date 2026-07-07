@@ -29,13 +29,15 @@ Now, install the KubeDB operator in your cluster following the steps [here](/doc
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/connectcluster) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -77,9 +79,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kcc-issuer.yaml
-issuer.cert-manager.io/connectcluster-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kcc-issuer.yaml
 ```
+issuer.cert-manager.io/connectcluster-ca-issuer created
 
 ### Provision TLS secured ConnectCluster
 
@@ -142,7 +144,8 @@ We are also running our cluster with custom configuration. The custom configurat
 Create a file named `config.properties` with the following content:
 
 ```bash
-$ cat config.properties
+cat config.properties
+```
 key.converter.schemas.enable=true
 value.converter.schemas.enable=true
 internal.key.converter.schemas.enable=true
@@ -151,38 +154,38 @@ internal.key.converter=org.apache.kafka.connect.json.JsonConverter
 internal.value.converter=org.apache.kafka.connect.json.JsonConverter
 key.converter=org.apache.kafka.connect.json.JsonConverter
 value.converter=org.apache.kafka.connect.json.JsonConverter
-```
 
 Create a secret named `connectcluster-custom-config` with the `config.properties` file:
 
 ```bash
-$ kubectl create secret generic connectcluster-custom-config --from-file=./config.properties -n demo
+kubectl create secret generic connectcluster-custom-config --from-file=./config.properties -n demo
 ```
 
 Let's create the ConnectCluster using the above YAML:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/kcc-distributed.yaml
-connectcluster.kafka.kubedb.com/connectcluster-distributed created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/connectcluster/kcc-distributed.yaml
 ```
+connectcluster.kafka.kubedb.com/connectcluster-distributed created
 
 Watch the bootstrap progress:
 
 ```bash
-$ kubectl get kcc -n demo -w
+kubectl get kcc -n demo -w
+```
 NAME                         TYPE                        VERSION   STATUS         AGE
 connectcluster-distributed   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   0s
 connectcluster-distributed   kafka.kubedb.com/v1alpha1   3.9.0     Provisioning   33s
 .
 .
 connectcluster-distributed   kafka.kubedb.com/v1alpha1   3.9.0     Ready          97s
-```
 
 Hence, the cluster is ready to use.
 Let's check the k8s resources created by the operator on the deployment of ConnectCluster:
 
 ```bash
-$ kubectl get all,petset,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-distributed'
+kubectl get all,petset,secret -n demo -l 'app.kubernetes.io/instance=connectcluster-distributed'
+```
 NAME                               READY   STATUS    RESTARTS   AGE
 pod/connectcluster-distributed-0   1/1     Running   0          8m55s
 pod/connectcluster-distributed-1   1/1     Running   0          8m52s
@@ -204,7 +207,6 @@ secret/connectcluster-distributed-connect-cred            kubernetes.io/basic-au
 secret/connectcluster-distributed-connect-keystore-cred   Opaque                     3      17m
 secret/connectcluster-distributed-kafka-client-cred       Opaque                     5      17m
 secret/connectcluster-distributed-server-connect-cert     kubernetes.io/tls          5      17m
-```
 
 We are going to use the `postgres` source connector to stream data from a Postgres database to Kafka and the `jdbc` sink connector to stream data from Kafka to MySQL database.
 To do that, we need to create a Postgres database. You can create a Postgres database by following this [tutorial](/docs/guides/postgres/quickstart/quickstart.md).
@@ -226,7 +228,8 @@ postgres=# show wal_level;
 
 To create a Postgres source connector with KubeDB `Connector` CR, you need to create a secret that contains the Postgres database credentials and the connector configuration. The secret should have the following configuration with filename `config.properties`:
 ```bash
-$ cat config.properties
+cat config.properties
+```
 connector.class=io.debezium.connector.postgresql.PostgresConnector
 tasks.max=1
 database.hostname=postgres.demo.svc
@@ -240,7 +243,6 @@ value.converter=org.apache.kafka.connect.json.JsonConverter
 value.converter.schemas.enable=true
 database.whitelist=public.users
 database.history.kafka.topic=schema-changes.users
-```
 Here,
 - `connector.class` - specifies the connector class. Here, the Postgres source connector will be used.
 - `tasks.max` - specifies the maximum number of tasks that should be created for this connector.
@@ -255,7 +257,7 @@ ase. Update the value with the actual name of your Postgres database that you wa
 Now, create the secret named `postgres-source-connector-config` with the `config.properties` file:
 
 ```bash
-$ kubectl create secret generic postgres-source-connector-config --from-file=./config.properties -n demo
+kubectl create secret generic postgres-source-connector-config --from-file=./config.properties -n demo
 ```
 
 Now, create a `Connector` CR to create the Postgres source connector:
@@ -344,7 +346,8 @@ Now, let's create a JDBC sink connector to stream data from the Kafka topic to a
 
 To create a JDBC sink connector with KubeDB `Connector` CR, you need to create a secret that contains the MySQL database credentials and the connector configuration. The secret should have the following configuration with filename `config.properties`:
 ```bash
-$ cat config.properties
+cat config.properties
+```
 heartbeat.interval.ms=3000
 autoReconnect=true
 connector.class=io.debezium.connector.jdbc.JdbcSinkConnector
@@ -365,7 +368,6 @@ value.converter=org.apache.kafka.connect.json.JsonConverter
 table.name.format=${topic}
 topics=postgres.public.users
 pk.mode=kafka
-```
 Here,
 - `heartbeat.interval.ms` - specifies the interval in milliseconds at which the connector should send heartbeat messages to the database.
 - `autoReconnect` - specifies whether the connector should automatically reconnect to the database in case of a connection failure.
@@ -384,7 +386,7 @@ Here,
 Now, create the secret named `mysql-sink-connector-config` with the `config.properties` file:
 
 ```bash
-$ kubectl create secret generic mysql-sink-connector-config --from-file=./config.properties -n demo
+kubectl create secret generic mysql-sink-connector-config --from-file=./config.properties -n demo
 ```
 
 Before creating connector, create the database `sink_database` in MySQL database which is mentioned in the `connection.url` of the `config.properties` file. Example: `jdbc:mysql://<host>:<port>/<sink-db-name>`.
@@ -484,15 +486,19 @@ You can customize the connector configuration by updating the `config.properties
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo connectcluster connectcluster-distributed -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo connectcluster connectcluster-distributed -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 connectcluster.kafka.kubedb.com/connectcluster-distributed patched
 
-$ kubectl delete kf connectcluster-distributed  -n demo
+```bash
+kubectl delete kf connectcluster-distributed  -n demo
+```
 connectcluster.kafka.kubedb.com "connectcluster-distributed" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

@@ -29,21 +29,23 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 - [StorageClass](https://kubernetes.io/docs/concepts/storage/storage-classes/) is required to run KubeDB. Check the available StorageClass in cluster.
 
   ```bash
-  $ kubectl get storageclasses
+  kubectl get storageclasses
+  ```
   NAME                 PROVISIONER             RECLAIMPOLICY       VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION              AGE
   standard (default)   rancher.io/local-path      Delete          WaitForFirstConsumer           false                      4h
-  ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create namespace demo
+  kubectl create namespace demo
+  ```
   namespace/demo created
 
-  $ kubectl get namespaces
+  ```bash
+  kubectl get namespaces
+  ```
   NAME          STATUS    AGE
   demo          Active    10s
-  ```
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -52,7 +54,8 @@ This tutorial will show you how to use KubeDB to run a Redis server.
 When you have installed KubeDB, it has created `RedisVersion` crd for all supported Redis versions. Check:
 
 ```bash
-$ kubectl get redisversions
+kubectl get redisversions
+```
 NAME           VERSION   DB_IMAGE                                        DEPRECATED   AGE
 4.0.11         4.0.11    ghcr.io/kubedb/redis:4.0.11                                  14d
 5.0.14         5.0.14    ghcr.io/appscode-images/redis:5.0.14-bullseye                14d
@@ -70,7 +73,6 @@ valkey-7.2.5   7.2.5     ghcr.io/appscode-images/valkey:7.2.5                   
 valkey-7.2.9   7.2.9     ghcr.io/appscode-images/valkey:7.2.9                         14d
 valkey-8.0.3   8.0.3     ghcr.io/appscode-images/valkey:8.0.3                         14d
 valkey-8.1.1   8.1.1     ghcr.io/appscode-images/valkey:8.1.1                         14d
-```
 `Note`: RedisVersion which contains redis database image, will have `spec.distribution` as `Official`
 
 ## Create a Redis server
@@ -99,9 +101,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1.yaml
-redis.kubedb.com/redis-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1.yaml
 ```
+redis.kubedb.com/redis-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -123,9 +125,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1alpha2.yaml
-redis.kubedb.com/redis-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/quickstart/demo-v1alpha2.yaml
 ```
+redis.kubedb.com/redis-quickstart created
 
 Here,
 
@@ -139,11 +141,14 @@ Here,
 KubeDB operator watches for `Redis` objects using Kubernetes api. When a `Redis` object is created, KubeDB operator will create a new PetSet and a Service with the matching Redis object name. KubeDB operator will also create a governing service for PetSets with the name `kubedb`, if one is not already present.
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME               VERSION   STATUS    AGE
 redis-quickstart   6.2.14     Running   1m
 
-$ kubectl describe rd -n demo redis-quickstart
+```bash
+kubectl describe rd -n demo redis-quickstart
+```
 Name:               redis-quickstart
 Namespace:          demo
 CreationTimestamp:  Tue, 31 May 2022 10:31:38 +0600
@@ -234,29 +239,36 @@ Events:
   Normal  Successful  2m    Redis Operator  Successfully created Service
   Normal  Successful  2m    Redis Operator  Successfully created appbinding
 
-
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME               READY   AGE
 redis-quickstart    1/1    1m
 
-$ kubectl get pvc -n demo
+```bash
+kubectl get pvc -n demo
+```
 NAME                      STATUS    VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-redis-quickstart-0   Bound     pvc-6e457226-c53f-11e8-9ba7-0800274bef12   1Gi        RWO            standard       2m
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS    CLAIM                          STORAGECLASS   REASON    AGE
 pvc-6e457226-c53f-11e8-9ba7-0800274bef12   1Gi        RWO            Delete           Bound     demo/data-redis-quickstart-0   standard                 2m
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)    AGE
 redis-quickstart-pods   ClusterIP       None             <none>        <none>     2m
 redis-quickstart        ClusterIP   10.108.149.205       <none>        6379/TCP   2m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Redis object:
 
 ```bash
-$ kubectl get rd -n demo redis-quickstart -o yaml
+kubectl get rd -n demo redis-quickstart -o yaml
+```
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
@@ -332,13 +344,11 @@ status:
   observedGeneration: 2
   phase: Ready
 
-```
-
 Now, you can connect to this database through [redis-cli](https://redis.io/topics/rediscli). In this tutorial, we are connecting to the Redis server from inside of pod.
 
 ```bash
-$ kubectl exec -it -n demo redis-quickstart-0 -- sh
-
+kubectl exec -it -n demo redis-quickstart-0 -- sh
+```
 /data > redis-cli
 
 127.0.0.1:6379> ping
@@ -355,16 +365,15 @@ OK
 127.0.0.1:6379> exit
 
 /data > exit
-```
 
 ## DoNotTerminate Property
 
 When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete rd redis-quickstart -n demo
-Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.deletionPolicy
+kubectl delete rd redis-quickstart -n demo
 ```
+Error from server (BadRequest): admission webhook "redis.validators.kubedb.com" denied the request: redis "redis-quickstart" can't be halted. To delete, change spec.deletionPolicy
 
 Now, run `kubectl edit rd redis-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
@@ -379,21 +388,22 @@ You can also keep the redis object and halt the database to resume it again late
 To halt the database, first you have to set the deletionPolicy to `Halt` in existing database. You can use the below command to set the deletionPolicy to `Halt`, if it is not already set.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"Halt"}}' --type="merge"
 ```
+redis.kubedb.com/redis-quickstart patched
 
 Then, you have to set the `spec.halted` as true to set the database in a `Halted` state. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":true}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":true}}' --type="merge"
 ```
+redis.kubedb.com/redis-quickstart patched
 After that, kubedb will delete the petsets and services, and you can see the database Phase as `Halted`.
 
 Now, you can run the following command to get all redis resources in demo namespaces,
 ```bash
-$ kubectl get redis,secret,pvc -n demo
+kubectl get redis,secret,pvc -n demo
+```
 NAME                                VERSION   STATUS   AGE
 redis.kubedb.com/redis-quickstart   6.2.14     Halted   5m26s
 
@@ -408,29 +418,28 @@ secret/vault-server-certs            kubernetes.io/tls                     3    
 
 NAME                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-redis-quickstart-0   Bound    pvc-ee1c2fd3-4c0e-4dad-812b-8f83e20284f8   1Gi        RWO            standard       5m24s
-```
 
 ## Resume Halted Redis
 
 Now, to resume the database, i.e. to get the same database setup back again, you have to set the `spec.halted` as false. You can use the below command.
 
 ```bash
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":false}}' --type="merge"
-redis.kubedb.com/redis-quickstart patched
+kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"halted":false}}' --type="merge"
 ```
+redis.kubedb.com/redis-quickstart patched
 
 When the database is resumed successfully, you can see the database Status is set to `Ready`.
 
 ```bash
-$ kubectl get rd -n demo
+kubectl get rd -n demo
+```
 NAME               VERSION   STATUS   AGE
 redis-quickstart   6.2.14     Ready    7m52s
-```
 
 Now, If you again exec into the `pod` and look for previous data, you will see that, all the data persists.
 ```bash
-$ kubectl exec -it -n demo redis-quickstart-0 -- sh
-
+kubectl exec -it -n demo redis-quickstart-0 -- sh
+```
 /data > redis-cli
 
 127.0.0.1:6379> ping
@@ -443,22 +452,24 @@ PONG
 127.0.0.1:6379> exit
 
 /data > exit
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-
-$ kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo rd/redis-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/redis-quickstart patched
 
-$ kubectl delete -n demo rd/redis-quickstart
+```bash
+kubectl delete -n demo rd/redis-quickstart
+```
 redis.kubedb.com "redis-quickstart" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

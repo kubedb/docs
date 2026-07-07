@@ -31,25 +31,27 @@ This tutorial will show you how to use KubeDB to run a Memcached server.
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME      STATUS    AGE
 demo      Active    1s
-```
 
 ## Find Available MemcachedVersion
 
 When you have installed KubeDB, it has created `MemcachedVersion` crd for all supported Memcached versions. Check 0
 
 ```bash
-$ kubectl get memcachedversions
+kubectl get memcachedversions
+```
 NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
 1.5.22      1.5.22     ghcr.io/appscode-images/memcached:1.5.22-alpine                  2h
 1.6.40      1.6.40     ghcr.io/appscode-images/memcached:1.6.40-alpine                  2h
 1.6.29      1.6.29     ghcr.io/appscode-images/memcached:1.6.29-alpine                  2h
-```
 
 ## Create a Memcached server
 
@@ -81,9 +83,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -107,9 +109,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1alpha2.yaml
-memcached.kubedb.com/memcd-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/quickstart/demo-v1alpha2.yaml
 ```
+memcached.kubedb.com/memcd-quickstart created
 
 Here,
 
@@ -120,11 +122,14 @@ Here,
 
 KubeDB operator watches for `Memcached` objects using Kubernetes api. When a `Memcached` object is created, KubeDB operator will create a new PetSet and a Service with the matching Memcached object name.
 ```bash
-$ kubectl get mc -n demo
+kubectl get mc -n demo
+```
 NAME               VERSION    STATUS    AGE
 memcd-quickstart   1.6.40     Ready     2m
 
-$ kubectl describe mc -n demo memcd-quickstart
+```bash
+kubectl describe mc -n demo memcd-quickstart
+```
 Name:         memcd-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -223,15 +228,18 @@ Events:
   Normal  Successful  5m18s  KubeDB Operator  Successfully patched PetSet
   Normal  Successful  5m18s  KubeDB Operator  Successfully patched Memcached
 
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME               AGE
 memcd-quickstart   8m15s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
 memcd-quickstart        ClusterIP   10.96.115.90   <none>        11211/TCP   9m7s
 memcd-quickstart-pods   ClusterIP   None           <none>        11211/TCP   9m7s
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified Memcached object:
 
@@ -327,12 +335,14 @@ By default, KubeDB enables authentication for Memcached. The credentials are sto
 Retrieve the credentials from the auth secret. They are stored in the `authData` key in the `username:password` format.
 
 ```bash
-$ kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.authSecret.name}'
+kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.authSecret.name}'
+```
 memcd-quickstart-auth
 
-$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
-user:tysiujogcmzapyhz
+```bash
+kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
 ```
+user:tysiujogcmzapyhz
 
 Here, `username` is `user` and `password` is `tysiujogcmzapyhz`.
 
@@ -340,12 +350,15 @@ Now, you can connect to this database using `telnet`.
 Here, we will connect to Memcached server from local-machine through port-forwarding.
 
 ```bash
-$ kubectl get pods -n demo
+kubectl get pods -n demo
+```
 NAME                 READY   STATUS    RESTARTS      AGE
 memcd-quickstart-0   1/1     Running   1 (26m ago)   15h
 
 # We will connect to `memcd-quickstart-0` pod from local-machine using port-frowarding.
-$ kubectl port-forward -n demo memcd-quickstart-0 11211
+```bash
+kubectl port-forward -n demo memcd-quickstart-0 11211
+```
 Forwarding from 127.0.0.1:11211 -> 11211
 Forwarding from [::1]:11211 -> 11211
 
@@ -384,7 +397,6 @@ END
 
 # Exit
 quit
-```
 
 ## Database DeletionPolicy
 
@@ -395,9 +407,9 @@ This field is used to regulate the deletion process of the related resources whe
 When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement `DoNotTerminate` feature. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
 
 ```bash
-$ kubectl delete mc memcd-quickstart -n demo
-Error from server (Forbidden): admission webhook "memcachedwebhook.validators.kubedb.com" denied the request: memcached demo/memcd-quickstart can't be terminated. To delete, change spec.deletionPolicy
+kubectl delete mc memcd-quickstart -n demo
 ```
+Error from server (Forbidden): admission webhook "memcachedwebhook.validators.kubedb.com" denied the request: memcached demo/memcd-quickstart can't be terminated. To delete, change spec.deletionPolicy
 Learn details of all `DeletionPolicy` [here](/docs/guides/memcached/concepts/memcached.md#specdeletionpolicy).
 
 **Delete:**
@@ -409,18 +421,18 @@ When the [DeletionPolicy](/docs/guides/mysql/concepts/database/index.md#specdele
 Suppose, we have a database with `deletionPolicy` set to `Delete`. Now, are going to delete the database using the following command:
 
 ```bash
-$ kubectl delete -n demo mc/memcd-quickstart
-memcached.kubedb.com "memcd-quickstart" deleted
+kubectl delete -n demo mc/memcd-quickstart
 ```
+memcached.kubedb.com "memcd-quickstart" deleted
 
 Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petsets,svc,secret,pvc -n demo
+kubectl get petsets,svc,secret,pvc -n demo
+```
 NAME                      TYPE     DATA   AGE
 auth-secret               Opaque   1      3h
 mc-configuration          Opaque   1      3h
-```
 
 From the above output, you can see that all memcached resources(`PetSet`, `Service` etc.) are deleted except `Secret`.
 
@@ -440,9 +452,9 @@ memcached.kubedb.com "memcd-quickstart" deleted
 Now, run the following command to get all memcached resources in `demo` namespaces,
 
 ```bash
-$ kubectl get petsets,svc,secret -n demo
-No resources found in demo namespace.
+kubectl get petsets,svc,secret -n demo
 ```
+No resources found in demo namespace.
 
 From the above output, you can see that all memcached resources are deleted. there is no option to recreate/reinitialize your database if `deletionPolicy` is set to `Delete`.
 
@@ -454,15 +466,19 @@ From the above output, you can see that all memcached resources are deleted. the
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mc/memcd-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 memcached.kubedb.com/memcd-quickstart patched
 
-$ kubectl delete -n demo mc/memcd-quickstart
+```bash
+kubectl delete -n demo mc/memcd-quickstart
+```
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete ns demo
-namespace "demo" deleted
+```bash
+kubectl delete ns demo
 ```
+namespace "demo" deleted
 
 ## Tips for Testing
 

@@ -60,26 +60,26 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/storage/yamls/storage-standalone.yaml
-milvusautoscaler.autoscaling.kubedb.com/milvus-storage-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/storage/yamls/storage-standalone.yaml
 ```
+milvusautoscaler.autoscaling.kubedb.com/milvus-storage-autoscaler created
 
 When the volume usage crosses `usageThreshold` (30%), the autoscaler creates a `VolumeExpansion` `MilvusOpsRequest` sized per `scalingRules`.
 
 ```bash
-$ kubectl get milvusautoscaler -n demo
+kubectl get milvusautoscaler -n demo
+```
 NAME                                   AGE
 milvus-standalone-compute-autoscaler   94s
 milvus-storage-autoscaler              93s
-```
 
 The storage autoscaler watches the `streamingnode`/`node` PVC usage (read from Prometheus). When usage crosses `usageThreshold`, it creates a `VolumeExpansion` `MilvusOpsRequest`. In this walkthrough the volume stayed well below the threshold (a freshly-created, near-empty `1Gi` volume), so no expansion was triggered:
 
 ```bash
-$ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
+```
 NAME                       SIZE
 data-milvus-standalone-0   1Gi
-```
 
 > To see the expansion fire, write enough data to push PVC usage past `usageThreshold` (30% here). When it does, the autoscaler creates a `VolumeExpansion` `MilvusOpsRequest` (with `expansionMode` as configured), which the Ops-manager applies — see the [volume expansion guide](/docs/guides/milvus/volume-expansion/guide.md) for the resulting flow and output.
 
@@ -116,9 +116,15 @@ Because only `streamingnode` carries a persistent volume among the distributed r
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusautoscaler -n demo --all
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
-$ kubectl delete ns demo
+kubectl delete milvusautoscaler -n demo --all
+```
+
+```bash
+kubectl delete milvus.kubedb.com -n demo milvus-standalone
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

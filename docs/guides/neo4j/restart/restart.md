@@ -52,9 +52,11 @@ spec:
 Apply it and wait for the cluster to become ready:
 
 ```bash
-$ kubectl apply -f neo4j.yaml
+kubectl apply -f neo4j.yaml
+```
 
-$ kubectl get neo4j -n demo neo4j-test -w
+```bash
+kubectl get neo4j -n demo neo4j-test -w
 ```
 
 Wait until `STATUS` shows `Ready` before proceeding.
@@ -83,7 +85,7 @@ spec:
 `apply: Always` tells KubeDB to execute the restart even if the database is not currently in the ready state.
 
 ```bash
-$ cat <<'EOF' | kubectl apply -f -
+cat <<'EOF' | kubectl apply -f -
 apiVersion: ops.kubedb.com/v1alpha1
 kind: Neo4jOpsRequest
 metadata:
@@ -96,20 +98,25 @@ spec:
   timeout: 5m
   apply: Always
 EOF
+```
 neo4jopsrequest.ops.kubedb.com/neo4j-restart created
 
-$ kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-restart -n demo --timeout=600s
-neo4jopsrequest.ops.kubedb.com/neo4j-restart condition met
+```bash
+kubectl wait --for=jsonpath='{.status.phase}'=Successful neo4jopsrequest/neo4j-restart -n demo --timeout=600s
 ```
+neo4jopsrequest.ops.kubedb.com/neo4j-restart condition met
 
 ## Verify
 
 ```bash
-$ kubectl get neo4jopsrequest -n demo neo4j-restart
+kubectl get neo4jopsrequest -n demo neo4j-restart
+```
 NAME            TYPE      STATUS       AGE
 neo4j-restart   Restart   Successful   1m
 
-$ kubectl describe neo4jopsrequest -n demo neo4j-restart
+```bash
+kubectl describe neo4jopsrequest -n demo neo4j-restart
+```
 Name:         neo4j-restart
 Namespace:    demo
 Labels:       <none>
@@ -125,7 +132,6 @@ Spec:
   Apply:  Always
 Status:
   Phase:  Successful
-```
 
 ## Cleaning up
 

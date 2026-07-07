@@ -29,9 +29,9 @@ KubeDB supports providing TLS/SSL encryption for MSSQLServer. This tutorial will
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mssqlserver/tls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mssqlserver/tls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -96,9 +96,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/tls/issuer.yaml
-issuer.cert-manager.io/mssqlserver-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/tls/issuer.yaml
 ```
+issuer.cert-manager.io/mssqlserver-ca-issuer created
 
 ## TLS/SSL encryption in MSSQLServer Standalone
 
@@ -142,26 +142,27 @@ spec:
 ### Deploy MSSQLServer Standalone
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/tls/mssql-standalone-tls.yaml
-mssqlserver.kubedb.com/mssql-standalone-tls created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/tls/mssql-standalone-tls.yaml
 ```
+mssqlserver.kubedb.com/mssql-standalone-tls created
 
 Now, wait until `mssql-standalone-tls` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get ms -n demo
+watch kubectl get ms -n demo
+```
 Every 2.0s: kubectl get ms -n demo                  
 
 NAME                   VERSION     STATUS   AGE
 mssql-standalone-tls   2022-cu12   Ready    3m30s
-```
 
 ### Verify TLS/SSL in MSSQLServer Standalone
 
 Now, connect to this database by exec into a pod and verify if `tls` has been set up as intended.
 
 ```bash
-$ kubectl describe secret -n demo mssql-standalone-tls-client-cert
+kubectl describe secret -n demo mssql-standalone-tls-client-cert
+```
 Name:         mssql-standalone-tls-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -187,20 +188,22 @@ Data
 ca.crt:   1164 bytes
 tls.crt:  1180 bytes
 tls.key:  1679 bytes
-```
 
 Now, we can connect with tls to the mssqlserver and write some data
 
 ```bash
-$ kubectl get secret -n demo mssql-standalone-tls-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secret -n demo mssql-standalone-tls-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 sa
 
-$ kubectl get secret -n demo mssql-standalone-tls-auth -o jsonpath='{.data.\password}' | base64 -d
-C2vU3HOCWY0hQHaj
+```bash
+kubectl get secret -n demo mssql-standalone-tls-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+C2vU3HOCWY0hQHaj
 
 ```bash
-$ kubectl exec -it -n demo mssql-standalone-tls-0 -c mssql -- bash
+kubectl exec -it -n demo mssql-standalone-tls-0 -c mssql -- bash
+```
 mssql@mssql-standalone-tls-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "C2vU3HOCWY0hQHaj" -N
 1> select name from sys.databases
 2> go
@@ -231,22 +234,25 @@ ID          NAME                                                                
 2          Jane Smith                                                                                                                                                                                                                                                       30
 (2 rows affected)
 1> 
-```
 
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo mssqlserver/mssql-standalone-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo mssqlserver/mssql-standalone-tls -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 mssqlserver.kubedb.com/mssql-standalone-tls patched
 
-$ kubectl delete -n demo mssqlserver mssql-standalone-tls
+```bash
+kubectl delete -n demo mssqlserver mssql-standalone-tls
+```
 mssqlserver.kubedb.com "mssql-standalone-tls" deleted
 
-$ kubectl delete issuer -n demo mssqlserver-ca-issuer
-issuer.cert-manager.io "mssqlserver-ca-issuer" deleted
+```bash
+kubectl delete issuer -n demo mssqlserver-ca-issuer
 ```
+issuer.cert-manager.io "mssqlserver-ca-issuer" deleted
 
 ## Next Steps
 

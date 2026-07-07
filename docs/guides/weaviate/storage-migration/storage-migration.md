@@ -25,11 +25,11 @@ This guide will show you how to use the `KubeDB` Ops Manager to migrate a Weavia
 - You need at least two `StorageClass`es in your cluster — the one the database currently runs on, and the one you want to migrate to. Verify with:
 
   ```bash
-  $ kubectl get storageclass
+  kubectl get storageclass
+  ```
   NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
   local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  38h
   longhorn               driver.longhorn.io      Delete          Immediate              true                   30m
-  ```
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)
@@ -38,9 +38,9 @@ This guide will show you how to use the `KubeDB` Ops Manager to migrate a Weavia
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/storage-migration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/storage-migration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -71,11 +71,11 @@ spec:
 Let's create the `Weaviate` CR and wait for it to become `Ready`. Then check the current StorageClass of the PVCs:
 
 ```bash
-$ kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+```
 NAME                     SC         SIZE
 data-weaviate-sample-0   longhorn   3Gi
 data-weaviate-sample-1   longhorn   3Gi
-```
 
 The cluster is currently running on the `longhorn` StorageClass.
 
@@ -106,22 +106,23 @@ spec:
 Let's create the `WeaviateOpsRequest` CR:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/storage-migration/ops-request.yaml
-weaviateopsrequest.ops.kubedb.com/storage-migration created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/storage-migration/ops-request.yaml
 ```
+weaviateopsrequest.ops.kubedb.com/storage-migration created
 
 For each node, the Ops Manager provisions a new PVC on the target StorageClass, runs a migrator job to copy the data, deletes the old PVC, and re-points the node at the new volume.
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo storage-migration
+kubectl get weaviateopsrequest -n demo storage-migration
+```
 NAME                TYPE               STATUS       AGE
 storage-migration   StorageMigration   Successful   6m
-```
 
 Let's look at the (abbreviated) `status.conditions` of the `WeaviateOpsRequest`:
 
 ```bash
-$ kubectl get weaviateopsrequest -n demo storage-migration -o yaml
+kubectl get weaviateopsrequest -n demo storage-migration -o yaml
+```
 ...
 status:
   conditions:
@@ -156,21 +157,22 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-```
 
 ## Verify the StorageClass Migrated Successfully
 
 Verify that the PVCs are now on the `local-path` StorageClass and the database is back to `Ready`:
 
 ```bash
-$ kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+kubectl get pvc -n demo -o custom-columns=NAME:.metadata.name,SC:.spec.storageClassName,SIZE:.status.capacity.storage
+```
 NAME                     SC           SIZE
 data-weaviate-sample-0   local-path   3Gi
 data-weaviate-sample-1   local-path   3Gi
 
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.storage.storageClassName}{"  "}{.status.phase}'
-local-path  Ready
+```bash
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.storage.storageClassName}{"  "}{.status.phase}'
 ```
+local-path  Ready
 
 The StorageClass has been migrated from `longhorn` to `local-path` successfully.
 
@@ -185,7 +187,13 @@ The StorageClass has been migrated from `longhorn` to `local-path` successfully.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviateopsrequest -n demo storage-migration
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete ns demo
+kubectl delete weaviateopsrequest -n demo storage-migration
+```
+
+```bash
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete ns demo
 ```

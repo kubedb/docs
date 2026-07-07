@@ -25,13 +25,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -46,10 +48,10 @@ At first, we will create a ConfigMap from an `init.sql` file. Then, we will prov
 Let's create a ConfigMap with the initialization script:
 
 ```bash
-$ kubectl create configmap -n demo ch-init-script \
+kubectl create configmap -n demo ch-init-script \
 --from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/Bonusree/init_script/main/clickhouse_init.sql)"
-configmap/ch-init-script created
 ```
+configmap/ch-init-script created
 
 ## Create ClickHouse with Script Source
 
@@ -87,14 +89,15 @@ VolumeSource provided in `init.script` will be mounted in the Pod and will be ex
 Now, let's create the ClickHouse CRD using the YAML shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/initialization/script-clickhouse.yaml
-clickhouse.kubedb.com/script-clickhouse created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/initialization/script-clickhouse.yaml
 ```
+clickhouse.kubedb.com/script-clickhouse created
 
 Now, wait until ClickHouse goes in `Ready` state. Verify that the database is in `Ready` state using the following command:
 
 ```bash
-$ kubectl-dba describe ch -n demo script-clickhouse
+kubectl-dba describe ch -n demo script-clickhouse
+```
 Name:         script-clickhouse
 Namespace:    demo
 Labels:       <none>
@@ -204,7 +207,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 
 ## Verify Initialization
@@ -221,30 +223,30 @@ Now let's connect to our ClickHouse instance to verify that the database has bee
 - Username: Run the following command to get the *username*:
 
   ```bash
-  $ kubectl get secret -n demo script-clickhouse-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo script-clickhouse-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password: Run the following command to get the *password*:
 
   ```bash
-  $ kubectl get secret -n demo script-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-  NkBpF0IQRCZ2isMb
+  kubectl get secret -n demo script-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  NkBpF0IQRCZ2isMb
 
 Now, connect to ClickHouse using the `clickhouse-client` and run the following query to confirm initialization:
 
 ```bash
-$ kubectl exec -it -n demo script-clickhouse-0 -- clickhouse-client --user=admin --password=NkBpF0IQRCZ2isMb --query "SHOW TABLES FROM init_script"
-kubedb_table
+kubectl exec -it -n demo script-clickhouse-0 -- clickhouse-client --user=admin --password=NkBpF0IQRCZ2isMb --query "SHOW TABLES FROM init_script"
 ```
+kubedb_table
 
 You can also verify that the table was populated correctly:
 
 ```bash
-$ kubectl exec -it -n demo script-clickhouse-0 -- clickhouse-client --user=admin --password=NkBpF0IQRCZ2isMb --query "SELECT * FROM init_script.kubedb_table"
-1	name1
+kubectl exec -it -n demo script-clickhouse-0 -- clickhouse-client --user=admin --password=NkBpF0IQRCZ2isMb --query "SELECT * FROM init_script.kubedb_table"
 ```
+1	name1
 
 We can see that the table `kubedb_table` in the `init_script` database was created and populated through the initialization script.
 
@@ -253,9 +255,15 @@ We can see that the table `kubedb_table` in the `init_script` database was creat
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete -n demo clickhouse/script-clickhouse
-$ kubectl delete -n demo configmap/ch-init-script
-$ kubectl delete ns demo
+kubectl delete -n demo clickhouse/script-clickhouse
+```
+
+```bash
+kubectl delete -n demo configmap/ch-init-script
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

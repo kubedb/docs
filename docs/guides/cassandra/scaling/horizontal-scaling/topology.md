@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to scale the C
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/cassandra](/docs/examples/cassandra) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -84,28 +84,28 @@ spec:
 Let's create the `Cassandra` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/cassandra-topology.yaml
-cassandra.kubedb.com/cassandra-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/cassandra-topology.yaml
 ```
+cassandra.kubedb.com/cassandra-prod created
 
 Now, wait until `cassandra-prod` has status `Ready`. i.e,
 
 ```bash
-$kubectl get cas -n demo -w
+kubectl get cas -n demo -w
+```
 NAME             TYPE                  VERSION   STATUS         AGE
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   27s
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Provisioning   1m27s
 .
 .
 cassandra-prod   kubedb.com/v1alpha2   5.0.3     Ready          2m27s
-```
 
 Let's check the number of replicas has from cassandra object, number of pods the petset have,
 
 ```bash
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
-2
+kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
 ```
+2
 
 We can see from commands that the cluster has 2 replicas for rack r0 as we have defined in the yaml.
 
@@ -142,9 +142,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/horizontal-scaling/cassandra-hscale-up-topology.yaml
-cassandraopsrequest.ops.kubedb.com/casops-hscale-up-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/horizontal-scaling/cassandra-hscale-up-topology.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-hscale-up-topology created
 
 #### Verify Topology cluster replicas scaled up successfully
 
@@ -153,15 +153,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `CassandraOpsRequest` to be `Successful`. Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ watch kubectl get cassandraopsrequest -n demo
+watch kubectl get cassandraopsrequest -n demo
+```
 NAME                             TYPE                STATUS       AGE
 cassandra-horizontal-scale-up    HorizontalScaling   Successful   106s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe cassandraopsrequests -n demo cassandra-horizontal-scale-up 
+kubectl describe cassandraopsrequests -n demo cassandra-horizontal-scale-up 
+```
 kubectl describe cassandraopsrequests -n demo cassandra-horizontal-scale-up
 Name:         cassandra-horizontal-scale-up
 Namespace:    demo
@@ -226,14 +227,13 @@ Events:
   Normal   UpdatePetSets                       12s   KubeDB Ops-manager Operator  successfully reconciled the Cassandra with modified node
   Normal   Starting                            12s   KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                          12s   KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cassandra-horizontal-scale-up
-```
 
 Now, we are going to verify the number of replicas this cluster has from the Cassandra object, number of pods the petset have,
 
 ```bash
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
-4
+kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
 ```
+4
 
 ### Scale Down Replicas
 
@@ -266,9 +266,9 @@ Here,
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/horizontal-scaling/cassandra-hscale-down-topology.yaml
-cassandraopsrequest.ops.kubedb.com/casops-hscale-down-topology created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/horizontal-scaling/cassandra-hscale-down-topology.yaml
 ```
+cassandraopsrequest.ops.kubedb.com/casops-hscale-down-topology created
 
 #### Verify Topology cluster replicas scaled down successfully
 
@@ -277,15 +277,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the replicas 
 Let's wait for `CassandraOpsRequest` to be `Successful`. Run the following command to watch `CassandraOpsRequest` CR,
 
 ```bash
-$ watch kubectl get cassandraopsrequest -n demo
+watch kubectl get cassandraopsrequest -n demo
+```
 NAME                              TYPE                STATUS       AGE
 cassandra-horizontal-scale-down   HorizontalScaling   Successful   62s
-```
 
 We can see from the above output that the `CassandraOpsRequest` has succeeded. If we describe the `CassandraOpsRequest` we will get an overview of the steps that were followed to scale the cluster.
 
 ```bash
-$ kubectl describe cassandraopsrequests -n demo cassandra-horizontal-scale-down
+kubectl describe cassandraopsrequests -n demo cassandra-horizontal-scale-down
+```
 Name:         cassandra-horizontal-scale-down
 Namespace:    demo
 Labels:       <none>
@@ -349,17 +350,15 @@ Events:
   Normal   UpdatePetSets                       114s   KubeDB Ops-manager Operator  successfully reconciled the Cassandra with modified node
   Normal   Starting                            114s   KubeDB Ops-manager Operator  Resuming Cassandra database: demo/cassandra-prod
   Normal   Successful                          114s   KubeDB Ops-manager Operator  Successfully resumed Cassandra database: demo/cassandra-prod for CassandraOpsRequest: cassandra-horizontal-scale-down
-```
 
 Now, we are going to verify the number of replicas this cluster has from the number of pods the petset have,
 
 **Broker Replicas**
 
 ```bash
-$
-$ kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
-2
+kubectl get petset -n demo cassandra-prod-rack-r0 -o json | jq '.spec.replicas'
 ```
+2
 
 From all the above outputs we can see that the replicas of the topology cluster is `2`. That means we have successfully scaled down the replicas of the Cassandra topology cluster.
 

@@ -25,9 +25,9 @@ annotation can collect its metrics.
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Deploy a HanaDB with Builtin Monitoring
 
@@ -56,9 +56,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/builtin-prometheus.yaml
-hanadb.kubedb.com/hanadb-builtin-prometheus created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/monitoring/builtin-prometheus.yaml
 ```
+hanadb.kubedb.com/hanadb-builtin-prometheus created
 
 Wait until the database is `Ready`.
 
@@ -67,22 +67,25 @@ Wait until the database is `Ready`.
 KubeDB adds an `exporter` container and a `<db>-stats` Service:
 
 ```bash
-$ kubectl get pod -n demo hanadb-builtin-prometheus-0 -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}'
+kubectl get pod -n demo hanadb-builtin-prometheus-0 -o jsonpath='{range .spec.containers[*]}{.name}{"\n"}{end}'
+```
 hanadb
 exporter
 
-$ kubectl get svc -n demo -l app.kubernetes.io/instance=hanadb-builtin-prometheus
+```bash
+kubectl get svc -n demo -l app.kubernetes.io/instance=hanadb-builtin-prometheus
+```
 NAME                              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)               AGE
 hanadb-builtin-prometheus         ClusterIP   10.43.27.56     <none>        39017/TCP             17m
 hanadb-builtin-prometheus-pods    ClusterIP   None            <none>        39001/TCP,39017/TCP   17m
 hanadb-builtin-prometheus-stats   ClusterIP   10.43.169.153   <none>        9668/TCP              17m
-```
 
 The stats Service carries the `prometheus.io/scrape`, `prometheus.io/port`, and `prometheus.io/path`
 annotations a builtin Prometheus uses to discover the target:
 
 ```bash
-$ kubectl get svc -n demo hanadb-builtin-prometheus-stats -o jsonpath='{.metadata.annotations}' | jq
+kubectl get svc -n demo hanadb-builtin-prometheus-stats -o jsonpath='{.metadata.annotations}' | jq
+```
 {
   "monitoring.appscode.com/agent": "prometheus.io/builtin",
   "prometheus.io/path": "/metrics",
@@ -90,24 +93,26 @@ $ kubectl get svc -n demo hanadb-builtin-prometheus-stats -o jsonpath='{.metadat
   "prometheus.io/scheme": "http",
   "prometheus.io/scrape": "true"
 }
-```
 
 Scrape the metrics to confirm the exporter is serving (the `exporter` container is distroless, so curl
 the stats Service from a throwaway pod):
 
 ```bash
-$ kubectl run hdb-metrics-check -n demo --rm -i --restart=Never --image=curlimages/curl:8.10.1 -- \
+kubectl run hdb-metrics-check -n demo --rm -i --restart=Never --image=curlimages/curl:8.10.1 -- \
   curl -s http://hanadb-builtin-prometheus-stats.demo.svc:9668/metrics | grep -E '^hanadb_' | head
+```
 hanadb_column_tables_used_memory_mb{database_name="SYSTEMDB",host="hanadb-builtin-prometheus-0",insnr="90",sid="HXE"} 6.0
 hanadb_schema_used_memory_mb{database_name="SYSTEMDB",host="hanadb-builtin-prometheus-0",insnr="90",schema_name="_SYS_REPO",sid="HXE"} 1.0
 hanadb_schema_used_memory_mb{database_name="SYSTEMDB",host="hanadb-builtin-prometheus-0",insnr="90",schema_name="_SYS_DI",sid="HXE"} 1.0
-```
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-builtin-prometheus
-$ kubectl delete ns demo
+kubectl delete hanadb.kubedb.com -n demo hanadb-builtin-prometheus
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

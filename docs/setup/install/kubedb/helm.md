@@ -17,7 +17,7 @@ section_menu_id: setup
 KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -27,7 +27,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 {{< notice type="warning" message="If you are using **private Docker registries** using *self-signed certificates*, please pass the registry domains to the operator like below:" >}}
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.insecureRegistries[0]=hub.example.com \
@@ -43,7 +43,7 @@ Instead of passing a license file to every operator, you can install the `licens
 Generate an online license-proxyserver token by following the [License Proxyserver guide](https://kubedb.com/docs/platform/v2026.5.22/guides/license-management/license-proxyserver/), then install the chart with that token:
 
 ```bash
-$ helm install license-proxyserver oci://ghcr.io/appscode-charts/license-proxyserver \
+helm install license-proxyserver oci://ghcr.io/appscode-charts/license-proxyserver \
   --version v2026.2.16 \
   --namespace kubeops --create-namespace \
   --set platform.baseURL=https://appscode.com \
@@ -54,7 +54,7 @@ $ helm install license-proxyserver oci://ghcr.io/appscode-charts/license-proxyse
 With the proxyserver running, install KubeDB without the license flag:
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --wait --burst-limit=10000 --debug
@@ -120,7 +120,7 @@ Because the scripts copy every image under your registry host with its original 
 Before installing, render the chart and confirm that every `image:` points at your private registry:
 
 ```bash
-$ helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
+helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set global.registryFQDN=registry.example.com \
@@ -154,7 +154,7 @@ Set the same proxies on both `kubedb-catalog` and `kubedb-kubestash-catalog`, an
 Once the chart and images are mirrored, install the operator. The `global.registryFQDN` value rewrites the operator image paths, and the `proxies.*` values rewrite the catalog (database) image paths:
 
 ```bash
-$ helm upgrade -i kubedb oci://registry.example.com/appscode-charts/kubedb \
+helm upgrade -i kubedb oci://registry.example.com/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
@@ -241,7 +241,7 @@ global:
 Render the chart first to confirm every image resolves to your registry:
 
 ```bash
-$ helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
+helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --values values.yaml \
@@ -256,7 +256,7 @@ $ helm template kubedb oci://registry.example.com/appscode-charts/kubedb \
 Once the output is clean, install KubeDB with the same values and proxies plus the license:
 
 ```bash
-$ helm upgrade -i kubedb oci://registry.example.com/appscode-charts/kubedb \
+helm upgrade -i kubedb oci://registry.example.com/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \

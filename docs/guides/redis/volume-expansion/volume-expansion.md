@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of Redis
 
@@ -45,12 +45,11 @@ Here, we are going to deploy a  `Redis` cluster using a supported version by `Ku
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   37s
-
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
@@ -86,25 +85,28 @@ spec:
 Let's create the `Redis` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/sample-redis.yaml
-redis.kubedb.com/sample-redis created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/sample-redis.yaml
 ```
+redis.kubedb.com/sample-redis created
 
 Now, wait until `sample-redis` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get redis -n demo
+kubectl get redis -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-redis     6.2.14    Ready    5m4s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                             STORAGECLASS              REASON   AGE
 pvc-032f1355-1720-4d85-b1e5-b86427bc4662   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard0-1   topolvm-provisioner                2m49s
 pvc-207ac9aa-2ba2-432b-ac00-8cc1cd46e20a   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard2-0   topolvm-provisioner                2m49s
@@ -112,7 +114,6 @@ pvc-20c946e4-4812-4dfc-a76e-4629bcd385dc   1Gi        RWO            Delete     
 pvc-69158d05-c715-4dd5-afee-2f5d196ba1f9   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard1-0   topolvm-provisioner                2m53s
 pvc-aee29446-eff0-430e-95ff-ae853e73a244   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard1-1   topolvm-provisioner                2m41s
 pvc-d37fbdf9-90bd-4b5e-b3b2-7e40156c13a8   1Gi        RWO            Delete           Bound    demo/data-sample-redis-shard0-0   topolvm-provisioner                2m56s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -157,9 +158,9 @@ are deleted and PVC is updated. Then the database Pods are recreated with update
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/online-vol-expansion.yaml
-redisopsrequest.ops.kubedb.com/rd-online-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/volume-expansion/online-vol-expansion.yaml
 ```
+redisopsrequest.ops.kubedb.com/rd-online-volume-expansion created
 
 #### Verify Redis volume expanded successfully
 
@@ -168,23 +169,28 @@ If everything goes well, `KubeDB` Enterprise operator will update the volume siz
 Let's wait for `RedisOpsRequest` to be `Successful`.  Run the following command to watch `RedisOpsRequest` CR,
 
 ```bash
-$ kubectl get redisopsrequest -n demo
+kubectl get redisopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 rd-online-volume-expansion   VolumeExpansion   Successful   96s
-```
 
 We can see from the above output that the `RedisOpsRequest` has succeeded. 
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-redis-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get petset -n demo sample-redis-shard1 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```bash
+kubectl get petset -n demo sample-redis-shard1 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                             STORAGECLASS              REASON   AGE
 pvc-032f1355-1720-4d85-b1e5-b86427bc4662   2Gi        RWO            Delete           Bound    demo/data-sample-redis-shard0-1   topolvm-provisioner                7m9s
 pvc-207ac9aa-2ba2-432b-ac00-8cc1cd46e20a   2Gi        RWO            Delete           Bound    demo/data-sample-redis-shard2-0   topolvm-provisioner                7m9s
@@ -192,7 +198,6 @@ pvc-20c946e4-4812-4dfc-a76e-4629bcd385dc   2Gi        RWO            Delete     
 pvc-69158d05-c715-4dd5-afee-2f5d196ba1f9   2Gi        RWO            Delete           Bound    demo/data-sample-redis-shard1-0   topolvm-provisioner                7m3s
 pvc-aee29446-eff0-430e-95ff-ae853e73a244   2Gi        RWO            Delete           Bound    demo/data-sample-redis-shard1-1   topolvm-provisioner                7m1s
 pvc-d37fbdf9-90bd-4b5e-b3b2-7e40156c13a8   2Gi        RWO            Delete           Bound    demo/data-sample-redis-shard0-0   topolvm-provisioner                7m6s
-```
 
 The above output verifies that we have successfully expanded the volume of the Redis database.
 
@@ -208,17 +213,24 @@ in standalone or sentinel mode.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete redis -n demo sample-redis
-$ kubectl delete redisopsrequest -n demo rd-online-volume-expansion
+kubectl delete redis -n demo sample-redis
 ```
 
 ```bash
-$ kubectl patch -n demo rd/sample-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete redisopsrequest -n demo rd-online-volume-expansion
+```
+
+```bash
+kubectl patch -n demo rd/sample-redis -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 redis.kubedb.com/sample-redis patched
 
-$ kubectl delete -n demo redis sample-redis
+```bash
+kubectl delete -n demo redis sample-redis
+```
 redis.kubedb.com "sample-redis" deleted
 
-$ kubectl delete -n demo redisopsrequest rd-online-volume-expansion
-redisopsrequest.ops.kubedb.com "rd-online-volume-expansion" deleted
+```bash
+kubectl delete -n demo redisopsrequest rd-online-volume-expansion
 ```
+redisopsrequest.ops.kubedb.com "rd-online-volume-expansion" deleted

@@ -29,13 +29,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   9s
-```
 
 > Note: YAML files used in this tutorial are stored in [guides/cassandra/quickstart](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/cassandra/quickstart) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -44,10 +46,10 @@ demo                 Active   9s
 We will have to provide `StorageClass` in Cassandra CRD specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  14h
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -56,11 +58,11 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 When you install the KubeDB operator, it registers a CRD named [CassandraVersion](/docs/guides/cassandra/concepts/cassandraversion.md). The installation process comes with a set of tested CassandraVersion objects. Let's check available CassandraVersions by,
 
 ```bash
-$ kubectl get cassandraversion
+kubectl get cassandraversion
+```
 NAME    VERSION   DB_IMAGE                                             DEPRECATED   AGE
 4.1.8   4.1.8     ghcr.io/appscode-images/cassandra-management:4.1.8                3m50s
 5.0.3   5.0.3     ghcr.io/appscode-images/cassandra-management:5.0.3                3m50s
-```
 
 In this tutorial, we will use `5.0.7` CassandraVersion CR to create a Cassandra cluster.
 
@@ -100,26 +102,27 @@ Here,
 Let's create the Cassandra CR that is shown above:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/quickstart/cassandra-quickstart.yaml
-cassandra.kubedb.com/cassandra-quickstart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/quickstart/cassandra-quickstart.yaml
 ```
+cassandra.kubedb.com/cassandra-quickstart created
 
 The Cassandra's `STATUS` will go from `Provisioning` to `Ready` state within few minutes. Once the `STATUS` is `Ready`, you are ready to use the newly provisioned Cassandra cluster.
 
 ```bash
-$ kubectl get cassandra -n demo -w
+kubectl get cassandra -n demo -w
+```
 NAME                   TYPE                 VERSION   STATUS         AGE
 cassandra-quickstart   kubedb.com/v1alpha2   5.0.3    Provisioning   17s
 cassandra-quickstart   kubedb.com/v1alpha2   5.0.3    Provisioning   28s
 .
 .
 cassandra-quickstart   kubedb.com/v1alpha2   5.0.3    Ready          82s
-```
 
 Describe the Cassandra object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe cassandra -n demo cassandra-quickstart
+kubectl describe cassandra -n demo cassandra-quickstart
+```
 Name:         cassandra-quickstart
 Namespace:    demo
 Labels:       <none>
@@ -225,14 +228,14 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 ### KubeDB Operator Generated Resources
 
 On deployment of a Cassandra CR, the operator creates the following resources:
 
 ```bash
-$ kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=cassandra-quickstart'
+kubectl get all,secret,petset -n demo -l 'app.kubernetes.io/instance=cassandra-quickstart'
+```
 NAME                                 READY   STATUS    RESTARTS   AGE
 pod/cassandra-quickstart-rack-r0-0   1/1     Running   0          108m
 pod/cassandra-quickstart-rack-r0-1   1/1     Running   0          103m
@@ -250,7 +253,6 @@ secret/cassandra-quickstart-config   Opaque                     1      108m
 
 NAME                                                        AGE
 petset.apps.k8s.appscode.com/cassandra-quickstart-rack-r0   108m
-```
 
 - `PetSet` - In topology mode, the operator creates 1 PetSet for each rack with name `{Cassandra-Name}-rack-{Rack-Name}`.
 - `Services` -  For topology mode, 1 headless service for each PetSet with name `{PetSet-Name}-{pods}` is created. Other than that, 1 more service  with name `{Cassandra-Name}-{Sufix}` is created.
@@ -263,12 +265,14 @@ petset.apps.k8s.appscode.com/cassandra-quickstart-rack-r0   108m
 Now, you can connect to this database using `cqlsh`. You will need `username` and `password` to connect to this database from `kubeclt exec` command. In this example, `cassandra-quickstart-auth`  secret holds username and password.
 
 ```bash
-$ kubectl get secrets -n demo cassandra-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo cassandra-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 admin
 
-$ kubectl get secrets -n demo cassandra-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
-9sPN85ctoRTnWEQV
+```bash
+kubectl get secrets -n demo cassandra-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
 ```
+9sPN85ctoRTnWEQV
 We will exec into the pod `cassandra-quickstart-rack-r0-0` and connect to the database using `username` and `password`.
 
 ```bash
@@ -293,15 +297,19 @@ system           system_distributed  system_traces  system_virtual_schema
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo cassandra cassandra-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo cassandra cassandra-quickstart -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 cassandra.kubedb.com/cassandra-quickstart patched
 
-$ kubectl delete cas cassandra-quickstart  -n demo
+```bash
+kubectl delete cas cassandra-quickstart  -n demo
+```
 cassandra.kubedb.com "cassandra-quickstart" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Next Steps
 

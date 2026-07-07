@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/kafka](/docs/examples/kafka) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -96,21 +96,21 @@ spec:
 Let's create the `Kafka` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/kafka.yaml
-kafka.kubedb.com/kafka-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/kafka.yaml
 ```
+kafka.kubedb.com/kafka-prod created
 
 Now, wait until `kafka-prod` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get kf -n demo -w                                                                                                                                           
+kubectl get kf -n demo -w                                                                                                                                           
+```
 NAME         TYPE            VERSION   STATUS         AGE
 kafka-prod   kubedb.com/v1   3.8.1     Provisioning   0s
 kafka-prod   kubedb.com/v1   3.8.1     Provisioning   55s
 .
 .
 kafka-prod   kubedb.com/v1   3.8.1     Ready          119s
-```
 
 We are now ready to apply the `KafkaOpsRequest` CR to update.
 
@@ -149,9 +149,9 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version-ops.yaml
-kafkaopsrequest.ops.kubedb.com/kafka-update-version created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version-ops.yaml
 ```
+kafkaopsrequest.ops.kubedb.com/kafka-update-version created
 
 #### Verify Kafka version updated successfully
 
@@ -160,15 +160,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `KafkaOpsRequest` to be `Successful`.  Run the following command to watch `KafkaOpsRequest` CR,
 
 ```bash
-$ kubectl get kafkaopsrequest -n demo
+kubectl get kafkaopsrequest -n demo
+```
 NAME                   TYPE            STATUS        AGE
 kafka-update-version   UpdateVersion   Successful    2m6s
-```
 
 We can see from the above output that the `KafkaOpsRequest` has succeeded. If we describe the `KafkaOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe kafkaopsrequest -n demo kafka-update-version
+kubectl describe kafkaopsrequest -n demo kafka-update-version
+```
 Name:         kafka-update-version
 Namespace:    demo
 Labels:       <none>
@@ -302,20 +303,23 @@ Events:
   Normal   RestartPods                                                                62s    KubeDB Ops-manager Operator  Successfully Restarted Kafka nodes
   Normal   Starting                                                                   62s    KubeDB Ops-manager Operator  Resuming Kafka database: demo/kafka-prod
   Normal   Successful                                                                 61s    KubeDB Ops-manager Operator  Successfully resumed Kafka database: demo/kafka-prod for KafkaOpsRequest: kafka-update-version
-```
 
 Now, we are going to verify whether the `Kafka` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get kf -n demo kafka-prod -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get kf -n demo kafka-prod -o=jsonpath='{.spec.version}{"\n"}'
+```
 3.9.0
 
-$ kubectl get petset -n demo kafka-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo kafka-prod-broker -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/kafka-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
-$ kubectl get pods -n demo kafka-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/kafka-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
+```bash
+kubectl get pods -n demo kafka-prod-broker-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/kafka-kraft:3.9.0@sha256:e251d3c0ceee0db8400b689e42587985034852a8a6c81b5973c2844e902e6d11
 
 You can see from above, our `Kafka` has been updated with the new version. So, the updateVersion process is successfully completed.
 

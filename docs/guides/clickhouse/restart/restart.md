@@ -24,10 +24,10 @@ KubeDB supports restarting the ClickHouse database via a ClickHouseOpsRequest. R
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/clickhouse](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/clickhouse) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -88,9 +88,9 @@ spec:
 Let's create the `ClickHouse` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/restart/clickhouse-cluster.yaml
-clickhouse.kubedb.com/clickhouse-prod created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/restart/clickhouse-cluster.yaml
 ```
+clickhouse.kubedb.com/clickhouse-prod created
 
 ## Apply Restart opsRequest
 
@@ -117,9 +117,9 @@ spec:
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/restart/ops.yaml
-clickhouseopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/restart/ops.yaml
 ```
+clickhouseopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the controller pods, then broker of the referenced clickhouse.
 

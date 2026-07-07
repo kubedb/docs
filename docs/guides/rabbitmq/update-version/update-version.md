@@ -30,9 +30,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/rabbitmq](/docs/examples/rabbitmq) directory of [kubedb/docs](https://github.com/kube/docs) repository.
 
@@ -66,17 +66,17 @@ spec:
 Let's create the `RabbitMQ` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/update-version/rm-cluster.yaml
-rabbitmq.kubedb.com/rm-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/RabbitMQ/update-version/rm-cluster.yaml
 ```
+rabbitmq.kubedb.com/rm-cluster created
 
 Now, wait until `rm-cluster` created has status `Ready`. i.e,
 
 ```bash
-$ kubectl get rm -n demo                                                                                                                                             
+kubectl get rm -n demo                                                                                                                                             
+```
 NAME            VERSION    STATUS    AGE
 rm-cluster      4.0.4   Ready     109s
-```
 
 We are now ready to apply the `RabbitMQOpsRequest` CR to update this database.
 
@@ -114,9 +114,9 @@ Here,
 Let's create the `RabbitMQOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/update-version/rmops-cluster-update .yaml
-rabbitmqopsrequest.ops.kubedb.com/rmops-cluster-update created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/update-version/rmops-cluster-update .yaml
 ```
+rabbitmqopsrequest.ops.kubedb.com/rmops-cluster-update created
 
 #### Verify RabbitMQ version updated successfully
 
@@ -125,16 +125,17 @@ If everything goes well, `KubeDB` Ops-manager operator will update the image of 
 Let's wait for `RabbitMQOpsRequest` to be `Successful`.  Run the following command to watch `RabbitMQOpsRequest` CR,
 
 ```bash
-$ kubectl get rabbitmqopsrequest -n demo
+kubectl get rabbitmqopsrequest -n demo
+```
 Every 2.0s: kubectl get rabbitmqopsrequest -n demo
 NAME                      TYPE            STATUS       AGE
 rmops-cluster-update      UpdateVersion   Successful   84s
-```
 
 We can see from the above output that the `RabbitMQOpsRequest` has succeeded. If we describe the `RabbitMQOpsRequest` we will get an overview of the steps that were followed to update the database version.
 
 ```bash
-$ kubectl describe rabbitmqopsrequest -n demo rmops-cluster-update
+kubectl describe rabbitmqopsrequest -n demo rmops-cluster-update
+```
 Name:         rmops-cluster-update
 Namespace:    demo
 Labels:       <none>
@@ -232,20 +233,23 @@ Events:
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Resuming RabbitMQ demo/rm-cluster
   Normal  ResumeDatabase         38s    KubeDB Ops-manager Operator  Successfully resumed RabbitMQ demo/rm-cluster
   Normal  Successful             38s    KubeDB Ops-manager Operator  Successfully Updated Database
-```
 
 Now, we are going to verify whether the `RabbitMQ` and the related `PetSets` and their `Pods` have the new version image. Let's check,
 
 ```bash
-$ kubectl get rm -n demo rm-cluster -o=jsonpath='{.spec.version}{"\n"}'
+kubectl get rm -n demo rm-cluster -o=jsonpath='{.spec.version}{"\n"}'
+```
 4.2.4
 
-$ kubectl get petset -n demo rm-cluster -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```bash
+kubectl get petset -n demo rm-cluster -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+```
 ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
 
-$ kubectl get pods -n demo rm-cluster-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
+```bash
+kubectl get pods -n demo rm-cluster-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
 ```
+ghcr.io/appscode-images/rabbitmq:4.2.4-management-alpine
 
 You can see from above, our `RabbitMQ` cluster has been updated with the new version. So, the updateVersion process is successfully completed.
 

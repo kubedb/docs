@@ -24,10 +24,10 @@ KubeDB supports restarting the Postgres database via a PostgresOpsRequest. Resta
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
-```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  ```bash
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -58,9 +58,9 @@ spec:
 Let's create the `Postgres` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/restart/postgres.yaml
-postgres.kubedb.com/ha-postgres created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/restart/postgres.yaml
 ```
+postgres.kubedb.com/ha-postgres created
 
 ## Apply Restart opsRequest
 
@@ -87,20 +87,22 @@ spec:
 Let's create the `PostgresOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/restart/ops.yaml
-postgresopsrequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/restart/ops.yaml
 ```
+postgresopsrequest.ops.kubedb.com/restart created
 
 Now the Ops-manager operator will first restart the general secondary pods and lastly will restart the Primary pod of the database.
 > Note: This will not restart the arbiter pod if you have one. Arbiter pod doesn't have any data related to your database. So you can ignore restarting this pod because no restart is necessary for arbiter pod but if you want so, just kubectl delete the arbiter pod (dbName-arbiter-0) in order to restart it.
 
-```shell
-$ kubectl get pgops -n demo restart 
+```bash
+kubectl get pgops -n demo restart 
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   3m25s
 
-
-$ kubectl get pgops -n demo restart -oyaml
+```bash
+kubectl get pgops -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PostgresOpsRequest
 metadata:
@@ -213,8 +215,6 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 
 
 ## Cleaning up

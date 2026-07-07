@@ -26,9 +26,9 @@ restarted last** to minimize avoidable failovers.
 - Create a namespace:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Deploy a HanaDB System Replication Cluster
 
@@ -68,19 +68,19 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/restart/system-replication-ops.yaml
-hanadb.kubedb.com/hanadb-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/restart/system-replication-ops.yaml
 ```
+hanadb.kubedb.com/hanadb-cluster created
 
 Wait until `hanadb-cluster` is `Ready`. Note the current pod ages and which pod is primary:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+```
 NAME                       READY   STATUS    RESTARTS   AGE    ROLE
 hanadb-cluster-0           2/2     Running   0          14m    primary
 hanadb-cluster-1           2/2     Running   0          14m    secondary
 hanadb-cluster-arbiter-0   1/1     Running   0          8m     arbiter
-```
 
 ## Create a Restart HanaDBOpsRequest
 
@@ -99,9 +99,9 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/restart/restart.yaml
-hanadbopsrequest.ops.kubedb.com/hdbops-restart created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hanadb/restart/restart.yaml
 ```
+hanadbopsrequest.ops.kubedb.com/hdbops-restart created
 
 Here `spec.apply: Always` lets the restart proceed even if the database is not `Ready`, which is useful
 for recovering an unhealthy database.
@@ -109,13 +109,14 @@ for recovering an unhealthy database.
 ## Verify the Restart
 
 ```bash
-$ kubectl get hdbops -n demo hdbops-restart
+kubectl get hdbops -n demo hdbops-restart
+```
 NAME             TYPE      STATUS       AGE
 hdbops-restart   Restart   Successful   7m32s
-```
 
 ```bash
-$ kubectl describe hdbops -n demo hdbops-restart
+kubectl describe hdbops -n demo hdbops-restart
+```
 ...
 Status:
   Conditions:
@@ -136,30 +137,37 @@ Status:
     Status:   True
     Type:     Successful
   Phase:      Successful
-```
 
 The operator evicts the secondary (`hanadb-cluster-1`) first and the primary (`hanadb-cluster-0`) last.
 The pods now show a fresh age and the database is back to `Ready`. Note that restarting the old primary
 triggers a normal HANA SystemReplication takeover, so the `primary`/`secondary` roles may swap:
 
 ```bash
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+kubectl get pods -n demo -l app.kubernetes.io/instance=hanadb-cluster -L kubedb.com/role
+```
 NAME                       READY   STATUS    RESTARTS   AGE     ROLE
 hanadb-cluster-0           2/2     Running   0          4m30s   secondary
 hanadb-cluster-1           2/2     Running   0          7m16s   primary
 hanadb-cluster-arbiter-0   1/1     Running   0          15m     arbiter
 
-$ kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+```bash
+kubectl get hanadb.kubedb.com -n demo hanadb-cluster
+```
 NAME             VERSION   STATUS   AGE
 hanadb-cluster   2.0.82    Ready    22m
-```
 
 ## Cleaning Up
 
 ```bash
-$ kubectl delete hdbops -n demo hdbops-restart
-$ kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
-$ kubectl delete ns demo
+kubectl delete hdbops -n demo hdbops-restart
+```
+
+```bash
+kubectl delete hanadb.kubedb.com -n demo hanadb-cluster
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

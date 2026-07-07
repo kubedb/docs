@@ -61,9 +61,9 @@ spec:
 Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/pxc.yaml
-perconaxtradb.kubedb.com/pxc created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/pxc.yaml
 ```
+perconaxtradb.kubedb.com/pxc created
 let's wait until all pods are in the `Running` state,
 
 ```shell
@@ -76,11 +76,18 @@ pxc-2   2/2     Running   0          6m28s
 let's check database is ready to accept connections,
 
 ```bash
-$ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\username}' | base64 -d
+```
 root
-$ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+
+```bash
+kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+```
 kP!VVJ2e~DUtcD*D
-$ kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+
+```bash
+kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -113,7 +120,6 @@ Query OK, 1 row affected (0.02 sec)
 
 mysql> exit                      
 Bye
-```
 
 
 # Apply Restart opsRequest
@@ -145,9 +151,9 @@ Here,
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/restart.yaml
-PerconaXtraDBOpsRequest.ops.kubedb.com/restart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/restart.yaml
 ```
+PerconaXtraDBOpsRequest.ops.kubedb.com/restart created
 
 In a PerconaXtraDB cluster, all pods act as primary nodes. When you apply a restart OpsRequest, the KubeDB operator will restart the pods sequentially, one by one, to maintain cluster availability.
 
@@ -174,12 +180,15 @@ pxc-2   2/2     Terminating   0          56m
 
 ```
 
-```shell
-$ kubectl get PerconaXtraDBopsrequest -n demo
+```bash
+kubectl get PerconaXtraDBopsrequest -n demo
+```
 NAME      TYPE      STATUS       AGE
 restart   Restart   Successful   64m
 
-$ kubectl get PerconaXtraDBopsrequest -n demo restart -oyaml
+```bash
+kubectl get PerconaXtraDBopsrequest -n demo restart -oyaml
+```
 apiVersion: ops.kubedb.com/v1alpha1
 kind: PerconaXtraDBOpsRequest
 metadata:
@@ -251,14 +260,13 @@ status:
     type: Successful
   observedGeneration: 1
   phase: Successful
-
-```
 **Verify Data Persistence**
 
 After the restart, reconnect to the database and verify that the previously created database still exists:
 
 ```bash
-$ kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
@@ -289,7 +297,6 @@ mysql> show databases;
 
 mysql> exit
 Bye
-```
 ## Cleaning up
 
 To clean up the Kubernetes resources created by this tutorial, run:

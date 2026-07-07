@@ -28,9 +28,9 @@ This guide will show you how to use `KubeDB` operator to set up a `ProxySQL` ser
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Prepare PerconaXtraDB Backend 
 
@@ -60,22 +60,23 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-galera.yaml
-perconaxtradb.kubedb.com/xtradb-galera created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-galera.yaml
 ```
+perconaxtradb.kubedb.com/xtradb-galera created
 
 Let's wait for the PerconaXtraDB to be Ready. 
 
 ```bash
-$ kubectl get px -n demo 
+kubectl get px -n demo 
+```
 NAME            VERSION   STATUS   AGE
 xtradb-galera   8.0.40    Ready    8m
-```
 
 Let's first create a user in the backend percona-xtradb server and a database to test the proxy traffic.
 
 ```bash
-$ kubectl exec -it -n demo xtradb-galera-0 -- bash
+kubectl exec -it -n demo xtradb-galera-0 -- bash
+```
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
 mysql: [Warning] Using a password on the command line interface can be insecure.
@@ -114,7 +115,6 @@ Query OK, 0 rows affected (0.04 sec)
 
 mysql> exit
 Bye
-```
 
 Now we are ready to deploy and test our ProxySQL server. 
 
@@ -140,23 +140,24 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-proxy.yaml
-proxysql.kubedb.com/xtradb-proxy created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/kubedb/examples/xtradb-proxy.yaml
 ```
+proxysql.kubedb.com/xtradb-proxy created
 
 Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend PerconaXtraDB server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
-$ kubectl get prx -n demo
+kubectl get prx -n demo
+```
 NAME            VERSION        STATUS   AGE
 xtradb-proxy    3.0.1-debian   Ready    17m
-```
 
 Let's check the pods and associated kubernetes objects
 ```bash
-$ kubectl get petset,pods,svc,secrets -n demo
+kubectl get petset,pods,svc,secrets -n demo
+```
 petset.apps.k8s.appscode.com/xtradb-proxy     18m
 
 NAME                         READY   STATUS    RESTARTS        AGE
@@ -172,13 +173,13 @@ NAME                                 TYPE                       DATA   AGE
 secret/xtradb-proxy-auth             kubernetes.io/basic-auth   2      18m
 secret/xtradb-proxy-configuration    Opaque                     1      18m
 secret/xtradb-proxy-monitor          kubernetes.io/basic-auth   2      18m
-```
 
 ### Check Internal Configuration
 Lets exec into the ProxySQL server pod and get into the admin panel. 
 
 ```bash
-$ kubectl exec -it -n demo xtradb-proxy-0 -- bash
+kubectl exec -it -n demo xtradb-proxy-0 -- bash
+```
 proxysql@xtradb-proxy-0:/$ mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > "
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 275
@@ -189,7 +190,6 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 ProxySQLAdmin > 
-```
 
 Let's check the mysql_galera_hostgroups and mysql_servers table first. We didn't set it from the YAML. The KubeDB operator will do that for us.
 
@@ -287,13 +287,13 @@ deployment.apps/ubuntu created
 Lets exec into the pod and install mariadb-galera-client. 
 
 ```bash
-$ kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+```
 root@ubuntu-bb47d8d6c-7wndq:/# apt update
 ... ... ..
 root@ubuntu-bb47d8d6c-7wndq:/# apt install mysql-client -y
 Reading package lists... Done
 ... .. ...
-```
 
 Now let's try to connect with the ProxySQL server through the `xtradb-proxy` service as the `test` user.
 

@@ -25,13 +25,15 @@ Elasticsearch has many distributions like `ElasticStack`, `OpenSearch`, `SearchG
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create namespace demo
+kubectl create namespace demo
+```
 namespace/demo created
 
-$ kubectl get namespace
+```bash
+kubectl get namespace
+```
 NAME                 STATUS   AGE
 demo                 Active   14s
-```
 
 > Note: YAML files used in this tutorial are stored in [here](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/kibana/yamls) in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -40,10 +42,10 @@ demo                 Active   14s
 We will have to provide `StorageClass` in Elasticsearch CR specification. Check available `StorageClass` in your cluster using the following command,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 standard (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  10m
-```
 
 Here, we have `standard` StorageClass in our cluster from [Local Path Provisioner](https://github.com/rancher/local-path-provisioner).
 
@@ -110,22 +112,23 @@ Here,
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster.yaml
-elasticsearch.kubedb.com/os-cluster created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster.yaml
 ```
+elasticsearch.kubedb.com/os-cluster created
 KubeDB will create the necessary resources to deploy the OpenSearch cluster according to the above specification. Let’s wait until the database to be ready to use,
 
 ```bash
-$ watch kubectl get elasticsearch -n demo
+watch kubectl get elasticsearch -n demo
+```
 NAME         VERSION            STATUS   AGE
 os-cluster   opensearch-3.4.0   Ready    3m25s
-```
 Here, OpenSearch is in `Ready` state. It means the database is ready to accept connections.
 
 Describe the object to observe the progress if something goes wrong or the status is not changing for a long period of time:
 
 ```bash
-$ kubectl describe elasticsearch -n demo os-cluster
+kubectl describe elasticsearch -n demo os-cluster
+```
 Name:         os-cluster
 Namespace:    demo
 Labels:       <none>
@@ -298,8 +301,6 @@ Events:
   ----    ------      ----  ----             -------
   Normal  Successful  12m   KubeDB Operator  Successfully  governing service
   Normal  Successful  12m   KubeDB Operator  Successfully  governing service
-
-```
 - Here, in `Status.Conditions` 
   - `Conditions.Status` is `True` for the `Condition.Type:ProvisioningStarted` which means database provisioning has been started successfully.
   - `Conditions.Status` is `True` for the `Condition.Type:ReplicaReady` which specifies all replicas are ready in the cluster.
@@ -312,7 +313,8 @@ Events:
 After the deployment, the operator creates the following resources::
 
 ```bash
-$ kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=os-cluster'
+kubectl get all,secret,pvc -n demo -l 'app.kubernetes.io/instance=os-cluster'
+```
 NAME                      READY   STATUS    RESTARTS   AGE
 pod/os-cluster-data-0     1/1     Running   0          16m
 pod/os-cluster-data-1     1/1     Running   0          16m
@@ -357,7 +359,6 @@ persistentvolumeclaim/data-os-cluster-ingest-0   Bound    pvc-fe3b6633-bd74-465c
 persistentvolumeclaim/data-os-cluster-ingest-1   Bound    pvc-2f60eea0-2bb8-4e42-a8e2-49232163f0a5   1Gi        RWO            standard       16m
 persistentvolumeclaim/data-os-cluster-master-0   Bound    pvc-59e14a54-6311-4639-9b00-dca6304ed90c   1Gi        RWO            standard       16m
 persistentvolumeclaim/data-os-cluster-master-1   Bound    pvc-37783550-3c3a-4280-b9ac-9e967ab248af   1Gi        RWO            standard       16m
-```
 
 - `PetSet` - 3 PetSets are created for 3 type of nodes. The PetSets are named after the OpenSearch instance with given suffix: `{OpenSearch-Name}-{Sufix}`.
 - `Services` -  3 services are generated for each OpenSearch database.
@@ -393,17 +394,17 @@ spec:
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster-dashboard.yaml
-elasticsearchdashboard.elasticsearch.kubedb.com/os-cluster-dashboard created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster-dashboard.yaml
 ```
+elasticsearchdashboard.elasticsearch.kubedb.com/os-cluster-dashboard created
 
 KubeDB will create the necessary resources to deploy the OpenSearch dashboard according to the above specification. Let’s wait until the dashboard to be ready to use,
 
 ```bash
-$ watch kubectl get elasticsearchdashboard -n demo
+watch kubectl get elasticsearchdashboard -n demo
+```
 NAME                   TYPE                            DATABASE     STATUS   AGE
 os-cluster-dashboard   elasticsearch.kubedb.com/v1alpha1   os-cluster   Ready    9m
-```
 Here, OpenSearch Dashboard is in `Ready` state. 
 
 
@@ -416,21 +417,20 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 KubeDB will create few Services to connect with the database. Let’s check the Services by following command,
 
 ```bash
-$ kubectl get service -n demo
+kubectl get service -n demo
+```
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
 os-cluster             ClusterIP   10.96.103.250   <none>        9200/TCP   19m
 os-cluster-dashboard   ClusterIP   10.96.108.252   <none>        5601/TCP   19m
 os-cluster-master      ClusterIP   None            <none>        9300/TCP   19m
 os-cluster-pods        ClusterIP   None            <none>        9200/TCP   19m
-
-```
 Here, we are going to use `os-cluster-dashboard` Service to connect with the database. Now, let’s port-forward the `os-cluster` Service to the port `5601` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo service/os-cluster-dashboard 5601
+kubectl port-forward -n demo service/os-cluster-dashboard 5601
+```
 Forwarding from 127.0.0.1:5601 -> 5601
 Forwarding from [::1]:5601 -> 5601
-```
 Now, our OpenSearch cluster dashboard is accessible at `https://localhost:5601`.
 
 #### Export the Credentials
@@ -438,7 +438,8 @@ Now, our OpenSearch cluster dashboard is accessible at `https://localhost:5601`.
 KubeDB also create some Secrets for the database. Let’s check which Secrets have been created by KubeDB for our `os-cluster`.
 
 ```bash
-$ kubectl get secret -n demo | grep es-cluster
+kubectl get secret -n demo | grep es-cluster
+```
 os-cluster-admin-cert              kubernetes.io/tls                     3      16m
 os-cluster-auth              kubernetes.io/basic-auth              2      16m
 os-cluster-ca-cert                 kubernetes.io/tls                     2      16m
@@ -455,7 +456,6 @@ os-cluster-readall-cred            kubernetes.io/basic-auth              2      
 os-cluster-snapshotrestore-cred    kubernetes.io/basic-auth              2      16m
 os-cluster-token-wq8b9             kubernetes.io/service-account-token   3      16m
 os-cluster-transport-cert          kubernetes.io/tls                     3      16m
-```
 Now, we can connect to the database with `os-cluster-auth` which contains the admin credentials to connect with the database.
 
 ### Accessing Database Through Dashboard
@@ -463,11 +463,14 @@ Now, we can connect to the database with `os-cluster-auth` which contains the ad
 To access the database through Dashboard, we have to get the credentials. We can do that by following command,
 
 ```bash
-$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.username}' | base64 -d
-admin
-$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.password}' | base64 -d
-Oyj8FdPzA.DZqEyS
+kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 ```
+admin
+
+```bash
+kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.password}' | base64 -d
+```
+Oyj8FdPzA.DZqEyS
 
 Now, let's go to `https://localhost:5601` from our browser and login by using those credentials.
 
@@ -510,14 +513,20 @@ Now, Let's remove that index by using `DELETE` query.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete elasticsearchdashboard -n demo os-cluster-dashboard
+kubectl delete elasticsearchdashboard -n demo os-cluster-dashboard
+```
 
-$ kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```bash
+kubectl patch -n demo elasticsearch os-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete elasticsearch -n demo os-cluster 
+```bash
+kubectl delete elasticsearch -n demo os-cluster 
+```
 
 # Delete namespace
-$ kubectl delete namespace demo
+```bash
+kubectl delete namespace demo
 ```
 
 ## Next Steps

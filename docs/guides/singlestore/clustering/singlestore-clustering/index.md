@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/singlestore](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/singlestore/clustering/singlestore-clustering/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -40,11 +40,11 @@ Before proceeding:
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 ## Create a SingleStore database
 
@@ -107,9 +107,9 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/clustering/singlestore-clustering/examples/sample-sdb.yaml
-singlestore.kubedb.com/sample-sdb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/clustering/singlestore-clustering/examples/sample-sdb.yaml
 ```
+singlestore.kubedb.com/sample-sdb created
 Here,
 
 - `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.9.3` database is going to be created.
@@ -124,7 +124,8 @@ Here,
 KubeDB operator watches for `Singlestore` objects using Kubernetes api. When a `Singlestore` object is created, KubeDB operator will create new PetSet and Service with the matching SingleStore object name. KubeDB operator will also create a governing service for PetSets, if one is not already present.
 
 ```bash
-$ kubectl get petset,pvc,pv,svc -n demo
+kubectl get petset,pvc,pv,svc -n demo
+```
 NAME                                                 AGE
 petset.apps.k8s.appscode.com/sample-sdb-aggregator   16m
 petset.apps.k8s.appscode.com/sample-sdb-leaf         16m
@@ -142,9 +143,6 @@ persistentvolume/pvc-a6c9041cba69454a   10Gi       RWO            Retain        
 NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
 service/sample-sdb        ClusterIP   10.128.15.230   <none>        3306/TCP,8081/TCP   16m
 service/sample-sdb-pods   ClusterIP   None            <none>        3306/TCP            16m
-
-
-```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified Singlestore object:
 
@@ -362,17 +360,24 @@ If you want to use an existing secret please specify that when creating the Sing
 Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sample-sdb-auth` secret holds username and password
 
 ```bash
-$ kubectl get pod -n demo sample-sdb-aggregator-0 -oyaml | grep podIP
-  podIP: 10.244.0.14
-$ kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.username}' | base64 -d
-  root
-$ kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.password}' | base64 -d
-  J0h_BUdJB8mDO31u
+kubectl get pod -n demo sample-sdb-aggregator-0 -oyaml | grep podIP
 ```
+  podIP: 10.244.0.14
+
+```bash
+kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.username}' | base64 -d
+```
+  root
+
+```bash
+kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.password}' | base64 -d
+```
+  J0h_BUdJB8mDO31u
 we will exec into the pod `sample-sdb-aggregator-0` and connect to the database using username and password
 
 ```bash
-$ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
+```
 Defaulting container name to singlestore.
 Use 'kubectl describe pod/sample-sdb-aggregator-0 -n demo' to see all of the containers in this pod.
 
@@ -425,16 +430,15 @@ singlestore> SELECT * FROM playground.equipment;
 
 singlestore> exit
 Bye
-```
 You can also connect with database management tools like [singlestore-studio](https://docs.singlestore.com/db/v8.5/reference/singlestore-tools-reference/singlestore-studio/)
 
 You can simply access to SingleStore studio by forwarding the Primary service port to any of your localhost port. Or, Accessing through ExternalP's 8081 port is also an option.
 
 ```bash
-$ kubectl port-forward -n demo service/sample-sdb 8081
+kubectl port-forward -n demo service/sample-sdb 8081
+```
 Forwarding from 127.0.0.1:8081 -> 8081
 Forwarding from [::1]:8081 -> 8081
-```
 Lets, open your browser and go to the http://localhost:8081 or with TLS https://localhost:8081 then click on `Add or Create Cluster` option.
 Then choose `Add Existing Cluster` and click on `next` and you will get an interface like that below:
 

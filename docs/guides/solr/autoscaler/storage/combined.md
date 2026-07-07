@@ -35,9 +35,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Solr
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in this [directory](/docs/examples/solr/autoscaler/storage) of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -46,12 +46,12 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get sc
+kubectl get sc
+```
 NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  11d
 longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   7d21h
 longhorn-static        driver.longhorn.io      Delete          Immediate              true                   7d21h
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. 
 Now, we are going to deploy a `Solr` combined cluster using a supported version by the `KubeDB` operator. Then we are going to apply `SolrAutoscaler` to set up autoscaling.
@@ -84,35 +84,35 @@ spec:
 Let's create the `Solr` CRD we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/combined-scaler.yaml
-solr.kubedb.com/solr-combined created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/combined-scaler.yaml
 ```
+solr.kubedb.com/solr-combined created
 
 Now, wait until `solr-combined` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get sl -n demo
+kubectl get sl -n demo
+```
 NAME            TYPE                  VERSION   STATUS   AGE
 solr-combined   kubedb.com/v1alpha2   9.6.1     Ready    17m
-
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "1Gi"
   }
 }
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          19m
 pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>                          19m
-```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
@@ -153,21 +153,23 @@ Here,
 Let's create the `SolrAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/combined-scaler.yaml 
-solrautoscaler.autoscaling.kubedb.com/sl-storage-autoscaler-combined created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/autoscaler/storage/combined-scaler.yaml 
 ```
+solrautoscaler.autoscaling.kubedb.com/sl-storage-autoscaler-combined created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `Solrautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get solrautoscaler -n demo
+kubectl get solrautoscaler -n demo
+```
 NAME                             AGE
 sl-storage-autoscaler-combined   20m
 
-
-$ kubectl describe solrautoscaler -n demo sl-storage-autoscaler-combined 
+```bash
+kubectl describe solrautoscaler -n demo sl-storage-autoscaler-combined 
+```
 Name:         sl-storage-autoscaler-combined
 Namespace:    demo
 Labels:       <none>
@@ -209,7 +211,6 @@ Status:
     Status:                True
     Type:                  CreateOpsRequest
 Events:                    <none>
-```
 
 So, the `solrautoscaler` resource is created successfully.
 
@@ -218,7 +219,8 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the database pod and fill the database volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo solr-combined-0 -- bash
+kubectl exec -it -n demo solr-combined-0 -- bash
+```
 Defaulted container "solr" out of: solr, init-solr (init)
 solr@solr-combined-0:/opt/solr-9.6.1$ df -h /var/solr/data
 Filesystem                                              Size  Used Avail Use% Mounted on
@@ -232,30 +234,30 @@ Filesystem                                              Size  Used Avail Use% Mo
 [root@es-combined-0 Solr]# df -h /usr/share/Solr/data
 Filesystem                                         Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61  7.1G  601M  6.5G 63% /var/solr/data
-```
 
 So, from the above output, we can see that the storage usage is 64%, which exceeded the `usageThreshold` 60%.
 
 Let's watch the `solropsrequest` in the demo namespace to see if any `solropsrequest` object is created. After some time you'll see that a `Solropsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ kubectl get slops -n demo
+kubectl get slops -n demo
+```
 NAME                         TYPE              STATUS       AGE
 slops-solr-combined-gzqvx7   VolumeExpansion   Progressing   9m42s
-```
 
 Let's wait for the opsRequest to become successful.
 
 ```bash
-$ kubectl get esops -n demo
+kubectl get esops -n demo
+```
 NAME                         TYPE              STATUS        AGE
 slops-solr-combined-gzqvx7   VolumeExpansion   Successful    19m
-```
 
 We can see from the above output that the `SolrOpsRequest` has succeeded. If we describe the `SolrOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe slops -n demo slops-solr-combined-gzqvx7 
+kubectl describe slops -n demo slops-solr-combined-gzqvx7 
+```
 Name:         slops-solr-combined-gzqvx7
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -380,24 +382,24 @@ Status:
     Type:                  Successful
   Observed Generation:     1
   Phase:                   Successful
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+kubectl get petset -n demo solr-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+```
 {
   "requests": {
     "storage": "7687602176"
   }
 }
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                     STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-ceee299c-5c50-4f5c-83d5-97e2423bf286   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-1   longhorn       <unset>                          26m
 pvc-d9c2f7c1-7c27-48bd-a87e-cb1935cc2e61   7332Mi     RWO            Delete           Bound    demo/solr-combined-data-solr-combined-0   longhorn       <unset>
-```
 
 The above output verifies that we have successfully autoscaler the volume of the Solr combined cluster.
 
@@ -406,6 +408,9 @@ The above output verifies that we have successfully autoscaler the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete solr -n demo solr-combined
-$ kubectl delete solrautoscaler -n demo sl-storage-autoscaler-combined
+kubectl delete solr -n demo solr-combined
+```
+
+```bash
+kubectl delete solrautoscaler -n demo sl-storage-autoscaler-combined
 ```

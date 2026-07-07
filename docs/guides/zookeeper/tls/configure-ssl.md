@@ -27,9 +27,9 @@ KubeDB supports providing TLS/SSL encryption for ZooKeeper Ensemble. This tutori
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/zookeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -82,9 +82,9 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/tls/zookeeper-issuer.yaml
-issuer.cert-manager.io/zookeeper-ca-issuer created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/tls/zookeeper-issuer.yaml
 ```
+issuer.cert-manager.io/zookeeper-ca-issuer created
 
 ## TLS/SSL encryption in ZooKeeper Ensemble
 
@@ -123,22 +123,23 @@ Here,
 ### Deploy ZOoKeeper Ensemble with TLS/SSL
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/tls/zookeeper-tls.yaml
-zookeeper.kubedb.com/zk-quickstart created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/tls/zookeeper-tls.yaml
 ```
+zookeeper.kubedb.com/zk-quickstart created
 
 Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get zookeeper -n demo
+watch kubectl get zookeeper -n demo
+```
 NAME            TYPE                    VERSION   STATUS    AGE
 zk-quickstart   kubedb.com/v1alpha2     3.9.1     Ready     60s
-```
 
 ### Verify TLS/SSL in ZooKeeper Ensemble
 
 ```bash
-$ kubectl describe secret -n demo zk-quickstart-client-cert 
+kubectl describe secret -n demo zk-quickstart-client-cert 
+```
 Name:         zk-quickstart-client-cert
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -166,12 +167,12 @@ tls-combined.pem:  3198 bytes
 tls.crt:           1493 bytes
 tls.key:           1704 bytes
 truststore.jks:    873 bytes
-```
 
 Now, Let's exec into a ZooKeeper pod and verify the configuration that the TLS is enabled.
 
 ```bash
-$ kubectl exec -it -n demo zk-quickstart-0 -- bash
+kubectl exec -it -n demo zk-quickstart-0 -- bash
+```
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
 zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cd ../var/private/ssl
 zookeeper@zk-quickstart-0:/var/private/ssl$ openssl s_client -connect localhost:2182 -CAfile ca.crt -cert tls.crt -key tls.key
@@ -248,7 +249,6 @@ SSL-Session:
     Verify return code: 0 (ok)
     Extended master secret: yes
 ---
-```
 
 From the above output, we can see that we are able to connect to the ZooKeeper Ensemble using the TLS configuration.
 

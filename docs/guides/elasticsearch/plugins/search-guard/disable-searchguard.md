@@ -27,13 +27,15 @@ Now, install KubeDB cli on your workstation and KubeDB operator in your cluster 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
+kubectl create ns demo
+```
 namespace/demo created
 
-$ kubectl get ns demo
+```bash
+kubectl get ns demo
+```
 NAME    STATUS  AGE
 demo    Active  5s
-```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -61,17 +63,17 @@ spec:
 Let's create the Elasticsearch object we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/es-sg-disabled.yaml
-elasticsearch.kubedb.com/es-sg-disabled created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/search-guard/es-sg-disabled.yaml
 ```
+elasticsearch.kubedb.com/es-sg-disabled created
 
 Wait for Elasticsearch to be ready,
 
 ```bash
-$ kubectl get es -n demo es-sg-disabled
+kubectl get es -n demo es-sg-disabled
+```
 NAME             VERSION   STATUS    AGE
 es-sg-disabled   searchguard-7.9.3    Running   27m
-```
 
 ## Connect to Elasticsearch Database
 
@@ -80,17 +82,17 @@ As we have disabled Search Guard plugin, we no longer require *username* and *pa
 At first, forward port 9200 of `es-sg-disabled-0` pod. Run following command in a separate terminal,
 
 ```bash
-$ kubectl port-forward -n demo es-sg-disabled-0 9200
+kubectl port-forward -n demo es-sg-disabled-0 9200
+```
 Forwarding from 127.0.0.1:9200 -> 9200
 Forwarding from [::1]:9200 -> 9200
-```
 
 Now, we can connect with the database at `localhost:9200`.
 
 Let's check health of our Elasticsearch database.
 
 ```bash
-$ curl "localhost:9200/_cluster/health?pretty"
+curl "localhost:9200/_cluster/health?pretty"
 ```
 
 ```json
@@ -118,10 +120,15 @@ $ curl "localhost:9200/_cluster/health?pretty"
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo es/es-sg-disabled -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo es/es-sg-disabled
+kubectl patch -n demo es/es-sg-disabled -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 
-$ kubectl delete ns demo
+```bash
+kubectl delete -n demo es/es-sg-disabled
+```
+
+```bash
+kubectl delete ns demo
 ```
 
 ## Next Steps

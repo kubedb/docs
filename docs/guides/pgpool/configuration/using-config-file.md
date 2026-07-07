@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Pgpool. This tutorial will sh
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/pgpool](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/pgpool) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -50,23 +50,24 @@ For a Pgpool surely we will need a Postgres server so, prepare a KubeDB Postgres
 At first, create `pgpool.conf` file containing required configuration settings.
 
 ```bash
-$ cat pgpool.conf
+cat pgpool.conf
+```
 num_init_children = 6
 max_pool = 65
 child_life_time = 400
-```
 
 Now, create the secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pp-configuration --from-file=./pgpool.conf
-secret/pp-configuration created
+kubectl create secret generic -n demo pp-configuration --from-file=./pgpool.conf
 ```
+secret/pp-configuration created
 
 Verify the secret has the configuration file.
 
 ```bash
-$  kubectl get secret -n demo pp-configuration -o yaml
+ kubectl get secret -n demo pp-configuration -o yaml
+```
 apiVersion: v1
 data:
   pgpool.conf: bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg==
@@ -79,11 +80,12 @@ metadata:
   uid: 80f5324a-9a65-4801-b136-21d2fa001b12
 type: Opaque
 
-$ echo bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg== | base64 -d
+```bash
+echo bnVtX2luaXRfY2hpbGRyZW4gPSA2Cm1heF9wb29sID0gNjUKY2hpbGRfbGlmZV90aW1lID0gNDAwCg== | base64 -d
+```
 num_init_children = 6
 max_pool = 65
 child_life_time = 400
-```
 
 Now, create Pgpool crd specifying `spec.configuration.secretName` field.
 
@@ -105,26 +107,27 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-config-file.yaml
-pgpool.kubedb.com/pp-custom-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/configuration/pgpool-config-file.yaml
 ```
+pgpool.kubedb.com/pp-custom-config created
 
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `pp-custom-config-0` has been created.
 
 Check that the petset's pod is running
 
 ```bash
-$ kubectl get pod -n demo pp-custom-config-0
+kubectl get pod -n demo pp-custom-config-0
+```
 NAME                 READY   STATUS    RESTARTS   AGE
 pp-custom-config-0   1/1     Running   0          35s
-```
 
 Now, we will check if the pgpool has started with the custom configuration we have provided.
 
 Now, you can exec into the pgpool pod and find if the custom configuration is there,
 
 ```bash
-$ kubectl exec -it -n demo pp-custom-config-0 -- bash
+kubectl exec -it -n demo pp-custom-config-0 -- bash
+```
 pp-custom-config-0:/$ cat opt/pgpool-II/etc/pgpool.conf
 backend_hostname0 = 'ha-postgres.demo.svc'
 backend_port0 = 5432
@@ -163,7 +166,6 @@ allow_clear_text_frontend_auth = 'false'
 failover_on_backend_error = 'off'
 pp-custom-config-0:/$ exit
 exit
-```
 
 As we can see from the configuration of running pgpool, the value of `num_init_children`, `max_pool` and `child_life_time` has been set to our desired value successfully.
 

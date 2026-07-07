@@ -29,9 +29,9 @@ Before proceeding:
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  kubectl create ns demo
   ```
+  namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/druid/clustering/topology-cluster-guide/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/druid/clustering/topology-cluster-guide/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -42,19 +42,25 @@ Before proceeding further, we need to prepare deep storage, which is one of the 
 In this tutorial, we will run a `minio-server` as deep storage in our local `kind` cluster using `minio-operator` and create a bucket named `druid` in it, which the deployed druid database will use.
 
 ```bash
+helm repo add minio https://operator.min.io/
+```
 
-$ helm repo add minio https://operator.min.io/
-$ helm repo update minio
-$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```bash
+helm repo update minio
+```
 
-$ helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
+```bash
+helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
+```
+
+```bash
+helm upgrade --install --namespace "demo" --create-namespace druid-minio minio/tenant \
 --set tenant.pools[0].servers=1 \
 --set tenant.pools[0].volumesPerServer=1 \
 --set tenant.pools[0].size=1Gi \
 --set tenant.certificate.requestAutoCert=false \
 --set tenant.buckets[0].name="druid" \
 --set tenant.pools[0].name="default"
-
 ```
 
 Now we need to create a `Secret` named `deep-storage-config`. It contains the necessary connection information using which the druid database will connect to the deep storage.
@@ -80,9 +86,9 @@ stringData:
 Let’s create the `deep-storage-config` Secret shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
-secret/deep-storage-config created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/backup/application-level/examples/deep-storage-config.yaml
 ```
+secret/deep-storage-config created
 
 ## Deploy Druid Cluster
 
@@ -107,14 +113,15 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-cluster.yaml
-druid.kubedb.com/druid-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-cluster.yaml
 ```
+druid.kubedb.com/druid-cluster created
 
 KubeDB operator watches for `Druid` objects using Kubernetes API. When a `Druid` object is created, KubeDB operator will create new PetSets and Services with the matching Druid object name. KubeDB operator will also create a governing service for the PetSet with the name `<druid-object-name>-pods`.
 
 ```bash
-$ kubectl describe druid -n demo druid-cluster
+kubectl describe druid -n demo druid-cluster
+```
 Name:         druid-cluster
 Namespace:    demo
 Labels:       <none>
@@ -448,7 +455,9 @@ Status:
   Phase:                   Provisioning
 Events:                    <none>
 
-$ kubectl get petset -n demo
+```bash
+kubectl get petset -n demo
+```
 NAME                           AGE
 druid-cluster-brokers          13m
 druid-cluster-coordinators     13m
@@ -458,18 +467,23 @@ druid-cluster-mysql-metadata   14m
 druid-cluster-routers          13m
 druid-cluster-zk               14m
 
-$ kubectl get pvc -n demo -l app.kubernetes.io/name=druids.kubedb.com
+```bash
+kubectl get pvc -n demo -l app.kubernetes.io/name=druids.kubedb.com
+```
 NAME                                                         STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 druid-cluster-base-task-dir-druid-cluster-middlemanagers-0   Bound    pvc-d288b621-d281-4004-995d-7a25bb4149de   1Gi        RWO            standard       14m
 druid-cluster-segment-cache-druid-cluster-historicals-0      Bound    pvc-ccca6be2-658a-46af-a270-de1c6a041af7   1Gi        RWO            standard       14m
 
-
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                                              STORAGECLASS   REASON   AGE
 pvc-4f8538f6-a6ce-4233-b533-8566852f5b98   1Gi        RWO            Delete           Bound    demo/druid-cluster-base-task-dir-druid-cluster-middlemanagers-0    standard                4m39s
 pvc-8823d3ad-d614-4172-89ac-c2284a17f502   1Gi        RWO            Delete           Bound    demo/druid-cluster-segment-cache-druid-cluster-historicals-0       standard                4m35s
 
-$ kubectl get service -n demo
+```bash
+kubectl get service -n demo
+```
 NAME                                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                                 AGE
 druid-cluster-brokers                  ClusterIP   10.96.186.168   <none>        8082/TCP                                                17m
 druid-cluster-coordinators             ClusterIP   10.96.122.235   <none>        8081/TCP                                                17m
@@ -481,12 +495,12 @@ druid-cluster-routers                  ClusterIP   10.96.138.237   <none>       
 druid-cluster-zk                       ClusterIP   10.96.148.251   <none>        2181/TCP                                                18m
 druid-cluster-zk-admin-server          ClusterIP   10.96.2.106     <none>        8080/TCP                                                18m
 druid-cluster-zk-pods                  ClusterIP   None            <none>        2181/TCP,2888/TCP,3888/TCP                              18m
-```
 
 KubeDB operator sets the `status.phase` to `Ready` once the database is successfully created. Run the following command to see the modified `Druid` object:
 
 ```bash
-$ kubectl describe druid -n demo druid-cluster
+kubectl describe druid -n demo druid-cluster
+```
 Name:         druid-cluster
 Namespace:    demo
 Labels:       <none>
@@ -849,7 +863,6 @@ Status:
     Type:                  Provisioned
   Phase:                   Ready
 Events:                    <none>
-```
 
 
 ## Connect with Druid Database
@@ -860,17 +873,17 @@ We will use [port forwarding](https://kubernetes.io/docs/tasks/access-applicatio
 Let's port-forward the port `8888` to local machine:
 
 ```bash
-$ kubectl port-forward -n demo svc/druid-cluster-routers 8888
+kubectl port-forward -n demo svc/druid-cluster-routers 8888
+```
 Forwarding from 127.0.0.1:8888 -> 8888
 Forwarding from [::1]:8888 -> 8888
-```
 
 Now, the Druid cluster is accessible at `localhost:8888`. Let's check the [Service Health](https://druid.apache.org/docs/latest/api-reference/service-status-api/#get-service-health) of Routers of the Druid database.
 
 ```bash
-$ curl "http://localhost:8888/status/health"
-true
+curl "http://localhost:8888/status/health"
 ```
+true
 From the retrieved health information above, we can see that our Druid cluster’s status is `true`,  indicating that the service can receive API calls and is healthy. In the same way it possible to check the health of other druid nodes by port-forwarding the appropriate services.
 
 ### Access the web console
@@ -884,16 +897,16 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.username}' | base64 -d
-  admin
+  kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   ```
+  admin
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.password}' | base64 -d
-  LzJtVRX5E8MorFaf
+  kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   ```
+  LzJtVRX5E8MorFaf
 
 After providing the credentials correctly, you should be able to access the web console like shown below.
 
@@ -908,15 +921,19 @@ You can use this web console for loading data, managing datasources and tasks, a
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo druid druid-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl patch -n demo druid druid-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+```
 druid.kubedb.com/druid-cluster patched
 
-$ kubectl delete dr druid-cluster  -n demo
+```bash
+kubectl delete dr druid-cluster  -n demo
+```
 druid.kubedb.com "druid-cluster" deleted
 
-$  kubectl delete namespace demo
-namespace "demo" deleted
+```bash
+ kubectl delete namespace demo
 ```
+namespace "demo" deleted
 
 ## Next Steps
 

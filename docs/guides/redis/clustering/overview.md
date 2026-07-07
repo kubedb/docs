@@ -168,11 +168,11 @@ For more Valkey parameters, see [here](https://github.com/valkey-io/valkey/blob/
   The following is sample output of the [CLUSTER NODES](https://redis.io/commands/cluster-nodes) command sent to a master node in a small cluster of three nodes.
 
   ```bash
-  $ redis-cli cluster nodes
+  redis-cli cluster nodes
+  ```
   d1861060fe6a534d42d8a19aeb36600e18785e04 127.0.0.1:6379 myself - 0 1318428930 1 connected 0-1364
   3886e65cc906bfd9b1f7e7bde468726a052d1dae 127.0.0.1:6380 master - 1318428930 1318428931 2 connected 1365-2729
   d289c575dcbc4bdd2931585fd4339089e461a27d 127.0.0.1:6381 master - 1318428931 1318428931 3 connected 2730-4095
-  ```
 
   Reference: https://redis.io/docs/management/scaling/
 
@@ -201,7 +201,7 @@ For more Valkey parameters, see [here](https://github.com/valkey-io/valkey/blob/
   - If a node presents itself with a `MEET` message. A meet message is exactly like a [PING](https://redis.io/commands/ping) message but forces the receiver to accept the node as part of the cluster. Nodes will send `MEET` messages to other nodes **only if** the system administrator requests this via the following command:
 
     ```bash
-    $ CLUSTER MEET ip port
+    CLUSTER MEET ip port
     ```
 
   - A node will also register another node as part of the cluster if a node that is already trusted will gossip about this other node. So if A knows B, and B knows C, eventually B will send gossip messages to A about C. When this happens, A will register C as part of the network, and will try to connect with C.

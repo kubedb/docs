@@ -25,9 +25,9 @@ KubeDB supports providing custom configuration for Weaviate. This tutorial will 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/weaviate/configuration](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/weaviate/configuration) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -82,9 +82,9 @@ type: Opaque
 Let's create the `Secret`:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/weaviate-custom-config-secret.yaml
-secret/weaviate-custom-config created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/weaviate-custom-config-secret.yaml
 ```
+secret/weaviate-custom-config created
 
 Now, create the `Weaviate` CR specifying the `spec.configuration.secretName` field:
 
@@ -111,28 +111,31 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/cus-conf.yaml
-weaviate.kubedb.com/weaviate-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/cus-conf.yaml
 ```
+weaviate.kubedb.com/weaviate-sample created
 
 Now, wait a few minutes. KubeDB operator will create the necessary PVC, PetSet, services, and secrets. Let's check the status:
 
 ```bash
-$ kubectl get weaviate -n demo
+kubectl get weaviate -n demo
+```
 NAME              TYPE                  VERSION   STATUS   AGE
 weaviate-sample   kubedb.com/v1alpha2   1.33.1    Ready    66s
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```bash
+kubectl get pods -n demo -l app.kubernetes.io/instance=weaviate-sample
+```
 NAME                READY   STATUS    RESTARTS   AGE
 weaviate-sample-0   1/1     Running   0          65s
 weaviate-sample-1   1/1     Running   0          50s
 weaviate-sample-2   1/1     Running   0          38s
-```
 
 Now, let's verify that the custom configuration has been applied by checking the config file inside the pod:
 
 ```bash
-$ kubectl exec -n demo weaviate-sample-0 -c weaviate -- cat /weaviate-config/conf.yaml/conf.yaml
+kubectl exec -n demo weaviate-sample-0 -c weaviate -- cat /weaviate-config/conf.yaml/conf.yaml
+```
 authentication:
   anonymous_access:
     enabled: true
@@ -150,7 +153,6 @@ persistence:
   data_path: /var/lib/weaviate
 query_defaults:
   limit: 400
-```
 
 The output confirms the database is running with our custom `query_defaults.limit: 400` and `anonymous_access` settings. KubeDB has merged in the cluster-specific `cluster.hostname` and `persistence.data_path` values.
 
@@ -186,17 +188,20 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/cus-inline-conf.yaml
-weaviate.kubedb.com/weaviate-sample created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/configuration/cus-inline-conf.yaml
 ```
+weaviate.kubedb.com/weaviate-sample created
 
 Wait until the cluster is `Ready`, then verify the inline configuration has been applied:
 
 ```bash
-$ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.configuration}'
+kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.configuration}'
+```
 {"inline":{"conf.yaml":"query_defaults:\n  limit: 1000"}}
 
-$ kubectl exec -n demo weaviate-sample-0 -c weaviate -- cat /weaviate-config/conf.yaml/conf.yaml
+```bash
+kubectl exec -n demo weaviate-sample-0 -c weaviate -- cat /weaviate-config/conf.yaml/conf.yaml
+```
 authorization:
   admin_list:
     enabled: false
@@ -209,7 +214,6 @@ persistence:
   data_path: /var/lib/weaviate
 query_defaults:
   limit: 1000
-```
 
 The output confirms the database is running with our inline `query_defaults.limit: 1000` setting.
 
@@ -220,7 +224,13 @@ The output confirms the database is running with our inline `query_defaults.limi
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete weaviate -n demo weaviate-sample
-$ kubectl delete secret -n demo weaviate-custom-config
-$ kubectl delete ns demo
+kubectl delete weaviate -n demo weaviate-sample
+```
+
+```bash
+kubectl delete secret -n demo weaviate-custom-config
+```
+
+```bash
+kubectl delete ns demo
 ```

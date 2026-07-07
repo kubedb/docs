@@ -37,9 +37,9 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Singl
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > **Note:** YAML files used in this tutorial are stored in [docs/examples/singlestore](/docs/examples/singlestore) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
@@ -48,21 +48,21 @@ namespace/demo created
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 standard (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 #### Create SingleStore License Secret
 
 We need SingleStore License to create SingleStore Database. So, Ensure that you have acquired a license and then simply pass the license by secret.
 
 ```bash
-$ kubectl create secret generic -n demo license-secret \
+kubectl create secret generic -n demo license-secret \
                 --from-literal=username=license \
                 --from-literal=password='your-license-set-here'
-secret/license-secret created
 ```
+secret/license-secret created
 
 #### Deploy SingleStore Cluster
 
@@ -127,9 +127,9 @@ spec:
 Let's create the `SingleStore` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/storage/sdb-cluster.yaml
-singlestore.kubedb.com/sdb-cluster created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/storage/sdb-cluster.yaml
 ```
+singlestore.kubedb.com/sdb-cluster created
 
 Now, wait until `sdb-sample` has status `Ready`. i.e,
 
@@ -143,15 +143,16 @@ singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.9.3    Ready    4m35
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sdb-sample-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sdb-sample-leaf -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "10Gi"
 
-$ kubectl get pv -n demo | grep 'leaf'
+```bash
+kubectl get pv -n demo | grep 'leaf'
+```
 pvc-5cf8638e365544dd   10Gi       RWO            Retain           Bound      demo/data-sdb-sample-leaf-0         linode-block-storage-retain   <unset>                          50s
 pvc-a99e7adb282a4f9c   10Gi       RWO            Retain           Bound      demo/data-sdb-sample-leaf-2         linode-block-storage-retain   <unset>                          60s
 pvc-da8e9e5162a748df   10Gi       RWO            Retain           Bound      demo/data-sdb-sample-leaf-1         linode-block-storage-retain   <unset>                          70s
-
-```
 
 You can see the petset of leaf has 10GB storage, and the capacity of all the persistent volume is also 10GB.
 
@@ -195,21 +196,23 @@ Let's create the `SinglestoreAutoscaler` CR we have shown above,
 
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/storage/sdb-storage-autoscaler.yaml
-singlestoreautoscaler.autoscaling.kubedb.com/sdb-storage-autoscaler created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/autoscaling/storage/sdb-storage-autoscaler.yaml
 ```
+singlestoreautoscaler.autoscaling.kubedb.com/sdb-storage-autoscaler created
 
 #### Storage Autoscaling is set up successfully
 
 Let's check that the `singlestoreautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get singlestoreautoscaler -n demo
+kubectl get singlestoreautoscaler -n demo
+```
 NAME                     AGE
 sdb-cluster-autoscaler   2m5s
 
-
-$ kubectl describe singlestoreautoscaler -n demo sdb-cluster-autoscaler
+```bash
+kubectl describe singlestoreautoscaler -n demo sdb-cluster-autoscaler
+```
 Name:         sdb-cluster-autoscaler
 Namespace:    demo
 Labels:       <none>
@@ -245,9 +248,6 @@ Spec:
       Usage Threshold:    30
 Events:                   <none>
 
-
-```
-
 So, the `singlestoreautoscaler` resource is created successfully.
 
 Now, for this demo, we are going to manually fill up the persistent volume to exceed the `usageThreshold` creating new database with partitions 6 to see if storage autoscaling is working or not.
@@ -255,13 +255,16 @@ Now, for this demo, we are going to manually fill up the persistent volume to ex
 Let's exec into the cluster pod and fill the cluster volume using the following commands:
 
 ```bash
-$ kubectl exec -it -n demo sdb-sample-leaf-0 -- bash
+kubectl exec -it -n demo sdb-sample-leaf-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sdb-sample-leaf-0 /]$ df -h var/lib/memsql
 Filesystem                                               Size  Used Avail Use% Mounted on
 /dev/disk/by-id/scsi-0Linode_Volume_pvcc50e0d73d07349f9  9.8G  1.4G  8.4G  15% /var/lib/memsql
 
-$ kubectl exec -it -n demo sdb-sample-aggregator-0 -- bash
+```bash
+kubectl exec -it -n demo sdb-sample-aggregator-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sdb-sample-aggregator-0 /]$ memsql -uroot -p$ROOT_PASSWORD
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
@@ -276,41 +279,41 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 singlestore> create database demo partitions 6;
 Query OK, 1 row affected (3.78 sec)
 
-$ kubectl exec -it -n demo sdb-sample-leaf-0 -- bash
+```bash
+kubectl exec -it -n demo sdb-sample-leaf-0 -- bash
+```
 Defaulted container "singlestore" out of: singlestore, singlestore-coordinator, singlestore-init (init)
 [memsql@sdb-sample-leaf-0 /]$ df -h var/lib/memsql
 Filesystem                                               Size  Used Avail Use% Mounted on
 /dev/disk/by-id/scsi-0Linode_Volume_pvcc50e0d73d07349f9  9.8G  3.2G  6.7G  33% /var/lib/memsql
-
-```
 
 So, from the above output we can see that the storage usage is 33%, which exceeded the `usageThreshold` 30%.
 
 Let's watch the `singlestoreopsrequest` in the demo namespace to see if any `singlestoreopsrequest` object is created. After some time you'll see that a `singlestoreopsrequest` of type `VolumeExpansion` will be created based on the `scalingThreshold`.
 
 ```bash
-$ watch kubectl get singlestoreopsrequest -n demo
+watch kubectl get singlestoreopsrequest -n demo
+```
 Every 2.0s: kubectl get singlestoreopsrequest -n demo       ashraful: Wed Sep 11 13:39:25 2024
 
 NAME                       TYPE              STATUS       AGE
 sdbops-sdb-sample-th2r62   VolumeExpansion   Progressing   10s
-```
 
 Let's wait for the ops request to become successful.
 
 ```bash
-$ watch kubectl get singlestoreopsrequest -n demo
+watch kubectl get singlestoreopsrequest -n demo
+```
 Every 2.0s: kubectl get singlestoreopsrequest -n demo       ashraful: Wed Sep 11 13:41:12 2024
 
 NAME                       TYPE              STATUS       AGE
 sdbops-sdb-sample-th2r62   VolumeExpansion   Successful   2m31s
 
-```
-
 We can see from the above output that the `SinglestoreOpsRequest` has succeeded. If we describe the `SinglestoreOpsRequest` we will get an overview of the steps that were followed to expand the volume of the cluster.
 
 ```bash
-$ kubectl describe singlestoreopsrequest -n demo sdbops-sdb-sample-th2r62 
+kubectl describe singlestoreopsrequest -n demo sdbops-sdb-sample-th2r62 
+```
 Name:         sdbops-sdb-sample-th2r62
 Namespace:    demo
 Labels:       app.kubernetes.io/component=database
@@ -441,7 +444,6 @@ Events:
   Normal   ReadyPetSets                            4m55s  KubeDB Ops-manager Operator  PetSet is recreated
   Normal   Starting                                4m27s  KubeDB Ops-manager Operator  Resuming Singlestore database: demo/sdb-sample
   Normal   Successful                              4m27s  KubeDB Ops-manager Operator  Successfully resumed Singlestore database: demo/sdb-sample for SinglestoreOpsRequest: sdbops-sdb-sample-th2r62
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 

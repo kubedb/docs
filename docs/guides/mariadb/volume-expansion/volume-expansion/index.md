@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Enterprise operator to expand the v
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 ## Expand Volume of MariaDB
 
@@ -45,12 +45,11 @@ Here, we are going to deploy a  `MariaDB` cluster using a supported version by `
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  69s
 topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   37s
-
-```
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
@@ -84,30 +83,32 @@ spec:
 Let's create the `MariaDB` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/volume-expansion/volume-expansion/example/sample-mariadb.yaml
-mariadb.kubedb.com/sample-mariadb created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/volume-expansion/volume-expansion/example/sample-mariadb.yaml
 ```
+mariadb.kubedb.com/sample-mariadb created
 
 Now, wait until `sample-mariadb` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get mariadb -n demo
+kubectl get mariadb -n demo
+```
 NAME             VERSION   STATUS   AGE
 sample-mariadb   11.8.5    Ready    5m4s
-```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   topolvm-provisioner            63s
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   topolvm-provisioner            62s
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   1Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   topolvm-provisioner            62s
-```
 
 You can see the petset has 1GB storage, and the capacity of all the persistent volumes are also 1GB.
 
@@ -148,9 +149,9 @@ Here,
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
-mariadbopsrequest.ops.kubedb.com/md-online-volume-expansion created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/volume-expansion/volume-expansion/example/online-volume-expansion.yaml
 ```
+mariadbopsrequest.ops.kubedb.com/md-online-volume-expansion created
 
 #### Verify MariaDB volume expanded successfully
 
@@ -159,15 +160,16 @@ If everything goes well, `KubeDB` Enterprise operator will update the volume siz
 Let's wait for `MariaDBOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
 
 ```bash
-$ kubectl get mariadbopsrequest -n demo
+kubectl get mariadbopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 md-online-volume-expansion   VolumeExpansion   Successful   96s
-```
 
 We can see from the above output that the `MariaDBOpsRequest` has succeeded. If we describe the `MariaDBOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe mariadbopsrequest -n demo md-online-volume-expansion
+kubectl describe mariadbopsrequest -n demo md-online-volume-expansion
+```
 Name:         md-online-volume-expansion
 Namespace:    demo
 Labels:       <none>
@@ -216,21 +218,21 @@ Events:
   Normal  Starting    41s   KubeDB Enterprise Operator  Resuming MariaDB database: demo/sample-mariadb
   Normal  Successful  41s   KubeDB Enterprise Operator  Successfully resumed MariaDB database: demo/sample-mariadb
   Normal  Successful  41s   KubeDB Enterprise Operator  Controller has Successfully expand the volume of MariaDB: demo/sample-mariadb
-  
-```
 
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE
 pvc-331335d1-c8e0-4b73-9dab-dae57920e997   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-0   topolvm-provisioner            12m
 pvc-b90179f8-c40a-4273-ad77-74ca8470b782   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-1   topolvm-provisioner            12m
 pvc-f72411a4-80d5-4d32-b713-cb30ec662180   2Gi        RWO            Delete           Bound    demo/data-sample-mariadb-2   topolvm-provisioner            12m
-```
 
 The above output verifies that we have successfully expanded the volume of the MariaDB database.
 
@@ -239,6 +241,9 @@ The above output verifies that we have successfully expanded the volume of the M
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl delete mariadb -n demo sample-mariadb
-$ kubectl delete mariadbopsrequest -n demo md-online-volume-expansion
+kubectl delete mariadb -n demo sample-mariadb
+```
+
+```bash
+kubectl delete mariadbopsrequest -n demo md-online-volume-expansion
 ```

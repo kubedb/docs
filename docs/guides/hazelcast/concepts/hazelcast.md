@@ -181,11 +181,11 @@ AuthSecret contains a `username` key and a `password` key which contains the `us
 Example:
 
 ```bash
-$ kubectl create secret generic hazelcast-sample-auth -n demo \
+kubectl create secret generic hazelcast-sample-auth -n demo \
 --from-literal=username=admin \
 --from-literal=password=6q8u_2jMOW-OOZXk
-secret "hazelcast-sample-auth" created
 ```
+secret "hazelcast-sample-auth" created
 
 ```yaml
 apiVersion: v1

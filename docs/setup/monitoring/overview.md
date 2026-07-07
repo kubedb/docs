@@ -102,7 +102,7 @@ You have to provides these flags while installing or upgrading or updating KubeD
 **Helm 3:**
 
 ```bash
-$ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set monitoring.enabled=true \
@@ -114,7 +114,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
 **YAML (with Helm 3):**
 
 ```bash
-$ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
+helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set monitoring.enabled=true \

@@ -32,9 +32,9 @@ This guide will show you how to use `KubeDB` Ops-manager operator to expand the 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
 
 ```bash
-$ kubectl create ns demo
-namespace/demo created
+kubectl create ns demo
 ```
+namespace/demo created
 
 > Note: The yaml files used in this tutorial are stored in [docs/examples/Ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,10 +47,10 @@ Here, we are going to deploy a `Ignite` standalone using a supported version by 
 At first verify that your cluster has a storage class, that supports volume expansion. Let's check,
 
 ```bash
-$ kubectl get storageclass
+kubectl get storageclass
+```
 NAME                 PROVISIONER            RECLAIMPOLICY   VOLUMEBINDINGMODE   ALLOWVOLUMEEXPANSION   AGE
 longhorn (default)   kubernetes.io/gce-pd   Delete          Immediate           true                   2m49s
-```
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
@@ -81,28 +81,30 @@ spec:
 Let's create the `Ignite` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Ignite/volume-expansion/ig-standalone.yaml
-Ignite.kubedb.com/ig-standalone created
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Ignite/volume-expansion/ig-standalone.yaml
 ```
+Ignite.kubedb.com/ig-standalone created
 
 Now, wait until `ig-standalone` has status `Ready`. i.e,
 
 ```bash
-$ kubectl get ig -n demo
+kubectl get ig -n demo
+```
 NAME            VERSION     STATUS    AGE
 ig-standalone   2.17.0      Ready     2m53s
-```
 
 Let's check volume size from PetSet, and from the persistent volume,
 
 ```bash
-$ kubectl get petset -n demo ig-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo ig-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "1Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
 pvc-d0b07657-a012-4384-862a-b4e437774287   1Gi        RWO            Delete           Bound    demo/datadir-ig-standalone-0   longhorn                49s
-```
 
 You can see the PetSet has 1GB storage, and the capacity of the persistent volume is also 1GB.
 
@@ -143,9 +145,9 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/volume-expansion/igops-volume-exp-standalone.yaml
-igniteopsrequest.ops.kubedb.com/igops-volume-exp-standalone created
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/volume-expansion/igops-volume-exp-standalone.yaml
 ```
+igniteopsrequest.ops.kubedb.com/igops-volume-exp-standalone created
 
 #### Verify Ignite Standalone volume expanded successfully
 
@@ -154,15 +156,16 @@ If everything goes well, `KubeDB` Ops-manager operator will update the volume si
 Let's wait for `IgniteOpsRequest` to be `Successful`. Run the following command to watch `IgniteOpsRequest` CR,
 
 ```bash
-$ kubectl get igniteopsrequest -n demo
+kubectl get igniteopsrequest -n demo
+```
 NAME                         TYPE              STATUS       AGE
 igops-volume-exp-standalone   VolumeExpansion   Successful   75s
-```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed to expand the volume of the database.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
+kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
+```
   Name:         igops-volume-exp-standalone
   Namespace:    demo
   Labels:       <none>
@@ -217,18 +220,19 @@ $ kubectl describe igniteopsrequest -n demo igops-volume-exp-standalone
     Normal  ResumeDatabase   29s   KubeDB Ops-manager operator  Resuming Ignite
     Normal  ResumeDatabase   29s   KubeDB Ops-manager operator  Successfully Resumed Ignite
     Normal  Successful       29s   KubeDB Ops-manager operator  Successfully Scaled Database
-```
 
 Now, we are going to verify from the `Statefulset`, and the `Persistent Volume` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get petset -n demo ig -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+kubectl get petset -n demo ig -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+```
 "2Gi"
 
-$ kubectl get pv -n demo
+```bash
+kubectl get pv -n demo
+```
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                          STORAGECLASS   REASON   AGE
 pvc-d0b07657-a012-4384-862a-b4e437774287   2Gi        RWO            Delete           Bound    demo/datadir-ig-0   longhorn                4m29s
-```
 
 The above output verifies that we have successfully expanded the volume of the Ignite database.
 
