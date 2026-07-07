@@ -197,7 +197,7 @@ Milvus has two TLS surfaces:
 
 The guides use cert-manager-backed TLS via `spec.tls.issuerRef`. Once TLS is enabled, KubeDB issues the certificate secrets, mounts them into the Milvus pods, and switches the generated `AppBinding` scheme to `https`.
 
-See [Configure TLS for Milvus](/docs/guides/milvus/tls/configure/index.md) for the end-to-end flow.
+See [Configure TLS for Milvus](/docs/guides/milvus/tls/guide.md) for the end-to-end flow.
 
 ### spec.monitor
 

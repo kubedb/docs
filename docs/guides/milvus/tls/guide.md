@@ -26,7 +26,7 @@ This guide will show you how to deploy a Milvus database with TLS/SSL enabled fr
 
 - An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
 
-> Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/tls/configure/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/tls/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/tlsyamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create a cert-manager Issuer
 
@@ -53,7 +53,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/issuer.yaml
 issuer.cert-manager.io/milvus-issuer created
 
 $ kubectl get issuer -n demo
@@ -103,7 +103,7 @@ spec:
 - `spec.tls.internal.mode: TLS` encrypts inter-component traffic.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/standalone.yaml
 milvus.kubedb.com/milvus-standalone created
 ```
 

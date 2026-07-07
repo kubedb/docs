@@ -61,7 +61,7 @@ my-release-minio   Opaque   3      11h
 
 ## Create a Milvus Database
 
-The KubeDB operator implements a `Milvus` CRD to define the specification of a Milvus database. Below is the `Milvus` object we will create. Notice that in addition to the database itself, the manifest already enables **Prometheus Operator monitoring** and **TLS** — these are covered in detail in the [monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md) and [TLS](/docs/guides/milvus/tls/configure/index.md) guides; you can drop those blocks for a bare deployment.
+The KubeDB operator implements a `Milvus` CRD to define the specification of a Milvus database. Below is the `Milvus` object we will create. Notice that in addition to the database itself, the manifest already enables **Prometheus Operator monitoring** and **TLS** — these are covered in detail in the [monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md) and [TLS](/docs/guides/milvus/tls/guide.md) guides; you can drop those blocks for a bare deployment.
 
 `standalone.yaml`
 
@@ -259,6 +259,6 @@ $ kubectl delete ns demo
 
 - Deploy a [distributed Milvus cluster](/docs/guides/milvus/quickstart/distributed.md).
 - Monitor your Milvus database with KubeDB using [Prometheus Operator](/docs/guides/milvus/monitoring/using-prometheus-operator.md).
-- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/configure/index.md).
+- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/guide.md).
 - Detail concepts of [Milvus object](/docs/guides/milvus/concepts/milvus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

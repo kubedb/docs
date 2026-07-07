@@ -159,6 +159,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/configure/index.md).
+- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/guide.md).
 - Detail concepts of [Milvus object](/docs/guides/milvus/concepts/milvus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

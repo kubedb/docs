@@ -176,7 +176,7 @@ $ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig
 {"name":"milvus-cluster","path":"/","port":19530,"scheme":"https"}
 ```
 
-> These base manifests already include **Prometheus Operator monitoring** and **TLS** — see the [monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md) and [TLS](/docs/guides/milvus/tls/configure/index.md) guides.
+> These base manifests already include **Prometheus Operator monitoring** and **TLS** — see the [monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md) and [TLS](/docs/guides/milvus/tls/guide.md) guides.
 
 ## Cleaning up
 
