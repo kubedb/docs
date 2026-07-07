@@ -205,7 +205,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-semi-sync.yaml
 mysql.kubedb.com/mysql-init-script created
 ```
 
@@ -235,7 +235,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/initialization/yamls/initialize-standalone.yaml
 mysql.kubedb.com/mysql-init-script created
 ```
   </div>
@@ -468,7 +468,7 @@ $ kubectl get pods mysql-init-script-0 -n demo -o yaml | grep IP
   hostIP: 10.0.2.15
   podIP: 10.244.2.9
 
-$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.\user}' | base64 -d
+$ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
 $ kubectl get secrets -n demo mysql-init-script-auth -o jsonpath='{.data.password}' | base64 -d

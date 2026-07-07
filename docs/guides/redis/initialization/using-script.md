@@ -42,8 +42,8 @@ At first, we will create a ConfigMap from `init.sh` file. Then, we will provide 
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo rd-init-script --from-literal=init.sh="redis-cli set hello world"
-configmap/rd-init-script created
+$ kubectl create configmap -n demo redis-init-script --from-literal=init.sh="redis-cli set hello world"
+configmap/redis-init-script created
 ```
 
 ## Create a Redis database with Init-Script

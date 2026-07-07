@@ -139,11 +139,11 @@ Now, we are going to verify whether the `PerconaXtraDB` and the related `PetSets
 $ kubectl get perconaxtradb -n demo sample-pxc -o=jsonpath='{.spec.version}{"\n"}'
 8.4.3
 
-$ kubectl get sts -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-percona/percona-xtradb-cluster:8.4.3
+$ kubectl get petset -n demo sample-pxc -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/percona-xtradb-cluster:8.4.3
 
 $ kubectl get pods -n demo sample-pxc-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-percona/percona-xtradb-cluster:8.4.3
+ghcr.io/appscode-images/percona-xtradb-cluster:8.4.3
 ```
 
 You can see from above, our `PerconaXtraDB` cluster database has been updated with the new version. So, the update process is successfully completed.

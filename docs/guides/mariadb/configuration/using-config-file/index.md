@@ -91,7 +91,7 @@ Now, create MariaDB crd specifying `spec.configuration.secretName` field.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/configuration/using-config-file/examples/md-custom.yaml
-mysql.kubedb.com/custom-mysql created
+mariadb.kubedb.com/sample-mariadb created
 ```
 
 Below is the YAML for the MariaDB crd we just created.

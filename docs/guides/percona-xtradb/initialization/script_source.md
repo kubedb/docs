@@ -37,7 +37,7 @@ demo    Active  5s
 
 ## Prepare Initialization Scripts
 
-PerconaXtraDB supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use an `init.sql` script to create a TABLE `kubedb_table` in the `test` database.
+PerconaXtraDB supports initialization with `.sh`, `.sql` and `.sql.gz` files. In this tutorial, we will use an `init.sql` script to create a TABLE `kubedb_table` in the `mysql` database.
 
 We will use a ConfigMap as the script source. You can use any Kubernetes supported [volume](https://kubernetes.io/docs/concepts/storage/volumes) as a script source.
 
@@ -356,7 +356,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 ```
 
-We can see the TABLE `kubedb_table` in `test` database which was created through initialization.
+We can see the TABLE `kubedb_table` in `mysql` database which was created through initialization.
 
 ## Cleaning up
 

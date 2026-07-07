@@ -84,7 +84,7 @@ spec:
 Create the above `Elasticsearch` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/es-quickstart.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/sample-es.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -108,7 +108,7 @@ es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      3h
 es-quickstart-ca-cert                       kubernetes.io/tls          2      3h1m
 es-quickstart-client-cert                   kubernetes.io/tls          3      3h1m
 es-quickstart-config                        Opaque                     1      3h1m
-es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      3h35m
+es-quickstart-auth                  kubernetes.io/basic-auth   2      3h35m
 es-quickstart-http-cert                     kubernetes.io/tls          3      3h1m
 es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      3h35m
 es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      3h35m
@@ -122,7 +122,7 @@ es-quickstart-master   ClusterIP   None             <none>        9300/TCP   3h2
 es-quickstart-pods     ClusterIP   None             <none>        9200/TCP   3h2m
 ```
 
-Here, we have to use service `es-quickstart` and secret `es-quickstart-elastic-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `es-quickstart` and secret `es-quickstart-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
 
 **Verify AppBinding:**
@@ -196,7 +196,7 @@ items:
                 - name: args
                   value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
       secret:
-        name: es-quickstart-elastic-cred
+        name: es-quickstart-auth
       tlsSecret:
         name: es-quickstart-client-cert
       type: kubedb.com/elasticsearch
@@ -218,9 +218,9 @@ Here,
 
 Now, we are going to insert some data into Elasticsearch.
 ```bash
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 tS$k!2IBI.ASI7FJ
 ```
 
@@ -436,7 +436,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/es-quickstart-backup created
 ```
 
@@ -701,9 +701,9 @@ es-cluster      xpack-9.2.3   Ready    6m14s
 ```
 
 ```bash
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 tS$k!2IBI.ASI7FJ
 ```
 

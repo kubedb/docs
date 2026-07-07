@@ -1,0 +1,38 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Migration
+metadata:
+  name: mysql-migrate
+  namespace: demo
+spec:
+  source:
+    mysql:
+      connectionInfo:
+        appBinding:
+          name: source-mysql
+          namespace: demo
+        dbName: "mysql"
+        maxConnections: 100
+      schema:
+        enabled: true
+        database:
+          - shop
+        excludeDatabase: []
+      snapshot:
+        enabled: true
+        pipeline:
+          workers: 3
+          sinkers: 4
+          buffer: 12
+          write_batch_size: 200
+          read_batch_size: 1000
+      streaming:
+        enabled: true
+
+  target:
+    mysql:
+      connectionInfo:
+        appBinding:
+          name: target-mysql
+          namespace: demo
+        dbName: "mysql"
+        maxConnections: 100

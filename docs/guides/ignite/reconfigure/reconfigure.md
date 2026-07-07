@@ -44,7 +44,7 @@ Now, we are going to deploy a `Ignite` cluster with version `2.17.0`.
 
 ### Deploy Ignite
 
-At first, we will create `ignite.conf` file containing required configuration settings.
+At first, we will create `node-configuration.xml` file containing required configuration settings.
 
 Now, we will create a secret with this configuration file.
 
@@ -106,7 +106,7 @@ m6lXjZugrC4VEpB8
 Now, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./ignite.conf
+$ kubectl create secret generic -n demo new-custom-config --from-file=./node-configuration.xml
 secret/new-custom-config created
 ```
 

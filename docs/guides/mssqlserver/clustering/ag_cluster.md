@@ -631,7 +631,7 @@ We can see that, the primary node is now is `mssqlserver-ag-cluster-1`. The old 
 Lets exec into this new primary and see the availability replica role.
 ```bash
 $ kubectl exec -it mssqlserver-ag-cluster-1 -c mssql -n demo -- bash
-mssql@mssqlserver-ag-cluster-1:/$ opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92"
+mssql@mssqlserver-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "wFKDGnWgFP5Rdv92" -No
 1> SELECT ar.replica_server_name, ars.role_desc
 2> FROM sys.dm_hadr_availability_replica_states ars
 3> INNER JOIN sys.availability_replicas ar ON ars.replica_id = ar.replica_id;

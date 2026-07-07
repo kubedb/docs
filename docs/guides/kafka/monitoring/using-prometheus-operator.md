@@ -197,7 +197,7 @@ Here,
 Let's create the kafka object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monirtoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monitoring.yaml
 kafkas.kubedb.com/kafka created
 ```
 

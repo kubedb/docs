@@ -104,7 +104,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/retentionPolicy.yaml 
 retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 

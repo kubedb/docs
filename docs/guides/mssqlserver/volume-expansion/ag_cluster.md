@@ -208,7 +208,7 @@ During `Online` VolumeExpansion KubeDB expands volume without deleting the pods,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/example/mssqlserver/volume-expansion/mops-volume-exp-ag-cluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/volume-expansion/mops-volume-exp-ag-cluster.yaml
 mssqlserveropsrequest.ops.kubedb.com/mops-volume-exp-ag-cluster created
 ```
 

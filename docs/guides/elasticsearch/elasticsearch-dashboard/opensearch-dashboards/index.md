@@ -110,7 +110,7 @@ Here,
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch//elasticsearch-dashboard/opensearch/yamls/os-cluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster.yaml
 elasticsearch.kubedb.com/os-cluster created
 ```
 KubeDB will create the necessary resources to deploy the OpenSearch cluster according to the above specification. Let’s wait until the database to be ready to use,
@@ -141,7 +141,7 @@ Metadata:
   UID:               2aeef9b3-fcb6-47c8-9df0-54a4fa018413
 Spec:
   Auth Secret:
-    Name:                os-cluster-admin-cred
+    Name:                os-cluster-auth
   Enable SSL:            true
   Heap Size Percentage:  50
   Internal Users:
@@ -149,7 +149,7 @@ Spec:
       Backend Roles:
         admin
       Reserved:     true
-      Secret Name:  os-cluster-admin-cred
+      Secret Name:  os-cluster-auth
     Kibanaro:
       Secret Name:  os-cluster-kibanaro-cred
     Kibanaserver:
@@ -337,7 +337,7 @@ appbinding.appcatalog.appscode.com/os-cluster   kubedb.com/elasticsearch   1.3.2
 
 NAME                                     TYPE                       DATA   AGE
 secret/os-cluster-admin-cert             kubernetes.io/tls          3      16m
-secret/os-cluster-admin-cred             kubernetes.io/basic-auth   2      16m
+secret/os-cluster-auth             kubernetes.io/basic-auth   2      16m
 secret/os-cluster-ca-cert                kubernetes.io/tls          2      16m
 secret/os-cluster-client-cert            kubernetes.io/tls          3      16m
 secret/os-cluster-config                 Opaque                     3      16m
@@ -393,7 +393,7 @@ spec:
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch/yamls/os-cluster-dashboard.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster-dashboard.yaml
 elasticsearchdashboard.elasticsearch.kubedb.com/os-cluster-dashboard created
 ```
 
@@ -440,7 +440,7 @@ KubeDB also create some Secrets for the database. Let’s check which Secrets ha
 ```bash
 $ kubectl get secret -n demo | grep es-cluster
 os-cluster-admin-cert              kubernetes.io/tls                     3      16m
-os-cluster-admin-cred              kubernetes.io/basic-auth              2      16m
+os-cluster-auth              kubernetes.io/basic-auth              2      16m
 os-cluster-ca-cert                 kubernetes.io/tls                     2      16m
 os-cluster-client-cert             kubernetes.io/tls                     3      16m
 os-cluster-config                  Opaque                                3      16m
@@ -456,16 +456,16 @@ os-cluster-snapshotrestore-cred    kubernetes.io/basic-auth              2      
 os-cluster-token-wq8b9             kubernetes.io/service-account-token   3      16m
 os-cluster-transport-cert          kubernetes.io/tls                     3      16m
 ```
-Now, we can connect to the database with `os-cluster-elastic-cred` which contains the admin credentials to connect with the database.
+Now, we can connect to the database with `os-cluster-auth` which contains the admin credentials to connect with the database.
 
 ### Accessing Database Through Dashboard
 
 To access the database through Dashboard, we have to get the credentials. We can do that by following command,
 
 ```bash
-$ kubectl get secret -n demo os-cluster-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo os-cluster-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 Oyj8FdPzA.DZqEyS
 ```
 

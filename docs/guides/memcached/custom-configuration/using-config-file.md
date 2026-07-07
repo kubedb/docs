@@ -51,7 +51,7 @@ apiVersion: v1
 stringData:
   memcached.conf: |
     --conn-limit=500
-    --memory-limit=128
+    --memory-limit=512
 kind: Secret
 metadata:
   name: mc-configuration
@@ -147,11 +147,17 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the `username` and `password` (from the auth secret) separated by a space,
+# and the byte count is the length of that value.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 500
 ...
-STAT limit_maxbytes 134217728
+STAT limit_maxbytes 536870912
 ...
 END
 ```

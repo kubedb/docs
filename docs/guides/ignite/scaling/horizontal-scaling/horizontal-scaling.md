@@ -118,7 +118,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling operation on ignite.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our ignite.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.node` specifies the desired number of nodes after scaling.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
@@ -265,7 +265,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `ignite` ignite.
 - `spec.type` specifies that we are performing `HorizontalScaling` on our ignite.
-- `spec.horizontalScaling.replicas` specifies the desired replicas after scaling.
+- `spec.horizontalScaling.node` specifies the desired number of nodes after scaling.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 

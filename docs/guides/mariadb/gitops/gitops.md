@@ -538,7 +538,7 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}//docs/guides/mariadb/reconfigure-tls/cluster/examples/issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/reconfigure-tls/cluster/examples/issuer.yaml
 issuer.cert-manager.io/md-issuer created
 ```
 
@@ -690,7 +690,7 @@ Update the `version` field to `12.1.2`. Commit the changes and push to your Git 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MariaDBOpsRequest to update the `MariaDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
-$ kkubectl get md,mariadbopsrequest -n demo
+$ kubectl get md,mariadbopsrequest -n demo
 NAME                                VERSION   STATUS   AGE
 mariadb.kubedb.com/mariadb-gitops   12.1.2    Ready    18h
 

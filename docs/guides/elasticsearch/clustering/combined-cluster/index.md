@@ -100,7 +100,7 @@ appbinding.appcatalog.appscode.com/es-standalone   kubedb.com/elasticsearch   7.
 
 NAME                                        TYPE                       DATA   AGE
 secret/es-standalone-admin-cert             kubernetes.io/tls          3      33m
-secret/es-standalone-admin-cred             kubernetes.io/basic-auth   2      33m
+secret/es-standalone-auth             kubernetes.io/basic-auth   2      33m
 secret/es-standalone-archiver-cert          kubernetes.io/tls          3      33m
 secret/es-standalone-ca-cert                kubernetes.io/tls          2      33m
 secret/es-standalone-config                 Opaque                     3      33m
@@ -127,9 +127,9 @@ Forwarding from [::1]:9200 -> 9200
 
 ```bash
 # Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-standalone-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-standalone-auth -o jsonpath='{.data.password}' | base64 -d
 V,YY1.qXxoAch9)B
 
 # Check cluster health
@@ -220,7 +220,7 @@ appbinding.appcatalog.appscode.com/es-multinode   kubedb.com/elasticsearch   7.1
 
 NAME                                       TYPE                       DATA   AGE
 secret/es-multinode-admin-cert             kubernetes.io/tls          3      6m14s
-secret/es-multinode-admin-cred             kubernetes.io/basic-auth   2      6m13s
+secret/es-multinode-auth             kubernetes.io/basic-auth   2      6m13s
 secret/es-multinode-archiver-cert          kubernetes.io/tls          3      6m13s
 secret/es-multinode-ca-cert                kubernetes.io/tls          2      6m14s
 secret/es-multinode-config                 Opaque                     3      6m12s
@@ -250,9 +250,9 @@ Forwarding from [::1]:9200 -> 9200
 
 ```bash
 # Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
 9f$A8o2pBpKL~1T8
 
 # Check cluster health

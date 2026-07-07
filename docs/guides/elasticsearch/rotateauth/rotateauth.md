@@ -174,7 +174,7 @@ Here,
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotate-auth/yamls/rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-generated.yaml
  Elasticsearchopsrequest.ops.kubedb.com/essops-rotate-auth-generated created
 ```
 Let's wait for `ElasticsearchOpsrequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsrequest` CRO
@@ -413,7 +413,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotate-auth/yamls/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-user.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-rotate-auth-user created
 ```
 Let’s wait for `ElasticsearchOpsRequest` to be Successful. Run the following command to watch `ElasticsearchOpsRequest` CRO:

@@ -75,7 +75,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/replicaset.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/demo-1.yaml
 mongodb.kubedb.com/mgo-init-script created
 ```
 
@@ -354,7 +354,7 @@ $ kubectl get secrets -n demo mgo-init-script-auth -o yaml
 apiVersion: v1
 data:
   password: eGtBaTRmRVpmSVFrNmczVw==
-  user: cm9vdA==
+  username: cm9vdA==
 kind: Secret
 metadata:
   creationTimestamp: "2019-02-06T09:43:54Z"

@@ -256,7 +256,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/nfs/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/nfs/yamls/retentionPolicy.yaml 
 retentionpolicy.storage.kubestash.com/mariadb-retention-policy created
 ```
 ### EncryptionSecret

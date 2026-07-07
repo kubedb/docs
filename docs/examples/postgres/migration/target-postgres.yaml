@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: target-postgres
+  namespace: demo
+spec:
+  version: "17.4"
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 20Gi
+  deletionPolicy: WipeOut

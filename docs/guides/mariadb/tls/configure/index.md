@@ -31,7 +31,7 @@ section_menu_id: guides
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/guides/mariadb/tls/configure/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/tls/configure/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ### Deploy MariaDB database with TLS/SSL configuration
 

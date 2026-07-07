@@ -18,6 +18,7 @@ aliases:
 Guides to show you how to perform tasks with KubeDB:
 - [Cassandra](/docs/guides/cassandra/README.md). Shows how to manage Cassandra using KubeDB.
 - [ClickHouse](/docs/guides/clickhouse/README.md). Shows how to manage ClickHouse using KubeDB.
+- [DocumentDB](/docs/guides/documentdb/README.md). Shows how to manage DocumentDB using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.
@@ -26,6 +27,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [MariaDB](/docs/guides/mariadb). Shows how to manage MariaDB using KubeDB.
 - [Memcached](/docs/guides/memcached/README.md). Shows how to manage Memcached using KubeDB.
 - [Microsoft SQL Server](/docs/guides/mssqlserver/README.md). Shows how to manage Microsoft SQL Server using KubeDB.
+- [Milvus](/docs/guides/milvus/README.md). Shows how to manage Milvus using KubeDB.
 - [MongoDB](/docs/guides/mongodb/README.md). Shows how to manage MongoDB using KubeDB.
 - [MySQL](/docs/guides/mysql/README.md). Shows how to manage MySQL using KubeDB.
 - [Oracle](/docs/guides/oracle/README.md). Shows how to manage Oracle using KubeDB.

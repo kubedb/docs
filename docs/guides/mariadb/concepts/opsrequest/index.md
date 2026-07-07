@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-mariadbopsrequest
     name: MariaDBOpsRequest
     parent: guides-mariadb-concepts
-    weight: 15
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

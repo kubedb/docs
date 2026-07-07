@@ -139,7 +139,7 @@ spec:
 
 Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-mariadb` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `md-replication` database.
 - `spec.VerticalScaling.maxscale` specifies the desired resources of maxscale server after scaling.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,

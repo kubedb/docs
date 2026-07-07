@@ -206,14 +206,14 @@ Metadata:
   UID:               20c388a6-54b1-4c0d-891b-879ec8e2a8c6
 Spec:
   Auth Secret:
-    Name:      sample-opensearch-admin-cred
+    Name:      sample-opensearch-auth
   Enable SSL:  true
   Internal Users:
     Admin:
       Backend Roles:
         admin
       Reserved:     true
-      Secret Name:  sample-opensearch-admin-cred
+      Secret Name:  sample-opensearch-auth
     Kibanaro:
       Secret Name:  sample-opensearch-kibanaro-cred
     Kibanaserver:
@@ -352,7 +352,7 @@ appbinding.appcatalog.appscode.com/sample-opensearch   kubedb.com/elasticsearch 
 
 NAME                                            TYPE                       DATA   AGE
 secret/sample-opensearch-admin-cert             kubernetes.io/tls          3      23m
-secret/sample-opensearch-admin-cred             kubernetes.io/basic-auth   2      23m
+secret/sample-opensearch-auth             kubernetes.io/basic-auth   2      23m
 secret/sample-opensearch-archiver-cert          kubernetes.io/tls          3      23m
 secret/sample-opensearch-ca-cert                kubernetes.io/tls          2      23m
 secret/sample-opensearch-config                 Opaque                     3      23m
@@ -408,7 +408,7 @@ KubeDB will create some Secrets for the database. Let’s check which Secrets ha
 ```bash
 $ kubectl get secret -n demo | grep sample-opensearch
 sample-opensearch-admin-cert             kubernetes.io/tls                     3      10m
-sample-opensearch-admin-cred             kubernetes.io/basic-auth              2      10m
+sample-opensearch-auth             kubernetes.io/basic-auth              2      10m
 sample-opensearch-ca-cert                kubernetes.io/tls                     2      10m
 sample-opensearch-config                 Opaque                                3      10m
 sample-opensearch-kibanaro-cred          kubernetes.io/basic-auth              2      10m
@@ -419,7 +419,7 @@ sample-opensearch-snapshotrestore-cred   kubernetes.io/basic-auth              2
 sample-opensearch-token-zbn46            kubernetes.io/service-account-token   3      10m
 sample-opensearch-transport-cert         kubernetes.io/tls                     3      10m
 ```
-Now, we can connect to the database with any of these secret that have the prefix `cred`. Here, we are using `sample-opensearch-admin-cred` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database using the `sample-opensearch-auth` secret, which holds the `admin` credentials used to connect with the database.
 
 
 ### Accessing Database Through CLI
@@ -427,9 +427,9 @@ Now, we can connect to the database with any of these secret that have the prefi
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo sample-opensearch-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo sample-opensearch-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.password}' | base64 -d
 9aHT*ZhEK_qjPS~v
 ```
 

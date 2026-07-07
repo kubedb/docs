@@ -234,8 +234,8 @@ Here,
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/mops-reconfigure-standalone.yaml
-MSSQLServeropsrequest.ops.kubedb.com/mops-reconfigure-standalone created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/reconfigure/msops-reconfigure-standalone.yaml
+MSSQLServeropsrequest.ops.kubedb.com/msops-reconfigure-standalone created
 ```
 
 #### Verify the new configuration is working 
@@ -255,7 +255,7 @@ msops-reconfigure-standalone   Reconfigure   Successful   2m42s
 We can see from the above output that the `MSSQLServerOpsRequest` has succeeded. If we describe the `MSSQLServerOpsRequest` we will get an overview of the steps that were followed to reconfigure the database.
 
 ```bash
-$ kubectl describe MSSQLServeropsrequest -n demo mops-reconfigure-standalone
+$ kubectl describe MSSQLServeropsrequest -n demo msops-reconfigure-standalone
 Name:         msops-reconfigure-standalone
 Namespace:    demo
 Labels:       <none>
@@ -531,5 +531,5 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete ms -n demo ms-standalone
-kubectl delete MSSQLServeropsrequest -n demo mops-reconfigure-standalone msops-reconfigure-standalone-apply
+kubectl delete MSSQLServeropsrequest -n demo msops-reconfigure-standalone msops-reconfigure-standalone-apply
 ```

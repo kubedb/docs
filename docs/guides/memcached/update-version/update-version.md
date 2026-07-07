@@ -161,6 +161,6 @@ memcached.kubedb.com/memcd-quickstart patched
 $ kubectl delete -n demo Memcached memcd-quickstart
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete -n demo memcachedopsrequest update-standalone
+$ kubectl delete -n demo memcachedopsrequest update-memcd
 memcachedopsrequest.ops.kubedb.com "update-memcd" deleted
 ```

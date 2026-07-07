@@ -31,7 +31,7 @@ KubeDB supports providing TLS/SSL encryption for `Memcached`. This tutorial will
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/Memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -129,7 +129,7 @@ memcached.kubedb.com/memcd-quickstart created
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+$ watch kubectl get memcached -n demo
 Every 2.0s: kubectl get memcached -n demo
 NAME               VERSION   STATUS   AGE
 memcd-quickstart   1.6.40    Ready    19m

@@ -150,7 +150,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/yamls/initializ-standalone.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-standalone.yaml
 mssqlserver.kubedb.com/ms-init created
 ```
   </div>
@@ -208,7 +208,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/yamls/initialize-ag-cluster.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/initialization/initialize-ag-cluster.yaml
 mssqlsever.kubedb.com/ms-ag-init created
 ```
   </div>
