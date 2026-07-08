@@ -68,7 +68,11 @@ jobs:
           kubectl create -f https://github.com/kubevault/installer/raw/master/crds/kubevault-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/crds/kubedb-crds.yaml
           kubectl create -f https://github.com/kubedb/installer/raw/master/bundle/manifests/installer.kubedb.com_kubedbs.yaml
-          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_migrations.yaml
+          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_postgresmigrations.yaml
+          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_mysqlmigrations.yaml
+          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_mariadbmigrations.yaml
+          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_mongodbmigrations.yaml
+          kubectl create -f https://github.com/kubedb/apimachinery/raw/master/crds/courier.kubedb.com_mssqlservermigrations.yaml
           kubectl create -f https://github.com/kubernetes-csi/external-snapshotter/raw/master/client/config/crd/snapshot.storage.k8s.io_volumesnapshotclasses.yaml
           kubectl create -f https://github.com/kubestash/installer/raw/master/crds/kubestash-crds.yaml
           # recommendation
