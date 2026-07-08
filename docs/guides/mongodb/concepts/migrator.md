@@ -1,9 +1,9 @@
 ---
-title: Migration CRD
+title: MongoDBMigration CRD
 menu:
   docs_{{ .version }}:
     identifier: mg-migrator-concepts
-    name: Migration
+    name: MongoDBMigration
     parent: mg-concepts-mongodb
     weight: 27
 menu_name: docs_{{ .version }}
@@ -12,50 +12,47 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Migration
+# MongoDBMigration
 
-## What is Migration
+## What is MongoDBMigration
 
-`Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
+`MongoDBMigration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on an external or managed instance — into a
-KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
+KubeDB-managed database. You only need to describe the source and target databases in a `MongoDBMigration`
 object, and the kubedb-courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
-`Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and
-`spec.target` each carry a per-database sub-spec (`mysql`, `mariadb`, `postgres`, `mongodb`). This
-page describes the `Migration` object for a **MongoDB** source and target. KubeDB uses
+`MongoDBMigration` is the MongoDB-specific migration CRD (`courier.kubedb.com/v1alpha1`) whose
+`spec.source` and `spec.target` describe the MongoDB source and target directly. KubeDB uses
 [mongoshake](https://github.com/alibaba/MongoShake) to perform MongoDB migrations.
 
-## Migration Spec
+## MongoDBMigration Spec
 
-As with all other Kubernetes objects, a `Migration` needs `apiVersion`, `kind`, and `metadata`
-fields. It also needs a `.spec` section. Below is an example `Migration` object for migrating a
+As with all other Kubernetes objects, a `MongoDBMigration` needs `apiVersion`, `kind`, and `metadata`
+fields. It also needs a `.spec` section. Below is an example `MongoDBMigration` object for migrating a
 MongoDB database.
 
 ```yaml
 apiVersion: courier.kubedb.com/v1alpha1
-kind: Migration
+kind: MongoDBMigration
 metadata:
   name: mongodb-migrate
   namespace: demo
 spec:
   source:
-    mongodb:
-      connectionInfo:
-        appBinding:
-          name: mgo-source
-          namespace: demo
-      mongoshake:
-        syncMode: all
-        extraConfiguration:
-          full_sync.executor.insert_on_dup_update: "true"
+    connectionInfo:
+      appBinding:
+        name: mgo-source
+        namespace: demo
+    mongoshake:
+      syncMode: all
+      extraConfiguration:
+        full_sync.executor.insert_on_dup_update: "true"
   target:
-    mongodb:
-      connectionInfo:
-        appBinding:
-          name: mgo-destination
-          namespace: demo
+    connectionInfo:
+      appBinding:
+        name: mgo-destination
+        namespace: demo
   jobDefaults:
     imagePullPolicy: IfNotPresent
     backoffLimit: 6
@@ -69,17 +66,15 @@ spec:
 
 ### spec.source
 
-`spec.source` is a required field that describes the database being migrated **from**. It holds a
-per-database sub-spec; for a MongoDB migration you set `spec.source.mongodb`.
+`spec.source` is a required field that describes the MongoDB database being migrated **from**.
 
 ### spec.target
 
-`spec.target` is a required field that describes the KubeDB-managed database being migrated **into**.
-It holds a per-database sub-spec; for a MongoDB migration you set `spec.target.mongodb`.
+`spec.target` is a required field that describes the KubeDB-managed MongoDB database being migrated **into**.
 
-### spec.source.mongodb.connectionInfo
+### spec.source.connectionInfo
 
-`connectionInfo` (also under `spec.target.mongodb`) tells the Migration how to connect to the MongoDB
+`connectionInfo` (also under `spec.target`) tells the migration how to connect to the MongoDB
 instance. There are two ways to provide the connection details — set **either** `appBinding` **or**
 `url`:
 
@@ -105,7 +100,7 @@ instance. There are two ways to provide the connection details — set **either*
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
 > create one for the source. Learn more about [AppBinding](/docs/guides/mongodb/concepts/appbinding.md).
 
-### spec.source.mongodb.mongoshake
+### spec.source.mongoshake
 
 `mongoshake` configures how the migration is performed. All fields are optional unless noted.
 
@@ -150,7 +145,7 @@ instance. There are two ways to provide the connection details — set **either*
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## MongoDBMigration Status
 
 `status` reflects the observed state of the migration.
 
@@ -162,7 +157,7 @@ instance. There are two ways to provide the connection details — set **either*
 - `status.progress` — the current progress of the migration:
   - `dbType` — the type of database being migrated.
   - `info` — additional progress information, including the current `Stage`, `Lag`, and `Progress`
-    (these are surfaced as columns in `kubectl get migration`).
+    (these are surfaced as columns in `kubectl get mongodbmigrations`).
 - `status.conditions` — an array of conditions describing the migration's state over time (for
   example, `MigratorJobTriggered`, `MigrationRunning`, `MigrationSucceeded`, `MigrationFailed`).
 

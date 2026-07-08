@@ -33,10 +33,14 @@ Add `--set kubedb-courier.enabled=true` to the standard [KubeDB helm install](/d
 
 ### Upgrade Existing Install
 
-The Migration CRD is required to apply the Migration CR. Helm upgrade command doesn't apply CRD. So apply it manually:
+Each database has its own migration CRD (`PostgresMigration`, `MySQLMigration`, `MariaDBMigration`, `MongoDBMigration`, `MSSQLServerMigration`). The Helm upgrade command doesn't apply CRDs, so apply the one for the database you are migrating (or all of them) manually:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_migrations.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_postgresmigrations.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_mysqlmigrations.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_mariadbmigrations.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_mongodbmigrations.yaml
+kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_mssqlservermigrations.yaml
 ```
 
 Add `--set kubedb-courier.enabled=true` to the [Kubedb helm upgrade](/docs/setup/upgrade/index.md) 
@@ -44,7 +48,7 @@ Add `--set kubedb-courier.enabled=true` to the [Kubedb helm upgrade](/docs/setup
 
 ## Migration Steps
 
-1. **Create a Migration CR** with your source connection details and target KubeDB database reference. Migration starts automatically.
+1. **Create a migration CR** for your database — `PostgresMigration`, `MySQLMigration`, `MariaDBMigration`, `MongoDBMigration`, or `MSSQLServerMigration` — with your source connection details and target KubeDB database reference. Migration starts automatically.
 2. **Source stays live** — the KubeDB Migration first copies the schema, then takes an initial bulk snapshot of your data. Your source database continues to accept reads and writes throughout.
 3. **Streaming phase begins** — once the snapshot is complete, KubeDB streams ongoing changes from the source using CDC (change-data capture). 
 4. **Stop writes to the source** — when the streaming lag approaches zero, stop source database write
