@@ -284,7 +284,7 @@ Now let's connect to our PerconaXtraDB cluster to verify that the database has b
 
   ```bash
   $ kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.password}' | base64 -d
-    nsTqGdVwR!~DA(t
+    nsTqGdVwR!~DA(ta
   ```
 
 Now, connect to the PerconaXtraDB cluster and run the following query to confirm initialization:
@@ -342,7 +342,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 
 
 $ kubectl exec -it -n demo script-pxc-0 -- \
-                                  mysql -u root --password='6q0RjvaA!oXOVI0d' \
+                                  mysql -u root --password='nsTqGdVwR!~DA(ta' \
                                   -e "SELECT * FROM mysql.kubedb_table;"
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.

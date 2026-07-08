@@ -202,7 +202,8 @@ Get the admin credentials and connect to the ProxySQL admin interface (port `603
 
 ```bash
 $ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
-cluster⏎                                                                        $ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
+cluster⏎                                                                       
+$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
 0vm8A7bllYpPFTK7⏎             
 ```
 
@@ -325,6 +326,100 @@ $ kubectl get proxysql -n demo proxy-init-inline
 NAME                VERSION        STATUS   AGE
 proxy-init-inline   3.0.1-debian   Ready    2m
 ```
+## Reconfigure MYSQL USERS
+
+With `KubeDB` `ProxySQL` ops-request you can reconfigure `mysql_users` table. You can `add` and `delete` any users in the table. Also you can `update` any information of any user that is present in the table. To reconfigure the `mysql_users` table, you need to set the `.spec.type` to `Reconfigure`, provide the KubeDB ProxySQL instance name under the `spec.proxyRef` section and provide the desired user infos under the `spec.configuration.mysqlUsers.users` section. Set the `.spec.configuration.mysqlUsers.reqType` to either `add`, `update` or `delete` based on the operation you want to do. Below there are some samples for corresponding request type.
+
+### Create user in mysql database
+
+Let's first create two users in the backend mysql server. 
+
+```bash
+$ kubectl exec -it -n demo mysql-server-0 -- bash
+Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
+bash-5.1$ create user `wolverine`@'%' identified by 'wolverine-pass'; 
+bash: wolverine: command not found
+bash: create: command not found
+bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 50594
+Server version: 8.4.3 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> create user `wolverine`@'%' identified by 'wolverine-pass';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> create user `superman`@'%' identified by 'superman-pass';
+Query OK, 0 rows affected (0.01 sec)
+```
+
+### Check current mysql_users table in ProxySQL
+
+Let's check the current mysql_users table in the proxysql server. Make sure that the spec.syncUsers field was not set to true when the proxysql was deployed. Otherwise it will fetch all the users from the mysql backend and we won't be able to see the effects of reconfigure users ops requests. 
+
+```bash
+$ kubectl exec -it -n demo proxy-server-0 -- bash
+root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 71
+Server version: 8.4.8 (ProxySQL Admin Module)
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+ProxySQLAdmin > select * from mysql_users;
+Empty set (0.001 sec)
+```
+
+### Add Users
+
+Let's add the testA and testB user to the proxysql server with the ops-request. Make sure you have created the users in the mysql backend. As we don't provide the password in the yaml, the KubeDB operator fetches them from the backend server. So if the user is not present in the backend server, our operator will not be able to fetch the passwords and the ops-request will be failed. 
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+    name: add-user
+    namespace: demo
+spec:
+    type: Reconfigure  
+    proxyRef:
+      name: proxy-server
+    configuration:
+      mysqlUsers:
+        users: 
+        - username: wolverine
+          active: 1
+          default_hostgroup: 2  
+        - username: superman
+          active: 1
+          default_hostgroup: 2
+        reqType: add
+```
+
+Let's applly the yaml.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-users.yaml
+proxysqlopsrequest.ops.kubedb.com/add-user created
+```
+
+Let's wait for the ops-request to be Successful. 
+
+```bash
+$ kubectl get proxysqlopsrequest -n demo     
+NAME       TYPE          STATUS       AGE
+add-user   Reconfigure   Successful   20s
+```
 
 
 ### Verify
@@ -338,14 +433,28 @@ yKdzMTY0RKaomsqn
 ```
 
 ```bash
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pyKdzMTY0RKaomsqn -h 127.0.0.1 -P 6032 
+$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -p9KjQJ91LJFCtQnVF -h 127.0.0.1 -P 6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MySQL connection id is 5593
+Your MySQL connection id is 61
 Server version: 8.4.8 (ProxySQL Admin Module)
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+MySQL [(none)]> SELECT
+    ->     username,
+    ->     active,
+    ->     default_hostgroup,
+    ->     default_schema
+    -> FROM mysql_users;
++-----------+--------+-------------------+----------------+
+| username  | active | default_hostgroup | default_schema |
++-----------+--------+-------------------+----------------+
+| wolverine | 1      | 2                 | NULL           |
+| superman  | 1      | 2                 | NULL           |
++-----------+--------+-------------------+----------------+
+2 rows in set (0.001 sec)
 
 MySQL [(none)]> SELECT variable_name, variable_value
     -> FROM global_variables
@@ -366,6 +475,7 @@ MySQL [(none)]> SELECT variable_name, variable_value
 | mysql-threads                | 4              |
 +------------------------------+----------------+
 5 rows in set (0.001 sec)
+
 ```
 The query results confirm that the values defined under `mysqlQueryRules`, `mysqlVariables`, and `adminVariables` in `configuration.init.inline` were successfully rendered into the generated `ProxySQL` configuration and loaded during `ProxySQL` startup.
 

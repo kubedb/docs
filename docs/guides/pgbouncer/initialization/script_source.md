@@ -111,7 +111,7 @@ Now let's connect to our PgBouncer instance to verify that it has been initializ
 **Connection Information:**
 
 - Host name/address: you can use any of these
-  - Service: `script-pgbouncer.demo`
+  - Service: `script-pgbouncer`
   - Pod IP: (`$ kubectl get pods script-pgbouncer-0 -n demo -o yaml | grep podIP`)
 - Port: `5432`
 
