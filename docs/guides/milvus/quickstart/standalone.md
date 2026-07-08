@@ -292,7 +292,7 @@ $ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
 The default quickstart omits `spec.metaStorage`, so KubeDB manages etcd for you. If you want Milvus to use an external `EtcdCluster` instead:
 
 1. Install the etcd operator.
-2. Create an external `EtcdCluster` by following [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-create-an-external-etcdcluster).
+2. Confirm that the `etcdclusters.operator.etcd.io` CRD exists, then create an external `EtcdCluster` by following [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-create-an-external-etcdcluster).
 3. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest.
 
 ## Cleaning up

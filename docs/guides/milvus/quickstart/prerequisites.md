@@ -149,7 +149,23 @@ So for the default quickstarts, **having the etcd operator running is enough**.
 
 ## Optional Path: Create an External EtcdCluster
 
-If you want to bring your own etcd, apply the sample `EtcdCluster` manifest:
+If you want to bring your own etcd, first confirm that the `EtcdCluster` CRD from the etcd operator is installed:
+
+```bash
+$ kubectl get crd etcdclusters.operator.etcd.io
+NAME                           CREATED AT
+etcdclusters.operator.etcd.io  2026-07-08T...
+```
+
+If this CRD is missing, do **not** apply the sample below yet. Install the etcd operator first. If you see an error like:
+
+```text
+no matches for kind "EtcdCluster" in version "operator.etcd.io/v1alpha1"
+```
+
+that means the CRD is not installed in the cluster yet. It does **not** mean the sample YAML uses the wrong API version.
+
+Once the CRD exists, apply the sample `EtcdCluster` manifest:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/etcdcluster.yaml
@@ -177,7 +193,7 @@ metaStorage:
     - http://etcdcluster-sample-2.etcdcluster-sample.demo.svc.cluster.local:2379
 ```
 
-Only choose this path if you intentionally want Milvus to use an external etcd cluster. The default quickstarts do not require it.
+Only choose this path if you intentionally want Milvus to use an external etcd cluster. The default quickstarts do not require this file at all.
 
 ## Optional Controllers
 
