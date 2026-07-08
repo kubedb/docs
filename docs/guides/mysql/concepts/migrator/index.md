@@ -1,9 +1,9 @@
 ---
-title: Migration CRD
+title: MySQLMigration CRD
 menu:
   docs_{{ .version }}:
     identifier: guides-mysql-concepts-migrator
-    name: Migration
+    name: MySQLMigration
     parent: guides-mysql-concepts
     weight: 35
 menu_name: docs_{{ .version }}
@@ -12,63 +12,60 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Migration
+# MySQLMigration
 
-## What is Migration
+## What is MySQLMigration
 
-`Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
+`MySQLMigration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on AWS RDS or any external instance — into a
-KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
+KubeDB-managed database. You only need to describe the source and target databases in a `MySQLMigration`
 object, and the kubedb-courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
-`Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and
-`spec.target` each carry a per-database sub-spec (`mysql`, `mariadb`, `postgres`, `mongodb`). This
-page describes the `Migration` object for a **MySQL** source and target.
+`MySQLMigration` is the MySQL-specific migration CRD (`courier.kubedb.com/v1alpha1`) whose
+`spec.source` and `spec.target` describe the MySQL source and target directly.
 
-## Migration Spec
+## MySQLMigration Spec
 
-As with all other Kubernetes objects, a `Migration` needs `apiVersion`, `kind`, and `metadata`
-fields. It also needs a `.spec` section. Below is an example `Migration` object for migrating a MySQL
+As with all other Kubernetes objects, a `MySQLMigration` needs `apiVersion`, `kind`, and `metadata`
+fields. It also needs a `.spec` section. Below is an example `MySQLMigration` object for migrating a MySQL
 database.
 
 ```yaml
 apiVersion: courier.kubedb.com/v1alpha1
-kind: Migration
+kind: MySQLMigration
 metadata:
   name: mysql-migrate
   namespace: demo
 spec:
   source:
-    mysql:
-      connectionInfo:
-        appBinding:
-          name: source-mysql
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
-      schema:
-        enabled: true
-        database: [] # databases to include
-        excludeDatabase: [] # databases to exclude
-      snapshot:
-        enabled: true
-        pipeline:
-          workers: 3
-          sinkers: 4
-          buffer: 12
-          read_batch_size: 1000
-          write_batch_size: 200
-      streaming:
-        enabled: true
+    connectionInfo:
+      appBinding:
+        name: source-mysql
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
+    schema:
+      enabled: true
+      database: [] # databases to include
+      excludeDatabase: [] # databases to exclude
+    snapshot:
+      enabled: true
+      pipeline:
+        workers: 3
+        sinkers: 4
+        buffer: 12
+        read_batch_size: 1000
+        write_batch_size: 200
+    streaming:
+      enabled: true
   target:
-    mysql:
-      connectionInfo:
-        appBinding:
-          name: target-mysql
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
+    connectionInfo:
+      appBinding:
+        name: target-mysql
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
   jobDefaults:
     imagePullPolicy: IfNotPresent
     backoffLimit: 6
@@ -82,17 +79,17 @@ spec:
 
 ### spec.source
 
-`spec.source` is a required field that describes the database being migrated **from**. It holds a
-per-database sub-spec; for a MySQL migration you set `spec.source.mysql`.
+`spec.source` is a required field that describes the database being migrated **from**. It describes
+the MySQL source directly.
 
 ### spec.target
 
 `spec.target` is a required field that describes the KubeDB-managed database being migrated **into**.
-It holds a per-database sub-spec; for a MySQL migration you set `spec.target.mysql`.
+It describes the MySQL target directly.
 
-### spec.source.mysql.connectionInfo
+### spec.source.connectionInfo
 
-`connectionInfo` (also under `spec.target.mysql`) tells the Migration how to connect to the MySQL
+`connectionInfo` (also under `spec.target`) tells the MySQLMigration how to connect to the MySQL
 instance. There are two ways to provide the connection details — set **either** `appBinding` **or**
 `url`:
 
@@ -106,7 +103,7 @@ instance. There are two ways to provide the connection details — set **either*
   as an alternative to `appBinding` when you want to provide the endpoint inline instead of through an
   AppBinding.
 - `dbName` — the internal database used as the initial connection entry point.
-- `maxConnections` — limits the number of concurrent connections the Migration opens to this MySQL
+- `maxConnections` — limits the number of concurrent connections the MySQLMigration opens to this MySQL
   instance.
 - `tls` — paths to PEM files for a TLS-enabled connection. You can set the following fields:
   - `caFile` — path to the PEM-encoded CA certificate file.
@@ -118,7 +115,7 @@ instance. There are two ways to provide the connection details — set **either*
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
 > create one for the source. Learn more about [AppBinding](/docs/guides/mysql/concepts/appbinding/).
 
-### spec.source.mysql.schema
+### spec.source.schema
 
 `schema` configures the schema migration phase, which recreates database and table definitions on the
 target before any data is copied.
@@ -128,7 +125,7 @@ target before any data is copied.
   system databases (`mysql`, `information_schema`, `performance_schema`, `sys`).
 - `excludeDatabase` — list of databases to exclude from migration.
 
-### spec.source.mysql.snapshot
+### spec.source.snapshot
 
 `snapshot` configures the initial bulk snapshot phase, which copies the existing rows from the source
 to the target.
@@ -143,7 +140,7 @@ to the target.
   - `read_batch_size` — number of rows fetched per read batch from the source. Defaults to `5000`.
   - `write_batch_size` — number of rows written per batch to the target. Defaults to `500`.
 
-### spec.source.mysql.streaming
+### spec.source.streaming
 
 `streaming` configures the change-data-capture (CDC) phase.
 
@@ -154,7 +151,7 @@ to the target.
 
 `spec.jobDefaults` is an optional field that sets default settings for the migration Job.
 
-- `imagePullPolicy` — the image pull policy for the Migration Job. Defaults to `IfNotPresent`.
+- `imagePullPolicy` — the image pull policy for the MySQLMigration Job. Defaults to `IfNotPresent`.
 - `backoffLimit` — the number of retries before the Job is marked as failed. Defaults to `6`.
 - `ttlSecondsAfterFinished` — the TTL (in seconds) for cleaning up a completed Job.
 - `activeDeadlineSeconds` — the duration (in seconds) relative to its start time that the Job may be
@@ -166,7 +163,7 @@ to the target.
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## MySQLMigration Status
 
 `status` reflects the observed state of the migration.
 
@@ -178,7 +175,7 @@ to the target.
 - `status.progress` — the current progress of the migration:
   - `dbType` — the type of database being migrated.
   - `info` — additional progress information, including the current `Stage`, `Lag`, and `Progress`
-    (these are surfaced as columns in `kubectl get migration`).
+    (these are surfaced as columns in `kubectl get mysqlmigrations`).
 - `status.conditions` — an array of conditions describing the migration's state over time (for
   example, `MigratorJobTriggered`, `MigrationRunning`, `MigrationSucceeded`, `MigrationFailed`).
 
