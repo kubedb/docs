@@ -14,37 +14,37 @@ section_menu_id: guides
 
 # Initialize ProxySQL with Custom Configuration
 
-ProxySQL needs a bootstrap configuration file, `proxysql.cnf`, to set up its `mysql_query_rules`, `mysql_variables` and `admin_variables` tables at the very first startup. KubeDB lets you provide this bootstrap configuration in two ways under `spec.configuration.init`:
+ProxySQL reads a bootstrap configuration file, `proxysql.cnf`, on first start to populate its in-memory configuration tables — `mysql_users`, `mysql_query_rules`, `mysql_variables`, and `admin_variables`. KubeDB lets you supply this bootstrap configuration through `spec.configuration.init`, in one of two ways:
 
-- **`spec.configuration.init.secretName`** - point to a Secret holding the raw `proxysql.cnf` snippets. The values are patched into the config file verbatim, so you are responsible for the exact ProxySQL config syntax (and for supplying user passwords yourself).
-- **`spec.configuration.init.inline`** - describe the same four sections in structured YAML. The operator renders this into `proxysql.cnf` for you, and for `mysqlUsers`, it automatically fetches the password from the backend server instead of asking you to write it in plaintext.
+- **`spec.configuration.init.secretName`** — reference a Secret that holds raw `proxysql.cnf` fragments. The values are written into the generated configuration verbatim, so you own the exact ProxySQL syntax and must supply user passwords yourself.
+- **`spec.configuration.init.inline`** — describe the same sections as structured YAML. The operator renders them into `proxysql.cnf` for you and, for `mysqlUsers`, automatically retrieves each user's password from the backend server so you never store it in plaintext.
 
-If both are set, `init.inline` always takes precedence over `init.secretName`. This tutorial will show you how to use both.
+If both are set, `init.inline` takes precedence over `init.secretName`. This guide demonstrates both approaches and then shows how to add users after initialization with a `ProxySQLOpsRequest`.
 
-> Note: `spec.initConfig` and `spec.configSecret` are older, deprecated equivalents of `spec.configuration.init.inline` and `spec.configuration.init.secretName` respectively. Use the `spec.configuration.init` fields for any new ProxySQL object.
+> Note: `spec.initConfig` and `spec.configSecret` are the deprecated equivalents of `init.inline` and `init.secretName` respectively. Use `spec.configuration.init` for all new ProxySQL objects.
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+You will need a Kubernetes cluster and the `kubectl` command-line tool configured to communicate with it. If you do not already have a cluster, you can create one with [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+Install the KubeDB CLI on your workstation and the KubeDB operator in your cluster by following the [setup instructions](/docs/setup/README.md).
 
-To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+This guide uses a dedicated namespace called `demo` to keep the resources isolated.
 
 ```bash
-$ kubectl create ns demo
+$ kubectl create namespace demo
 namespace/demo created
 
-$ kubectl get ns demo
-NAME    STATUS  AGE
-demo    Active  5s
+$ kubectl get namespace demo
+NAME    STATUS   AGE
+demo    Active   5s
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/guides/proxysql/initialization/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The YAML files used in this guide are stored under [docs/guides/proxysql/initialization/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples) in the [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Prepare MySQL Backend
 
-ProxySQL acts as a proxy in front of MySQL servers. Before deploying ProxySQL, you need a running MySQL Group Replication backend. Apply the following YAML to create one:
+ProxySQL sits in front of one or more MySQL servers. Before deploying ProxySQL, create a MySQL backend running in Group Replication mode:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -73,27 +73,30 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 mysql.kubedb.com/mysql-server created
 ```
 
-Wait for the MySQL cluster to be `Ready`:
+Wait for the MySQL cluster to become `Ready`:
 
 ```bash
 $ kubectl get mysql -n demo mysql-server
 NAME           VERSION   STATUS   AGE
 mysql-server   8.4.8     Ready    5m
 ```
-## Option 1: Bootstrap using a raw configuration Secret
 
-`spec.configuration.init.secretName` refers to a Secret containing up to four optional keys: `MySQLUsers.cnf`, `MySQLQueryRules.cnf`, `MySQLVariables.cnf`, and `AdminVariables.cnf`. Each key must contain valid **ProxySQL configuration (`proxysql.cnf`) syntax**. During initialization, KubeDB mounts the Secret into the ProxySQL pod and copies the provided configuration fragments into the generated `proxysql.cnf` without modifying or translating them. ProxySQL then loads this configuration during startup and applies it to its internal configuration database.
+## Option 1: Bootstrap from a raw configuration Secret
 
-Unlike `init.inline`, which generates the ProxySQL configuration from structured Kubernetes YAML, `init.secretName` treats the Secret contents as raw ProxySQL configuration. Because KubeDB does not validate or merge these configuration fragments, you must ensure that the configuration is syntactically correct before applying it.
+`spec.configuration.init.secretName` points to a Secret that may contain up to four optional keys: `MySQLUsers.cnf`, `MySQLQueryRules.cnf`, `MySQLVariables.cnf`, and `AdminVariables.cnf`. Each key must hold valid **ProxySQL (`proxysql.cnf`) syntax**. During initialization, KubeDB mounts the Secret into the ProxySQL pod and copies each fragment verbatim into the generated `proxysql.cnf` — it does not validate, translate, or merge them. ProxySQL then loads the file at startup and applies it to its in-memory configuration database.
+
+Because the fragments are applied as-is, review the syntax carefully before applying it.
 
 The supported Secret keys are:
 
-* **`MySQLUsers.cnf`**: Defines frontend users (`mysql_users`).
-* **`MySQLQueryRules.cnf`**: Defines query routing rules (`mysql_query_rules`).
-* **`MySQLVariables.cnf`**: Configures global MySQL module variables.
-* **`AdminVariables.cnf`**: Configures ProxySQL admin module variables.
+| Key                   | ProxySQL table                     |
+| --------------------- | ---------------------------------- |
+| `MySQLUsers.cnf`      | Frontend users (`mysql_users`)     |
+| `MySQLQueryRules.cnf` | Query routing rules (`mysql_query_rules`) |
+| `MySQLVariables.cnf`  | MySQL module variables (`mysql_variables`) |
+| `AdminVariables.cnf`  | Admin module variables (`admin_variables`) |
 
-The following Secret configures frontend users, query rules, MySQL module variables, and admin variables:
+The following Secret defines frontend users, query rules, MySQL variables, and admin variables:
 
 ```yaml
 apiVersion: v1
@@ -154,7 +157,7 @@ stringData:
     }
 ```
 
-Deploy ProxySQL using the Secret:
+Deploy a ProxySQL instance that consumes the Secret:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -175,10 +178,9 @@ spec:
 
 Here:
 
-* `configuration.init.secretName` references the `proxysql-init-raw` Secret containing the raw ProxySQL configuration fragments.
-* Since `MySQLUsers.cnf` specifies each user's `password` explicitly, KubeDB does **not** automatically retrieve backend credentials, unlike `init.inline`.
-* Each configuration fragment is copied directly into the generated `proxysql.cnf` and loaded by ProxySQL during startup. The resulting frontend users, query rules, and global variables are then available through the ProxySQL admin interface.
-* Because the Secret is used as-is, ensure that every configuration fragment follows valid ProxySQL configuration syntax before applying it.
+- `configuration.init.secretName` references the `proxysql-init-raw` Secret that holds the raw configuration fragments.
+- Because `MySQLUsers.cnf` supplies each user's `password` explicitly, KubeDB does **not** fetch credentials from the backend — unlike `init.inline`.
+- Each fragment is copied directly into the generated `proxysql.cnf` and loaded by ProxySQL at startup. The resulting users, query rules, and variables are then visible through the ProxySQL admin interface.
 
 Apply the Secret and the ProxySQL object:
 
@@ -188,7 +190,7 @@ secret/proxysql-init-raw created
 proxysql.kubedb.com/proxy-init-secret created
 ```
 
-Wait until ProxySQL goes into the `Ready` state:
+Wait until ProxySQL reaches the `Ready` state:
 
 ```bash
 $ kubectl get proxysql -n demo proxy-init-secret
@@ -198,17 +200,12 @@ proxy-init-secret   3.0.1-debian   Ready    2m
 
 ### Verify
 
-Get the admin credentials and connect to the ProxySQL admin interface (port `6032`):
+KubeDB stores the ProxySQL cluster-admin credentials in the `{ProxySQL-name}-auth` Secret (the username defaults to `cluster`, and the password is auto-generated). Read them and connect to the admin interface on port `6032`:
 
 ```bash
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
-cluster⏎                                                                       
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
-0vm8A7bllYpPFTK7⏎             
-```
-
-```bash
-$ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pGQzOzNmCUBP7pSEv -h 127.0.0.1 -P 6032 
+$ ADMIN_USER=$(kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.username}' | base64 -d)
+$ ADMIN_PASS=$(kubectl get secret -n demo proxy-init-secret-auth -o jsonpath='{.data.password}' | base64 -d)
+$ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u"$ADMIN_USER" -p"$ADMIN_PASS" -h 127.0.0.1 -P 6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 110
 Server version: 8.0.27 (ProxySQL Admin Module)
@@ -219,52 +216,42 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
 MySQL [(none)]> SELECT variable_name, variable_value
     -> FROM global_variables
-    -> WHERE variable_name IN (
-    ->   'mysql-max_connections',
-    ->   'mysql-connect_timeout_server',
-    ->   'mysql-threads',
-    ->   'mysql-server_version',
-    ->   'mysql-default_query_timeout'
-    -> );
-+------------------------------+----------------+
-| variable_name                | variable_value |
-+------------------------------+----------------+
-| mysql-connect_timeout_server | 10000          |
-| mysql-default_query_timeout  | 1234567        |
-| mysql-max_connections        | 4096           |
-| mysql-server_version         | 8.0.27         |
-| mysql-threads                | 8              |
-+------------------------------+----------------+
-5 rows in set (0.002 sec)
+    -> WHERE variable_name IN
+    ->   ('mysql-max_connections', 'mysql-threads', 'mysql-default_query_timeout');
++-----------------------------+----------------+
+| variable_name               | variable_value |
++-----------------------------+----------------+
+| mysql-default_query_timeout | 1234567        |
+| mysql-max_connections       | 4096           |
+| mysql-threads               | 8              |
++-----------------------------+----------------+
+3 rows in set (0.00 sec)
 
-MySQL [(none)]> SELECT username,
-    ->        active,
-    ->        default_hostgroup,
-    ->        default_schema
+MySQL [(none)]> SELECT username, active, default_hostgroup, default_schema
     -> FROM mysql_users;
 +-----------+--------+-------------------+----------------+
 | username  | active | default_hostgroup | default_schema |
 +-----------+--------+-------------------+----------------+
 | wolverine | 1      | 2                 | secret_schema  |
-| superman  | 1      | 3                 |                |
+| superman  | 1      | 3                 | NULL           |
 +-----------+--------+-------------------+----------------+
-2 rows in set (0.000 sec)
-
+2 rows in set (0.00 sec)
 ```
 
-The `mysql_users`, `mysql_query_rules` and the global variables all reflect exactly what was written in the `proxysql-init-raw` Secret.
+The global variables from `MySQLVariables.cnf` and the frontend users from `MySQLUsers.cnf` are reflected exactly as written in the `proxysql-init-raw` Secret.
 
-## Option 2: Bootstrap using inline structured configuration
+## Option 2: Bootstrap from inline structured configuration
 
-`spec.configuration.init.inline` lets you initialize ProxySQL using structured Kubernetes YAML instead of writing raw `proxysql.cnf` configuration. During initialization, KubeDB converts the inline YAML into the corresponding ProxySQL configuration, merges it with the operator-managed defaults (such as monitor user, cluster authentication, and other required internal settings), and generates the final `proxysql.cnf`. ProxySQL then loads the generated configuration into its internal configuration database during startup.
+`spec.configuration.init.inline` lets you initialize ProxySQL with structured Kubernetes YAML instead of raw `proxysql.cnf` syntax. At initialization, KubeDB translates the inline YAML into the corresponding ProxySQL configuration, merges it with the operator-managed defaults (monitor credentials, cluster authentication, and other required internal settings), and generates the final `proxysql.cnf`. ProxySQL loads this file at startup into its in-memory configuration database.
 
-The inline configuration supports the following sections:
+The inline configuration supports the same four sections:
 
-* **`mysqlQueryRules`** – Configures query routing rules (`mysql_query_rules`).
-* **`mysqlVariables`** – Configures global MySQL module variables.
-* **`adminVariables`** – Configures ProxySQL admin module variables.
+- **`mysqlUsers`** — frontend users (`mysql_users`). Passwords are fetched automatically from the backend server.
+- **`mysqlQueryRules`** — query routing rules (`mysql_query_rules`).
+- **`mysqlVariables`** — MySQL module variables (`mysql_variables`).
+- **`adminVariables`** — admin module variables (`admin_variables`).
 
-The following example configures query rules, MySQL variables, and admin variables using inline YAML:
+The example below configures query rules, MySQL variables, and admin variables. Users are intentionally omitted here so that the `mysql_users` table starts empty; the [Reconfigure mysql_users](#reconfigure-mysql_users) section that follows adds users to this same instance with a `ProxySQLOpsRequest`, demonstrating how KubeDB retrieves passwords from the backend.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -307,10 +294,9 @@ spec:
 
 Here:
 
-* `configuration.init.inline` provides a Kubernetes-native way to configure ProxySQL without writing raw `proxysql.cnf` syntax.
-* `mysqlQueryRules`, `mysqlVariables`, and `adminVariables` are defined using structured YAML, making the configuration easier to read and maintain.
-* During initialization, KubeDB converts these YAML sections into the corresponding ProxySQL configuration, merges them with the operator-managed defaults, and generates the final `proxysql.cnf`.
-* ProxySQL loads the generated configuration during startup, making the configured query rules and global variables available through the ProxySQL admin interface.
+- `configuration.init.inline` provides a Kubernetes-native way to configure ProxySQL without writing raw `proxysql.cnf` syntax.
+- `mysqlQueryRules`, `mysqlVariables`, and `adminVariables` are expressed as structured YAML, which is easier to read, diff, and maintain.
+- At initialization, KubeDB renders these sections into `proxysql.cnf`, merges them with its own defaults, and lets ProxySQL load the result at startup.
 
 Apply the configuration:
 
@@ -326,114 +312,15 @@ $ kubectl get proxysql -n demo proxy-init-inline
 NAME                VERSION        STATUS   AGE
 proxy-init-inline   3.0.1-debian   Ready    2m
 ```
-## Reconfigure MYSQL USERS
-
-With `KubeDB` `ProxySQL` ops-request you can reconfigure `mysql_users` table. You can `add` and `delete` any users in the table. Also you can `update` any information of any user that is present in the table. To reconfigure the `mysql_users` table, you need to set the `.spec.type` to `Reconfigure`, provide the KubeDB ProxySQL instance name under the `spec.proxyRef` section and provide the desired user infos under the `spec.configuration.mysqlUsers.users` section. Set the `.spec.configuration.mysqlUsers.reqType` to either `add`, `update` or `delete` based on the operation you want to do. Below there are some samples for corresponding request type.
-
-### Create user in mysql database
-
-Let's first create two users in the backend mysql server. 
-
-```bash
-$ kubectl exec -it -n demo mysql-server-0 -- bash
-Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
-bash-5.1$ create user `wolverine`@'%' identified by 'wolverine-pass'; 
-bash: wolverine: command not found
-bash: create: command not found
-bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
-mysql: [Warning] Using a password on the command line interface can be insecure.
-Welcome to the MySQL monitor.  Commands end with ; or \g.
-Your MySQL connection id is 50594
-Server version: 8.4.3 MySQL Community Server - GPL
-
-Copyright (c) 2000, 2024, Oracle and/or its affiliates.
-
-Oracle is a registered trademark of Oracle Corporation and/or its
-affiliates. Other names may be trademarks of their respective
-owners.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-mysql> create user `wolverine`@'%' identified by 'wolverine-pass';
-Query OK, 0 rows affected (0.01 sec)
-
-mysql> create user `superman`@'%' identified by 'superman-pass';
-Query OK, 0 rows affected (0.01 sec)
-```
-
-### Check current mysql_users table in ProxySQL
-
-Let's check the current mysql_users table in the proxysql server. Make sure that the spec.syncUsers field was not set to true when the proxysql was deployed. Otherwise it will fetch all the users from the mysql backend and we won't be able to see the effects of reconfigure users ops requests. 
-
-```bash
-$ kubectl exec -it -n demo proxy-server-0 -- bash
-root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
-Welcome to the MariaDB monitor.  Commands end with ; or \g.
-Your MySQL connection id is 71
-Server version: 8.4.8 (ProxySQL Admin Module)
-
-Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
-
-Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
-
-ProxySQLAdmin > select * from mysql_users;
-Empty set (0.001 sec)
-```
-
-### Add Users
-
-Let's add the testA and testB user to the proxysql server with the ops-request. Make sure you have created the users in the mysql backend. As we don't provide the password in the yaml, the KubeDB operator fetches them from the backend server. So if the user is not present in the backend server, our operator will not be able to fetch the passwords and the ops-request will be failed. 
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: ProxySQLOpsRequest
-metadata:
-    name: add-user
-    namespace: demo
-spec:
-    type: Reconfigure  
-    proxyRef:
-      name: proxy-server
-    configuration:
-      mysqlUsers:
-        users: 
-        - username: wolverine
-          active: 1
-          default_hostgroup: 2  
-        - username: superman
-          active: 1
-          default_hostgroup: 2
-        reqType: add
-```
-
-Let's applly the yaml.
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-users.yaml
-proxysqlopsrequest.ops.kubedb.com/add-user created
-```
-
-Let's wait for the ops-request to be Successful. 
-
-```bash
-$ kubectl get proxysqlopsrequest -n demo     
-NAME       TYPE          STATUS       AGE
-add-user   Reconfigure   Successful   20s
-```
-
 
 ### Verify
 
-```bash
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
-cluster
-
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
-yKdzMTY0RKaomsqn
-```
+Connect to the admin interface and confirm that the query rules and global variables were applied:
 
 ```bash
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -p9KjQJ91LJFCtQnVF -h 127.0.0.1 -P 6032
+$ ADMIN_USER=$(kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d)
+$ ADMIN_PASS=$(kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d)
+$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u"$ADMIN_USER" -p"$ADMIN_PASS" -h 127.0.0.1 -P 6032
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 61
 Server version: 8.4.8 (ProxySQL Admin Module)
@@ -442,29 +329,22 @@ Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
 Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 
-MySQL [(none)]> SELECT
-    ->     username,
-    ->     active,
-    ->     default_hostgroup,
-    ->     default_schema
-    -> FROM mysql_users;
-+-----------+--------+-------------------+----------------+
-| username  | active | default_hostgroup | default_schema |
-+-----------+--------+-------------------+----------------+
-| wolverine | 1      | 2                 | NULL           |
-| superman  | 1      | 2                 | NULL           |
-+-----------+--------+-------------------+----------------+
-2 rows in set (0.001 sec)
+MySQL [(none)]> SELECT rule_id, active, match_pattern, destination_hostgroup, apply
+    -> FROM mysql_query_rules
+    -> ORDER BY rule_id;
++---------+--------+------------------------+-----------------------+-------+
+| rule_id | active | match_pattern          | destination_hostgroup | apply |
++---------+--------+------------------------+-----------------------+-------+
+| 1       | 1      | ^SELECT .* FOR UPDATE$ | 2                     | 1     |
+| 2       | 1      | ^SELECT                | 3                     | 1     |
++---------+--------+------------------------+-----------------------+-------+
+2 rows in set (0.00 sec)
 
 MySQL [(none)]> SELECT variable_name, variable_value
     -> FROM global_variables
-    -> WHERE variable_name IN (
-    ->   'mysql-max_connections',
-    ->   'mysql-connect_timeout_server',
-    ->   'mysql-threads',
-    ->   'mysql-server_version',
-    ->   'mysql-default_query_timeout'
-    -> );
+    -> WHERE variable_name IN
+    ->   ('mysql-max_connections', 'mysql-connect_timeout_server',
+    ->    'mysql-threads', 'mysql-server_version', 'mysql-default_query_timeout');
 +------------------------------+----------------+
 | variable_name                | variable_value |
 +------------------------------+----------------+
@@ -474,27 +354,121 @@ MySQL [(none)]> SELECT variable_name, variable_value
 | mysql-server_version         | 8.4.8          |
 | mysql-threads                | 4              |
 +------------------------------+----------------+
-5 rows in set (0.001 sec)
+5 rows in set (0.00 sec)
+```
+
+The query rules and global variables match the values defined under `mysqlQueryRules`, `mysqlVariables`, and `adminVariables`, confirming that KubeDB rendered them into the generated configuration and ProxySQL loaded them at startup. The `mysql_users` table is empty, since no users were configured inline.
+
+## Reconfigure mysql_users
+
+After initialization, you can manage the `mysql_users` table with a `ProxySQLOpsRequest` — adding, updating, or removing users without re-deploying ProxySQL. As with `init.inline`, you do **not** supply passwords: KubeDB fetches each user's password from the backend MySQL server, so every user you reference must already exist there.
+
+To reconfigure `mysql_users`, set `.spec.type` to `Reconfigure`, point `.spec.proxyRef.name` at your ProxySQL instance, list the users under `.spec.configuration.mysqlUsers.users`, and set `.spec.configuration.mysqlUsers.reqType` to `add`, `update`, or `delete`.
+
+### Create the users in the MySQL backend
+
+First, create the users in the backend MySQL server. The example below creates `wolverine` and `superman`:
+
+```bash
+$ kubectl exec -it -n demo mysql-server-0 -- bash
+Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
+root@mysql-server-0:/# mysql -uroot -p$MYSQL_ROOT_PASSWORD
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 50594
+Server version: 8.4.3 MySQL Community Server - GPL
+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE USER 'wolverine'@'%' IDENTIFIED BY 'wolverine-pass';
+Query OK, 0 rows affected (0.01 sec)
+
+mysql> CREATE USER 'superman'@'%' IDENTIFIED BY 'superman-pass';
+Query OK, 0 rows affected (0.01 sec)
+```
+
+### Inspect the current mysql_users table
+
+Confirm that the `mysql_users` table is empty on `proxy-init-inline`. This requires that `spec.syncUsers` was **not** enabled on the ProxySQL object — otherwise ProxySQL would automatically import every backend user and the table would not be empty.
+
+```bash
+$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u"$ADMIN_USER" -p"$ADMIN_PASS" -h 127.0.0.1 -P 6032
+...
+MySQL [(none)]> SELECT username FROM mysql_users;
+Empty set (0.00 sec)
+```
+
+### Add users
+
+Submit an ops request to add `wolverine` and `superman`. Because no password is supplied, KubeDB retrieves it from the backend — if a user does not exist there, the request fails.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: add-user
+  namespace: demo
+spec:
+  type: Reconfigure
+  proxyRef:
+    name: proxy-init-inline
+  configuration:
+    mysqlUsers:
+      users:
+        - username: wolverine
+          active: 1
+          default_hostgroup: 2
+        - username: superman
+          active: 1
+          default_hostgroup: 2
+      reqType: add
+```
+
+Apply it:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/initialization/examples/proxyops-add-users.yaml
+proxysqlopsrequest.ops.kubedb.com/add-user created
+```
+
+Wait for the ops request to succeed:
+
+```bash
+$ kubectl get proxysqlopsrequest -n demo add-user
+NAME       TYPE          STATUS       AGE
+add-user   Reconfigure   Successful   20s
+```
+
+### Verify
+
+Back in the admin interface, the two users now appear with the passwords KubeDB fetched from the backend (stored as hashes), the `active` flag, and the `default_hostgroup` from the ops request:
+
+```bash
+MySQL [(none)]> SELECT username, password, active, default_hostgroup
+    -> FROM mysql_users;
++-----------+-------------------------------------------+--------+-------------------+
+| username  | password                                  | active | default_hostgroup |
++-----------+-------------------------------------------+--------+-------------------+
+| superman  | *AE9C3C2838160D2591B6B15FA281CE712ABE94F0 | 1      | 2                 |
+| wolverine | *1BB8830D52D091A226FB7990D996CBC20F913475 | 1      | 2                 |
++-----------+-------------------------------------------+--------+-------------------+
+2 rows in set (0.00 sec)
 
 ```
-The query results confirm that the values defined under `mysqlQueryRules`, `mysqlVariables`, and `adminVariables` in `configuration.init.inline` were successfully rendered into the generated `ProxySQL` configuration and loaded during `ProxySQL` startup.
+
+> To change a user's attributes later, submit another ops request with `reqType: update` (`username` is the key). To remove a user, use `reqType: delete` and list only the username. The [Reconfigure ProxySQL](/docs/guides/proxysql/reconfigure/cluster/index.md) guide covers the full set of operations, including query rules and global variables.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To remove the resources created in this guide, run:
 
 ```bash
-$ kubectl patch -n demo proxysql/proxy-init-secret -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo proxysql/proxy-init-secret
-
-$ kubectl patch -n demo proxysql/proxy-init-inline -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo proxysql/proxy-init-inline
-
-$ kubectl patch -n demo mysql/mysql-server -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo mysql/mysql-server
-
-$ kubectl delete -n demo secret/proxysql-init-raw
-$ kubectl delete ns demo
+$ kubectl delete -n demo proxysqlopsrequest --all
+$ kubectl delete -n demo proxysql proxy-init-secret proxy-init-inline
+$ kubectl delete -n demo mysql mysql-server
+$ kubectl delete -n demo secret proxysql-init-raw
+$ kubectl delete namespace demo
 ```
 
 ## Next Steps
