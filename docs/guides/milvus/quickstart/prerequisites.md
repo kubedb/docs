@@ -19,7 +19,7 @@ Milvus will not start from a bare `Milvus` manifest alone. Every Milvus deployme
 - Object storage, exposed through a secret named `my-release-minio`.
 - etcd for metadata.
 
-This guide sets up both dependencies in the `demo` namespace and clarifies when you need only the **etcd operator** and when you also need an **external `EtcdCluster`**.
+This guide sets up both dependencies in the `demo` namespace and clarifies when you need only the **etcd operator** and when you instead want to point Milvus at an **external etcd cluster**.
 
 ## Before You Begin
 
@@ -106,7 +106,7 @@ If you use a different secret name, update `spec.objectStorage.configSecret.name
 
 Milvus always uses etcd as its metadata store. In KubeDB, there are two supported patterns:
 
-1. **KubeDB-managed etcd**: omit `spec.metaStorage`. KubeDB creates the `EtcdCluster` for you.
+1. **KubeDB-managed etcd**: omit `spec.metaStorage`. KubeDB creates the internal etcd cluster for you.
 2. **Externally managed etcd**: set `spec.metaStorage.externallyManaged: true` and provide endpoints yourself.
 
 In both cases, the **etcd operator must already be installed** in the cluster.
@@ -141,59 +141,32 @@ For the [standalone](/docs/guides/milvus/quickstart/standalone.md) and [distribu
 
 If you **omit** `spec.metaStorage` from the `Milvus` manifest:
 
-- KubeDB creates an internal `EtcdCluster`
+- KubeDB creates an internal etcd cluster
 - KubeDB wires Milvus to that internal etcd automatically
-- You do **not** need to apply any `EtcdCluster` YAML yourself
+- You do **not** need to apply any external etcd YAML yourself
 
 So for the default quickstarts, **having the etcd operator running is enough**.
 
-## Optional Path: Create an External EtcdCluster
+## Optional Path: Use External etcd
 
-If you want to bring your own etcd, first confirm that the `EtcdCluster` CRD from the etcd operator is installed:
-
-```bash
-$ kubectl get crd etcdclusters.operator.etcd.io
-NAME                           CREATED AT
-etcdclusters.operator.etcd.io  2026-07-08T...
-```
-
-If this CRD is missing, do **not** apply the sample below yet. Install the etcd operator first. If you see an error like:
-
-```text
-no matches for kind "EtcdCluster" in version "operator.etcd.io/v1alpha1"
-```
-
-that means the CRD is not installed in the cluster yet. It does **not** mean the sample YAML uses the wrong API version.
-
-Once the CRD exists, apply the sample `EtcdCluster` manifest:
-
-```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/etcdcluster.yaml
-etcdcluster.operator.etcd.io/etcdcluster-sample created
-```
-
-Wait for the cluster:
-
-```bash
-$ kubectl get pods,svc -n demo | grep etcdcluster-sample
-pod/etcdcluster-sample-0     1/1   Running   0   2m
-pod/etcdcluster-sample-1     1/1   Running   0   2m
-pod/etcdcluster-sample-2     1/1   Running   0   2m
-service/etcdcluster-sample   ClusterIP   None   <none>   <none>   2m
-```
-
-Use these endpoints in `spec.metaStorage`:
+If you already manage etcd yourself, do not let KubeDB create an internal metadata cluster. Instead, set `spec.metaStorage.externallyManaged: true` and provide your own etcd endpoints:
 
 ```yaml
 metaStorage:
   externallyManaged: true
   endpoints:
-    - http://etcdcluster-sample-0.etcdcluster-sample.demo.svc.cluster.local:2379
-    - http://etcdcluster-sample-1.etcdcluster-sample.demo.svc.cluster.local:2379
-    - http://etcdcluster-sample-2.etcdcluster-sample.demo.svc.cluster.local:2379
+    - http://etcd-0.example.svc.cluster.local:2379
+    - http://etcd-1.example.svc.cluster.local:2379
+    - http://etcd-2.example.svc.cluster.local:2379
 ```
 
-Only choose this path if you intentionally want Milvus to use an external etcd cluster. The default quickstarts do not require this file at all.
+Requirements for external etcd:
+
+- The endpoints must be reachable from the Milvus pods.
+- The etcd cluster must already be healthy before you create the `Milvus` object.
+- The etcd operator is still required in the cluster for the default KubeDB-managed path, but this external-endpoint configuration does not require any sample external etcd YAML from these docs.
+
+Only choose this path if you intentionally want Milvus to use an external etcd cluster. The default quickstarts do not require any external etcd manifest.
 
 ## Optional Controllers
 
@@ -213,17 +186,18 @@ namespace "demo" deleted
 
 If you want to keep the namespace and clean up dependencies separately:
 
-1. Delete the external etcd cluster if you created one:
+1. Delete your external etcd resources using whatever workflow manages them:
 
    ```bash
-   $ kubectl delete etcdcluster -n demo etcdcluster-sample
-   etcdcluster.operator.etcd.io "etcdcluster-sample" deleted
+   # Example only:
+   # kubectl delete <your-etcd-resources>
    ```
 
-2. Delete leftover etcd PVCs if the etcd operator leaves them behind:
+2. Delete leftover etcd PVCs if your etcd management workflow leaves them behind:
 
    ```bash
-   $ kubectl delete pvc -n demo etcd-data-etcdcluster-sample-0 etcd-data-etcdcluster-sample-1 etcd-data-etcdcluster-sample-2
+   # Example only:
+   # kubectl delete pvc -n demo <your-etcd-pvc-names>
    ```
 
    For KubeDB-managed etcd, the PVC names follow the pattern `etcd-data-<milvus-name>-etcd-<ordinal>`.
