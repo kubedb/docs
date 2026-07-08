@@ -116,19 +116,23 @@ milvus-cluster-streamingnode-0   1/1     Running   0          2m55s
 
 ### Services
 
-A primary client service (`milvus-cluster`, gRPC `19530`, backed by the proxy) and a headless governing service per role are created:
+A primary client service (`milvus-cluster`, backed by the proxy) and a headless governing service per role are created. The primary service exposes:
+
+- gRPC on `19530`
+- metrics on `9091`
+- REST on `8080`
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
-NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP   3m
+NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                       AGE
+milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP,9091/TCP,8080/TCP   3m
 milvus-cluster-datanode        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-mixcoord        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-querynode       ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-streamingnode   ClusterIP   None          <none>        9091/TCP    3m
 ```
 
-If you later enable [Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md), KubeDB also creates a `milvus-cluster-stats` service and a `ServiceMonitor`.
+If you later enable [Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md), KubeDB also creates a dedicated `milvus-cluster-stats` service and a `ServiceMonitor`.
 
 ### Storage
 
@@ -151,6 +155,71 @@ milvus-cluster-d7497a  Opaque                     2   3m
 
 $ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service}'
 {"name":"milvus-cluster","path":"/","port":19530,"scheme":"http"}
+```
+
+## Connect and Run Basic Operations
+
+For a distributed Milvus deployment, use the primary `milvus-cluster` service, which is backed by the `proxy` role, to reach the REST API.
+
+### Port-forward the proxy REST port
+
+Run this in a separate terminal:
+
+```bash
+$ kubectl port-forward svc/milvus-cluster -n demo 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+```
+
+### Get the root password
+
+```bash
+$ PASSWORD=$(kubectl get secret milvus-cluster-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+```
+
+### Create a collection
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/create" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "dimension": 4,
+      "metricType": "L2"
+    }' | jq .
+{
+  "code": 0,
+  "data": {}
+}
+```
+
+### Insert and search sample vectors
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/insert" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [
+        {"id": 1, "vector": [0.9, 0.8, 0.7, 0.6]},
+        {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
+      ]
+    }' | jq .
+
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [[0.5, 0.4, 0.3, 0.2]],
+      "topK": 2,
+      "metricType": "L2",
+      "params": {"nprobe": 10}
+    }' | jq .
 ```
 
 ## Use an External etcd Cluster Instead

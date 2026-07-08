@@ -40,10 +40,11 @@ spec:
 - **`spec.monitor.prometheus.serviceMonitor.labels`** are applied to the generated `ServiceMonitor`. They must match the `serviceMonitorSelector` of your `Prometheus` object so the operator picks it up (here, `release: prometheus`).
 - **`spec.monitor.prometheus.serviceMonitor.interval`** sets the scrape interval.
 
-When monitoring is enabled, KubeDB creates:
+When monitoring is enabled, KubeDB creates and maintains:
 
-1. A dedicated **stats `Service`** named `<db>-stats` that exposes the metrics port (`9091`) and carries the `kubedb.com/role: stats` label.
-2. A **`ServiceMonitor`** named `<db>-stats` that selects the stats service and scrapes its `metrics` port at `/metrics`.
+1. The primary Milvus service, which exposes gRPC (`19530`), metrics (`9091`), and REST (`8080`).
+2. A dedicated **stats `Service`** named `<db>-stats` that exposes the metrics port (`9091`) and carries the `kubedb.com/role: stats` label.
+3. A **`ServiceMonitor`** named `<db>-stats` that selects the stats service and scrapes its `metrics` port at `/metrics`.
 
 The Prometheus Operator then reconciles the `ServiceMonitor` into the running Prometheus configuration and begins scraping Milvus metrics.
 

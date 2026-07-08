@@ -156,6 +156,86 @@ $ kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientCon
 https
 ```
 
+## Connect Through External mTLS
+
+This guide uses `spec.tls.external.mode: mTLS`, so clients must present the client certificate.
+
+### Extract the CA and client certificate
+
+```bash
+$ kubectl get secret milvus-standalone-server-cert -n demo \
+    -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/ca.crt
+
+$ kubectl get secret milvus-standalone-client-cert -n demo \
+    -o jsonpath='{.data.tls\.crt}' | base64 -d > /tmp/client.crt
+
+$ kubectl get secret milvus-standalone-client-cert -n demo \
+    -o jsonpath='{.data.tls\.key}' | base64 -d > /tmp/client.key
+
+$ PASSWORD=$(kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+```
+
+### Port-forward the REST port
+
+Run this in a separate terminal:
+
+```bash
+$ kubectl port-forward svc/milvus-standalone -n demo 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+```
+
+### Create a collection over HTTPS
+
+```bash
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/collections/create" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "dimension": 4,
+      "metricType": "L2"
+    }' | jq .
+```
+
+### Insert and search sample vectors
+
+```bash
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/entities/insert" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "data": [
+        {"id": 1, "vector": [0.9, 0.8, 0.7, 0.6]},
+        {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
+      ]
+    }' | jq .
+
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/entities/search" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "data": [[0.5, 0.4, 0.3, 0.2]],
+      "topK": 2,
+      "metricType": "L2"
+    }' | jq .
+```
+
+If you omit `--cert` and `--key`, the request should fail because client certificate authentication is required.
+
 ## TLS-Secured Distributed Milvus
 
 The distributed manifest enables TLS the same way. The `server`/`client` certificates are issued once and propagated to every distributed role (`mixcoord`, `datanode`, `querynode`, `streamingnode`, `proxy`).
@@ -211,6 +291,21 @@ server.pem
 $ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 https
 ```
+
+### Verify internal TLS between distributed roles
+
+You can verify inter-component TLS from the `proxy` pod:
+
+```bash
+$ kubectl exec -it milvus-cluster-proxy-0 -n demo -- \
+    openssl s_client \
+    -connect milvus-cluster-querynode.demo.svc.cluster.local:21123 \
+    -CAfile /milvus/tls/ca.pem \
+    -servername milvus-cluster \
+    -brief
+```
+
+You should see a successful TLS handshake.
 
 ## Cleaning up
 

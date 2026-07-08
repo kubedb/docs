@@ -51,14 +51,16 @@ Deploy the database and wait until it is `Ready`.
 
 ## Stats Service
 
-When monitoring is enabled, KubeDB creates a dedicated **stats service** named `<db>-stats` exposing the metrics port `9091`:
+When monitoring is enabled, the primary Milvus service still exposes gRPC, metrics, and REST, and KubeDB also creates a dedicated **stats service** named `<db>-stats` for scraping:
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
-NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP   91s
-milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP    91s
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP,9091/TCP,8080/TCP   91s
+milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP                      91s
 ```
+
+The `ServiceMonitor` targets the dedicated `-stats` service, not the primary service.
 
 ## ServiceMonitor
 
@@ -122,8 +124,8 @@ Monitoring works identically for a distributed Milvus. A single stats service an
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
-NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP   3m
+NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                       AGE
+milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP,9091/TCP,8080/TCP   3m
 milvus-cluster-datanode        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-mixcoord        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-querynode       ClusterIP   None          <none>        9091/TCP    3m

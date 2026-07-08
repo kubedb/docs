@@ -112,15 +112,19 @@ milvus-standalone-0   1/1     Running   0          88s
 
 ### Service
 
-KubeDB creates a primary client service named after the database on gRPC port `19530`:
+KubeDB creates a primary client service named after the database. It exposes:
+
+- gRPC on `19530`
+- metrics on `9091`
+- REST on `8080`
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
-NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-milvus-standalone   ClusterIP   10.43.144.154   <none>        19530/TCP   91s
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+milvus-standalone   ClusterIP   10.43.144.154   <none>        19530/TCP,9091/TCP,8080/TCP   91s
 ```
 
-> If you later enable [Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md), KubeDB also creates a `milvus-standalone-stats` service on port `9091`.
+If you later enable [Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md), KubeDB also creates a dedicated `milvus-standalone-stats` service on port `9091` for scraping.
 
 ### Storage
 
@@ -171,6 +175,116 @@ spec:
     name: milvus-standalone-auth
   type: kubedb.com/milvus
   version: 2.6.11
+```
+
+## Connect and Run Basic Operations
+
+Once the database is `Ready`, you can verify it by creating a collection and running a simple vector search through the REST API.
+
+### Port-forward the REST port
+
+Run this in a separate terminal:
+
+```bash
+$ kubectl port-forward svc/milvus-standalone -n demo 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+```
+
+### Get the root password
+
+```bash
+$ PASSWORD=$(kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+```
+
+> The auth secret lives in the same namespace as the database. If the database is in `demo`, use `-n demo` here too.
+
+### Create a collection
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/create" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "dimension": 4,
+      "metricType": "L2"
+    }' | jq .
+{
+  "code": 0,
+  "data": {}
+}
+```
+
+### Load the collection
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/load" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default"
+    }' | jq .
+{
+  "code": 0,
+  "data": {}
+}
+```
+
+### Insert sample vectors
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/insert" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [
+        {"id": 1, "vector": [0.9, 0.8, 0.7, 0.6]},
+        {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
+      ]
+    }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": {
+    "insertCount": 2,
+    "insertIds": [1, 2]
+  }
+}
+```
+
+### Search the vectors
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [[0.5, 0.4, 0.3, 0.2]],
+      "topK": 2,
+      "metricType": "L2",
+      "params": {"nprobe": 10}
+    }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": [
+    {
+      "distance": 0,
+      "id": 2
+    },
+    {
+      "distance": 0.64,
+      "id": 1
+    }
+  ],
+  "topks": [2]
+}
 ```
 
 ## Use an External etcd Cluster Instead
