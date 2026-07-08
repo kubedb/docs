@@ -22,7 +22,7 @@ KubeDB supports restarting a Milvus database via a `MilvusOpsRequest`. Restartin
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/restart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 

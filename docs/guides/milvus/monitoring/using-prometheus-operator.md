@@ -24,13 +24,13 @@ section_menu_id: guides
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [Monitoring Overview](/docs/guides/milvus/monitoring/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/monitoring/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/monitoring/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Enable Monitoring in the Milvus Manifest
 
-Monitoring is enabled through `spec.monitor`. The base [standalone](/docs/guides/milvus/quickstart/standalone.md) and [distributed](/docs/guides/milvus/quickstart/distributed.md) manifests already include it:
+Monitoring is enabled through `spec.monitor`. The base [standalone](/docs/guides/milvus/quickstart/standalone.md) and [distributed](/docs/guides/milvus/quickstart/distributed.md) quickstarts intentionally omit it so the first deployment only needs MinIO and etcd. Add the following block to your `Milvus` manifest:
 
 ```yaml
 spec:

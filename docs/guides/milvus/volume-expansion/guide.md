@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to expand 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Volume Expansion Overview](/docs/guides/milvus/volume-expansion/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 - The PVC's `StorageClass` **must** support volume expansion (`allowVolumeExpansion: true`). The base examples use `local-path`, which does **not** support expansion, so this guide uses `longhorn-custom`:
 

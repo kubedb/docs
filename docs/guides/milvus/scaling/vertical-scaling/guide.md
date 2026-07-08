@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/milvus/scaling/vertical-scaling/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/scaling/vertical-scaling/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 

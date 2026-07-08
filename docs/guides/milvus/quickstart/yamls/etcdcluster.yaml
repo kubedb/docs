@@ -1,0 +1,13 @@
+apiVersion: operator.etcd.io/v1alpha1
+kind: EtcdCluster
+metadata:
+  name: etcdcluster-sample
+  namespace: demo
+spec:
+  version: v3.5.21
+  size: 3
+  storageSpec:
+    accessModes: ReadWriteOnce
+    volumeSizeRequest: 1Gi
+    volumeSizeLimit: 1Gi
+    storageClassName: local-path
