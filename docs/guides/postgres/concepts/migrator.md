@@ -25,7 +25,7 @@ the target in sync until you cut over.
 `PostgresMigration` is the PostgreSQL-specific migration CRD (`courier.kubedb.com/v1alpha1`) whose
 `spec.source` and `spec.target` describe the PostgreSQL source and target directly.
 
-## Migration Spec
+## PostgresMigration Spec
 
 As with all other Kubernetes objects, a `PostgresMigration` needs `apiVersion`, `kind`, and `metadata`
 fields. It also needs a `.spec` section. Below is an example `PostgresMigration` object for migrating a
@@ -43,7 +43,7 @@ spec:
       appBinding:
         name: source-postgres
         namespace: demo
-      dbName: postgres
+      dbName: shop
       maxConnections: 100
     pgDump:
       schemaOnly: true
@@ -59,7 +59,7 @@ spec:
       appBinding:
         name: target-postgres
         namespace: demo
-      dbName: postgres
+      dbName: shop
       maxConnections: 100
   jobDefaults:
     imagePullPolicy: IfNotPresent
@@ -158,7 +158,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## PostgresMigration Status
 
 `status` reflects the observed state of the migration.
 

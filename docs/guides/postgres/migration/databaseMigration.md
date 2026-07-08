@@ -229,7 +229,7 @@ postgres.kubedb.com/target-postgres created
 
 Wait until `target-postgres` has status `Ready`.
 
-## Apply Migration CR
+## Apply PostgresMigration CR
 
 To migrate the database we have to create a `PostgresMigration` CR. Below is the YAML of the `PostgresMigration` CR that we are going to create:
 

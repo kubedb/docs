@@ -258,7 +258,7 @@ mongodb.kubedb.com/mgo-destination created
 
 Wait until `mgo-destination` has status `Ready`.
 
-## Apply Migration CR
+## Apply MongoDBMigration CR
 
 To migrate the database we have to create a `MongoDBMigration` CR. KubeDB uses `mongoshake` to perform the migration. Below is the YAML of the `MongoDBMigration` CR that we are going to create:
 

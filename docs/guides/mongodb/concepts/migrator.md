@@ -26,7 +26,7 @@ the target in sync until you cut over.
 `spec.source` and `spec.target` describe the MongoDB source and target directly. KubeDB uses
 [mongoshake](https://github.com/alibaba/MongoShake) to perform MongoDB migrations.
 
-## Migration Spec
+## MongoDBMigration Spec
 
 As with all other Kubernetes objects, a `MongoDBMigration` needs `apiVersion`, `kind`, and `metadata`
 fields. It also needs a `.spec` section. Below is an example `MongoDBMigration` object for migrating a
@@ -145,7 +145,7 @@ instance. There are two ways to provide the connection details — set **either*
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## MongoDBMigration Status
 
 `status` reflects the observed state of the migration.
 
