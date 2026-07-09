@@ -24,9 +24,9 @@ This guide will show you how to deploy a Milvus database with TLS/SSL enabled fr
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [TLS Overview](/docs/guides/milvus/tls/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
-> Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/tls/configure/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/tls/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Create a cert-manager Issuer
 
@@ -53,7 +53,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/issuer.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/issuer.yaml
 issuer.cert-manager.io/milvus-issuer created
 
 $ kubectl get issuer -n demo
@@ -103,7 +103,7 @@ spec:
 - `spec.tls.internal.mode: TLS` encrypts inter-component traffic.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/configure/yamls/standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/standalone.yaml
 milvus.kubedb.com/milvus-standalone created
 ```
 
@@ -155,6 +155,86 @@ Because TLS is enabled, the AppBinding connection scheme is `https`:
 $ kubectl get appbinding milvus-standalone -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 https
 ```
+
+## Connect Through External mTLS
+
+This guide uses `spec.tls.external.mode: mTLS`, so clients must present the client certificate.
+
+### Extract the CA and client certificate
+
+```bash
+$ kubectl get secret milvus-standalone-server-cert -n demo \
+    -o jsonpath='{.data.ca\.crt}' | base64 -d > /tmp/ca.crt
+
+$ kubectl get secret milvus-standalone-client-cert -n demo \
+    -o jsonpath='{.data.tls\.crt}' | base64 -d > /tmp/client.crt
+
+$ kubectl get secret milvus-standalone-client-cert -n demo \
+    -o jsonpath='{.data.tls\.key}' | base64 -d > /tmp/client.key
+
+$ PASSWORD=$(kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+```
+
+### Port-forward the REST port
+
+Run this in a separate terminal:
+
+```bash
+$ kubectl port-forward svc/milvus-standalone -n demo 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
+```
+
+### Create a collection over HTTPS
+
+```bash
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/collections/create" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "dimension": 4,
+      "metricType": "L2"
+    }' | jq .
+```
+
+### Insert and search sample vectors
+
+```bash
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/entities/insert" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "data": [
+        {"id": 1, "vector": [0.9, 0.8, 0.7, 0.6]},
+        {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
+      ]
+    }' | jq .
+
+$ curl -s -X POST "https://localhost:8080/v2/vectordb/entities/search" \
+    --cacert /tmp/ca.crt \
+    --cert /tmp/client.crt \
+    --key /tmp/client.key \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "tls_test_collection",
+      "dbName": "default",
+      "data": [[0.5, 0.4, 0.3, 0.2]],
+      "topK": 2,
+      "metricType": "L2"
+    }' | jq .
+```
+
+If you omit `--cert` and `--key`, the request should fail because client certificate authentication is required.
 
 ## TLS-Secured Distributed Milvus
 
@@ -211,6 +291,21 @@ server.pem
 $ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service.scheme}'
 https
 ```
+
+### Verify internal TLS between distributed roles
+
+You can verify inter-component TLS from the `proxy` pod:
+
+```bash
+$ kubectl exec -it milvus-cluster-proxy-0 -n demo -- \
+    openssl s_client \
+    -connect milvus-cluster-querynode.demo.svc.cluster.local:21123 \
+    -CAfile /milvus/tls/ca.pem \
+    -servername milvus-cluster \
+    -brief
+```
+
+You should see a successful TLS handshake.
 
 ## Cleaning up
 

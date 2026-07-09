@@ -25,7 +25,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to horizon
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Horizontal Scaling Overview](/docs/guides/milvus/scaling/horizontal-scaling/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/scaling/horizontal-scaling/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/scaling/horizontal-scaling/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 

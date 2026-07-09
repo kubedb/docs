@@ -25,7 +25,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to add, ro
 
 - Install [cert-manager](https://cert-manager.io/docs/installation/) in your cluster — KubeDB uses it to manage Milvus certificates.
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/reconfigure-tls/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/reconfigure-tls/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -326,6 +326,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Deploy a [TLS-secured Milvus](/docs/guides/milvus/tls/configure/index.md) from the start.
+- Deploy a [TLS-secured Milvus](/docs/guides/milvus/tls/guide.md) from the start.
 - Detail concepts of [Milvus object](/docs/guides/milvus/concepts/milvus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

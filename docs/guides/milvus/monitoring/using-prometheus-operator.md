@@ -24,13 +24,13 @@ section_menu_id: guides
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [Monitoring Overview](/docs/guides/milvus/monitoring/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/monitoring/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/monitoring/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Enable Monitoring in the Milvus Manifest
 
-Monitoring is enabled through `spec.monitor`. The base [standalone](/docs/guides/milvus/quickstart/standalone.md) and [distributed](/docs/guides/milvus/quickstart/distributed.md) manifests already include it:
+Monitoring is enabled through `spec.monitor`. The base [standalone](/docs/guides/milvus/quickstart/standalone.md) and [distributed](/docs/guides/milvus/quickstart/distributed.md) quickstarts intentionally omit it so the first deployment only needs MinIO and etcd. Add the following block to your `Milvus` manifest:
 
 ```yaml
 spec:
@@ -51,14 +51,16 @@ Deploy the database and wait until it is `Ready`.
 
 ## Stats Service
 
-When monitoring is enabled, KubeDB creates a dedicated **stats service** named `<db>-stats` exposing the metrics port `9091`:
+When monitoring is enabled, the primary Milvus service still exposes gRPC, metrics, and REST, and KubeDB also creates a dedicated **stats service** named `<db>-stats` for scraping:
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
-NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP   91s
-milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP    91s
+NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP,9091/TCP,8080/TCP   91s
+milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP                      91s
 ```
+
+The `ServiceMonitor` targets the dedicated `-stats` service, not the primary service.
 
 ## ServiceMonitor
 
@@ -122,8 +124,8 @@ Monitoring works identically for a distributed Milvus. A single stats service an
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
-NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP   3m
+NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                       AGE
+milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP,9091/TCP,8080/TCP   3m
 milvus-cluster-datanode        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-mixcoord        ClusterIP   None          <none>        9091/TCP    3m
 milvus-cluster-querynode       ClusterIP   None          <none>        9091/TCP    3m
@@ -159,6 +161,6 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/configure/index.md).
+- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/guide.md).
 - Detail concepts of [Milvus object](/docs/guides/milvus/concepts/milvus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

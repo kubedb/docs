@@ -34,7 +34,7 @@ The KubeDB Recommendation Engine watches your databases and proactively generate
   recommendations.supervisor.appscode.com   2026-06-30T05:18:01Z
   ```
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Milvus has no `autoOps` field, so there is no `autoOps.disabled` toggle — recommendations are always generated for the conditions above when their triggers are met.
 

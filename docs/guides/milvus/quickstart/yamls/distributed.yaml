@@ -20,19 +20,3 @@ spec:
           resources:
             requests:
               storage: 1Gi
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-        interval: 10s
-  tls:
-    issuerRef:
-      name: milvus-issuer
-      kind: Issuer
-      apiGroup: "cert-manager.io"
-    external:
-      mode: mTLS
-    internal:
-      mode: TLS

@@ -14,30 +14,20 @@ section_menu_id: guides
 
 # KubeDB - Milvus Standalone
 
-This tutorial will show you how to use KubeDB to provision a **Standalone** [Milvus](https://milvus.io) database. Milvus is an open-source vector database built to power embedding similarity search and AI applications.
+This tutorial shows how to use KubeDB to provision a **standalone** [Milvus](https://milvus.io) database.
 
 ## Before You Begin
 
-- You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
-
-- Now, install KubeDB operator in your cluster following the steps [here](/docs/setup/README.md), and make sure to include the flag `--set global.featureGates.Milvus=true` to ensure the **Milvus CRD** is installed.
-
-- Milvus requires a few **external dependencies** to be available in the cluster:
-  - **Object storage** (MinIO / S3-compatible) is **mandatory**. Every example in this guide expects an object-storage configuration secret named `my-release-minio`.
-  - **etcd** is used as the metadata store. When `spec.metaStorage` is omitted, KubeDB provisions and manages an internal etcd cluster for you, so an **etcd operator** must be installed and running in the cluster.
-
-- To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
-
-  ```bash
-  $ kubectl create ns demo
-  namespace/demo created
-  ```
+- You need a Kubernetes cluster and `kubectl` configured to talk to it.
+- Install KubeDB with `--set global.featureGates.Milvus=true`.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
+- This quickstart intentionally uses the smallest working manifest. It does **not** require Prometheus Operator or cert-manager.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Find Available Milvus Versions
 
-When you install the KubeDB operator, it registers a CRD named `MilvusVersion`. The installation comes with a set of built-in `MilvusVersion` objects. Let's check the available `MilvusVersion`s by:
+When you install the KubeDB operator, it registers a CRD named `MilvusVersion`. The installation comes with a set of built-in `MilvusVersion` objects:
 
 ```bash
 $ kubectl get milvusversions
@@ -47,21 +37,9 @@ NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
 2.6.9    2.6.9     ghcr.io/appscode-images/milvus:2.6.9                 11h
 ```
 
-## Prepare Object Storage Secret
+## Create a Standalone Milvus
 
-Milvus stores its segments/logs in object storage, so an object-storage connection secret **must** exist before you create a `Milvus` object. The secret is referenced through `spec.objectStorage.configSecret`. A typical MinIO-backed secret holds three keys — `address`, `accesskey`, and `secretkey`:
-
-```bash
-$ kubectl get secret my-release-minio -n demo
-NAME               TYPE     DATA   AGE
-my-release-minio   Opaque   3      11h
-```
-
-> If you do not have a MinIO deployment yet, you can adapt the sample secret shipped with the Milvus operator. The exact contents depend on your storage endpoint and credentials.
-
-## Create a Milvus Database
-
-The KubeDB operator implements a `Milvus` CRD to define the specification of a Milvus database. Below is the `Milvus` object we will create. Notice that in addition to the database itself, the manifest already enables **Prometheus Operator monitoring** and **TLS** — these are covered in detail in the [monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md) and [TLS](/docs/guides/milvus/tls/configure/index.md) guides; you can drop those blocks for a bare deployment.
+The following manifest is the smallest durable standalone deployment:
 
 `standalone.yaml`
 
@@ -86,31 +64,15 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  monitor:
-    agent: prometheus.io/operator
-    prometheus:
-      serviceMonitor:
-        labels:
-          release: prometheus
-        interval: 10s
-  tls:
-    issuerRef:
-      name: milvus-issuer
-      kind: Issuer
-      apiGroup: "cert-manager.io"
-    external:
-      mode: mTLS
-    internal:
-      mode: TLS
 ```
 
 Here,
 
-- `spec.version` is the name of a `MilvusVersion` CRD object. `2.6.11` points to the Milvus `2.6.11` image.
-- `spec.topology.mode: Standalone` deploys Milvus as a single all-in-one workload (one PetSet).
-- `spec.objectStorage.configSecret` references the mandatory object-storage secret.
-- `spec.storageType` can be `Durable` or `Ephemeral`. With `Durable`, the persistent volume described in `spec.storage` is used.
-- `spec.storage` defines the persistent volume claim for the standalone workload.
+- `spec.version` is the name of a `MilvusVersion` object.
+- `spec.topology.mode: Standalone` deploys Milvus as a single all-in-one workload.
+- `spec.objectStorage.configSecret` points to the required MinIO/object-storage secret.
+- `spec.metaStorage` is omitted, so KubeDB creates and manages an internal etcd cluster through the installed etcd operator.
+- `spec.storageType: Durable` tells KubeDB to provision persistent storage for the standalone workload.
 
 Create the database:
 
@@ -121,9 +83,9 @@ milvus.kubedb.com/milvus-standalone created
 
 ## Wait for the Database to be Ready
 
-KubeDB will create the necessary resources to provision the Milvus database. Watch the `Milvus` object until its `STATUS` becomes `Ready`:
+Watch the `Milvus` object until its `STATUS` becomes `Ready`:
 
-> **Note:** Because both `milvuses.kubedb.com` and `milvuses.gitops.kubedb.com` are registered, the short name `milvus` is ambiguous. Use the fully-qualified `milvuses.kubedb.com` (or `kubectl get milvus.kubedb.com`) to query the database.
+> Because both `milvuses.kubedb.com` and `milvuses.gitops.kubedb.com` are registered, the short name `milvus` is ambiguous. Use `milvuses.kubedb.com`.
 
 ```bash
 $ kubectl get milvuses.kubedb.com -n demo -w
@@ -136,28 +98,33 @@ Standalone Milvus typically becomes ready within a few minutes.
 
 ## Verify the Created Resources
 
-Once Milvus is `Ready`, KubeDB has created the following resources. For a standalone deployment there is exactly **one PetSet** named after the database (`<db-name>`):
+### PetSet and Pod
 
 ```bash
 $ kubectl get petset -n demo -l app.kubernetes.io/instance=milvus-standalone
 NAME                AGE
 milvus-standalone   88s
 
-$ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-standalone -o wide
-NAME                  READY   STATUS    RESTARTS   AGE   IP           NODE   NOMINATED NODE   READINESS GATES
-milvus-standalone-0   1/1     Running   0          88s   10.42.0.86   urmi   <none>           <none>
+$ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus-standalone
+NAME                  READY   STATUS    RESTARTS   AGE
+milvus-standalone-0   1/1     Running   0          88s
 ```
 
-### Services
+### Service
 
-KubeDB creates a primary client service named after the database (gRPC port `19530`) and, because monitoring is enabled, a `-stats` service exposing the metrics port `9091`:
+KubeDB creates a primary client service named after the database. It exposes:
+
+- gRPC on `19530`
+- metrics on `9091`
+- REST on `8080`
 
 ```bash
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-standalone
-NAME                      TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-milvus-standalone         ClusterIP   10.43.144.154   <none>        19530/TCP   91s
-milvus-standalone-stats   ClusterIP   10.43.12.191    <none>        9091/TCP    91s
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                       AGE
+milvus-standalone   ClusterIP   10.43.144.154   <none>        19530/TCP,9091/TCP,8080/TCP   91s
 ```
+
+If you later enable [Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md), KubeDB also creates a dedicated `milvus-standalone-stats` service on port `9091` for scraping.
 
 ### Storage
 
@@ -169,44 +136,40 @@ NAME                       STATUS   VOLUME                                     C
 data-milvus-standalone-0   Bound    pvc-a6333ee2-f0ab-4ec2-8437-599d270b9ed0   1Gi        RWO            local-path     90s
 ```
 
-> The internal etcd metadata store provisions its own PVCs (`etcd-data-demo-etcd-*`), and MinIO has its own storage. Those are separate from the Milvus data volume.
+The internal etcd metadata store provisions its own PVCs (`etcd-data-<milvus-name>-etcd-*`), and MinIO has separate PVCs as well.
 
 ### Auth Secret
 
-Milvus authentication is enabled by default (`spec.disableSecurity` defaults to `false`). Because `spec.authSecret` was not provided, KubeDB auto-generated a basic-auth secret named `<db-name>-auth` with a `root` user and a random password:
+Milvus authentication is enabled by default. Because `spec.authSecret` was not provided, KubeDB auto-generates a basic-auth secret named `<db-name>-auth` with a `root` user and a random password:
 
 ```bash
 $ kubectl get secret -n demo | grep milvus-standalone
-milvus-standalone-42559a        Opaque                     2      92s
-milvus-standalone-auth          kubernetes.io/basic-auth   2      92s
-milvus-standalone-client-cert   kubernetes.io/tls          4      91s
-milvus-standalone-server-cert   kubernetes.io/tls          3      91s
+milvus-standalone-42559a   Opaque                     2      92s
+milvus-standalone-auth     kubernetes.io/basic-auth   2      92s
 
 $ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d
 root
+
+$ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d
+<generated-password>
 ```
 
-The other secrets are the rendered configuration secret (`milvus-standalone-42559a`, holding `milvus.yaml` and `glog.conf`) and the TLS certificate secrets (`-server-cert`, `-client-cert`).
+The other secret (`milvus-standalone-42559a`) is the rendered configuration secret holding `milvus.yaml` and `glog.conf`.
 
 ### AppBinding
 
-KubeDB also creates an `AppBinding` — a connection descriptor pointing at the primary service, the auth secret, and the connection scheme (note `scheme: https`, because TLS is enabled):
+KubeDB also creates an `AppBinding` pointing at the primary service and the auth secret. Because this quickstart does not enable TLS, the connection scheme is `http`:
 
 ```bash
 $ kubectl get appbinding milvus-standalone -n demo -o yaml
 ...
 spec:
-  appRef:
-    apiGroup: kubedb.com
-    kind: Milvus
-    name: milvus-standalone
-    namespace: demo
   clientConfig:
     service:
       name: milvus-standalone
       path: /
       port: 19530
-      scheme: https
+      scheme: http
   secret:
     kind: Secret
     name: milvus-standalone-auth
@@ -214,51 +177,138 @@ spec:
   version: 2.6.11
 ```
 
-## Rendered Configuration
+## Connect and Run Basic Operations
 
-KubeDB renders the effective `milvus.yaml` into the configuration secret. Notice that authentication and internal TLS are wired up automatically:
+Once the database is `Ready`, you can verify it by creating a collection and running a simple vector search through the REST API.
+
+### Port-forward the REST port
+
+Run this in a separate terminal:
 
 ```bash
-$ kubectl get secret milvus-standalone-42559a -n demo -o jsonpath='{.data.milvus\.yaml}' | base64 -d
-common:
-    msgChannelType: rocksmq
-    security:
-        authorizationEnabled: true
-        defaultRootPassword: <redacted>
-        internaltlsEnabled: "true"
-        rootUsername: root
-        tlsMode: 2
-    storageType: remote
-...
-etcd:
-    endpoints:
-        - http://demo-etcd-0.demo-etcd.demo.svc.cluster.local:2379
-        - http://demo-etcd-1.demo-etcd.demo.svc.cluster.local:2379
-        - http://demo-etcd-2.demo-etcd.demo.svc.cluster.local:2379
-    rootPath: by-dev
-internaltls:
-    caPemPath: /milvus/tls/ca.pem
-    serverKeyPath: /milvus/tls/server.key
-    serverPemPath: /milvus/tls/server.pem
-    sni: milvus-standalone
-localStorage:
-    path: /var/lib/milvus/data/
+$ kubectl port-forward svc/milvus-standalone -n demo 8080:8080
+Forwarding from 127.0.0.1:8080 -> 8080
 ```
 
-## Cleaning up
+### Get the root password
 
-To clean up the Kubernetes resources created by this tutorial, run:
+```bash
+$ PASSWORD=$(kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+```
+
+> The auth secret lives in the same namespace as the database. If the database is in `demo`, use `-n demo` here too.
+
+### Create a collection
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/create" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "dimension": 4,
+      "metricType": "L2"
+    }' | jq .
+{
+  "code": 0,
+  "data": {}
+}
+```
+
+### Load the collection
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/load" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default"
+    }' | jq .
+{
+  "code": 0,
+  "data": {}
+}
+```
+
+### Insert sample vectors
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/insert" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [
+        {"id": 1, "vector": [0.9, 0.8, 0.7, 0.6]},
+        {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
+      ]
+    }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": {
+    "insertCount": 2,
+    "insertIds": [1, 2]
+  }
+}
+```
+
+### Search the vectors
+
+```bash
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
+    -H "Authorization: Bearer root:${PASSWORD}" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "collectionName": "health_check_collection",
+      "dbName": "default",
+      "data": [[0.5, 0.4, 0.3, 0.2]],
+      "topK": 2,
+      "metricType": "L2",
+      "params": {"nprobe": 10}
+    }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": [
+    {
+      "distance": 0,
+      "id": 2
+    },
+    {
+      "distance": 0.64,
+      "id": 1
+    }
+  ],
+  "topks": [2]
+}
+```
+
+## Use an External etcd Cluster Instead
+
+The default quickstart omits `spec.metaStorage`, so KubeDB manages etcd for you. If you want Milvus to use an external etcd cluster instead:
+
+1. Install the etcd operator.
+2. Manage your etcd cluster yourself.
+3. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-use-external-etcd).
+
+## Cleaning up
 
 ```bash
 $ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete milvus.kubedb.com milvus-standalone -n demo
-$ kubectl delete ns demo
 ```
+
+If you want to remove the dependencies too, either delete the whole `demo` namespace or follow the cleanup steps in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#cleanup).
 
 ## Next Steps
 
-- Deploy a [distributed Milvus cluster](/docs/guides/milvus/quickstart/distributed.md).
-- Monitor your Milvus database with KubeDB using [Prometheus Operator](/docs/guides/milvus/monitoring/using-prometheus-operator.md).
-- Secure your Milvus database with [TLS/SSL](/docs/guides/milvus/tls/configure/index.md).
+- [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md) for another cluster.
+- [Deploy a Distributed Milvus](/docs/guides/milvus/quickstart/distributed.md).
+- [Enable Prometheus Operator monitoring](/docs/guides/milvus/monitoring/using-prometheus-operator.md).
+- [Enable TLS](/docs/guides/milvus/tls/guide.md).
 - Detail concepts of [Milvus object](/docs/guides/milvus/concepts/milvus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

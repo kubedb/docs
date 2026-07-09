@@ -22,7 +22,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to migrate
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 - You need **at least two** `StorageClass`es — the current one and the target one. This guide migrates from `local-path` to `longhorn-custom`:
 
