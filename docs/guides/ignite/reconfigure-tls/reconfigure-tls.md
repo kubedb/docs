@@ -39,7 +39,7 @@ Here, We are going to create a Ignite database without TLS and then reconfigure 
 
 ### Deploy Ignite without TLS
 
-In this section, we are going to deploy a Ignite Replicaset database without TLS. In the next few sections we will reconfigure TLS using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy an Ignite database without TLS. In the next few sections we will reconfigure TLS using `IgniteOpsRequest` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -48,7 +48,7 @@ metadata:
   name: ig
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 3
   storage:
     storageClassName: "standard"
@@ -71,7 +71,7 @@ Now, wait until `ig` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME    VERSION    STATUS    AGE
-ig      2.17.0     Ready     10m
+ig      2.18.0     Ready     10m
 ```
 
 ```bash
@@ -109,7 +109,7 @@ $ kubectl create secret tls ignite-ca \
 secret/ignite-ca created
 ```
 
-Now, Let's create an `Issuer` using the `mongo-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create an `Issuer` using the `ignite-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -234,7 +234,7 @@ Metadata:
     Operation:       Update
     Time:            2025-03-11T13:32:19Z
   Resource Version:  488264
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/Igniteopsrequests/mops-add-tls
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/igniteopsrequests/igops-add-tls
   UID:               0024ec16-0d43-4686-a2d7-1cdeb96e41a5
 Spec:
   Database Ref:
@@ -246,11 +246,11 @@ Spec:
         Organizational Units:
           client
         Organizations:
-          mongo
+          ignite
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       mg-issuer
+      Name:       ig-issuer
   Type:           ReconfigureTLS
 Status:
   Conditions:
@@ -267,11 +267,11 @@ Status:
     Status:                True
     Type:                  TLSAdded
     Last Transition Time:  2025-03-11T13:34:25Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Message:               Successfully restarted all nodes
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                RestartNodes
     Status:                True
-    Type:                  RestartReplicaSet
+    Type:                  RestartNodes
     Last Transition Time:  2025-03-11T13:34:25Z
     Message:               Successfully Reconfigured TLS
     Observed Generation:   1
@@ -286,7 +286,7 @@ Events:
   Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Pausing Ignite demo/ig
   Normal  PauseDatabase      2m10s  KubeDB Ops-manager operator  Successfully paused Ignite demo/ig
   Normal  TLSAdded           2m10s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  10s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  RestartNodes  10s    KubeDB Ops-manager operator  Successfully restarted all nodes
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Resuming Ignite demo/ig
   Normal  ResumeDatabase     10s    KubeDB Ops-manager operator  Successfully resumed Ignite demo/ig
   Normal  Successful         10s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
@@ -331,8 +331,8 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/Ignite/reconfigure-tls/igops-rotate.yaml
-Igniteopsrequest.ops.kubedb.com/igops-rotate created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/igops-rotate.yaml
+igniteopsrequest.ops.kubedb.com/igops-rotate created
 ```
 
 #### Verify Certificate Rotated Successfully
@@ -340,7 +340,7 @@ Igniteopsrequest.ops.kubedb.com/igops-rotate created
 Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command to watch `IgniteOpsRequest` CRO,
 
 ```bash
-$ kubectl get Igniteopsrequest -n demo
+$ kubectl get igniteopsrequest -n demo
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME           TYPE             STATUS        AGE
 igops-rotate    ReconfigureTLS   Successful    112s
@@ -420,11 +420,11 @@ Status:
     Status:                True
     Type:                  CertificateIssuingSuccessful
     Last Transition Time:  2025-03-11T16:19:45Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Message:               Successfully restarted all nodes
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                RestartNodes
     Status:                True
-    Type:                  RestartReplicaSet
+    Type:                  RestartNodes
     Last Transition Time:  2025-03-11T16:19:45Z
     Message:               Successfully Reconfigured TLS
     Observed Generation:   1
@@ -437,7 +437,7 @@ Events:
   Type    Reason                        Age    From                        Message
   ----    ------                        ----   ----                        -------
   Normal  CertificateIssuingSuccessful  2m10s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             25s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  RestartNodes             25s    KubeDB Ops-manager operator  Successfully restarted all nodes
   Normal  Successful                    25s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
@@ -476,7 +476,7 @@ $ kubectl create secret tls ig-new-ca \
 secret/ig-new-ca created
 ```
 
-Now, Let's create a new `Issuer` using the `mongo-new-ca` secret that we have just created. The `YAML` file looks like this:
+Now, Let's create a new `Issuer` using the `ig-new-ca` secret that we have just created. The `YAML` file looks like this:
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -599,7 +599,7 @@ Spec:
     Issuer Ref:
       API Group:  cert-manager.io
       Kind:       Issuer
-      Name:       mg-new-issuer
+      Name:       ig-new-issuer
   Type:           ReconfigureTLS
 Status:
   Conditions:
@@ -616,11 +616,11 @@ Status:
     Status:                True
     Type:                  CertificateIssuingSuccessful
     Last Transition Time:  2025-03-11T16:29:37Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Message:               Successfully restarted all nodes
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                RestartNodes
     Status:                True
-    Type:                  RestartReplicaSet
+    Type:                  RestartNodes
     Last Transition Time:  2025-03-11T16:29:37Z
     Message:               Successfully Reconfigured TLS
     Observed Generation:   1
@@ -633,7 +633,7 @@ Events:
   Type    Reason                        Age    From                        Message
   ----    ------                        ----   ----                        -------
   Normal  CertificateIssuingSuccessful  2m27s  KubeDB Ops-manager operator  Successfully Issued New Certificates
-  Normal  RestartReplicaSet             42s    KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  RestartNodes             42s    KubeDB Ops-manager operator  Successfully restarted all nodes
   Normal  Successful                    42s    KubeDB Ops-manager operator  Successfully Reconfigured TLS
 ```
 
@@ -659,7 +659,7 @@ Below is the YAML of the `IgniteOpsRequest` CRO that we are going to create,
 apiVersion: ops.kubedb.com/v1alpha1
 kind: IgniteOpsRequest
 metadata:
-  name: mops-remove
+  name: igops-remove
   namespace: demo
 spec:
   type: ReconfigureTLS
@@ -678,8 +678,8 @@ Here,
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/mops-remove.yaml
-igniteopsrequest.ops.kubedb.com/mops-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/reconfigure-tls/igops-remove.yaml
+igniteopsrequest.ops.kubedb.com/igops-remove created
 ```
 
 #### Verify TLS Removed Successfully
@@ -690,14 +690,14 @@ Let's wait for `IgniteOpsRequest` to be `Successful`.  Run the following command
 $ kubectl get igniteopsrequest -n demo
 Every 2.0s: kubectl get igniteopsrequest -n demo
 NAME          TYPE             STATUS        AGE
-mops-remove   ReconfigureTLS   Successful    105s
+igops-remove   ReconfigureTLS   Successful    105s
 ```
 
 We can see from the above output that the `IgniteOpsRequest` has succeeded. If we describe the `IgniteOpsRequest` we will get an overview of the steps that were followed.
 
 ```bash
-$ kubectl describe igniteopsrequest -n demo mops-remove
-Name:         mops-remove
+$ kubectl describe igniteopsrequest -n demo igops-remove
+Name:         igops-remove
 Namespace:    demo
 Labels:       <none>
 Annotations:  <none>
@@ -738,7 +738,7 @@ Metadata:
     Operation:       Update
     Time:            2025-03-11T16:35:32Z
   Resource Version:  525550
-  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/Igniteopsrequests/mops-remove
+  Self Link:         /apis/ops.kubedb.com/v1alpha1/namespaces/demo/igniteopsrequests/igops-remove
   UID:               99184cc4-1595-4f0f-b8eb-b65c5d0e86a6
 Spec:
   Database Ref:
@@ -761,11 +761,11 @@ Status:
     Status:                True
     Type:                  TLSRemoved
     Last Transition Time:  2025-03-11T16:37:07Z
-    Message:               Successfully Restarted ReplicaSet nodes
+    Message:               Successfully restarted all nodes
     Observed Generation:   1
-    Reason:                RestartReplicaSet
+    Reason:                RestartNodes
     Status:                True
-    Type:                  RestartReplicaSet
+    Type:                  RestartNodes
     Last Transition Time:  2025-03-11T16:37:07Z
     Message:               Successfully Reconfigured TLS
     Observed Generation:   1
@@ -780,7 +780,7 @@ Events:
   Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Pausing Ignite demo/ig
   Normal  PauseDatabase      2m5s  KubeDB Ops-manager operator  Successfully paused Ignite demo/ig
   Normal  TLSRemoved         2m5s  KubeDB Ops-manager operator  Successfully Updated StatefulSets
-  Normal  RestartReplicaSet  35s   KubeDB Ops-manager operator  Successfully Restarted ReplicaSet nodes
+  Normal  RestartNodes  35s   KubeDB Ops-manager operator  Successfully restarted all nodes
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Resuming Ignite demo/ig
   Normal  ResumeDatabase     35s   KubeDB Ops-manager operator  Successfully resumed Ignite demo/ig
   Normal  Successful         35s   KubeDB Ops-manager operator  Successfully Reconfigured TLS

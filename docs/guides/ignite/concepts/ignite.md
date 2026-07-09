@@ -30,7 +30,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 2.17.0
+  version: 2.18.0
   configuration:
     secretName: ignite-configuration
   authSecret:
@@ -71,7 +71,7 @@ KubeDB uses `PodDisruptionBudget` to ensure that majority of these replicas are 
 
 `spec.version` is a required field specifying the name of the [IgniteVersion](/docs/guides/ignite/concepts/ignite-version.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `IgniteVersion` crds,
 
-- `2.17.0`
+- `2.18.0`
 
 ### spec.monitor
 
@@ -231,7 +231,7 @@ See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v
 
 ### spec.deletionPolicy
 
-`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Ignite` crd or which resources KubeDB should keep or delete when you delete `Ignite` crd. KubeDB provides following four termination policies:
+`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Ignite` crd or which resources KubeDB should keep or delete when you delete `Ignite` crd. KubeDB provides following three termination policies:
 
 - DoNotTerminate
 - Delete (`Default`)
@@ -250,7 +250,7 @@ Following table show what KubeDB does when you delete Ignite crd for different t
 
 If you don't specify `spec.deletionPolicy` KubeDB uses `Delete` termination policy by default.
 
-## spec.helathChecker
+## spec.healthChecker
 It defines the attributes for the health checker.
 - spec.healthChecker.periodSeconds specifies how often to perform the health check.
 - spec.healthChecker.timeoutSeconds specifies the number of seconds after which the probe times out.

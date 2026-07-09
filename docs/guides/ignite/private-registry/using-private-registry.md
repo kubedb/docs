@@ -27,9 +27,9 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For ignite, push `DB_IMAGE`, `EXPORTER_IMAGE` of following IgniteVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get igniteversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  $ kubectl get igniteversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   DB_IMAGE                                          EXPORTER_IMAGE                                          DEPRECATED
-  2.17.0   2.17.0    ghcr.io/appscode-images/ignite:2.17.0             ghcr.io/kubedb/ignite-init:2.17.0-v1                    <none>
+  2.18.0   2.18.0    ghcr.io/appscode-images/ignite:2.18.0             ghcr.io/kubedb/ignite-init:2.18.0-v1                    <none>
   ```
 
 - Update KubeDB catalog for private Docker registry. Ex:
@@ -38,13 +38,13 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: IgniteVersion
   metadata:
-    name: 2.17.0
+    name: 2.18.0
   spec:
     db:
-      image: PRIVATE_REGISTRY/ignite:2.17.0
+      image: PRIVATE_REGISTRY/ignite:2.18.0
     securityContext:
       runAsUser: 70
-    version: 2.17.0
+    version: 2.18.0
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -90,7 +90,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "2.17.0"
+  version: "2.18.0"
   podTemplate:
     spec:
       containers:
@@ -118,16 +118,12 @@ To check if the images pulled successfully from the repository, see if the `Igni
 ```bash
 $ kubectl get pods -n demo -w
 NAME                             READY     STATUS              RESTARTS   AGE
-ig-pvt-reg-694d4d44df-bwtk8      0/1       ContainerCreating   0          18s
-ig-pvt-reg-694d4d44df-tkqc4      0/1       ContainerCreating   0          17s
-ig-pvt-reg-694d4d44df-zhj4l      0/1       ContainerCreating   0          17s
-ig-pvt-reg-694d4d44df-bwtk8      1/1       Running             0          25s
-ig-pvt-reg-694d4d44df-zhj4l      1/1       Running             0          26s
-ig-pvt-reg-694d4d44df-tkqc4      1/1       Running             0          27s
+ig-pvt-reg-0                     0/1       ContainerCreating   0          18s
+ig-pvt-reg-0                     1/1       Running             0          25s
 
 $ kubectl get ig -n demo
 NAME            VERSION    STATUS    AGE
-ig-pvt-reg      2.17.0     Running   59s
+ig-pvt-reg      2.18.0     Running   59s
 ```
 
 ## Cleaning up

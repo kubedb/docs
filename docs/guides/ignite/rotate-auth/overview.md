@@ -19,8 +19,8 @@ This guide will give an overview on how KubeDB Ops-manager operator Rotate Authe
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Ignite](/docs/guides/ignite/concepts/ignite/index.md)
-    - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest/index.md)
+    - [Ignite](/docs/guides/ignite/concepts/ignite.md)
+    - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest.md)
 
 ## How Rotate Ignite Authentication Configuration Process Works
 
