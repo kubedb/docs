@@ -58,7 +58,7 @@ Now, we are going to deploy a `Ignite` cluster using a supported version by `Kub
 
 #### Deploy Ignite Cluster
 
-In this section, we are going to deploy a Ignite cluster with version `2.17.0`.  Then, in the next section we will set up autoscaling for this database using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite cluster with version `2.18.0`.  Then, in the next section we will set up autoscaling for this database using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 > If you want to autoscale Ignite `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -69,7 +69,7 @@ metadata:
   name: ignite-autoscale
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 3
   storage:
     accessModes:
@@ -109,7 +109,7 @@ Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get ignite -n demo
 NAME                 VERSION   STATUS   AGE
-ignite-autoscale     2.17.0    Ready    3m46s
+ignite-autoscale     2.18.0    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
@@ -141,7 +141,7 @@ In order to set up vertical autoscaling for this replicaset database, we have to
 apiVersion: autoscaling.kubedb.com/v1alpha1
 kind: IgniteAutoscaler
 metadata:
-  name: ignite-storage-autosclaer
+  name: ignite-storage-autoscaler
   namespace: demo
 spec:
   databaseRef:
@@ -159,14 +159,14 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `ignite-autoscale` database.
 - `spec.storage.ignite.trigger` specifies that storage autoscaling is enabled for this database.
 - `spec.storage.ignite.usageThreshold` specifies storage usage threshold, if storage usage exceeds `20%` then storage autoscaling will be triggered.
-- `spec.storage.ignite.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `20%` of the current amount.
-- `spec.storage.ignite.expansionMode` specifies the expansion mode of volume expansion `igniteOpsRequest` created by `igniteAutoscaler`. topolvm-provisioner supports online volume expansion so here `expansionMode` is set as "Online".
+- `spec.storage.ignite.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `30%` of the current amount.
+- `spec.storage.ignite.expansionMode` specifies the expansion mode of volume expansion `igniteOpsRequest` created by `igniteAutoscaler`. topolvm-provisioner supports online volume expansion so here `expansionMode` is set as "Offline".
 
 Let's create the `igniteAutoscaler` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/ignite/autoscaler/storage/cluster/examples/ig-storage-autoscale-ops.yaml
-igniteautoscaler.autoscaling.kubedb.com/ignite-storage-autosclaer created
+igniteautoscaler.autoscaling.kubedb.com/ignite-storage-autoscaler created
 ```
 
 #### Storage Autoscaling is set up successfully
@@ -176,10 +176,10 @@ Let's check that the `igniteautoscaler` resource is created successfully,
 ```bash
 $ kubectl get igniteautoscaler -n demo
 NAME                          AGE
-ignite-storage-autosclaer   33s
+ignite-storage-autoscaler   33s
 
 $ kubectl describe igniteautoscaler ignite-storage-autoscaler -n demo
-Name:         ignite-storage-autosclaer
+Name:         ignite-storage-autoscaler
 Namespace:    demo
 Labels:       <none>
 Annotations:  API Version:  autoscaling.kubedb.com/v1alpha1
@@ -196,7 +196,7 @@ Spec:
     Name:  ignite-autoscale
   Storage:
     ignite:
-      Scaling Threshold:  20
+      Scaling Threshold:  30
       Trigger:            On
       Usage Threshold:    20
 Events:                   <none>
@@ -242,7 +242,7 @@ Metadata:
     Block Owner Deletion:  true
     Controller:            true
     Kind:                  igniteAutoscaler
-    Name:                  ignite-storage-autosclaer
+    Name:                  ignite-storage-autoscaler
     UID:                   4f45a3b3-fc72-4d04-b52c-a770944311f6
   Resource Version:        25557
   UID:                     90763a49-a03f-407c-a233-fb20c4ab57d7
@@ -308,6 +308,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete ignite -n demo ignite-autoscale
-kubectl delete igniteautoscaler -n demo igops-ignite-autoscale-xojkua
+kubectl delete igniteautoscaler -n demo ignite-storage-autoscaler
 kubectl delete ns demo
 ```

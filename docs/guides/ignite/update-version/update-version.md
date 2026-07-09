@@ -23,8 +23,8 @@ This guide will show you how to use `KubeDB` Ops-manager operator to update the 
 - Install `KubeDB` Provisioner and Ops-manager operator in your cluster following the steps [here](/docs/setup/README.md).
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Ignite](/docs/guides/ignite/concepts/ignite/index.md)
-    - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest/index.md)
+    - [Ignite](/docs/guides/ignite/concepts/ignite.md)
+    - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest.md)
     - [Updating Overview](/docs/guides/ignite/update-version/overview.md)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Ignite Cluster
 
-Now, we are going to deploy an `Ignite` cluster with version `2.16.0`.
+Now, we are going to deploy an `Ignite` cluster with version `2.17.0`.
 
 ### Deploy Ignite
 
@@ -51,7 +51,7 @@ metadata:
   name: ignite-quickstart
   namespace: demo
 spec:
-  version: "2.16.0"
+  version: "2.17.0"
   replicas: 3
   storage:
     resources:
@@ -75,14 +75,14 @@ Now, wait until `ignite-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get ignite -n demo
 NAME                VERSION    STATUS    AGE
-ignite-quickstart   2.16.0     Ready     109s
+ignite-quickstart   2.17.0     Ready     109s
 ```
 
 We are now ready to apply the `IgniteOpsRequest` CR to update this database.
 
 ### Update Ignite Version
 
-Here, we are going to update `Ignite` cluster from `2.16.0` to `2.17.0`.
+Here, we are going to update `Ignite` cluster from `2.17.0` to `2.18.0`.
 
 #### Create IgniteOpsRequest:
 
@@ -99,7 +99,7 @@ spec:
     name: ignite-quickstart
   type: UpdateVersion
   updateVersion:
-    targetVersion: 2.17.0
+    targetVersion: 2.18.0
   timeout: 5m
   apply: IfReady
 ```
@@ -108,8 +108,8 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `ignite-quickstart` Ignite database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `2.17.0`.
-- Have a look [here](/docs/guides/ignite/concepts/opsrequest/index.md#spectimeout) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `2.18.0`.
+- Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
 
@@ -153,7 +153,7 @@ Spec:
   Timeout:  5m
   Type:     UpdateVersion
   Update Version:
-    Target Version:  2.17.0
+    Target Version:  2.18.0
 Status:
   Conditions:
     Last Transition Time:  2024-10-23T10:46:27Z
@@ -240,13 +240,13 @@ Now, we are going to verify whether the `Ignite` and the related `PetSets` and t
 
 ```bash
 $ kubectl get ignite -n demo ignite-quickstart -o=jsonpath='{.spec.version}{"\n"}'
-2.17.0
+2.18.0
 
 $ kubectl get petset -n demo ignite-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/ignite:2.17.0
+ghcr.io/appscode-images/ignite:2.18.0
 
 $ kubectl get pods -n demo ignite-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/ignite:2.17.0
+ghcr.io/appscode-images/ignite:2.18.0
 ```
 
 You can see from above, our `Ignite` cluster has been updated with the new version. So, the updateVersion process is successfully completed.

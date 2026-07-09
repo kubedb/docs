@@ -197,3 +197,5 @@ A `IgniteOpsRequest` object has the following fields in the `spec` section.
 - `Reconfigure`
 - `ReconfigureTLS`
 - `Restart`
+- `RotateAuth`
+- `StorageMigration`

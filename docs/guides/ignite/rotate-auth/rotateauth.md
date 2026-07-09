@@ -19,8 +19,8 @@ section_menu_id: guides
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Ignite](/docs/guides/ignite/concepts/ignite/index.md)
-    - [IgniteOpsRequest](/docs/guides/ignite/concepts/ignite/index.md)
+    - [Ignite](/docs/guides/ignite/concepts/ignite.md)
+    - [IgniteOpsRequest](/docs/guides/ignite/concepts/opsrequest.md)
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
@@ -45,7 +45,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 2.17.0
+  version: 2.18.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -65,13 +65,13 @@ Now, wait until ignite-quickstart has status Ready. i.e,
 ```shell
 $ kubectl get ignite -n demo -w
 NAME            VERSION   STATUS   AGE
-ignite-quickstart   2.16.0    Ready    30m
+ignite-quickstart   2.18.0    Ready    30m
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
 
 ````shell
-$ ubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
+$ kubectl get ignite -n demo ignite-quickstart -ojson | jq .spec.authSecret.name
 "ignite-quickstart-auth"
 $  kubectl get secret -n demo ignite-quickstart-auth -o=jsonpath='{.data.username}' | base64 -d
 ignite⏎                                                                                    

@@ -112,7 +112,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 2.17.0
+  version: 2.18.0
   configuration:
     secretName: ignite-configuration
   storage:
@@ -132,7 +132,7 @@ Check if the database is ready
 ```bash
 $ kubectl get ig -n demo
 NAME               VERSION   STATUS   AGE
-custom-ignite      2.17.0    Ready    17m
+custom-ignite      2.18.0    Ready    17m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
