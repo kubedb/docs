@@ -1,9 +1,9 @@
 ---
-title: Migration CRD
+title: MariaDBMigration CRD
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-concepts-migrator
-    name: Migration
+    name: MariaDBMigration
     parent: guides-mariadb-concepts
     weight: 60
 menu_name: docs_{{ .version }}
@@ -12,63 +12,61 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Migration
+# MariaDBMigration
 
-## What is Migration
+## What is MariaDBMigration
 
-`Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
+`MariaDBMigration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on an external or managed instance — into a
-KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
+KubeDB-managed database. You only need to describe the source and target databases in a `MariaDBMigration`
 object, and the kubedb-courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
-`Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and
-`spec.target` each carry a per-database sub-spec (`mysql`, `mariadb`, `postgres`, `mongodb`). This
-page describes the `Migration` object for a **MariaDB** source and target.
+`MariaDBMigration` is the MariaDB-specific migration CRD (`courier.kubedb.com/v1alpha1`) whose
+`spec.source` and `spec.target` describe the MariaDB source and target directly. This page describes
+the `MariaDBMigration` object for a **MariaDB** source and target.
 
-## Migration Spec
+## MariaDBMigration Spec
 
-As with all other Kubernetes objects, a `Migration` needs `apiVersion`, `kind`, and `metadata`
-fields. It also needs a `.spec` section. Below is an example `Migration` object for migrating a
+As with all other Kubernetes objects, a `MariaDBMigration` needs `apiVersion`, `kind`, and `metadata`
+fields. It also needs a `.spec` section. Below is an example `MariaDBMigration` object for migrating a
 MariaDB database.
 
 ```yaml
 apiVersion: courier.kubedb.com/v1alpha1
-kind: Migration
+kind: MariaDBMigration
 metadata:
   name: mariadb-migrate
   namespace: demo
 spec:
   source:
-    mariadb:
-      connectionInfo:
-        appBinding:
-          name: source-mariadb
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
-      schema:
-        enabled: true
-        database: [] # databases to include
-        excludeDatabase: [] # databases to exclude
-      snapshot:
-        enabled: true
-        pipeline:
-          workers: 3
-          sinkers: 4
-          buffer: 12
-          read_batch_size: 1000
-          write_batch_size: 200
-      streaming:
-        enabled: true
+    connectionInfo:
+      appBinding:
+        name: source-mariadb
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
+    schema:
+      enabled: true
+      database: [] # databases to include
+      excludeDatabase: [] # databases to exclude
+    snapshot:
+      enabled: true
+      pipeline:
+        workers: 3
+        sinkers: 4
+        buffer: 12
+        read_batch_size: 1000
+        write_batch_size: 200
+    streaming:
+      enabled: true
   target:
-    mariadb:
-      connectionInfo:
-        appBinding:
-          name: target-mariadb
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
+    connectionInfo:
+      appBinding:
+        name: target-mariadb
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
   jobDefaults:
     imagePullPolicy: IfNotPresent
     backoffLimit: 6
@@ -82,17 +80,17 @@ spec:
 
 ### spec.source
 
-`spec.source` is a required field that describes the database being migrated **from**. It holds a
-per-database sub-spec; for a MariaDB migration you set `spec.source.mariadb`.
+`spec.source` is a required field that describes the database being migrated **from**. It holds the
+MariaDB source fields (`connectionInfo`, `schema`, `snapshot`, `streaming`) directly.
 
 ### spec.target
 
 `spec.target` is a required field that describes the KubeDB-managed database being migrated **into**.
-It holds a per-database sub-spec; for a MariaDB migration you set `spec.target.mariadb`.
+It holds the MariaDB target fields directly.
 
-### spec.source.mariadb.connectionInfo
+### spec.source.connectionInfo
 
-`connectionInfo` (also under `spec.target.mariadb`) tells the Migration how to connect to the MariaDB
+`connectionInfo` (also under `spec.target`) tells the MariaDBMigration how to connect to the MariaDB
 instance. There are two ways to provide the connection details — set **either** `appBinding` **or**
 `url`:
 
@@ -118,7 +116,7 @@ instance. There are two ways to provide the connection details — set **either*
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
 > create one for the source. Learn more about [AppBinding](/docs/guides/mariadb/concepts/appbinding/).
 
-### spec.source.mariadb.schema
+### spec.source.schema
 
 `schema` configures the schema migration phase, which recreates database and table definitions on the
 target before any data is copied.
@@ -128,7 +126,7 @@ target before any data is copied.
   databases (`mysql`, `information_schema`, `performance_schema`, `sys`).
 - `excludeDatabase` — list of databases to exclude from migration.
 
-### spec.source.mariadb.snapshot
+### spec.source.snapshot
 
 `snapshot` configures the initial bulk snapshot phase, which copies the existing rows from the source
 to the target.
@@ -143,7 +141,7 @@ to the target.
   - `read_batch_size` — number of rows fetched per read batch from the source. Defaults to `5000`.
   - `write_batch_size` — number of rows written per batch to the target. Defaults to `500`.
 
-### spec.source.mariadb.streaming
+### spec.source.streaming
 
 `streaming` configures the change-data-capture (CDC) phase.
 
@@ -166,7 +164,7 @@ to the target.
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## MariaDBMigration Status
 
 `status` reflects the observed state of the migration.
 
@@ -178,7 +176,7 @@ to the target.
 - `status.progress` — the current progress of the migration:
   - `dbType` — the type of database being migrated.
   - `info` — additional progress information, including the current `Stage`, `Lag`, and `Progress`
-    (these are surfaced as columns in `kubectl get migration`).
+    (these are surfaced as columns in `kubectl get mariadbmigrations`).
 - `status.conditions` — an array of conditions describing the migration's state over time (for
   example, `MigratorJobTriggered`, `MigrationRunning`, `MigrationSucceeded`, `MigrationFailed`).
 
