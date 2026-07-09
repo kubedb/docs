@@ -120,7 +120,7 @@ metadata:
   namespace: demo
 spec:
   version: "2.17.0"
-  replicas: 1
+  replicas: 3
   deletionPolicy: WipeOut
   podTemplate:
     spec:

@@ -281,9 +281,9 @@ After importing all files, they will appear under `Dashboards` in the left sideb
 
 | Dashboard Name                    | Description                                                                                      |
 |-----------------------------------|--------------------------------------------------------------------------------------------------|
-| KubeDB / MariaDB / Summary        | Instance overview: connections, QPS, slow queries, aborted connections, CPU/memory/storage       |
-| KubeDB / MariaDB / Pod            | Per-pod connections, threads, CPU/memory usage, table lock contention                            |
-| KubeDB / MariaDB / Database       | InnoDB buffer pool, row operations, query cache, temporary tables, handler statistics            |
+| KubeDB / MariaDB / Summary        | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage       |
+| KubeDB / MariaDB / Pod            | Per-pod summary, CPU/memory/file descriptor stats, connections, client threads                   |
+| KubeDB / MariaDB / Database       | Service status/uptime, cluster size/status, QPS, connections, disk and network I/O               |
 | KubeDB / MariaDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, commit/cert failure rate |
 
 ## Step 6: Explore the Dashboard
@@ -297,33 +297,34 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 | **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view              |
 
 **KubeDB / MariaDB / Summary** — start here for an instance overview:
-- **Version / Uptime** — MariaDB version and how long the server has been running
-- **Connections** — max connections configured vs. current active connections
-- **Questions per Second** — total query throughput
-- **Slow Queries** — queries exceeding the `long_query_time` threshold
-- **Aborted Clients / Connections** — network or authentication failures
-- **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
+- **Database Status / Version** — current health of the instance and MariaDB version running
+- **Require Secure Transport / Deletion Policy** — whether TLS is enforced and the cleanup policy for the instance
+- **Total Nodes** — number of replicas in the instance
+- **CPU / Memory / Storage Request & Limit** — configured resource requests and limits
+- **CPU Info / CPU Quota** — CPU usage over time and per-pod quota utilization
+- **Memory Info** — memory usage over time and per-pod quota utilization
 
 <p align="center">
   <img alt="KubeDB MariaDB Summary Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-summary.png" style="padding:10px">
 </p>
 
 **KubeDB / MariaDB / Pod** — drill into a specific pod:
-- **Connections / Questions / Slow Queries** — per-pod query metrics
-- **Thread Count** — running and connected threads
-- **CPU / Memory** — per-pod resource usage
-- **Table Locks Waited / Immediate** — lock contention indicator
+- **Pod Summary** — pod name, MySQL uptime, version, current QPS, InnoDB buffer pool size
+- **CPU, Memory and File Descriptor Stats** — per-pod CPU usage, memory usage, and open file descriptors
+- **Connections** — MySQL connections and aborted connections
+- **Client Threads** — client thread activity and thread cache
 
 <p align="center">
   <img alt="KubeDB MariaDB Pod Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / MariaDB / Database** — storage engine and query cache metrics:
-- **InnoDB Buffer Pool** — reads and writes through the buffer pool
-- **InnoDB Row Operations** — read, insert, update, delete rows per second
-- **Query Cache** — hits vs. inserts (if query cache is enabled)
-- **Temporary Tables** — tables created on disk vs. in memory
-- **Handler Statistics** — low-level read operations per index
+**KubeDB / MariaDB / Database** — cluster and query metrics:
+- **Service Status / Uptime** — per-pod health and how long each pod has been serving
+- **Cluster Size / Cluster Status** — number of nodes and Galera cluster state (Primary/Non-Primary)
+- **Current QPS** — query throughput
+- **MySQL Connections** — current vs. max connections
+- **MySQL Disk Reads vs Writes** — disk I/O throughput
+- **MySQL Network Received vs Sent** — network throughput
 
 <p align="center">
   <img alt="KubeDB MariaDB Database Dashboard" src="/docs/images/mariadb/monitoring/mariadb-grafana-database.png" style="padding:10px">

@@ -265,21 +265,19 @@ After importing all three files, they will appear under **Dashboards** in the le
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to     | What to select                                            |
-|---------------|----------------|-----------------------------------------------------------|
-| **namespace** | All dashboards | Namespace where your Neo4j is deployed (e.g., `demo`)    |
-| **app**       | All dashboards | Name of your instance (e.g., `neo4j-grafana-demo`)       |
-| **pod**       | Pod dashboard  | A specific pod, or `All` for an aggregated view          |
-| **database**  | Pod, Database  | Target database name                                      |
+| Variable      | Applies to              | What to select                                             |
+|---------------|--------------------------|-------------------------------------------------------------|
+| **namespace** | All dashboards           | Namespace where your Neo4j is deployed (e.g., `demo`)      |
+| **Neo4j**     | All dashboards           | Name of your instance (e.g., `neo4j-grafana-demo`)         |
+| **pod**       | Pod dashboard             | A specific pod (e.g., `neo4j-grafana-demo-0`)              |
+| **database**  | Pod, Database dashboards | Target database name (e.g., `neo4j`, `system`)             |
+| **leader**    | Pod, Database dashboards | The pod currently holding cluster leadership                |
 
 **KubeDB / Neo4j / Summary** — instance-level overview:
 
-- **Database Status** — current health of the Neo4j instance
-- **Version** — Neo4j version running
-- **Total Nodes** — number of node pods in the instance
-- **Deletion Policy** — configured deletion policy
-- **CPU Usage** — CPU consumption over time per pod
-- **CPU Quota** — CPU usage vs. requests per pod
+- **General Info** — database status, version, whether secure transport is required, deletion policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
 
 <p align="center">
   <img alt="KubeDB Neo4j Summary Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-summary.png" style="padding:10px">
@@ -287,12 +285,9 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 **KubeDB / Neo4j / Pod** — per-pod drill-down:
 
-- **Status** — current health status of the selected pod
-- **Uptime** — how long this pod has been running
-- **Connections** — number of active Bolt connections on this pod
-- **Total Memory Used** — JVM and native memory consumed
-- **Average CPU Usage** — CPU utilization over time
-- **Transactions** — committed write transactions and transaction rates
+- **Neo4j** — status, uptime, and active Bolt connections for the selected pod
+- **CPU And Memory Usage Stats** — total memory used and average CPU usage over time
+- **Transactions** — last committed write transaction ID, committed transaction speed, property creation speed, rolled-back transaction speed, committed transaction rate
 
 <p align="center">
   <img alt="KubeDB Neo4j Pod Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-pod.png" style="padding:10px">
@@ -300,13 +295,9 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 **KubeDB / Neo4j / Database** — graph database metrics:
 
-- **Uptime** — how long the database has been available
-- **Nodes** — total nodes stored in the database
-- **Relationships** — total relationships stored
-- **Total Memory Used** — memory consumed by the database
-- **Average CPU Usage** — CPU usage over time
-- **Committed Transaction Rate** — rate of committed write transactions
-- **Committed Write Transaction Rate** — write throughput over time
+- **Neo4j** — uptime, node count, and relationship count for the selected database
+- **CPU And Memory Usage Stats** — total memory used and average CPU usage over time
+- **Transactions** — last committed write transaction ID, committed transaction rate, committed write transaction rate
 
 <p align="center">
   <img alt="KubeDB Neo4j Database Dashboard" src="/docs/images/neo4j/monitoring/neo4j-grafana-database.png" style="padding:10px">

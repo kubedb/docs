@@ -278,50 +278,45 @@ After importing all three files, they will appear under `Dashboards` in the left
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / MongoDB / Summary | Replica set health, uptime, connections, opcounters, replication lag, CPU/memory/storage |
-| KubeDB / MongoDB / Pod | Per-pod op counters, connections, CPU/memory, lock percentage, page faults |
-| KubeDB / MongoDB / Database (ReplicaSet) | Replication lag, oplog window, election count, rollback count, network bytes per member |
+| KubeDB / MongoDB / Summary | Database status, uptime, version, node count, resource requests/limits, CPU/memory usage |
+| KubeDB / MongoDB / Pod | Per-pod uptime, QPS, latency, command operations, connections, cursors |
+| KubeDB / MongoDB / Database (ReplicaSet) | Replica set state, member count, last election, replication lag, oplog metrics |
 
 ## Step 6: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to              | What to select                                            |
-|---------------|-------------------------|-----------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your MongoDB is deployed (e.g., `demo`)  |
-| **app**       | All dashboards          | Name of your MongoDB instance (e.g., `mg-grafana-demo`)  |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view          |
+| Variable        | Applies to                | What to select                                                |
+|------------------|---------------------------|----------------------------------------------------------------|
+| **namespace**    | All dashboards             | Namespace where your MongoDB is deployed (e.g., `demo`)       |
+| **MongoDB**      | Summary, Pod dashboards    | Name of your MongoDB instance (e.g., `mg-grafana-demo`)       |
+| **pod**          | Pod, Database dashboards   | A specific pod (e.g., `mg-grafana-demo-0`)                    |
+| **Replica Set**  | Database dashboard         | The replica set to inspect (e.g., `rs0`)                      |
 
-**KubeDB / MongoDB / Summary** — start here for a health overview:
-- **Replica Set Health** — primary/secondary status across members
-- **Uptime** — how long the instance has been running
-- **Connections** — current vs. available connections
-- **Opcounters** — insert, query, update, delete, getmore rates
-- **Replication Lag** — lag of secondaries behind the primary
-- **CPU / Memory / Storage** — resource consumption vs. requests and limits
-- **Network** — bytes in/out per second
+**KubeDB / MongoDB / Summary** — start here for an instance overview:
+- **General Info** — database status, up-time, version, total nodes, deletion policy
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — CPU usage over time and per-pod quota utilization
+- **Memory Info** — memory usage over time and per-pod quota utilization
 
 <p align="center">
   <img alt="KubeDB MongoDB Summary Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-summary.png" style="padding:10px">
 </p>
 
 **KubeDB / MongoDB / Pod** — drill into a specific pod:
-- **Op Counters** — per-pod insert/query/update/delete rate
-- **Connections** — connections on this specific pod
-- **CPU / Memory** — per-pod resource usage
-- **Lock Percentage** — global lock held ratio
-- **Page Faults** — memory pressure indicator
+- **Overview** — pod name, uptime, QPS, latency
+- **Command Operations** — query/update operation rate
+- **Latency Detail** — read and write latency
+- **Connections / Cursors** — active connections and open cursors on this pod
 
 <p align="center">
   <img alt="KubeDB MongoDB Pod Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-pod.png" style="padding:10px">
 </p>
 
 **KubeDB / MongoDB / Database (ReplicaSet)** — replication health:
-- **Replication Lag** — per-member lag behind primary
-- **Oplog Window** — available oplog retention window
-- **Election Count** — number of elections (spikes indicate instability)
-- **Rollback Count** — number of rollbacks (should be zero in healthy clusters)
-- **Network Bytes In/Out** — replication traffic per member
+- **Overview** — replica set state, member count, time since last election, replication lag, storage engine
+- **Replication Info** — replication operations (insert/delete) and replication lag over time
+- **Oplog Info** — oplog getmore time, oplog buffer capacity, oplog operations, buffered operations
 
 <p align="center">
   <img alt="KubeDB MongoDB Database Dashboard" src="/docs/images/mongodb/monitoring/mg-grafana-database.png" style="padding:10px">

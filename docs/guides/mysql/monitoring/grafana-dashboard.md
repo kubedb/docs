@@ -281,10 +281,10 @@ After importing all files, they will appear under `Dashboards` in the left sideb
 
 | Dashboard Name                        | Description                                                                                        |
 |---------------------------------------|----------------------------------------------------------------------------------------------------|
-| KubeDB / MySQL / Summary              | Instance overview: connections, QPS, slow queries, InnoDB buffer pool hit rate, CPU/memory/storage |
-| KubeDB / MySQL / Pod                  | Per-pod threads, questions, table locks, InnoDB row throughput, CPU/memory usage                   |
-| KubeDB / MySQL / Database             | InnoDB buffer pool, log writes, temporary tables, handler read operations, query cache             |
-| KubeDB / MySQL / Group Replication    | Group member count/state, transaction lag, flow control, certified transaction throughput          |
+| KubeDB / MySQL / Summary              | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage         |
+| KubeDB / MySQL / Pod                  | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections                     |
+| KubeDB / MySQL / Database             | Per-pod service status/uptime, QPS, connections, disk and network I/O                              |
+| KubeDB / MySQL / Group Replication    | Group member status and primary node, replication lag, transport time                              |
 
 ## Step 6: Explore the Dashboard
 
@@ -293,50 +293,45 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 | Variable      | Applies to              | What to select                                              |
 |---------------|-------------------------|-------------------------------------------------------------|
 | **namespace** | All dashboards          | Namespace where your MySQL is deployed (e.g., `demo`)      |
-| **app**       | All dashboards          | Name of your MySQL instance (e.g., `mysql-grafana-demo`)   |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view            |
+| **MySQL**     | All dashboards          | Name of your MySQL instance (e.g., `mysql-grafana-demo`)   |
+| **pod**       | Pod dashboard            | A specific pod, or `All` for an aggregated view            |
 
 **KubeDB / MySQL / Summary** — start here for an instance overview:
-- **Version / Uptime** — MySQL version and server uptime
-- **Connections** — max connections vs. current active, aborted connections
-- **Questions per Second** — total query throughput
-- **Slow Queries** — queries exceeding the slow query threshold
-- **InnoDB Buffer Pool Hit Rate** — aim for > 99%; low values indicate insufficient buffer pool size
-- **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
+- **General Info** — database status, version, user address type, whether secure transport is required, deletion policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
+- **Memory Info** — memory usage over time and per-pod quota utilization
 
 <p align="center">
   <img alt="KubeDB MySQL Summary Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-summary.png" style="padding:10px">
 </p>
 
-
 **KubeDB / MySQL / Pod** — drill into a specific pod:
-- **Thread Count** — running and connected threads per pod
-- **Questions / Slow Queries** — per-pod query metrics
-- **Table Locks** — lock waits vs. immediate lock acquisitions
-- **InnoDB Rows Read / Written** — row-level throughput per pod
-- **CPU / Memory** — per-pod resource usage
+- **MySQL Pod Summary** — pod name, uptime, version, current QPS, InnoDB buffer pool size per pod
+- **Pod CPU, Memory and File Descriptor Stats** — per-pod CPU usage, memory usage, open file descriptors
+- **Connections** — MySQL connections and aborted connections
+- **Client Threads** — client thread activity and thread cache
 
 <p align="center">
   <img alt="KubeDB MySQL Pod Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / MySQL / Database** — InnoDB storage engine metrics:
-- **InnoDB Buffer Pool** — data read/written, dirty pages, free pages
-- **InnoDB Log Writes** — WAL write throughput
-- **Temporary Tables** — created on disk vs. in memory
-- **Handler Read Operations** — index scan efficiency
-- **Query Cache** — cache hit ratio (if query cache is enabled)
+**KubeDB / MySQL / Database** — per-pod service and throughput metrics:
+- **Service Status / Uptime** — per-pod health and how long each pod has been serving
+- **Current QPS** — query throughput per pod
+- **MySQL Connections** — current vs. max connections per pod
+- **MySQL Disk Reads vs Writes** — per-pod disk I/O throughput
+- **MySQL Network Received vs Sent** — per-pod network throughput
 
 <p align="center">
   <img alt="KubeDB MySQL Database Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-database.png" style="padding:10px">
 </p>
 
 **KubeDB / MySQL / Group Replication** — replication group health:
-- **Member Count** — number of group members
-- **Member State** — ONLINE, RECOVERING, or ERROR per member
-- **Transaction Lag** — certified transactions waiting to be applied
-- **Flow Control Count** — times flow control was triggered (high counts indicate a lagging member)
-- **Certified Transactions** — per-member certification throughput
+- **Group Replication Node Title** — ONLINE/OFFLINE status of each member
+- **Primary Node** — which member currently holds the PRIMARY role
+- **Replication Lag** — per-member lag behind the primary
+- **Transport Time / Replication Delay** — time spent transporting and applying transactions
 
 <p align="center">
   <img alt="KubeDB MySQL Group Replication Dashboard" src="/docs/images/mysql/monitoring/mysql-grafana-group-replication.png" style="padding:10px">

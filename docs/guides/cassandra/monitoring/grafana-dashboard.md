@@ -123,7 +123,7 @@ spec:
   topology:
     rack:
       - name: r0
-        replicas: 1
+        replicas: 3
         storage:
           accessModes:
             - ReadWriteOnce
@@ -256,12 +256,13 @@ For a standalone Grafana installation:
 
 The KubeDB Cassandra dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-Two dashboards are available. Download both JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/cassandra) repository (`cassandra/` folder):
+Three dashboards are available. Download all three JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/cassandra) repository (`cassandra/` folder):
 
 | File | Dashboard |
 |------|-----------|
 | `cassandra_summary_dashboard.json` | KubeDB / Cassandra / Summary |
 | `cassandra_databases_dashboard.json` | KubeDB / Cassandra / Database |
+| `cassandra_pod_dashboard.json` | KubeDB / Cassandra / Pod |
 
 **Import steps (repeat for each file):**
 
@@ -287,6 +288,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 |---------------|----------------|-------------------------------------------------------------------|
 | **namespace** | All dashboards | Namespace where your Cassandra is deployed (e.g., `demo`)        |
 | **app**       | All dashboards | Name of your instance (e.g., `cassandra-grafana-demo`)           |
+| **pod**       | Pod dashboard  | A specific pod, or `All` for an aggregated view                  |
 
 **KubeDB / Cassandra / Summary** — cluster-level overview:
 - **Database Status** — current health of the Cassandra cluster
@@ -309,6 +311,16 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 <p align="center">
   <img alt="KubeDB Cassandra Database Dashboard" src="/docs/images/cassandra/monitoring/cas-grafana-database.png" style="padding:10px">
+</p>
+
+**KubeDB / Cassandra / Pod** — per-pod operational metrics, scoped to a single Cassandra pod:
+- **Node status** — whether the selected pod's Cassandra node is up
+- **Cluster ops** — operations per second broken down by type (Read, Write, CasRead, CasWrite, RangeSlice, ViewWrite)
+- **Operations per instance** — operations per second aggregated per pod
+- **Read / Write operations** — read and write throughput for the selected pod
+
+<p align="center">
+  <img alt="KubeDB Cassandra Pod Dashboard" src="/docs/images/cassandra/monitoring/cas-grafana-pod.png" style="padding:10px">
 </p>
 
 ## Cleaning up

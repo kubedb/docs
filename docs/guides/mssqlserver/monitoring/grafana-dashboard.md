@@ -313,48 +313,46 @@ After importing all three files, they will appear under `Dashboards` in the left
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / MSSQLServer / Summary | Instance status, connections, batch requests/sec, page reads/writes, CPU/memory/storage |
-| KubeDB / MSSQLServer / Pod | Per-pod batch requests, connections, CPU/memory, lock waits |
-| KubeDB / MSSQLServer / Database | Database-level transactions/sec, log flushes, data file size, active connections per DB |
+| KubeDB / MSSQLServer / Summary | Instance status, version, node count, resource requests/limits, CPU usage |
+| KubeDB / MSSQLServer / Pod | Per-pod status, role (Primary/Secondary), uptime, server resource overview, connections |
+| KubeDB / MSSQLServer / Database | Service status/uptime, AG cluster replica roles, cluster status, SQL compilations, batch requests |
 
 ## Step 6: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to              | What to select                                                  |
-|---------------|-------------------------|-----------------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your MSSQLServer is deployed (e.g., `demo`)    |
-| **app**       | All dashboards          | Name of your instance (e.g., `mssql-grafana-demo`)             |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view                |
+| Variable        | Applies to        | What to select                                                  |
+|------------------|--------------------|-------------------------------------------------------------------|
+| **Namespace**    | All dashboards     | Namespace where your MSSQLServer is deployed (e.g., `demo`)      |
+| **mssqlserver**  | All dashboards     | Name of your instance (e.g., `mssql-grafana-demo`)               |
+| **Pod Name**     | Pod dashboard      | A specific pod (e.g., `mssql-grafana-demo-0`)                    |
+| **Job / database** | Pod dashboard   | The stats job and target database to inspect                     |
 
 **KubeDB / MSSQLServer / Summary** — start here for an instance overview:
-- **Uptime** — how long the SQL Server instance has been running
-- **Connections** — current active user connections
-- **Batch Requests per Second** — total T-SQL batch request throughput
-- **Page Life Expectancy** — seconds a page stays in the buffer pool without being referenced; aim for > 300
-- **Buffer Cache Hit Ratio** — data pages found in memory vs. read from disk; aim for > 99%
-- **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
+- **General Info** — database status, version, whether secure transport is required, deletion policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
 
 <p align="center">
   <img alt="KubeDB MSSQLServer Summary Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-summary.png" style="padding:10px">
-<p>
+</p>
+
 **KubeDB / MSSQLServer / Pod** — drill into a specific pod:
-- **Connections** — active connections on this pod
-- **Batch Requests** — T-SQL batch throughput on this pod
-- **Lock Waits per Second** — lock contention indicator
-- **SQL Compilations** — query compilations per second (high values may indicate missing indexes or excessive ad-hoc queries)
-- **CPU / Memory** — per-pod resource usage
+- **Pod Name / Status / Role / Uptime** — pod identity, running status, Availability Group role (Primary/Secondary), and uptime
+- **Server Resource Overview** — server local time, total and used RAM, pagefile size and usage
+- **Server Resource Overview (2)** — total page faults, batch requests/sec, page life expectancy, deadlocks, user errors/sec, kill connection errors/sec
+- **Summary** — current database connections, log growth since last restart, total I/O stall wait time
 
 <p align="center">
   <img alt="KubeDB MSSQLServer Pod Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / MSSQLServer / Database** — per-database metrics:
-- **Database State** — ONLINE, OFFLINE, RECOVERING, etc. per database
-- **Log Space Used %** — transaction log utilization per database
-- **Data File Size** — total data file size per database
-- **Transactions per Second** — commit throughput per database
-- **Deadlocks per Second** — deadlock frequency per database
+**KubeDB / MSSQLServer / Database** — Availability Group cluster health:
+- **Service Status / Uptime** — per-pod health and how long each pod has been serving
+- **AG Cluster Active Replica** — which pod is acting as the active replica
+- **Cluster Status** — count of Primary vs. Secondary replicas
+- **SQL Compilations/sec** — per-pod query compilation rate
+- **Batch Requests per Second** — per-pod T-SQL batch throughput
 
 <p align="center">
   <img alt="KubeDB MSSQLServer Database Dashboard" src="/docs/images/mssqlserver/monitoring/ms-grafana-database.png" style="padding:10px">

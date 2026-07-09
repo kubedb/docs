@@ -280,65 +280,56 @@ After importing all four files, they will appear under `Dashboards` in the left 
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / PerconaXtraDB / Summary | Connections, QPS, slow queries, InnoDB buffer pool hit rate, CPU/memory/storage |
-| KubeDB / PerconaXtraDB / Pod | Per-pod threads, questions, table locks, InnoDB row throughput, CPU/memory |
-| KubeDB / PerconaXtraDB / Database | InnoDB buffer pool, log writes, temporary tables, handler read operations |
-| KubeDB / PerconaXtraDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, cert failures |
+| KubeDB / PerconaXtraDB / Summary | Instance overview: status, version, node count, resource requests/limits, CPU usage |
+| KubeDB / PerconaXtraDB / Pod | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections |
+| KubeDB / PerconaXtraDB / Database | Per-pod service status/uptime, cluster size/status, QPS, connections, disk and network I/O |
+| KubeDB / PerconaXtraDB / Galera Cluster | Cluster name, per-node online status, Galera replication latency |
 
 ## Step 6: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to              | What to select                                                  |
-|---------------|-------------------------|-----------------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your PerconaXtraDB is deployed (e.g., `demo`)  |
-| **app**       | All dashboards          | Name of your instance (e.g., `pxc-grafana-demo`)               |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view                |
+| Variable            | Applies to              | What to select                                                  |
+|----------------------|-------------------------|-----------------------------------------------------------------|
+| **namespace**         | All dashboards          | Namespace where your PerconaXtraDB is deployed (e.g., `demo`)  |
+| **PerconaXtraDB**     | All dashboards          | Name of your instance (e.g., `pxc-grafana-demo`)                |
+| **Pod**               | Pod dashboard            | A specific pod, or `All` for an aggregated view                 |
 
 **KubeDB / PerconaXtraDB / Summary** — start here for a cluster overview:
-- **Cluster Size** — number of nodes currently in the Galera cluster
-- **Node State** — Primary or Non-Primary status per node
-- **Connections** — active connections and max connections configured
-- **Queries per Second** — total query throughput across the cluster
-- **Slow Queries** — queries exceeding the slow query threshold
-- **InnoDB Buffer Pool Hit Rate** — aim for > 99%
-- **CPU / Memory / Storage / Network** — resource consumption vs. requests and limits
+- **General Info** — database status, version, whether secure transport is required, deletion policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
 
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Summary Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-summary.png" style="padding:10px">
 </p>
 
-
 **KubeDB / PerconaXtraDB / Pod** — drill into a specific node:
-- **wsrep_local_state** — per-pod Galera state (Synced, Joiner, Donor)
-- **Connections** — connections on this specific pod
-- **InnoDB Rows Read / Written** — per-pod row-level throughput
-- **CPU / Memory** — per-pod resource usage
+- **PerconaXtraDB Pod Summary** — pod name, MySQL uptime, version, current QPS, InnoDB buffer pool size per pod
+- **Pod CPU, Memory and File Descriptor Stats** — per-pod CPU usage, memory usage, open file descriptors
+- **Connections** — MySQL connections and aborted connections
+- **Client Threads** — client thread activity and thread cache
 
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Pod Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-pod.png" style="padding:10px">
 </p>
 
-
-**KubeDB / PerconaXtraDB / Database** — InnoDB storage engine metrics:
-- **InnoDB Buffer Pool** — usage breakdown (data, dirty, free pages)
-- **InnoDB Log Writes** — WAL write throughput
-- **Table Locks** — lock wait ratio
-- **Handler Statistics** — index scan patterns
-- **Temporary Tables** — disk vs. in-memory temporary table creation rate
+**KubeDB / PerconaXtraDB / Database** — cluster and query metrics:
+- **Service Status / Uptime** — per-pod health and how long each pod has been serving
+- **Cluster Size / Cluster Status** — number of nodes and Primary/Non-Primary state per node
+- **Current QPS** — query throughput
+- **MySQL Connections** — current vs. max connections
+- **MySQL Disk Reads vs Writes** — disk I/O throughput
+- **MySQL Network Received vs Sent** — network throughput
 
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Database Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-database.png" style="padding:10px">
 </p>
 
-
 **KubeDB / PerconaXtraDB / Galera Cluster** — Galera-specific metrics:
-- **Cluster Size** — nodes in the cluster (drops when a node leaves)
-- **wsrep_ready / wsrep_connected** — readiness per node
-- **Flow Control Paused %** — time replication was throttled per node; high values indicate a slow node
-- **Replication Bytes In/Out** — Galera write-set traffic per node
-- **Local Commits** — transactions committed locally per second
-- **Local Cert Failures** — certification conflicts (should be near zero)
+- **Cluster Name** — name of the Galera cluster
+- **Cluster Members** — ONLINE/OFFLINE status per node
+- **Replication Delay Details** — average and standard deviation of Galera replication latency per node
 
 <p align="center">
   <img alt="KubeDB PerconaXtraDB Galera Cluster Dashboard" src="/docs/images/percona-xtradb/monitoring/pxc-grafana-galera.png" style="padding:10px">

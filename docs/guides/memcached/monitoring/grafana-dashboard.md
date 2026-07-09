@@ -257,12 +257,13 @@ For a standalone Grafana installation:
 
 The KubeDB Memcached dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-Two dashboards are available. Download the JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/memcached) repository (`memcached/` folder):
+Three dashboards are available. Download the JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/memcached) repository (`memcached/` folder):
 
 | File | Dashboard |
 |------|-----------|
 | `memcached_summary_dashboard.json` | KubeDB / Memcached / Summary |
 | `memcached_pods_dashboard.json` | KubeDB / Memcached / Pod |
+| `memcached_databases_dashboard.json` | KubeDB / Memcached / Database |
 
 **Import steps (repeat for each file):**
 
@@ -284,34 +285,46 @@ After importing the files, they will appear under **Dashboards** in the left sid
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to     | What to select                                                |
-|---------------|----------------|---------------------------------------------------------------|
-| **namespace** | All dashboards | Namespace where your Memcached is deployed (e.g., `demo`)    |
-| **app**       | All dashboards | Name of your instance (e.g., `memcached-grafana-demo`)       |
-| **pod**       | Pod dashboard  | A specific pod, or `All` for an aggregated view              |
+| Variable       | Applies to        | What to select                                                |
+|----------------|-------------------|----------------------------------------------------------------|
+| **namespace**  | Summary dashboard | Namespace where your Memcached is deployed (e.g., `demo`)     |
+| **memcached**  | Summary dashboard | Name of your instance (e.g., `memcached-grafana-demo`)        |
+| **pod**        | Pod dashboard     | A specific pod, e.g. `memcached-grafana-demo-0`                |
+| **job**        | Database dashboard| The stats job for your instance, e.g. `memcached-grafana-demo-stats` |
 
 **KubeDB / Memcached / Summary** — instance-level overview:
-- **Database Status** — current health of the Memcached instance
-- **Version** — Memcached version running
-- **Current Connections** — number of active client connections
-- **Cache Hit Rate** — percentage of `get` requests served from cache (hits / (hits + misses))
-- **Evictions** — number of items evicted due to memory pressure
-- **Bytes Read / Written** — network throughput in and out
-- **CPU / Memory** — resource usage over time
+- **General Info** — database status, version, whether secure transport is required, deletion policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — CPU usage over time and per-pod quota utilization (usage vs. requests/limits)
 
 <p align="center">
   <img alt="KubeDB Memcached Summary Dashboard" src="/docs/images/memcached/monitoring/mc-grafana-summary.png" style="padding:10px">
 </p>
 
 **KubeDB / Memcached / Pod** — per-pod drill-down:
-- **Uptime** — how long this pod has been running
-- **Current Items** — number of items stored on this pod
-- **Cache Hit Rate** — per-pod cache effectiveness
-- **Bytes Used** — memory consumed vs. the configured limit
-- **CPU / Memory** — per-pod resource usage
+- **% Hit Ratio / % Get Ratio** — cache effectiveness for this pod
+- **Commands** — rate of `cas`, `decr`, `delete`, `flush`, `get`, `incr`, `set`, `touch` operations
+- **Connections** — active client connections on this pod
+- **Storage** — memory used vs. free
+- **Items** — number of items stored, used vs. free capacity
+- **Evictions / Reclaimed** — items evicted due to memory pressure vs. reclaimed from expired entries
+- **Network** — read and write throughput
 
 <p align="center">
   <img alt="KubeDB Memcached Pod Dashboard" src="/docs/images/memcached/monitoring/mc-grafana-pod.png" style="padding:10px">
+</p>
+
+**KubeDB / Memcached / Database** — instance health and throughput:
+- **Instance State** — whether the instance is UP or DOWN
+- **Up Time** — how long the instance has been running
+- **Connections** — current active connections
+- **QPS** — queries per second
+- **Memory Usage Ratio** — memory used as a percentage of the configured limit
+- **Items** — number of items currently stored
+- **QPS / Connections / Read-Write** — the same metrics plotted over time for trend analysis
+
+<p align="center">
+  <img alt="KubeDB Memcached Database Dashboard" src="/docs/images/memcached/monitoring/mc-grafana-database.png" style="padding:10px">
 </p>
 
 ## Cleaning up

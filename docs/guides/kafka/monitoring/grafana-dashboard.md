@@ -268,19 +268,19 @@ Six dashboards are available. Download the JSON files from the [appscode/grafana
 
 **Import steps (repeat for each file you need):**
 
-1. In Grafana, click the `+` icon in the left sidebar.
-2. Select `Import` from the menu.
-3. Click `Upload JSON file` and select one of the downloaded `.json` files.
-4. In the `Prometheus` dropdown that appears, select your Prometheus data source.
-5. Click `Import`.
+1. In Grafana, click **Dashboards** in the left sidebar.
+2. Select **Import** from the menu.
+3. Click **Upload dashboard JSON file** and select one of the downloaded `.json` files.
+4. In the **Prometheus** dropdown that appears, select your Prometheus data source.
+5. Click **Import**.
 
-The import page looks like this — click **Upload dashboard JSON file** to select the file:
+The import page looks like this:
 
 <p align="center">
   <img alt="Grafana Import Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-import.png" style="padding:10px">
 </p>
 
-After importing the files you need, they will appear under `Dashboards` in the left sidebar.
+After importing the files you need, they will appear under **Dashboards** in the left sidebar.
 
 | Dashboard Name | Description |
 |---|---|
