@@ -24,11 +24,11 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).  In this tutorial we will use private repository of [docker hub](https://hub.docker.com/).
 
-- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For ignite, push `DB_IMAGE`, `EXPORTER_IMAGE` of following IgniteVersions, where `deprecated` is not true, to your private registry.
+- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For ignite, push `DB_IMAGE`, `INIT_IMAGE` of following IgniteVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get igniteversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
-  NAME     VERSION   DB_IMAGE                                          EXPORTER_IMAGE                                          DEPRECATED
+  $ kubectl get igniteversions  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,INIT_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
+  NAME     VERSION   DB_IMAGE                                          INIT_IMAGE                                              DEPRECATED
   2.18.0   2.18.0    ghcr.io/appscode-images/ignite:2.18.0             ghcr.io/kubedb/ignite-init:2.18.0-v1                    <none>
   ```
 
@@ -42,6 +42,8 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   spec:
     db:
       image: PRIVATE_REGISTRY/ignite:2.18.0
+    initContainer:
+      image: PRIVATE_REGISTRY/ignite-init:2.18.0-v1
     securityContext:
       runAsUser: 70
     version: 2.18.0

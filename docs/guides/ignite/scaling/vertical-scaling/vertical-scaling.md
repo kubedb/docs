@@ -134,9 +134,9 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `igops-vscale` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on the `ig` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.Node` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
