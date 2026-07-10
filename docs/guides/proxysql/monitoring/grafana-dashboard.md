@@ -274,9 +274,9 @@ After importing all three files, they will appear under `Dashboards` in the left
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / ProxySQL / Summary | Frontend connections, backend connections, queries routed, query rules hit rate, CPU/memory |
-| KubeDB / ProxySQL / Pod | Per-pod active connections, queries/sec, connection pool status, CPU/memory |
-| KubeDB / ProxySQL / Database | Backend hostgroup status, connection errors, latency, query digest stats |
+| KubeDB / ProxySQL / Summary | Instance overview: status, version, backend server, node count, resource requests/limits, CPU usage |
+| KubeDB / ProxySQL / Pod | Per-pod uptime, version, CPU/memory, connections, aborted connections, temporary objects/slow queries |
+| KubeDB / ProxySQL / Database | Per-pod service status/uptime, connections, network received/sent, slow queries, aborted connections |
 
 ## Step 6: Explore the Dashboard
 
@@ -285,37 +285,33 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 | Variable      | Applies to              | What to select                                                   |
 |---------------|-------------------------|------------------------------------------------------------------|
 | **namespace** | All dashboards          | Namespace where your ProxySQL is deployed (e.g., `demo`)        |
-| **app**       | All dashboards          | Name of your ProxySQL instance (e.g., `proxysql-grafana-demo`)  |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view                 |
+| **proxysql**  | All dashboards          | Name of your ProxySQL instance (e.g., `proxysql-grafana-demo`)  |
+| **pod**       | Pod dashboard            | A specific pod (e.g., `proxysql-grafana-demo-0`)                 |
 
-**KubeDB / ProxySQL / Summary** — start here for a proxy-level overview:
-- **Active Frontend Connections** — clients connected to ProxySQL
-- **Active Backend Connections** — connections from ProxySQL to MySQL backend servers
-- **Connection Pool Free Connections** — idle backend connections available for reuse
-- **Questions per Second** — total queries routed per second
-- **Slow Queries** — queries exceeding the configured threshold
-- **CPU / Memory / Network** — resource consumption per ProxySQL pod
+**KubeDB / ProxySQL / Summary** — start here for an instance overview:
+- **General Info** — database status, version, backend server, frontend SSL, total nodes, termination policy
+- **Resource Requests / Limits** — configured CPU and memory requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
+- **Memory Info** — memory usage over time
 
 <p align="center">
   <img alt="KubeDB ProxySQL Summary Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-summary.png" style="padding:10px">
 </p>
 
 **KubeDB / ProxySQL / Pod** — drill into a specific proxy pod:
-- **Frontend Connections** — client connections on this specific pod
-- **Backend Connections** — backend connections from this pod
-- **Queries Routed per Second** — per-pod query routing throughput
-- **Connection Errors** — failed connection attempts to backends
-- **CPU / Memory** — per-pod resource usage
+- **MySQL Pod Summary** — pod name, version, and ProxySQL uptime
+- **Pod CPU, Memory and File Descriptor Stats** — per-pod CPU and memory usage
+- **Connections** — ProxySQL connections and aborted connections
+- **Temporary Objects & Slow Queries** — slow query rate on this pod
 
 <p align="center">
   <img alt="KubeDB ProxySQL Pod Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / ProxySQL / Database** — per-hostgroup metrics:
-- **Connection Pool** — active, free, OK, and error connections per hostgroup
-- **Query Rules Matched** — how often each routing rule is applied
-- **Traffic Distribution** — percentage of queries routed to each hostgroup
-- **Latency Percentiles** — p50/p95/p99 query execution time per hostgroup
+**KubeDB / ProxySQL / Database** — per-pod service and network metrics:
+- **Service Status / Uptime** — per-pod health and how long each pod has been serving
+- **Proxy Network** — ProxySQL connections and network received vs. sent per pod
+- **ProxySQL Slow Queries / Aborted Connections** — per-pod query and connection error rates
 
 <p align="center">
   <img alt="KubeDB ProxySQL Database Dashboard" src="/docs/images/proxysql/monitoring/proxysql-grafana-database.png" style="padding:10px">

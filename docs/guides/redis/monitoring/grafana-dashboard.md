@@ -116,18 +116,23 @@ Below is the Redis object with monitoring configured to use Prometheus Operator.
 apiVersion: kubedb.com/v1
 kind: Redis
 metadata:
-  name: redis-grafana-demo
+  name: redis-cluster
   namespace: demo
 spec:
-  version: "8.2.2"
-  deletionPolicy: WipeOut
+  version: 8.2.2
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
   storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -282,9 +287,9 @@ After importing the files you need, they will appear under `Dashboards` in the l
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / Redis / Summary | Connected clients, commands/sec, keyspace hits/misses, memory usage, CPU/storage |
-| KubeDB / Redis / Pod | Per-pod commands, memory, CPU, connected clients, replication offset |
-| KubeDB / Redis / Shard | Shard distribution, slot coverage, keys per shard, replication lag per shard |
+| KubeDB / Redis / Summary | Instance overview: status, version, mode, node count, resource requests/limits, CPU usage |
+| KubeDB / Redis / Pod | Per-pod role, master/slaves, connected clients, memory, commands/sec, network I/O, CPU/memory |
+| KubeDB / Redis / Shard | Cluster shard slot health, node/slave count, per-slave status, cluster mode |
 | KubeDB / RedisSentinel / Summary | Sentinel quorum, monitored masters, last failover time, connected sentinels |
 | KubeDB / RedisSentinel / Pod | Per-sentinel status, last ping/pong time, subjectively/objectively down flags |
 
@@ -293,43 +298,36 @@ After importing the files you need, they will appear under `Dashboards` in the l
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
 | Variable      | Applies to              | What to select                                             |
-|---------------|-------------------------|------------------------------------------------------------|
+|---------------|-------------------------|--------------------------------------------------------------|
 | **namespace** | All dashboards          | Namespace where your Redis is deployed (e.g., `demo`)     |
-| **app**       | All dashboards          | Name of your Redis instance (e.g., `redis-grafana-demo`)  |
-| **pod**       | Pod, Shard dashboards   | A specific pod, or `All` for an aggregated view           |
+| **redis**     | All dashboards          | Name of your Redis instance (e.g., `redis-grafana-demo`)  |
+| **Pod Name**  | Pod, Shard dashboards   | A specific pod                                              |
+| **Filters**   | Shard dashboard          | Additional label filters for the selected shard             |
 
 **KubeDB / Redis / Summary** — start here for an instance overview:
-- **Connected Clients** — current client connections
-- **Blocked Clients** — clients waiting on a blocking command (BLPOP, BRPOP, etc.)
-- **Memory Used / Peak / RSS** — heap usage and OS-level memory
-- **Keyspace Hit Rate** — hits / (hits + misses); aim for > 99%
-- **Evicted Keys** — keys removed due to `maxmemory` policy
-- **Expired Keys** — keys expired by TTL
-- **Commands per Second** — total command throughput
-- **Replication** — master/replica role, replication offset per replica
-- **CPU / Network** — resource usage over time
+- **General Info** — database status, version, max clients, Redis mode, termination policy, total nodes
+- **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
+- **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
 
 <p align="center">
   <img alt="KubeDB Redis Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-summary.png" style="padding:10px">
 </p>
+
 **KubeDB / Redis / Pod** — drill into a specific pod:
-- **Connected Clients** — clients on this pod
-- **Memory Usage** — used vs. max memory on this pod
-- **Commands per Second** — per-pod throughput
-- **Keyspace Hit Rate** — per-pod cache efficiency
-- **CPU / Memory** — per-pod resource usage
+- **General Counters And File Descriptor Stats** — status, role (master/slave), my master, my slaves, connected clients, Go routines
+- **Uptime / Memory Usage / Commands Executed / Hits-Misses** — pod uptime, memory usage, command execution rate, cache hit/miss rate
+- **Network I/O / Command Calls / Connected Clients** — network throughput, per-command call breakdown, connected client count over time
+- **CPU And Memory Usage Stats** — total memory usage, average CPU usage, average memory usage
 
 <p align="center">
   <img alt="KubeDB Redis Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / Redis / Shard** — per-shard metrics for Cluster mode:
-- **Slot Range** — hash slots owned by this shard
-- **Key Count** — total keys stored in this shard
-- **Memory Usage** — per-shard memory
-- **Connection Count** — connections to this shard
-- **Replication Offset** — how far behind replicas are
-- **Cluster Link State** — connectivity between shard nodes
+**KubeDB / Redis / Shard** — cluster shard health for Cluster mode:
+- **Cluster Shard Slots / Cluster Shard Slots Failed** — hash slot coverage and any failed slots
+- **Cluster Nodes / Cluster Masters** — total nodes and master count in the cluster
+- **Connected Slaves / My Slaves** — number of connected slaves and their IP, port, and online status
+- **Mode** — confirms the instance is running in `cluster` mode
 
 <p align="center">
   <img alt="KubeDB Redis Shard Dashboard" src="/docs/images/redis/monitoring/rd-grafana-shard.png" style="padding:10px">

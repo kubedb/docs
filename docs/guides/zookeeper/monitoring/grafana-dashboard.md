@@ -278,9 +278,11 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **Quorum Size** — number of replicas in the ensemble
 - **Leader** — current leader node endpoint
 - **Deletion Policy** — configured deletion policy
-- **CPU Request / Memory Request** — configured resource requests
-- **CPU Usage** — CPU consumption over time per pod
-- **CPU Quota** — CPU usage vs. requests per pod
+- **Total Nodes** — number of pods in the ensemble
+- **CPU / Memory Request / Limit** — configured resource requests and limits
+- **Storage Request** — configured storage request per pod
+- **CPU Usage / CPU Quota** — CPU consumption over time and quota utilization per pod
+- **Memory Info** — memory usage over time per pod
 
 <p align="center">
   <img alt="KubeDB ZooKeeper Summary Dashboard" src="/docs/images/zookeeper/monitoring/zk-grafana-summary.png" style="padding:10px">
@@ -297,6 +299,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 - **znode_count** — number of znodes on this pod over time
 - **znode_count_rate** — rate of znode creation/deletion
 - **global_sessions / local_sessions** — active client sessions on this pod
+- **write_per_namespace / read_per_namespace** — write and read throughput on this pod, broken down by namespace
 
 <p align="center">
   <img alt="KubeDB ZooKeeper Pod Dashboard" src="/docs/images/zookeeper/monitoring/zk-grafana-pod.png" style="padding:10px">

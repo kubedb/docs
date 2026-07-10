@@ -306,6 +306,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 **REST Requests Summary section:**
 - **REST Request Rate by Endpoint** — per-endpoint request throughput over time
 - **REST Request Distribution by Endpoint** — breakdown of request share per endpoint
+- **REST Endpoint Performance Summary** — latency and throughput breakdown per REST endpoint
 
 <p align="center">
   <img alt="KubeDB Qdrant Pod Dashboard" src="/docs/images/qdrant/monitoring/qdrant-grafana-pod.png" style="padding:10px">
