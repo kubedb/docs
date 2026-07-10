@@ -193,6 +193,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `pg` `Postgres` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.postgres` specifies the expected postgres container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/index.md#vertical-scaling-modes).
 
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
@@ -342,6 +343,43 @@ $ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Postgres.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`PostgresOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources. For a
+**distributed** `Postgres` deployment, in-place resize is not possible, so `InPlace` automatically
+degrades to `Restart`.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-scale-vertical-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pg
+  verticalScaling:
+    mode: InPlace
+    postgres:
+      resources:
+        requests:
+          memory: "1200Mi"
+          cpu: "0.7"
+        limits:
+          memory: "1200Mi"
+          cpu: "0.7"
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/pg-vertical-scaling-inplace.yaml
+postgresopsrequest.ops.kubedb.com/pg-scale-vertical-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 
