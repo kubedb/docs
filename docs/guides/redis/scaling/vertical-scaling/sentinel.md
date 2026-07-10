@@ -202,6 +202,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `sen-sample` RedisSentinel instance.
 - `spec.type` specifies that we are going to perform `VerticalScaling` on our database.
 - `spec.verticalScaling.redissentinel` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/redis/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
@@ -276,6 +277,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `rd-sample` Redis database.
 - `spec.type` specifies that we are going to perform `VerticalScaling` on our database.
 - `spec.VerticalScaling.redis` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/redis/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 
