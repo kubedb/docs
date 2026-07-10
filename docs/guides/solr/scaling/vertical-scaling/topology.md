@@ -196,6 +196,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `solr-cluster` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on Solr.
 - `spec.VerticalScaling.data`, `spec.VerticalScaling.overseer` and `spec.VerticalScaling.coordinator` specifies the desired resources for topologies after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](overview.md#vertical-scaling-modes).
 
 Let's create the `SolrOpsRequest` CR we have shown above,
 
@@ -380,6 +381,59 @@ $ kubectl get pod -n demo solr-cluster-overseer-0 -o json | jq '.spec.containers
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Solr topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`SolrOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-vscale-topology-inplace
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-cluster
+  type: VerticalScaling
+  verticalScaling:
+    mode: InPlace
+    data:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+    overseer:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+    coordinator:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+```
+
+Let's create the `SolrOpsRequest` CR we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/scaling/vertical/topology/scaling-inplace.yaml
+solropsrequest.ops.kubedb.com/slops-vscale-topology-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 
