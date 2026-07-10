@@ -258,6 +258,8 @@ resources:
     memory: "2Gi"
 ```
 
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
+
 ### spec.horizontalScaling
 
 Used when `spec.type: HorizontalScaling`.
