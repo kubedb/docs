@@ -324,6 +324,7 @@ If you want to scale-up or scale-down your Druid cluster or different components
 - `spec.verticalScaling.routers` indicates the desired resources for routers of Druid topology cluster after scaling.
 - `spec.verticalScaling.historicals` indicates the desired resources for historicals of Druid topology cluster after scaling.
 - `spec.verticalScaling.middleManagers` indicates the desired resources for middleManagers of Druid topology cluster after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 All of them has the below structure:
 
