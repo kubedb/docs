@@ -107,7 +107,7 @@ GO
 
 Expected output:
 
-```
+```text
 CustomerID  Name   Email              City     CreatedAt
 ----------- ------ ------------------ -------- -----------------------
 1           Alice  alice@example.com  NYC      2026-07-10 12:00:00.000
@@ -322,7 +322,7 @@ For a full description of every field, see the [MSSQLServerMigration CRD referen
 Let's wait for the Migration to finish the schema and snapshot phases and enter the streaming phase. Run the following command to watch `MSSQLServerMigration` CR:
 
 ```bash
-Every 2.0s: kubectl get mssqlservermigrations -n demo
+$ watch kubectl get mssqlservermigrations -n demo
 ```
 
 During the **Schema** stage:
@@ -372,13 +372,13 @@ Example output during streaming — showing per-database CDC lag:
 Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed documents were copied over:
 
 ```bash
-$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools/bin/sqlcmd \
+$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
     -S localhost -U sa -P '<sa-password>' -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
 
 Expected output:
 
-```
+```text
 CustomerID  Name   Email              City     CreatedAt
 ----------- ------ ------------------ -------- -----------------------
 1           Alice  alice@example.com  NYC      2026-07-10 12:00:00.000
@@ -417,13 +417,13 @@ GO
 Wait a few seconds for the CDC events to propagate, then re-query the **target**:
 
 ```bash
-$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools/bin/sqlcmd \
+$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
     -S localhost -U sa -P '<sa-password>' -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
 
 Expected output:
 
-```
+```text
 CustomerID  Name   Email              City     CreatedAt
 ----------- ------ ------------------ -------- -----------------------
 2           Bob    bob@example.com    Seattle  2026-07-10 12:00:00.000
