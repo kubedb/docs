@@ -189,6 +189,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `es-cluster` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on Elasticsearch.
 - `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](overview.md#vertical-scaling-modes).
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
@@ -673,6 +674,51 @@ $ kubectl get pod -n demo es-cluster-master-0  -o json | jq '.spec.containers[].
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Elasticsearch topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`ElasticsearchOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: vscale-topology-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: es-cluster
+  verticalScaling:
+    mode: InPlace
+    master:
+      resources:
+        limits:
+          cpu: 750m
+          memory: 800Mi
+    data:
+      resources:
+        requests:
+          cpu: 760m
+          memory: 900Mi
+    ingest:
+      resources:
+        limits:
+          cpu: 900m
+          memory: 1.2Gi
+        requests:
+          cpu: 800m
+          memory: 1Gi
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scalling/vertical/Elasticsearch-vertical-scaling-topology-inplace.yaml
+Elasticsearchopsrequest.ops.kubedb.com/vscale-topology-inplace created
+```
 
 ## Cleaning Up
 
