@@ -118,6 +118,7 @@ spec:
 - `spec.type` specifies that this is a `VerticalScaling` operation.
 - `spec.databaseRef.name` specifies that we are performing the operation on `weaviate-sample`.
 - `spec.verticalScaling.node` specifies the desired resources for the Weaviate nodes after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/weaviate/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `WeaviateOpsRequest` CR:
 
@@ -219,6 +220,45 @@ $ kubectl get weaviate -n demo weaviate-sample -o jsonpath='{.spec.podTemplate.s
 ```
 
 The resources have been updated successfully.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`WeaviateOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: wvops-vertical-scale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: weaviate-sample
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/weaviate/scaling/vertical-scaling/ops-request-inplace.yaml
+weaviateopsrequest.ops.kubedb.com/wvops-vertical-scale-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Next Steps
 
