@@ -171,6 +171,7 @@ If you want to scale-up or scale-down your PgBouncer cluster or different compon
 
 - `spec.verticalScaling.pgbouncer` indicates the desired resources for PetSet of PgBouncer after scaling.
 - `spec.verticalScaling.exporter` indicates the desired resources for PetSet of PgBouncer Exporter after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 It has the below structure:
 
