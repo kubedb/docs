@@ -199,3 +199,10 @@ A `IgniteOpsRequest` object has the following fields in the `spec` section.
 - `Restart`
 - `RotateAuth`
 - `StorageMigration`
+
+### spec.verticalScaling
+
+`spec.verticalScaling` specifies the desired resources (requests and limits) for the database when `spec.type` is `VerticalScaling`. It consists of the following sub-fields:
+
+- `spec.verticalScaling.node` specifies the desired resources for the Ignite nodes.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
