@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: vertical-scaling-standalone-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: milvus-standalone
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady
