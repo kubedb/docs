@@ -165,6 +165,7 @@ spec:
 - `verticalScaling.overseer` - specifies the desired resources for the overseer nodes. It takes input same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.data` - specifies the desired node resources for the data nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.coordinator` - specifies the desired node resources for the coordinator nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
+- `verticalScaling.mode` - specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 > Note: It is recommended not to use resources below the default one; `cpu: 900m, memory: 2Gi`.
 
