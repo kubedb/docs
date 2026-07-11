@@ -139,7 +139,10 @@ For a `Reconfigure` operation, `spec.configuration` describes the new configurat
 
 ### spec.verticalScaling
 
-For a `VerticalScaling` operation, `spec.verticalScaling.node.resources` specifies the desired `requests`/`limits` of CPU and memory for the database node.
+For a `VerticalScaling` operation:
+
+- `spec.verticalScaling.node.resources` specifies the desired `requests`/`limits` of CPU and memory for the database node.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 ### spec.volumeExpansion
 
