@@ -211,6 +211,7 @@ Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on druid.
 - `spec.VerticalScaling.coordinators` specifies the desired resources of `coordinators` node after scaling.
 - `spec.VerticalScaling.historicals` specifies the desired resources of `historicals` node after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/druid/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 > **Note:** Similarly you can scale other druid nodes vertically by specifying the following fields:
 > - For `overlords` use `spec.verticalScaling.overlords`.
@@ -433,6 +434,53 @@ $ kubectl get pod -n demo druid-cluster-historicals-1 -o json | jq '.spec.contai
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Druid topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`DruidOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+  name: druid-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: druid-cluster
+  verticalScaling:
+    mode: InPlace
+    coordinators:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+    historicals:
+      resources:
+        requests:
+          memory: "1.1Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.1Gi"
+          cpu: "0.6"
+  timeout: 5m
+  apply: IfReady
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-vscale-inplace.yaml
+druidopsrequest.ops.kubedb.com/druid-vscale-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 
