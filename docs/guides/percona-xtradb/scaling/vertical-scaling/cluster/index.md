@@ -137,6 +137,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-pxc` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.perconaxtradb` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/#vertical-scaling-modes).
 
 Let's create the `PerconaXtraDBOpsRequest` CR we have shown above,
 
@@ -175,6 +176,43 @@ $ kubectl get pod -n demo sample-pxc-0 -o json | jq '.spec.containers[].resource
 ```
 
 The above output verifies that we have successfully scaled up the resources of the PerconaXtraDB database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`PerconaXtraDBOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PerconaXtraDBOpsRequest
+metadata:
+  name: pxops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: sample-pxc
+  verticalScaling:
+    mode: InPlace
+    perconaxtradb:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/scaling/vertical-scaling/cluster/example/pxops-vscale-inplace.yaml
+perconaxtradbopsrequest.ops.kubedb.com/pxops-vscale-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 
