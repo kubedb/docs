@@ -256,10 +256,10 @@ Four dashboards are available. Download all JSON files from the [appscode/grafan
 
 | File | Dashboard |
 |------|-----------|
-| `mariadb_summary_dashboard.json` | KubeDB / MariaDB / Summary |
-| `mariadb_pods_dashboard.json` | KubeDB / MariaDB / Pod |
-| `mariadb_databases_dashboard.json` | KubeDB / MariaDB / Database |
-| `mariadb_galera_cluster_dashboard.json` | KubeDB / MariaDB / Galera Cluster |
+| `mariadb_summary.json` | KubeDB / MariaDB / Summary |
+| `mariadb_pod.json` | KubeDB / MariaDB / Pod |
+| `mariadb_databases.json` | KubeDB / MariaDB / Database |
+| `mariadb_galera.json` | KubeDB / MariaDB / Galera Cluster |
 
 > The Galera Cluster dashboard is only relevant for MariaDB Galera cluster deployments (`spec.topology.mode: GaleraCluster`).
 

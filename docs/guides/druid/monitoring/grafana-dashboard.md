@@ -173,7 +173,7 @@ spec:
   deepStorage:
     type: s3
     configSecret:
-      name: druid-deep-storage-config
+      name: deep-storage-config
   deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
@@ -326,51 +326,42 @@ After importing all three files, they will appear under `Dashboards` in the left
 
 | Dashboard Name | Description |
 |---|---|
-| KubeDB / Druid / Summary | Segment availability, query rate, JVM heap, CPU/memory/storage |
-| KubeDB / Druid / Pod | Per-component (broker/coordinator/historical/router) JVM heap, CPU/memory |
-| KubeDB / Druid / Database | Datasource-level query rate, scan rate, segment count, indexing tasks |
+| KubeDB / Druid / Summary | Cluster-wide status, node/resource sizing, and CPU usage across all pods |
+| KubeDB / Druid / Pod | Per-pod status, ZooKeeper connectivity, and JVM memory/GC metrics |
+| KubeDB / Druid / Database | Cluster status, datasource/segment counts, task success, and JVM memory |
 
 ## Step 6: Explore the Dashboard
 
-After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
+After opening a dashboard, use the dropdown filters at the top to focus on a specific instance. Note that the Summary dashboard labels its filters **Namespace** and **Druid**, while the Pod and Database dashboards use lowercase **namespace** and **app** — they select the same thing.
 
-| Variable      | Applies to              | What to select                                             |
-|---------------|-------------------------|------------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your Druid is deployed (e.g., `demo`)     |
-| **app**       | All dashboards          | Name of your Druid instance (e.g., `druid-grafana-demo`)  |
-| **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view          |
+| Variable                | Applies to                | What to select                                             |
+|--------------------------|---------------------------|------------------------------------------------------------|
+| **Namespace** / **namespace** | All dashboards       | Namespace where your Druid is deployed (e.g., `demo`)     |
+| **Druid** / **app**      | All dashboards            | Name of your Druid instance (e.g., `druid-grafana-demo`)  |
+| **pod**                  | Pod dashboard              | A specific pod, e.g. a coordinator, broker, or historical  |
 
 **KubeDB / Druid / Summary** — start here for a cluster-level overview:
-- **Coordinator / Overlord / Broker / Historical / MiddleManager / Router** — pod counts and readiness per node type
-- **Segment Availability** — percentage of segments available for queries (aim for 100%)
-- **Task Throughput** — tasks submitted and completed per second
-- **Query Latency** — broker-side p50/p95/p99 query execution time
-- **CPU / Memory / JVM Heap** — resource consumption across the cluster
+- **General Info** — database status, version, secure-transport flag, termination policy, total node count, and aggregate CPU/memory/storage requests and limits
+- **CPU Info** — a CPU usage graph broken down per pod, plus a CPU Quota table showing usage vs. requests (and % of request) for each pod
 
 <p align="center">
-  <img alt="KubeDB Druid Summary Dashboard" src="/docs/images/druid/monitoring/druid-grafana-summary.png" style="padding:10px">
+  <img alt="KubeDB Druid Summary Dashboard" src="/docs/images/druid/monitoring/druid-summary.png" style="padding:10px">
 </p>
 
-**KubeDB / Druid / Pod** — drill into a specific Druid node:
-- **JVM Heap Used** — heap usage on this pod
-- **GC Time** — time spent in garbage collection
-- **CPU / Memory** — per-pod resource usage
-- **Query Rate** — queries received on this pod (relevant for Brokers)
-- **Task Count** — pending and running tasks (relevant for MiddleManagers)
+**KubeDB / Druid / Pod** — drill into a specific Druid node (selected via the **pod** filter):
+- **Druid Overview** — node status (UP/DOWN) and ZooKeeper connection state for the selected pod
+- **JVM Overview** — JVM memory used, JVM memory pool, JVM bufferpool count, and JVM GC CPU time for the selected pod
 
 <p align="center">
-  <img alt="KubeDB Druid Pod Dashboard" src="/docs/images/druid/monitoring/druid-grafana-pod.png" style="padding:10px">
+  <img alt="KubeDB Druid Pod Dashboard" src="/docs/images/druid/monitoring/druid-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / Druid / Database** — segment and ingestion metrics:
-- **Segment Count** — total segments across all data sources
-- **Segment Size** — total deep storage usage
-- **Ingestion Rate** — rows ingested per second per data source
-- **Failed Tasks** — number of failed ingestion tasks
-- **Query Segment Ratio** — ratio of segments used in query results
+**KubeDB / Druid / Database** — cluster-wide segment and task metrics:
+- **Druid Overview** — Druid status, ZooKeeper connection state, total datasources, unloaded segments (count and size), successful tasks, and total segment size
+- **JVM Overview** — JVM memory used and JVM memory pool, aggregated across pods
 
 <p align="center">
-  <img alt="KubeDB Druid Database Dashboard" src="/docs/images/druid/monitoring/druid-grafana-database.png" style="padding:10px">
+  <img alt="KubeDB Druid Database Dashboard" src="/docs/images/druid/monitoring/druid-database.png" style="padding:10px">
 </p>
 
 ## Cleaning up
@@ -380,7 +371,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 kubectl delete druid -n demo druid-grafana-demo
 
 # Remove the deep storage secret
-kubectl delete secret druid-deep-storage-config -n demo
+kubectl delete secret deep-storage-config -n demo
 
 # Remove namespaces
 kubectl delete ns demo

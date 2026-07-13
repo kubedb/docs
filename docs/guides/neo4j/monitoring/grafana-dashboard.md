@@ -120,7 +120,7 @@ metadata:
   namespace: demo
 spec:
   version: "2025.11.2"
-  replicas: 1
+  replicas: 3
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

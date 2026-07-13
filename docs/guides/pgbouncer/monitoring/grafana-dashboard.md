@@ -122,7 +122,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.18.0"
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"
@@ -161,7 +161,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get pb -n demo pb-grafana-demo
 NAME             TYPE           VERSION   STATUS   AGE
-pb-grafana-demo  kubedb.com/v1  1.18.0    Ready    65s
+pb-grafana-demo  kubedb.com/v1  1.24.0    Ready    65s
 ```
 
 KubeDB creates a stats service named `{pgbouncer-name}-stats` for the exporter:

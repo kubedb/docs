@@ -121,7 +121,7 @@ metadata:
   name: pp-grafana-demo
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   postgresRef:
     name: ha-postgres
     namespace: demo
@@ -154,7 +154,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get pp -n demo pp-grafana-demo
 NAME             TYPE                 VERSION   STATUS   AGE
-pp-grafana-demo  kubedb.com/v1alpha2  4.5.0     Ready    65s
+pp-grafana-demo  kubedb.com/v1alpha2  4.6.0     Ready    65s
 ```
 
 KubeDB creates a stats service named `{pgpool-name}-stats` for the exporter:
