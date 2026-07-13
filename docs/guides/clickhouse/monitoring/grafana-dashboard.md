@@ -119,7 +119,7 @@ metadata:
   name: ch-grafana-demo
   namespace: demo
 spec:
-  version: "24.4.1"
+  version: "26.2.6"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -155,7 +155,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get clickhouse -n demo ch-grafana-demo
 NAME              VERSION   STATUS   AGE
-ch-grafana-demo   24.4.1    Ready    2m
+ch-grafana-demo   26.2.6    Ready    2m
 ```
 
 KubeDB creates a stats service named `{clickhouse-name}-stats` for the exporter:

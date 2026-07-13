@@ -121,7 +121,7 @@ metadata:
   name: solr-grafana-demo
   namespace: demo
 spec:
-  version: "9.4.1"
+  version: "9.8.0"
   replicas: 1
   solrModules:
     - prometheus-exporter
@@ -163,7 +163,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get solr -n demo solr-grafana-demo
 NAME                VERSION   STATUS   AGE
-solr-grafana-demo   9.4.1     Ready    3m
+solr-grafana-demo   9.8.0     Ready    3m
 ```
 
 KubeDB creates a stats service named `{solr-name}-stats` for the exporter:
