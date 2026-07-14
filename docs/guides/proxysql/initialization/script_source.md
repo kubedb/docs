@@ -445,15 +445,48 @@ add-user   Reconfigure   Successful   20s
 Back in the admin interface, the two users now appear with the passwords KubeDB fetched from the backend (stored as hashes), the `active` flag, and the `default_hostgroup` from the ops request:
 
 ```bash
-MySQL [(none)]> SELECT username, password, active, default_hostgroup
-    -> FROM mysql_users;
-+-----------+-------------------------------------------+--------+-------------------+
-| username  | password                                  | active | default_hostgroup |
-+-----------+-------------------------------------------+--------+-------------------+
-| superman  | *AE9C3C2838160D2591B6B15FA281CE712ABE94F0 | 1      | 2                 |
-| wolverine | *1BB8830D52D091A226FB7990D996CBC20F913475 | 1      | 2                 |
-+-----------+-------------------------------------------+--------+-------------------+
-2 rows in set (0.00 sec)
+kubectl exec -it -n demo proxy-init-inline-0 -- bash
+proxysql@proxy-init-inline-0:/$ mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 90
+Server version: 8.4.8 (ProxySQL Admin Module)
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+ProxySQLAdmin > select * from mysql_users;
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+| username  | password                                                                                       | active | use_ssl | default_hostgroup | default_schema | schema_locked | transaction_persistent | fast_forward | backend | frontend | max_connections | attributes | comment |
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+| wolverine | $A$005$7GF&7o.%\x10;.%jP5Ui??\\KmKM45B50Xt3wzJ2fmWo9FHAi2Yt7mhhCa8wlZpHZ/1                     | 1      | 0       | 2                 | NULL           | 0             | 1                      | 0            | 1       | 1        | 10000           |            |         |
+| superman  | $A$005$\t!MR\x18p{\x12\x06TE\x1e\t\\,\x1bI8\x15\x1bcxpfFLuOBmbfiLF9rs8MTeYQ3yJVQghmaM4/evor/XC | 1      | 0       | 2                 | NULL           | 0             | 1                      | 0            | 1       | 1        | 10000           |            |         |
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+2 rows in set (0.001 sec)
+
+ProxySQLAdmin > SELECT rule_id, match_pattern, destination_hostgroup FROM mysql_query_rules;
++---------+------------------------+-----------------------+
+| rule_id | match_pattern          | destination_hostgroup |
++---------+------------------------+-----------------------+
+| 1       | ^SELECT .* FOR UPDATE$ | 2                     |
+| 2       | ^SELECT                | 3                     |
++---------+------------------------+-----------------------+
+2 rows in set (0.002 sec)
+
+ProxySQLAdmin > SELECT variable_name, variable_value FROM global_variables WHERE variable_name IN ('mysql-max_connections','mysql-threads','admin-restapi_enabled','admin-restapi_port');
++-----------------------+----------------+
+| variable_name         | variable_value |
++-----------------------+----------------+
+| admin-restapi_enabled | true           |
+| admin-restapi_port    | 6070           |
+| mysql-max_connections | 2048           |
+| mysql-threads         | 4              |
++-----------------------+----------------+
+4 rows in set (0.002 sec)
+
+ProxySQLAdmin > exit
+Bye
+
 
 ```
 

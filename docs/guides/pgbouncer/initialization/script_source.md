@@ -52,7 +52,7 @@ $ kubectl create configmap -n demo pb-init-script \
 --from-literal=init.sh="$(curl -fsSL https://raw.githubusercontent.com/kubedb/pgbouncer-pgpool-init-scripts/master/pgbouncer/init.sh)"
 configmap/pb-init-script created
 ```
-> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully. After deploying PgBouncer with this ConfigMap, the initialization script runs automatically, and any database created or registered by the script will be available and can be verified after the deployment completes.
+> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to PostgreSQL, make sure to include the appropriate PostgreSQL credentials (such as the password) so the script can authenticate successfully.
 ## Create PgBouncer with Script Source
 
 Following YAML describes the PgBouncer object with `init.script`:
@@ -111,7 +111,7 @@ Now let's connect to our PgBouncer instance to verify that it has been initializ
 **Connection Information:**
 
 - Host name/address: you can use any of these
-  - Service: `script-pgbouncer`
+  - Service: `script-pgbouncer.demo`
   - Pod IP: (`$ kubectl get pods script-pgbouncer-0 -n demo -o yaml | grep podIP`)
 - Port: `5432`
 
@@ -165,5 +165,4 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/pgbouncer/backup/overview/index.md) PgBouncer using Stash.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
