@@ -379,28 +379,6 @@ $ kubectl exec -n demo sync-postgres-1 -c postgres -- psql -U postgres \
 (1 row)
 ```
 
-## Lease Duration
-
-The `spec.leaderElection` fields control how quickly a failover can happen:
-
-```yaml
-spec:
-  leaderElection:
-    leaseDurationSeconds: 15
-    renewDeadlineSeconds: 10
-    retryPeriodSeconds: 2
-```
-
-- `leaseDurationSeconds`: how long non-leader candidates wait to force-acquire leadership (measured
-  against the last observed ack). Default 15s.
-- `renewDeadlineSeconds`: how long the acting leader retries refreshing leadership before giving up.
-  Normally `leaseDuration * 2 / 3`. Default 10s.
-- `retryPeriodSeconds`: how long clients wait between action retries. Normally `leaseDuration / 3`.
-  Default 2s.
-
-On powerful clusters you can lower these to speed up failover, but setting them too low makes Postgres
-restart too often.
-
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
