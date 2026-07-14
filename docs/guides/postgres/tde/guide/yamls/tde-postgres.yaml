@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: tde-postgres
+  namespace: demo
+spec:
+  version: "17.9-percona"
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  tde:
+    keyProvider:
+      vault:
+        address: https://vault.example.com:8200
+        mountPath: secret
+        tokenSecretRef:
+          name: vault-token
+    defaultEncryptedTables: true
+    cipher: aes_128
