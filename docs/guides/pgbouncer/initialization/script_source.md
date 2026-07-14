@@ -165,5 +165,4 @@ $ kubectl delete ns demo
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/pgbouncer/backup/overview/index.md) PgBouncer using Stash.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

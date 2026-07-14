@@ -14,12 +14,12 @@ section_menu_id: guides
 
 # Initialize ProxySQL with Custom Configuration
 
-ProxySQL needs a bootstrap configuration file, `proxysql.cnf`, to set up its `mysql_users`, `mysql_query_rules`, `mysql_variables` and `admin_variables` tables at the very first startup. KubeDB lets you provide this bootstrap configuration in two ways under `spec.configuration.init`:
+ProxySQL requires a bootstrap configuration file, `proxysql.cnf`, to populate its `mysql_users`, `mysql_query_rules`, `mysql_variables`, and `admin_variables` tables during its very first startup. KubeDB lets you provide this bootstrap configuration in two ways under `spec.configuration.init`:
 
-- **`spec.configuration.init.secretName`** - point to a Secret holding the raw `proxysql.cnf` snippets. The values are patched into the config file verbatim, so you are responsible for the exact ProxySQL config syntax (and for supplying user passwords yourself).
-- **`spec.configuration.init.inline`** - describe the same four sections in structured YAML. The operator renders this into `proxysql.cnf` for you, and for `mysqlUsers`, it automatically fetches the password from the backend server instead of asking you to write it in plaintext.
+- **`spec.configuration.init.secretName`** - Points to a Secret holding the raw `proxysql.cnf` snippets. The values are patched into the config file verbatim, so you are responsible for the exact ProxySQL config syntax (and for supplying user passwords yourself).
+- **`spec.configuration.init.inline`** - Describes the same four sections in structured YAML. The operator renders this into `proxysql.cnf` for you, and for `mysqlUsers`, it automatically fetches the password from the backend server instead of requiring you to write it in plaintext.
 
-If both are set, `init.inline` always takes precedence over `init.secretName`. This tutorial will show you how to use both.
+If both are set, `init.inline` always takes precedence over `init.secretName`. This tutorial demonstrates both approaches.
 
 > Note: `spec.initConfig` and `spec.configSecret` are older, deprecated equivalents of `spec.configuration.init.inline` and `spec.configuration.init.secretName` respectively. Use the `spec.configuration.init` fields for any new ProxySQL object.
 
@@ -29,7 +29,7 @@ At first, you need to have a Kubernetes cluster, and the kubectl command-line to
 
 Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
 
-To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout.
 
 ```bash
 $ kubectl create ns demo
@@ -83,7 +83,7 @@ mysql-server   8.4.8     Ready    5m
 
 ## Option 1: Bootstrap using a raw configuration Secret
 
-`spec.configuration.init.secretName` refers to a Secret with up to four keys - `MySQLUsers.cnf`, `MySQLQueryRules.cnf`, `MySQLVariables.cnf` and `AdminVariables.cnf`. Each key's value must already be in valid `proxysql.cnf` syntax; the operator copies it into the config file exactly as-is.
+`spec.configuration.init.secretName` references a Secret with up to four keys: `MySQLUsers.cnf`, `MySQLQueryRules.cnf`, `MySQLVariables.cnf`, and `AdminVariables.cnf`. Each key's value must already be in valid `proxysql.cnf` syntax, since the operator copies it into the config file exactly as-is.
 
 ```yaml
 apiVersion: v1
@@ -162,7 +162,7 @@ spec:
 Here,
 
 - `configuration.init.secretName` points to the `proxysql-init-raw` Secret above. Since `MySQLUsers.cnf` sets each user's `password` explicitly, this path does **not** auto-fetch credentials from the backend the way `init.inline` does.
-- Unlike `init.inline`, values under `init.secretName` are not merged with anything - only what you put in the Secret (plus KubeDB's internal defaults for things like cluster auth and TLS) ends up in `proxysql.cnf`, so double-check the syntax before applying.
+- Unlike `init.inline`, values under `init.secretName` are not merged with anything else - only what you put in the Secret (plus KubeDB's internal defaults for things like cluster auth and TLS) ends up in `proxysql.cnf`. Double-check the syntax carefully before applying.
 
 Apply the Secret and the ProxySQL object:
 
@@ -225,11 +225,11 @@ $ kubectl exec -it -n demo proxy-init-secret-0 -- mysql -u cluster -pS3cur3P@ssw
 +------------------------------+----------------+
 ```
 
-The `mysql_users`, `mysql_query_rules` and the global variables all reflect exactly what was written in the `proxysql-init-raw` Secret.
+The `mysql_users`, `mysql_query_rules`, and the global variables all reflect exactly what was written in the `proxysql-init-raw` Secret.
 
 ## Option 2: Bootstrap using inline structured configuration
 
-`spec.configuration.init.inline` describes the same four sections (`mysqlUsers`, `mysqlQueryRules`, `mysqlVariables`, `adminVariables`) in structured YAML instead of raw config syntax. The operator renders these into `proxysql.cnf`, merging them with KubeDB's own defaults (like monitor and cluster-auth variables).
+`spec.configuration.init.inline` describes the same four sections (`mysqlUsers`, `mysqlQueryRules`, `mysqlVariables`, `adminVariables`) in structured YAML instead of raw config syntax. The operator renders these into `proxysql.cnf`, merging them with KubeDB's own defaults (such as monitor and cluster-auth variables).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -245,14 +245,6 @@ spec:
   configuration:
     init:
       inline:
-        mysqlUsers:
-          - username: wolverine
-            active: 1
-            default_hostgroup: 2
-            default_schema: marvel
-          - username: superman
-            active: 1
-            default_hostgroup: 3
         mysqlQueryRules:
           - rule_id: 1
             active: 1
@@ -281,7 +273,7 @@ spec:
 Here,
 
 - `configuration.init.inline.mysqlUsers` does not take a `password` field - KubeDB fetches each user's password from the backend MySQL server automatically, so no credential is ever written in plaintext YAML.
-- `configuration.init.inline.mysqlQueryRules`, `.mysqlVariables` and `.adminVariables` accept the same keys as their raw `proxysql.cnf` counterparts, just in YAML key-value form.
+- `configuration.init.inline.mysqlQueryRules`, `.mysqlVariables`, and `.adminVariables` accept the same keys as their raw `proxysql.cnf` counterparts, expressed in YAML key-value form.
 
 See the [Declarative Configuration](/docs/guides/proxysql/concepts/declarative-configuration/index.md) concept page for the full field-by-field reference.
 
@@ -302,50 +294,131 @@ proxy-init-inline   3.0.1-debian   Ready    2m
 
 ### Verify
 
-```bash
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.username}' | base64 -d
-cluster
+#### Create Users in the MySQL Database
 
-$ kubectl get secret -n demo proxy-init-inline-auth -o jsonpath='{.data.password}' | base64 -d
-S3cur3P@ssw0rd
-```
+Before ProxySQL can fetch credentials from the backend, the corresponding users must exist there. Create two users on the backend MySQL server:
 
 ```bash
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
-  -e "SELECT username, active, default_hostgroup, default_schema FROM mysql_users;"
-+-----------+--------+-------------------+------------------+
-| username  | active | default_hostgroup | default_schema   |
-+-----------+--------+-------------------+------------------+
-| wolverine |      1 |                 2 | marvel           |
-| superman  |      1 |                 3 |                  |
-+-----------+--------+-------------------+------------------+
+$ kubectl exec -it -n demo mysql-server-0 -- bash
+Defaulted container "mysql" out of: mysql, mysql-coordinator, mysql-init (init)
+bash-5.1$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+Your MySQL connection id is 512
+Server version: 8.4.3 MySQL Community Server - GPL
 
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
-  -e "SELECT rule_id, match_pattern, destination_hostgroup FROM mysql_query_rules;"
-+---------+----------------------------+------------------------+
-| rule_id | match_pattern              | destination_hostgroup |
-+---------+----------------------------+------------------------+
-|       1 | ^SELECT .* FOR UPDATE$     |                      2 |
-|       2 | ^SELECT                    |                      3 |
-+---------+----------------------------+------------------------+
+Copyright (c) 2000, 2024, Oracle and/or its affiliates.
 
-$ kubectl exec -it -n demo proxy-init-inline-0 -- mysql -u cluster -pS3cur3P@ssw0rd -h 127.0.0.1 -P 6032 \
-  -e "SELECT variable_name, variable_value FROM global_variables WHERE variable_name IN ('mysql-max_connections','mysql-threads','admin-restapi_enabled','admin-restapi_port');"
-+------------------------+----------------+
-| variable_name          | variable_value |
-+------------------------+----------------+
-| mysql-max_connections  | 2048           |
-| mysql-threads          | 4              |
-| admin-restapi_enabled  | true           |
-| admin-restapi_port     | 6070           |
-+------------------------+----------------+
+Oracle is a registered trademark of Oracle Corporation and/or its
+affiliates. Other names may be trademarks of their respective
+owners.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+mysql> CREATE USER `wolverine` IDENTIFIED BY 'wolverine-pass';
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> CREATE USER `superman` IDENTIFIED BY 'superman-pass';
+Query OK, 0 rows affected (0.02 sec)
+
+mysql> flush privileges;
+Query OK, 0 rows affected (0.00 sec)
+
+mysql> exit
+Bye
 ```
 
-Since `wolverine` and `superman` also exist on the MySQL backend, ProxySQL was able to log in and fetch their passwords automatically - you can verify a client can actually connect through ProxySQL using those credentials without ever having put a password in the YAML.
+#### Add Users via Reconfigure Ops-request
+
+You can also add users to a running ProxySQL server dynamically, using a `ProxySQLOpsRequest`. The following example adds users `testA` and `testB` to the `proxy-server` ProxySQL instance. Since no `password` field is provided in the YAML, the KubeDB operator fetches each user's password from the backend MySQL server automatically - so the corresponding users must already exist there before applying this OpsRequest. If a user is not present on the backend, the operator will be unable to fetch its password and the OpsRequest will fail.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+    name: add-user
+    namespace: demo
+spec:
+    type: Reconfigure  
+    proxyRef:
+      name: proxy-server
+    configuration:
+      mysqlUsers:
+        users: 
+        - username: testA
+          active: 1
+          default_hostgroup: 2  
+        - username: testB
+          active: 1
+          default_hostgroup: 2
+        reqType: add
+```
+
+Apply the OpsRequest YAML:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/reconfigure/cluster/examples/proxyops-add-users.yaml
+proxysqlopsrequest.ops.kubedb.com/add-user created
+```
+
+Wait for the OpsRequest to reach the `Successful` state:
+
+```bash
+$ kubectl get proxysqlopsrequest -n demo     
+NAME       TYPE          STATUS       AGE
+add-user   Reconfigure   Successful   20s
+```
+
+Now verify the `mysql_users` table on the ProxySQL server:
+
+
+```bash
+$ kubectl exec -it -n demo proxy-init-inline-0 -- bash
+proxysql@proxy-init-inline-0:/$ mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt "ProxySQLAdmin > "
+Welcome to the MariaDB monitor.  Commands end with ; or \g.
+Your MySQL connection id is 90
+Server version: 8.4.8 (ProxySQL Admin Module)
+
+Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
+
+Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
+
+ProxySQLAdmin > select * from mysql_users;
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+| username  | password                                                                                       | active | use_ssl | default_hostgroup | default_schema | schema_locked | transaction_persistent | fast_forward | backend | frontend | max_connections | attributes | comment |
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+| wolverine | $A$005$7GF&7o.%\x10;.%jP5Ui??\\KmKM45B50Xt3wzJ2fmWo9FHAi2Yt7mhhCa8wlZpHZ/1                     | 1      | 0       | 2                 | NULL           | 0             | 1                      | 0            | 1       | 1        | 10000           |            |         |
+| superman  | $A$005$\t!MR\x18p{\x12\x06TE\x1e\t\\,\x1bI8\x15\x1bcxpfFLuOBmbfiLF9rs8MTeYQ3yJVQghmaM4/evor/XC | 1      | 0       | 2                 | NULL           | 0             | 1                      | 0            | 1       | 1        | 10000           |            |         |
++-----------+------------------------------------------------------------------------------------------------+--------+---------+-------------------+----------------+---------------+------------------------+--------------+---------+----------+-----------------+------------+---------+
+2 rows in set (0.001 sec)
+
+ProxySQLAdmin > SELECT rule_id, match_pattern, destination_hostgroup FROM mysql_query_rules;
++---------+------------------------+-----------------------+
+| rule_id | match_pattern          | destination_hostgroup |
++---------+------------------------+-----------------------+
+| 1       | ^SELECT .* FOR UPDATE$ | 2                     |
+| 2       | ^SELECT                | 3                     |
++---------+------------------------+-----------------------+
+2 rows in set (0.002 sec)
+
+ProxySQLAdmin > SELECT variable_name, variable_value FROM global_variables WHERE variable_name IN ('mysql-max_connections','mysql-threads','admin-restapi_enabled','admin-restapi_port');
++-----------------------+----------------+
+| variable_name         | variable_value |
++-----------------------+----------------+
+| admin-restapi_enabled | true           |
+| admin-restapi_port    | 6070           |
+| mysql-max_connections | 2048           |
+| mysql-threads         | 4              |
++-----------------------+----------------+
+4 rows in set (0.002 sec)
+
+```
+
+Since `wolverine` and `superman` also exist on the MySQL backend, ProxySQL was able to log in and fetch their passwords automatically - confirming that a client can connect through ProxySQL using those credentials without a password ever being written into the YAML.
 
 ## Cleaning up
 
-To cleanup the Kubernetes resources created by this tutorial, run:
+To clean up the Kubernetes resources created by this tutorial, run the following commands:
 
 ```bash
 $ kubectl patch -n demo proxysql/proxy-init-secret -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
