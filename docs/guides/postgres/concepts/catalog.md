@@ -87,6 +87,29 @@ The default value of this field is `false`. If `spec.deprecated` is set `true`, 
 
 `spec.podSecurityPolicies.databasePolicyName` is a required field that specifies the name of the pod security policy required to get the database server pod(s) running.
 
+### spec.tde
+
+`spec.tde` is an optional field that marks whether this version supports
+Transparent Data Encryption via Percona's `pg_tde` extension. It is only set on
+Percona distribution builds, because the `tde_heap` access method ships only
+with Percona Server for PostgreSQL. It has the following fields:
+
+- `spec.tde.supported` is a boolean that gates the `spec.tde` section of the
+  [Postgres](/docs/guides/postgres/concepts/postgres.md) CRD. A Postgres object
+  that sets `spec.tde` must reference a version whose `spec.tde.supported` is
+  `true`, otherwise the admission webhook rejects it.
+- `spec.tde.extensionName` is the name of the encryption extension the operator
+  loads through `shared_preload_libraries` and creates in the database, normally
+  `pg_tde`.
+
+```yaml
+spec:
+  distribution: Percona
+  tde:
+    supported: true
+    extensionName: pg_tde
+```
+
 ```bash
 helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb --create-namespace \
