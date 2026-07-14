@@ -270,6 +270,62 @@ PostgreSQL managed by KubeDB can be monitored with builtin-Prometheus and Promet
     ```
 - `configuration.secretName` is an optional field that specifies the name of the secret that holds custom configuration files for Postgres cluster.
 
+### spec.tde
+
+`spec.tde` is an optional field that enables Transparent Data Encryption (TDE)
+for the cluster using Percona's [`pg_tde`](/docs/guides/postgres/tde/overview/index.md)
+extension. When set, table and index data (and optionally the WAL) are encrypted
+at rest. TDE requires a `PostgresVersion` whose `spec.distribution` is `Percona`
+and whose `spec.tde.supported` is `true`, because the `tde_heap` access method
+ships only with Percona Server for PostgreSQL. The whole section is validated by
+the admission webhook, and `spec.tde.keyProvider` and `spec.tde.cipher` are
+immutable once the database is created.
+
+```yaml
+spec:
+  tde:
+    keyProvider:
+      vault:
+        address: https://vault.example.com:8200
+        mountPath: secret
+        tokenSecretRef:
+          name: vault-token
+    defaultEncryptedTables: true
+    encryptWAL: false
+    cipher: aes_128
+```
+
+It has the following fields:
+
+- `spec.tde.keyProvider` is a required field that selects exactly one place the
+  principal key lives. Choose one of:
+  - `vault` points at a HashiCorp Vault KV v2 engine (`address`, `mountPath`,
+    `tokenSecretRef`, optional `caSecretRef` and `namespace`). This is a global
+    provider and is required for WAL encryption and for replicated clusters.
+  - `kmip` points at a KMIP server (`address`, `port`, `credentialSecretRef`
+    holding `ca.crt`, `client.crt` and `client.key`). Also a global provider.
+  - `file` uses a local keyring on the data volume. It is only valid for a
+    single replica (standalone) and cannot back WAL encryption. Use it for
+    development, not production.
+- `spec.tde.defaultEncryptedTables` is an optional boolean. When `true`, the
+  operator makes `tde_heap` the default access method so every new table is
+  encrypted without extra SQL.
+- `spec.tde.enforceEncryption` is an optional boolean that sets
+  `pg_tde.enforce_encryption`, which rejects the creation of unencrypted tables.
+- `spec.tde.encryptWAL` is an optional boolean that turns on WAL encryption.
+  It requires a global (`vault` or `kmip`) provider. Enable it after creation
+  through an [`EnableWALEncryption`](/docs/guides/postgres/concepts/opsrequest.md)
+  OpsRequest rather than editing the spec directly, so the server key is set up
+  and the nodes are restarted for you.
+- `spec.tde.cipher` is an optional field that selects the encryption algorithm,
+  one of `aes_128` (default) or `aes_256`.
+
+The principal key can be rotated online, without a restart, through a
+[`RotatePrincipalKey`](/docs/guides/postgres/concepts/opsrequest.md) OpsRequest.
+The KMS credentials are projected into every pod at `/etc/pg-tde`, outside the
+data directory. To learn more, visit the [TDE overview](/docs/guides/postgres/tde/overview/index.md)
+and [guide](/docs/guides/postgres/tde/guide/index.md).
+
 ### spec.podTemplate
 
 KubeDB allows providing a template for database pod through `spec.podTemplate`. KubeDB operator will pass the information provided in `spec.podTemplate` to the PetSet created for Postgres database.
