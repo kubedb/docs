@@ -14,27 +14,40 @@ section_menu_id: guides
 
 # Streaming Replication
 
-Streaming Replication provides *asynchronous* replication to one or more *standby* servers.
+Streaming Replication lets one or more *standby* servers stay up to date with a *primary* by shipping
+and replaying [WAL](https://www.postgresql.org/docs/current/wal-intro.html) records continuously. The
+standby connects to the primary, which streams WAL records as they are generated.
+
+KubeDB supports two replication modes, controlled by `spec.streamingMode`:
+
+- **`Asynchronous`** (default) — the primary does not wait for standbys before acknowledging a commit.
+  Lowest latency, but a failover can lose the last few transactions that had not yet reached a standby.
+- **`Synchronous`** — the primary waits for one or more standbys to confirm a commit before returning
+  success. Stronger durability at the cost of some commit latency. This is configured with the
+  `spec.synchronousReplicationConfig` API described [below](#synchronous-streaming-replication).
 
 ## Before You Begin
 
-At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster.
-If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured
+to communicate with your cluster. If you do not already have a cluster, you can create one by using
+[kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps [here](/docs/setup/README.md).
+Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps
+[here](/docs/setup/README.md).
 
-To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
+To keep things isolated, this tutorial uses a separate namespace called `demo` throughout.
 
 ```bash
 $ kubectl create ns demo
 namespace/demo created
 ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/postgres](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/postgres/clustering](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/postgres/clustering) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Create PostgreSQL with Streaming replication
+## Asynchronous Streaming Replication (default)
 
-The example below demonstrates KubeDB PostgreSQL for Streaming Replication
+The example below deploys a three-node PostgreSQL cluster with the default asynchronous streaming
+replication.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,240 +68,169 @@ spec:
         storage: 1Gi
 ```
 
-In this examples:
+In this example:
 
-- This `Postgres` object creates three PostgreSQL servers, indicated by the **`replicas`** field.
-- One server will be *primary* and two others will be *warm standby* servers, default of **`spec.standbyMode`**
+- The `Postgres` object creates three PostgreSQL servers, indicated by the **`replicas`** field.
+- One server becomes the *primary* and the other two become *standby* servers.
 
-### What is Streaming Replication
-
-Streaming Replication allows a *standby* server to stay more up-to-date by shipping and applying the [WAL XLOG](http://www.postgresql.org/docs/9.6/static/wal.html)
-records continuously. The *standby* connects to the *primary*, which streams WAL records to the *standby* as they're generated, without waiting for the WAL file to be filled.
-
-Streaming Replication is **asynchronous** by default. As a result, there is a small delay between committing a transaction in the *primary* and the changes becoming visible in the *standby*.
-
-### Streaming Replication setup
-
-Following parameters are set in `postgresql.conf` for both *primary* and *standby* server
-
-```bash
-wal_level = replica
-max_wal_senders = 99
-wal_keep_segments = 32
-```
-
-Here,
-
-- _wal_keep_segments_ specifies the minimum number of past log file segments kept in the pg_xlog directory.
-
-And followings are in `recovery.conf` for *standby* server
-
-```bash
-standby_mode = on
-trigger_file = '/tmp/pg-failover-trigger'
-recovery_target_timeline = 'latest'
-primary_conninfo = 'application_name=$HOSTNAME host=$PRIMARY_HOST'
-```
-
-Here,
-
-- _trigger_file_ is created to trigger a *standby* to take over as *primary* server.
-- *$PRIMARY_HOST* holds the Kubernetes Service name that targets *primary* server
-
-Now create this Postgres object with Streaming Replication support
+Create the object:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/ha-postgres.yaml
 postgres.kubedb.com/ha-postgres created
 ```
 
-KubeDB operator creates three Pod as PostgreSQL server.
+KubeDB operator creates three Pods. Each Pod has two containers: `postgres` and the `pg-coordinator`
+sidecar that runs the leader election and manages replication.
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
-NAME            READY   STATUS    RESTARTS   AGE   LABELS
-ha-postgres-0   1/1     Running   0          20s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1     Running   0          16s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1     Running   0          10s   controller-revision-hash=ha-postgres-6b7998ccfd,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" -L kubedb.com/role
+NAME            READY   STATUS    RESTARTS   AGE   ROLE
+ha-postgres-0   2/2     Running   0          55s   primary
+ha-postgres-1   2/2     Running   0          48s   standby
+ha-postgres-2   2/2     Running   0          41s   standby
 ```
 
-Here,
+Here:
 
-- Pod `ha-postgres-0` is serving as *primary* server, indicated by label `kubedb.com/role=primary`
-- Pod `ha-postgres-1` & `ha-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=replica`
+- Pod `ha-postgres-0` is the *primary*, indicated by the label `kubedb.com/role=primary`.
+- Pods `ha-postgres-1` and `ha-postgres-2` are *standby* servers, labelled `kubedb.com/role=standby`.
 
-And two services for Postgres `ha-postgres` are created.
+KubeDB creates the following Services for the cluster:
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres"
-NAME                   TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)    AGE
-ha-postgres            ClusterIP   10.102.19.49   <none>        5432/TCP   4m
-ha-postgres-replicas   ClusterIP   10.97.36.117   <none>        5432/TCP   4m
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                               AGE
+ha-postgres           ClusterIP   10.43.19.110   <none>        5432/TCP,2379/TCP                     62s
+ha-postgres-pods      ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP,2384/TCP   62s
+ha-postgres-standby   ClusterIP   10.43.64.57    <none>        5432/TCP                              62s
 ```
 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ha-postgres" -o=custom-columns=NAME:.metadata.name,SELECTOR:.spec.selector
-NAME                   SELECTOR
-ha-postgres            map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres kubedb.com/role:primary]
-ha-postgres-replicas   map[app.kubernetes.io/name:postgreses.kubedb.com app.kubernetes.io/instance:ha-postgres]
+NAME                  SELECTOR
+ha-postgres           map[... kubedb.com/role:primary ...]
+ha-postgres-pods      map[... (all pods) ...]
+ha-postgres-standby   map[... kubedb.com/role:standby ...]
 ```
 
-Here,
+Here:
 
-- Service `ha-postgres` targets Pod `ha-postgres-0`, which is *primary* server, by selector `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary`.
-- Service `ha-postgres-replicas` targets all Pods (*`ha-postgres-0`*, *`ha-postgres-1`* and *`ha-postgres-2`*) with label `app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres`.
+- Service `ha-postgres` always targets the current *primary* (selector includes `kubedb.com/role=primary`).
+  Use it for read/write traffic.
+- Service `ha-postgres-standby` targets the *standby* Pods (`kubedb.com/role=standby`). Use it for
+  read-only traffic when running *hot* standbys.
+- Service `ha-postgres-pods` is a headless service targeting every Pod.
 
->These *standby* servers are asynchronous *warm standby* server. That means, you can only connect to *primary* sever.
-
-Now connect to this *primary* server Pod `ha-postgres-0` using pgAdmin installed in [quickstart](/docs/guides/postgres/quickstart/quickstart.md#before-you-begin) tutorial.
-
-**Connection information:**
-
-- Host name/address: you can use any of these
-  - Service: `ha-postgres.demo`
-  - Pod IP: (`$kubectl get pods ha-postgres-0 -n demo -o yaml | grep podIP`)
-- Port: `5432`
-- Maintenance database: `postgres`
-- Username: Run following command to get *username*,
-
-  ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
-  postgres
-  ```
-
-- Password: Run the following command to get *password*,
-
-  ```bash
-  $ kubectl get secrets -n demo ha-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
-  MHRrOcuyddfh3YpU
-  ```
-
-You can check `pg_stat_replication` information to know who is currently streaming from *primary*.
+Retrieve the credentials to connect:
 
 ```bash
-postgres=# select * from pg_stat_replication;
+$ kubectl get secret -n demo ha-postgres-auth -o jsonpath='{.data.username}' | base64 -d
+postgres
+$ kubectl get secret -n demo ha-postgres-auth -o jsonpath='{.data.password}' | base64 -d
 ```
 
- pid | usesysid | usename  | application_name | client_addr | client_port |         backend_start         |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
------|----------|----------|------------------|-------------|-------------|-------------------------------|-----------|---------------|----------------|----------------|-----------------|---------------|------------
-  89 |       10 | postgres | ha-postgres-2    | 172.17.0.8  |       35306 | 2018-02-09 04:27:11.674828+00 | streaming | 0/5000060     | 0/5000060      | 0/5000060      | 0/5000060       |             0 | async
-  90 |       10 | postgres | ha-postgres-1    | 172.17.0.7  |       42400 | 2018-02-09 04:27:13.716104+00 | streaming | 0/5000060     | 0/5000060      | 0/5000060      | 0/5000060       |             0 | async
+You can check `pg_stat_replication` on the primary to see who is streaming:
 
-Here, both `ha-postgres-1` and `ha-postgres-2` are streaming asynchronously from *primary* server.
-
-### Lease Duration
-
-Get the postgres CRD at this point.
-
-```yaml
-$ kubectl get pg -n demo   ha-postgres -o yaml
-apiVersion: kubedb.com/v1
-kind: Postgres
-metadata:
-  creationTimestamp: "2019-02-07T12:14:05Z"
-  finalizers:
-  - kubedb.com
-  generation: 2
-  name: ha-postgres
-  namespace: demo
-  resourceVersion: "44966"
-  selfLink: /apis/kubedb.com/v1/namespaces/demo/postgreses/ha-postgres
-  uid: dcf6d96a-2ad1-11e9-9d44-080027154f61
-spec:
-  authSecret:
-    name: ha-postgres-auth
-  leaderElection:
-    leaseDurationSeconds: 15
-    renewDeadlineSeconds: 10
-    retryPeriodSeconds: 2
-  podTemplate:
-    controller: {}
-    metadata: {}
-    spec:
-      resources: {}
-  replicas: 3
-  storage:
-    accessModes:
-    - ReadWriteOnce
-    dataSource: null
-    resources:
-      requests:
-        storage: 1Gi
-    storageClassName: standard
-  storageType: Durable
-  deletionPolicy: Halt
-  version: "10.2"-v5
-status:
-  observedGeneration: 2$4213139756412538772
-  phase: Running
+```bash
+$ kubectl exec -n demo ha-postgres-0 -c postgres -- psql -U postgres \
+    -c "select application_name, client_addr, state, sync_state from pg_stat_replication order by 1;"
+ application_name | client_addr |   state   | sync_state
+------------------+-------------+-----------+------------
+ ha-postgres-1    | 10.42.0.176 | streaming | async
+ ha-postgres-2    | 10.42.0.180 | streaming | async
+(2 rows)
 ```
 
-There are three fields under Postgres CRD's `spec.leaderElection`. These values defines how fast the leader election can happen.
-
-- leaseDurationSeconds: This is the duration in seconds that non-leader candidates will wait to force acquire leadership. This is measured against time of last observed ack. Default 15 secs.
-- renewDeadlineSeconds: This is the duration in seconds that the acting master will retry refreshing leadership before giving up. Normally, LeaseDuration * 2 / 3. Default 10 secs.
-- retryPeriodSeconds: This is the duration in seconds the LeaderElector clients should wait between tries of actions. Normally, LeaseDuration / 3. Default 2 secs.
-
-If the Cluster machine is powerful, user can reduce the times. But, Do not make it so little, in that case Postgres will restarts very often.
+Both standbys are streaming with `sync_state = async` — this is asynchronous replication.
 
 ### Automatic failover
 
-If *primary* server fails, another *standby* server will take over and serve as *primary*.
-
-Delete Pod `ha-postgres-0` to see the failover behavior.
-
-```bash
-kubectl delete pod -n demo ha-postgres-0
-```
+If the *primary* fails, the `pg-coordinator` promotes a healthy *standby* to *primary*. Let's delete
+the primary Pod and watch the failover:
 
 ```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" --show-labels
-NAME            READY     STATUS    RESTARTS   AGE       LABELS
-ha-postgres-0   1/1       Running   0          10s       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-0
-ha-postgres-1   1/1       Running   0          52m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=ha-postgres-1
-ha-postgres-2   1/1       Running   0          51m       controller-revision-hash=ha-postgres-b8b4b5fc4,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=ha-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=ha-postgres-2
+$ kubectl delete pod -n demo ha-postgres-0
+pod "ha-postgres-0" deleted
 ```
 
-Here,
-
-- Pod `ha-postgres-1` is now serving as *primary* server
-- Pod `ha-postgres-0` and `ha-postgres-2` both are serving as *standby* server
-
-And result from `pg_stat_replication`
+Within a few seconds a new primary is elected (≈14s in this run). After things settle:
 
 ```bash
-postgres=# select * from pg_stat_replication;
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=ha-postgres" -L kubedb.com/role
+NAME            READY   STATUS    RESTARTS   AGE   ROLE
+ha-postgres-0   2/2     Running   0          20m   standby
+ha-postgres-1   2/2     Running   0          21m   primary
+ha-postgres-2   2/2     Running   0          21m   standby
 ```
 
- pid | usesysid | usename  | application_name | client_addr | client_port |         backend_start         |   state   | sent_location | write_location | flush_location | replay_location | sync_priority | sync_state
------|----------|----------|------------------|-------------|-------------|-------------------------------|-----------|---------------|----------------|----------------|-----------------|---------------|------------
-  57 |       10 | postgres | ha-postgres-0    | 172.17.0.6  |       52730 | 2018-02-09 04:33:06.051716|00 | streaming | 0/7000060     | 0/7000060      | 0/7000060      | 0/7000060       |             0 | async
-  58 |       10 | postgres | ha-postgres-2    | 172.17.0.8  |       42824 | 2018-02-09 04:33:09.762168|00 | streaming | 0/7000060     | 0/7000060      | 0/7000060      | 0/7000060       |             0 | async
+Pod `ha-postgres-1` is now the *primary*; the old primary `ha-postgres-0` rejoined as a *standby*.
+The `ha-postgres` Service automatically follows the new primary, so applications reconnect without
+configuration changes.
 
-You can see here, now `ha-postgres-0` and `ha-postgres-2` are streaming asynchronously from `ha-postgres-1`, our *primary* server.
+```bash
+$ kubectl exec -n demo ha-postgres-1 -c postgres -- psql -U postgres \
+    -c "select application_name, client_addr, state, sync_state from pg_stat_replication order by 1;"
+ application_name | client_addr |   state   | sync_state
+------------------+-------------+-----------+------------
+ ha-postgres-0    | 10.42.0.182 | streaming | async
+ ha-postgres-2    | 10.42.0.180 | streaming | async
+(2 rows)
+```
 
-<p align="center">
-  <kbd>
-    <img alt="recovered-postgres"  src="/docs/images/postgres/ha-postgres.gif">
-  </kbd>
-</p>
+## Synchronous Streaming Replication
 
-[//]: # (If you want to know how this failover process works, [read here])
+With synchronous replication, a commit on the primary does not return until the required number of
+standbys confirm they received (or applied) the transaction. KubeDB exposes full control over
+PostgreSQL's `synchronous_standby_names` and `synchronous_commit` through
+`spec.synchronousReplicationConfig`.
 
-## Streaming Replication with `hot standby`
+> **Availability:** `spec.synchronousReplicationConfig` is available from **KubeDB `v2026.7.10`**. It is
+> rendered by the database init scripts, which require **`postgres-init` image `>= 0.20.0`**. Confirm
+> your chosen version points to a compatible init image:
+>
+> ```bash
+> $ kubectl get postgresversion 17.4 -o jsonpath='{.spec.initContainer.image}'
+> ghcr.io/kubedb/postgres-init:0.20.0
+> ```
+>
+> If a version still references an older init image, synchronous config falls back to the legacy
+> `ANY 1` behaviour — pick a version whose `initContainer.image` is `>= 0.20.0`.
 
-Streaming Replication also works with one or more *hot standby* servers.
+### The `synchronousReplicationConfig` API
+
+| Field | Type | Default | Description |
+|---|---|---|---|
+| `mode` | `Any` \| `First` | `Any` | `Any` = quorum (`ANY N`); `First` = priority order (`FIRST N`). |
+| `numSyncReplicas` | integer | `1` | The `N` in `ANY N` / `FIRST N`. Must be `>= 1` and `< spec.replicas` (or `<= len(standbyNames)` when names are given). |
+| `commitLevel` | `On` \| `RemoteApply` \| `RemoteWrite` \| `Local` \| `Off` | `RemoteWrite` | Maps to `synchronous_commit`. |
+| `standbyNames` | `[]string` | auto (all pods, ascending) | Explicit, ordered list of standby `application_name`s. For `First` mode the order is the priority. No empty strings or duplicates. Mutually exclusive with `useWildcard`. |
+| `useWildcard` | bool | `false` | Use `*` to match any connected standby. Renders `... (*)`. Mutually exclusive with `standbyNames`. |
+
+These fields render `synchronous_standby_names` as `<MODE> <numSyncReplicas> (<names or *>)`.
+
+> ⚠️ **YAML gotcha:** `On` and `Off` are parsed as booleans in YAML. Always **quote** them:
+> `commitLevel: "On"`. An unquoted `commitLevel: On` is rejected by the admission webhook.
+
+### Example 1 — Quorum (`Any`)
+
+Wait for **any 2** of the standbys to acknowledge each commit:
 
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Postgres
 metadata:
-  name: hot-postgres
+  name: sync-postgres
   namespace: demo
 spec:
-  version: "18.3"
+  version: "17.4"
   replicas: 3
   standbyMode: Hot
+  streamingMode: Synchronous
+  synchronousReplicationConfig:
+    mode: Any            # Any (quorum) | First (priority-ordered)
+    numSyncReplicas: 2   # wait for this many standbys before a commit returns
+    commitLevel: RemoteWrite  # On | RemoteApply | RemoteWrite | Local | Off
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -297,105 +239,183 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
 ```
 
-In this examples:
-
-- This `Postgres` object creates three PostgreSQL servers, indicated by the **`replicas`** field.
-- One server will be *primary* and two others will be *hot standby* servers, as instructed by **`spec.standbyMode`**
-
-### `hot standby` setup
-
-Following parameters are set in `postgresql.conf` for *standby* server
-
 ```bash
-hot_standby = on
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/sync-postgres.yaml
+postgres.kubedb.com/sync-postgres created
 ```
 
-Here,
-
-- _hot_standby_ specifies that *standby* server will act as *hot standby*.
-
-Now create this Postgres object
+Once `Ready`, inspect the rendered configuration on the primary:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/clustering/hot-postgres.yaml
-postgres "hot-postgres" created
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres -tAc "SHOW synchronous_standby_names;"
+ANY 2 ("sync-postgres-1","sync-postgres-2")
+
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres -tAc "SHOW synchronous_commit;"
+remote_write
+
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres \
+    -c "select application_name, state, sync_state from pg_stat_replication order by 1;"
+ application_name |   state   | sync_state
+------------------+-----------+------------
+ sync-postgres-1  | streaming | quorum
+ sync-postgres-2  | streaming | quorum
+(2 rows)
 ```
 
-KubeDB operator creates three Pod as PostgreSQL server.
+With `Any` (quorum) mode the eligible standbys report `sync_state = quorum`: a commit succeeds as soon
+as **any 2** of them acknowledge.
 
-```bash
-$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hot-postgres" --show-labels
-NAME             READY     STATUS    RESTARTS   AGE       LABELS
-hot-postgres-0   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=primary,petset.kubernetes.io/pod-name=hot-postgres-0
-hot-postgres-1   1/1       Running   0          1m        controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-1
-hot-postgres-2   1/1       Running   0          48s       controller-revision-hash=hot-postgres-6c48cfb5bb,app.kubernetes.io/name=postgreses.kubedb.com,app.kubernetes.io/instance=hot-postgres,kubedb.com/role=replica,petset.kubernetes.io/pod-name=hot-postgres-2
+### Example 2 — Priority order (`First` + `standbyNames`)
+
+Use `First` mode with an explicit ordered `standbyNames` list to make `sync-postgres-2` the preferred
+synchronous standby, and use the strongest `commitLevel`:
+
+```yaml
+spec:
+  version: "17.4"
+  replicas: 3
+  standbyMode: Hot
+  streamingMode: Synchronous
+  synchronousReplicationConfig:
+    mode: First
+    numSyncReplicas: 1
+    commitLevel: "On"        # quoted — see the YAML gotcha above
+    standbyNames:
+    - sync-postgres-2        # highest priority
+    - sync-postgres-1
 ```
 
-Here,
+```bash
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres -tAc "SHOW synchronous_standby_names;"
+FIRST 1 ("sync-postgres-2","sync-postgres-1")
 
-- Pod `hot-postgres-0` is serving as *primary* server, indicated by label `kubedb.com/role=primary`
-- Pod `hot-postgres-1` & `hot-postgres-2` both are serving as *standby* server, indicated by label `kubedb.com/role=replica`
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres -tAc "SHOW synchronous_commit;"
+on
 
-> These *standby* servers are asynchronous *hot standby* servers.
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres \
+    -c "select application_name, sync_state from pg_stat_replication order by 1;"
+ application_name | sync_state
+------------------+------------
+ sync-postgres-1  | potential
+ sync-postgres-2  | sync
+(2 rows)
+```
 
-That means, you can connect to both *primary* and *standby* sever. But these *hot standby* servers only accept read-only queries.
+`sync-postgres-2` is first in the list, so it is the active `sync` standby; `sync-postgres-1` is a
+`potential` standby that is promoted into the synchronous set only if `sync-postgres-2` becomes
+unavailable.
 
-Now connect to one of our *hot standby* servers Pod `hot-postgres-2` using pgAdmin installed in [quickstart](/docs/guides/postgres/quickstart/quickstart.md#before-you-begin) tutorial.
+### Example 3 — Wildcard (`useWildcard`)
 
-**Connection information:**
+When standby `application_name`s are not known in advance, use `useWildcard: true` to accept any
+connected standby:
 
-- Host name/address: you can use any of these
-  - Service: `hot-postgres-replicas.demo`
-  - Pod IP: (`$kubectl get pods hot-postgres-2 -n demo -o yaml | grep podIP`)
-- Port: `5432`
-- Maintenance database: `postgres`
-- Username: Run following command to get *username*,
-
-  ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_USER}' | base64 -d
-  postgres
-  ```
-
-- Password: Run the following command to get *password*,
-
-  ```bash
-  $ kubectl get secrets -n demo hot-postgres-auth -o jsonpath='{.data.\POSTGRES_PASSWORD}' | base64 -d
-  ZZgjjQMUdKJYy1W9
-  ```
-
-Try to create a database (write operation)
+```yaml
+spec:
+  streamingMode: Synchronous
+  synchronousReplicationConfig:
+    mode: Any
+    numSyncReplicas: 1
+    useWildcard: true        # mutually exclusive with standbyNames
+```
 
 ```bash
-postgres=# CREATE DATABASE standby;
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres -tAc "SHOW synchronous_standby_names;"
+ANY 1 (*)
+
+$ kubectl exec -n demo sync-postgres-0 -c postgres -- psql -U postgres \
+    -c "select application_name, sync_state from pg_stat_replication order by 1;"
+ application_name | sync_state
+------------------+------------
+ sync-postgres-1  | quorum
+ sync-postgres-2  | quorum
+(2 rows)
+```
+
+### Choosing a `commitLevel`
+
+`commitLevel` maps directly to PostgreSQL's `synchronous_commit` and trades durability against latency:
+
+| `commitLevel` | `synchronous_commit` | Meaning |
+|---|---|---|
+| `Off` | `off` | Commit returns without even waiting for local WAL flush. Fastest, least durable. |
+| `Local` | `local` | Wait for local WAL flush only; standbys are not waited on. |
+| `RemoteWrite` | `remote_write` | **(default)** Wait until a synchronous standby has written WAL to its OS buffer (not necessarily fsync'd). Lowest-latency synchronous option. |
+| `On` | `on` | Wait until a synchronous standby has flushed WAL to disk. Safe, higher latency. |
+| `RemoteApply` | `remote_apply` | Wait until a synchronous standby has *applied* WAL (queries there see the commit). Highest latency. |
+
+> `synchronousReplicationConfig` is applied when the database is provisioned. Provide it in the initial
+> `Postgres` spec for the mode you want.
+
+### Failover with synchronous replication
+
+Failover works exactly like the [asynchronous case](#automatic-failover): deleting the primary Pod
+causes `pg-coordinator` to promote a standby, and the `sync-postgres` Service follows the new primary.
+The difference is durability — because a commit only returned after a synchronous standby acknowledged
+it, transactions that were confirmed to the client survive the promotion.
+
+## Warm vs Hot standby
+
+`spec.standbyMode` controls whether standbys accept read connections:
+
+- **`Warm`** (default) — standbys replicate but reject all client connections. Connect to the primary only.
+- **`Hot`** — standbys accept read-only queries. Connect to them through the `*-standby` Service.
+
+The `sync-postgres` cluster above uses `standbyMode: Hot`, so its standbys serve reads. A write on a
+standby is rejected, while reads succeed:
+
+```bash
+$ kubectl exec -n demo sync-postgres-1 -c postgres -- psql -U postgres -c "CREATE DATABASE standby_test;"
 ERROR:  cannot execute CREATE DATABASE in a read-only transaction
+
+$ kubectl exec -n demo sync-postgres-1 -c postgres -- psql -U postgres \
+    -c "SELECT pg_is_in_recovery(), pg_last_wal_receive_lsn();"
+ pg_is_in_recovery | pg_last_wal_receive_lsn
+-------------------+-------------------------
+ t                 | 0/504F9F8
+(1 row)
 ```
 
-Failed to execute write operation. But it can execute following read query
+## Lease Duration
 
-```bash
-postgres=# select pg_last_xlog_receive_location();
- pg_last_xlog_receive_location
--------------------------------
- 0/7000220
+The `spec.leaderElection` fields control how quickly a failover can happen:
+
+```yaml
+spec:
+  leaderElection:
+    leaseDurationSeconds: 15
+    renewDeadlineSeconds: 10
+    retryPeriodSeconds: 2
 ```
 
-So, you can see here that you can connect to *hot standby* and it only accepts read-only queries.
+- `leaseDurationSeconds`: how long non-leader candidates wait to force-acquire leadership (measured
+  against the last observed ack). Default 15s.
+- `renewDeadlineSeconds`: how long the acting leader retries refreshing leadership before giving up.
+  Normally `leaseDuration * 2 / 3`. Default 10s.
+- `retryPeriodSeconds`: how long clients wait between action retries. Normally `leaseDuration / 3`.
+  Default 2s.
+
+On powerful clusters you can lower these to speed up failover, but setting them too low makes Postgres
+restart too often.
 
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-$ kubectl patch -n demo pg/ha-postgres pg/hot-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-$ kubectl delete -n demo pg/ha-postgres pg/hot-postgres
-
-$ kubectl delete ns demo
+kubectl patch -n demo pg/ha-postgres pg/sync-postgres -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+kubectl delete -n demo pg/ha-postgres pg/sync-postgres
+kubectl delete ns demo
 ```
 
 ## Next Steps
 
+- Learn about the [synchronous replication overview](/docs/guides/postgres/synchronous/index.md).
+- Run PostgreSQL with a [custom configuration file](/docs/guides/postgres/configuration/using-config-file.md).
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+```

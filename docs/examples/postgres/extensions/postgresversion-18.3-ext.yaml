@@ -1,0 +1,51 @@
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: PostgresVersion
+metadata:
+  name: 18.3-ext
+spec:
+  archiver:
+    addon:
+      name: postgres-addon
+      tasks:
+        fullBackup:
+          name: physical-backup
+        fullBackupRestore:
+          name: physical-backup-restore
+        manifestBackup:
+          name: manifest-backup
+        manifestRestore:
+          name: manifest-restore
+        volumeSnapshot:
+          name: volume-snapshot
+    walg:
+      image: ghcr.io/kubedb/postgres-archiver:v0.27.0_18.2-alpine
+  coordinator:
+    image: ghcr.io/kubedb/pg-coordinator:v0.50.0
+  courier:
+    cli:
+      image: ghcr.io/kubedb/kubedb-migrator-postgresql:v0.6.0
+    statusReporter:
+      image: ghcr.io/kubedb/kubedb-courier:v0.6.0
+  db:
+    baseOS: alpine
+    image: ghcr.io/appscode-images/postgres:18.3-alpine-ext
+  distribution: KubeDB
+  exporter:
+    image: docker.io/prometheuscommunity/postgres-exporter:v0.18.1
+  initContainer:
+    image: ghcr.io/kubedb/postgres-init:0.20.0
+  podSecurityPolicies:
+    databasePolicyName: ''
+  securityContext:
+    runAsAnyNonRoot: false
+    runAsUser: 70
+  ui:
+  - name: pgadmin
+    version: v2026.3.30
+  - name: dbgate
+    version: v2026.3.30
+  updateConstraints:
+    allowlist:
+    - '>= 18.3'
+  version: '18.3'
+
