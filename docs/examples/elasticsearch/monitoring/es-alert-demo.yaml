@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-alert-demo
+  namespace: alert-elasticsearch
+spec:
+  version: xpack-8.19.9
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
