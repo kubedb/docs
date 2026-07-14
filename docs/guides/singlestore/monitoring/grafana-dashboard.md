@@ -322,9 +322,6 @@ Start here for a cluster-level overview. The dashboard has three sections:
 <p align="center">
   <img alt="KubeDB Singlestore Summary Dashboard" src="/docs/images/singlestore/monitoring/sdb-grafana-summary.png" style="padding:10px">
 </p>
-<p align="center">
-  <img alt="KubeDB Singlestore Summary Dashboard - continued" src="/docs/images/singlestore/monitoring/sdb-grafana-summary-2.png" style="padding:10px">
-</p>
 
 ### KubeDB / Singlestore / Pod
 
