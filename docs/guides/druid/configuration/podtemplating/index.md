@@ -120,7 +120,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   configuration:
     secretName: config-secret
   deepStorage:
@@ -168,7 +168,7 @@ Now, wait a few minutes. KubeDB operator will create necessary PVC, petset, serv
 ```bash
 $ kubectl get druid -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Ready    6m5s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready    6m5s
 ```
 
 Check that the petset's pod is running
@@ -269,7 +269,7 @@ metadata:
   name: druid-node-selector
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -294,13 +294,13 @@ Now, wait a few minutes. KubeDB operator will create necessary petset, services,
 ```bash
 $ kubectl get druid -n demo
 NAME                  TYPE                  VERSION   STATUS   AGE
-druid-node-selector   kubedb.com/v1alpha2   28.0.1    Ready    54m
+druid-node-selector   kubedb.com/v1alpha2   36.0.0    Ready    54m
 ```
 You can verify that by running `kubectl get pods -n demo druid-node-selector-0 -o wide` and looking at the “NODE” to which the Pod was assigned.
 ```bash
-$ kubectl get pods -n demo druid-node-selector-cooridnators-0 -o wide
+$ kubectl get pods -n demo druid-node-selector-coordinators-0 -o wide
 NAME                                    READY   STATUS    RESTARTS   AGE     IP            NODE                         NOMINATED NODE   READINESS GATES
-druid-node-selector-cooridnators-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
+druid-node-selector-coordinators-0      1/1     Running   0          3m19s   10.2.1.7   lke212553-307295-5541798e0000   <none>           <none>
 ```
 We can successfully verify that our pod was scheduled to our desired node.
 
@@ -364,7 +364,7 @@ metadata:
   name: druid-without-tolerations
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -385,7 +385,7 @@ Check that the petset's pod is running or not,
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=druid-without-tolerations
 NAME                                          READY   STATUS    RESTARTS   AGE
 druid-without-tolerations-brokers-0           0/1     Pending   0          3m35s
-druid-without-tolerations-cooridnators-0      0/1     Pending   0          3m35s
+druid-without-tolerations-coordinators-0      0/1     Pending   0          3m35s
 druid-without-tolerations-historicals-0       0/1     Pending   0          3m35s
 druid-without-tolerations-middlemanager-0     0/1     Pending   0          3m35s
 druid-without-tolerations-routers-0           0/1     Pending   0          3m35s
@@ -416,7 +416,7 @@ Controlled By:  PetSet/druid-without-tolerations-coordinators
 Init Containers:
   init-druid:
     Container ID:   containerd://62c9a2053d619dded2085e354cd2c0dfa238761033cc0483c824c1ed8ee4c002
-    Image:          ghcr.io/kubedb/druid-init:28.0.1@sha256:ed87835bc0f89dea923fa8e3cf1ef209e3e41cb93944a915289322035dcd8a91
+    Image:          ghcr.io/kubedb/druid-init:36.0.0@sha256:ed87835bc0f89dea923fa8e3cf1ef209e3e41cb93944a915289322035dcd8a91
     Image ID:       ghcr.io/kubedb/druid-init@sha256:ed87835bc0f89dea923fa8e3cf1ef209e3e41cb93944a915289322035dcd8a91
     Port:           <none>
     Host Port:      <none>
@@ -444,7 +444,7 @@ Init Containers:
 Containers:
   druid:
     Container ID:  containerd://3a52f120ca09f90fcdc062c94bf404964add7a5b6ded4a372400267a9d0fd598
-    Image:         ghcr.io/appscode-images/druid:28.0.1@sha256:d86e424233ec5a120c1e072cf506fa169868fd9572bbb9800a85400f0c879dec
+    Image:         ghcr.io/appscode-images/druid:36.0.0@sha256:d86e424233ec5a120c1e072cf506fa169868fd9572bbb9800a85400f0c879dec
     Image ID:      ghcr.io/appscode-images/druid@sha256:d86e424233ec5a120c1e072cf506fa169868fd9572bbb9800a85400f0c879dec
     Port:          8081/TCP
     Host Port:     0/TCP
@@ -515,7 +515,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:

@@ -62,7 +62,7 @@ Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/pxc.yaml
-PerconaXtraDB.kubedb.com/PerconaXtraDB created
+perconaxtradb.kubedb.com/pxc created
 ```
 let's wait until all pods are in the `Running` state,
 
@@ -295,8 +295,8 @@ Bye
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete  PerconaXtraDBopsrequest -n demo restart
-kubectl delete PerconaXtraDB -n demo PerconaXtraDB
+kubectl delete perconaxtradbopsrequest -n demo restart
+kubectl delete perconaxtradb -n demo pxc
 kubectl delete ns demo
 ```
 

@@ -70,7 +70,7 @@ spec:
         interval: 10s
 ```
 
-Assume that above Redis is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.args` field.
+Assume that above MariaDB is configured to use basic authentication. So, exporter image also need to provide password to collect metrics. We have provided it through `spec.monitor.prometheus.exporter.args` field.
 
 Here, we have specified that we are going to monitor this server using Prometheus operator through `spec.monitor.agent: prometheus.io/operator`. KubeDB will create a `ServiceMonitor` crd in `monitoring` namespace and this `ServiceMonitor` will have `release: prometheus` label.
 

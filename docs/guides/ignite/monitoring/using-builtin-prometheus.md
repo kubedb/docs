@@ -46,11 +46,11 @@ At first, let's deploy a Ignite server with monitoring enabled. Below is the Ign
 apiVersion: kubedb.com/v1alpha2
 kind: Ignite
 metadata:
-  name: ignite-quickstart
+  name: builtin-prom-ignite
   namespace: demo
 spec:
   replicas: 3
-  version: 2.17.0
+  version: 2.18.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -78,7 +78,7 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get ig -n demo builtin-prom-ignite
 NAME                 VERSION    STATUS    AGE
-builtin-prom-ignite   1.6.22     Ready     30s
+builtin-prom-ignite   2.18.0     Ready     30s
 ```
 
 KubeDB will create a separate stats service with name `{Ignite crd name}-stats` for monitoring purpose.
@@ -86,8 +86,8 @@ KubeDB will create a separate stats service with name `{Ignite crd name}-stats` 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-ignite"
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-builtin-prom-ignite        ClusterIP   10.96.168.132   <none>        11211/TCP   20s
-builtin-prom-ignite-pods   ClusterIP   None            <none>        11211/TCP   20s
+builtin-prom-ignite        ClusterIP   10.96.168.132   <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   20s
+builtin-prom-ignite-pods   ClusterIP   None            <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   20s
 builtin-prom-ignite-stats  ClusterIP   10.96.40.60     <none>        56790/TCP   20s
 ```
 
@@ -102,7 +102,7 @@ Labels:            app.kubernetes.io/component=database
                    app.kubernetes.io/managed-by=kubedb.com
                    app.kubernetes.io/name=ignites.kubedb.com
                    kubedb.com/role=stats
-Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
+Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
 Selector:          app.kubernetes.io/instance=builtin-prom-ignite,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
 Type:              ClusterIP
 IP Family Policy:  SingleStack
@@ -269,7 +269,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/v2024.8.21/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

@@ -95,7 +95,7 @@ metadata:
   name: coreos-prom-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

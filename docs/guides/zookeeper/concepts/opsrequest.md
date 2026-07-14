@@ -265,6 +265,7 @@ If you want to scale-up or scale-down your ZooKeeper cluster or different compon
 `spec.verticalScaling` is a required field specifying the information of `ZooKeeper` resources like `cpu`, `memory` etc. that will be scaled. This field consists of the following sub-fields:
 
 - `spec.verticalScaling.node` indicates the desired resources for PetSet of ZooKeeper after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 It has the below structure:
 

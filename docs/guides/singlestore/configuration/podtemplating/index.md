@@ -596,8 +596,8 @@ Containers:
       cpu:     500m
       memory:  2Gi
     Environment:
-      ROOT_USERNAME:        <set to the key 'username' in secret 'sdb-without-tolerations-root-cred'>  Optional: false
-      ROOT_PASSWORD:        <set to the key 'password' in secret 'sdb-without-tolerations-root-cred'>  Optional: false
+      ROOT_USERNAME:        <set to the key 'username' in secret 'sdb-without-tolerations-auth'>  Optional: false
+      ROOT_PASSWORD:        <set to the key 'password' in secret 'sdb-without-tolerations-auth'>  Optional: false
       SINGLESTORE_LICENSE:  <set to the key 'password' in secret 'license-secret'>                     Optional: false
       LICENSE_KEY:          <set to the key 'password' in secret 'license-secret'>                     Optional: false
       HOST_IP:               (v1:status.hostIP)

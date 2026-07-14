@@ -101,7 +101,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 3
   configuration:
@@ -129,9 +129,9 @@ Now, wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get es -n demo -w
 NAME           VERSION          STATUS         AGE
-es-multinode   xpack-8.19.9   Provisioning   18s
-es-multinode   xpack-8.19.9   Provisioning   2m5s
-es-multinode   xpack-8.19.9   Ready          2m5s
+es-multinode   xpack-9.2.3   Provisioning   18s
+es-multinode   xpack-9.2.3   Provisioning   2m5s
+es-multinode   xpack-9.2.3   Ready          2m5s
 ```
 
 ## Verify Configuration
@@ -155,14 +155,14 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
   elastic
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-multinode-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
   ehG7*7SJZ0o9PA05
   ```
 

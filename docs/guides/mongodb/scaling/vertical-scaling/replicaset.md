@@ -43,7 +43,7 @@ Here, we are going to deploy a  `MongoDB` replicaset using a supported version b
 
 ### Prepare MongoDB Replicaset Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `8.0.17`.
 
 ### Deploy MongoDB replicaset 
 
@@ -56,7 +56,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -145,6 +145,7 @@ Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.replicaSet` specifies the desired resources after scaling.
 - `spec.VerticalScaling.arbiter` could also be specified in similar fashion to get the desired resources for arbiter pod.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/mongodb/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
@@ -299,6 +300,48 @@ $ kubectl get pod -n demo mg-replicaset-0 -o json | jq '.spec.containers[].resou
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MongoDB replicaset database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`MongoDBOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MongoDBOpsRequest
+metadata:
+  name: mops-vscale-replicaset-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: mg-replicaset
+  verticalScaling:
+    mode: InPlace
+    replicaSet:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+  readinessCriteria:
+    oplogMaxLagSeconds: 20
+    objectsCountDiffPercentage: 10
+  timeout: 5m
+  apply: IfReady
+```
+
+Let's create the `MongoDBOpsRequest` CR we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/scaling/vertical-scaling/mops-vscale-replicaset-inplace.yaml
+mongodbopsrequest.ops.kubedb.com/mops-vscale-replicaset-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

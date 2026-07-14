@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare Memcached Database
 
-Now, we are going to deploy a `Memcached` database with version `1.6.22`.
+Now, we are going to deploy a `Memcached` database with version `1.6.33`.
 
 ### Deploy Memcached:
 
@@ -52,7 +52,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.33"
   podTemplate:
     spec:
       containers:
@@ -80,14 +80,14 @@ Now, wait until `memcd-quickstart` created has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    3m
+memcd-quickstart   1.6.33    Ready    3m
 ```
 
 We are now ready to apply the `MemcachedOpsRequest` CR to update this database.
 
 ### Update Memcached Version
 
-Here, we are going to update `Memcached` sdatabase from `1.6.22` to `1.6.29`.
+Here, we are going to update `Memcached` sdatabase from `1.6.33` to `1.6.40`.
 
 #### Create MemcachedOpsRequest:
 
@@ -104,14 +104,14 @@ spec:
   databaseRef:
     name: memcd-quickstart
   updateVersion:
-    targetVersion: 1.6.29
+    targetVersion: 1.6.40
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `memcd-quickstart` Memcached database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `1.6.29`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `1.6.40`.
 
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
@@ -139,13 +139,13 @@ Now, we are going to verify whether the `Memcached` and the related `PetSets` th
 
 ```bash
 $ kubectl get memcached -n demo memcd-quickstart -o=jsonpath='{.spec.version}{"\n"}'
-1.6.29
+1.6.40
 
 $ kubectl get petset -n demo memcd-quickstart -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/memcached:1.6.29-alpine
+ghcr.io/appscode-images/memcached:1.6.40-alpine
 
 $ kubectl get pods -n demo memcd-quickstart-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/memcached:1.6.29-alpine
+ghcr.io/appscode-images/memcached:1.6.40-alpine
 ```
 
 You can see from above, our `Memcached` database has been updated with the new version. So, the UpdateVersion process is successfully completed.
@@ -161,6 +161,6 @@ memcached.kubedb.com/memcd-quickstart patched
 $ kubectl delete -n demo Memcached memcd-quickstart
 memcached.kubedb.com "memcd-quickstart" deleted
 
-$ kubectl delete -n demo memcachedopsrequest update-standalone
+$ kubectl delete -n demo memcachedopsrequest update-memcd
 memcachedopsrequest.ops.kubedb.com "update-memcd" deleted
 ```

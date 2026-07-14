@@ -100,7 +100,7 @@ sample-mariadb   11.8.5    Ready    3m46s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -296,7 +296,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mariadb -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE

@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: milvus-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: milvus-cluster
+  updateVersion:
+    targetVersion: 2.6.11
+  timeout: 5m
+  apply: IfReady

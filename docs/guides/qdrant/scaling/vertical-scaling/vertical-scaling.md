@@ -103,8 +103,8 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
     "memory": "1Gi"
   },
   "requests": {
-    "cpu": "250m",
-    "memory": "512Mi"
+    "cpu": "500m",
+    "memory": "1Gi"
   }
 }
 ```
@@ -143,6 +143,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling on `qdrant-sample` Qdrant database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.verticalScaling.node.resources` specifies the desired CPU and memory resources for the Qdrant nodes.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/qdrant/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 - `spec.timeout` specifies the timeout for the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#spectimeout)).
 - `spec.apply` specifies when to apply the operation (learn more [here](/docs/guides/qdrant/concepts/opsrequest.md#specapply)).
 
@@ -184,6 +185,45 @@ $ kubectl get pod -n demo qdrant-sample-0 -o json | jq '.spec.containers[0].reso
 ```
 
 You can see from the above output that the resources of the `qdrant-sample-0` pod have been updated successfully. All pods in the cluster will have the same updated resource configuration.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`QdrantOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: qdrant-sample
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
+  timeout: 5m
+  apply: IfReady
+```
+
+Let's create the `QdrantOpsRequest` CR we have shown above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/qdrant/scaling/vertical-scaling/vscale-inplace.yaml
+qdrantopsrequest.ops.kubedb.com/qdops-vscale-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Next Steps
 

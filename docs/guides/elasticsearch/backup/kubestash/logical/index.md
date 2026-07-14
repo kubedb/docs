@@ -67,7 +67,7 @@ metadata:
   name: es-quickstart
   namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -84,7 +84,7 @@ spec:
 Create the above `Elasticsearch` CR,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/es-quickstart.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/sample-es.yaml
 elasticsearch.kubedb.com/es-quickstart created
 ```
 
@@ -95,7 +95,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get es -n demo es-quickstart
 NAME              VERSION        STATUS   AGE
-es-quickstart     xpack-8.17.6   Ready    3h
+es-quickstart     xpack-9.2.3   Ready    3h
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -108,7 +108,7 @@ es-quickstart-beats-system-cred             kubernetes.io/basic-auth   2      3h
 es-quickstart-ca-cert                       kubernetes.io/tls          2      3h1m
 es-quickstart-client-cert                   kubernetes.io/tls          3      3h1m
 es-quickstart-config                        Opaque                     1      3h1m
-es-quickstart-elastic-cred                  kubernetes.io/basic-auth   2      3h35m
+es-quickstart-auth                  kubernetes.io/basic-auth   2      3h35m
 es-quickstart-http-cert                     kubernetes.io/tls          3      3h1m
 es-quickstart-kibana-system-cred            kubernetes.io/basic-auth   2      3h35m
 es-quickstart-logstash-system-cred          kubernetes.io/basic-auth   2      3h35m
@@ -122,7 +122,7 @@ es-quickstart-master   ClusterIP   None             <none>        9300/TCP   3h2
 es-quickstart-pods     ClusterIP   None             <none>        9200/TCP   3h2m
 ```
 
-Here, we have to use service `es-quickstart` and secret `es-quickstart-elastic-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `es-quickstart` and secret `es-quickstart-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/elasticsearch/concepts/appbinding/index.md) CR that holds the necessary information to connect with the database.
 
 
 **Verify AppBinding:**
@@ -132,7 +132,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
  $ kubectl get appbindings -n demo
 NAME              TYPE                       VERSION   AGE
-es-quickstart     kubedb.com/elasticsearch   8.15.0    3h6m
+es-quickstart     kubedb.com/elasticsearch   9.2.3    3h6m
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -149,7 +149,7 @@ items:
     metadata:
       annotations:
         kubectl.kubernetes.io/last-applied-configuration: |
-          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-8.17.6"}}
+          {"apiVersion":"kubedb.com/v1alpha2","kind":"Elasticsearch","metadata":{"annotations":{},"name":"es-quickstart","namespace":"demo"},"spec":{"enableSSL":true,"storageType":"Durable","topology":{"data":{"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"ingest":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}},"master":{"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"}}},"version":"xpack-9.2.3"}}
       creationTimestamp: "2024-09-18T09:46:17Z"
       generation: 1
       labels:
@@ -196,11 +196,11 @@ items:
                 - name: args
                   value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
       secret:
-        name: es-quickstart-elastic-cred
+        name: es-quickstart-auth
       tlsSecret:
         name: es-quickstart-client-cert
       type: kubedb.com/elasticsearch
-      version: 8.15.0
+      version: 9.2.3
 kind: List
 metadata:
   resourceVersion: ""
@@ -218,9 +218,9 @@ Here,
 
 Now, we are going to insert some data into Elasticsearch.
 ```bash
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-quickstart-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 tS$k!2IBI.ASI7FJ
 ```
 
@@ -436,7 +436,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/es-quickstart-backup created
 ```
 
@@ -522,7 +522,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart
     kubestash.com/app-ref-namespace: demo
@@ -605,7 +605,7 @@ metadata:
   name: es-cluster
   namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -631,7 +631,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 ```bash
 $ kubectl get es -n demo restored-es
 NAME               VERSION   STATUS         AGE
-es-cluster         8.15.0    Provisioning   61s
+es-cluster         9.2.3    Provisioning   61s
 ```
 
 #### Create RestoreSession:
@@ -697,13 +697,13 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get es -n demo es-cluster
 NAME            VERSION        STATUS   AGE
-es-cluster      xpack-8.17.6   Ready    6m14s
+es-cluster      xpack-9.2.3   Ready    6m14s
 ```
 
 ```bash
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 tS$k!2IBI.ASI7FJ
 ```
 

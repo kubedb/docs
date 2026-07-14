@@ -1,0 +1,17 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: WeaviateAutoscaler
+metadata:
+  name: weaviate-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: weaviate-sample
+  storage:
+    weaviate:
+      trigger: "On"
+      usageThreshold: 20
+      scalingThreshold: 50
+      expansionMode: "Online"
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 10m

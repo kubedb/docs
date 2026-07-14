@@ -58,7 +58,7 @@ Now, we are going to deploy a `RabbitMQ` cluster using a supported version by `K
 
 #### Deploy RabbitMQ Cluster
 
-In this section, we are going to deploy a RabbitMQ cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to deploy a RabbitMQ cluster with version `4.2.4`.  Then, in the next section we will set up autoscaling for this database using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 > If you want to autoscale RabbitMQ `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -69,7 +69,7 @@ metadata:
   name: rabbitmq-autoscale
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -109,7 +109,7 @@ Now, wait until `rabbitmq-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get rabbitmq -n demo
 NAME                 VERSION   STATUS   AGE
-rabbitmq-autoscale   3.13.2    Ready    3m46s
+rabbitmq-autoscale   4.2.4    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

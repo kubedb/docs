@@ -151,7 +151,7 @@ $ kubectl get secret -n demo pg-ha-tuning-eba1da -o jsonpath='{.data.pgtune\.con
 # Tuned by KubeDB
 # https://kubedb.com
 
-# DB Version: 17
+# DB Version: 18
 # OS Type: linux
 # DB Type: web
 # Total Memory (RAM): 2 GB

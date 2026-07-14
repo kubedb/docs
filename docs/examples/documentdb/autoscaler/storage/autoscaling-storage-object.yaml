@@ -1,0 +1,33 @@
+# Base DocumentDB for STORAGE autoscaling tests.
+# Storage autoscaling issues a VolumeExpansion ops request, which REQUIRES an
+# expandable StorageClass (allowVolumeExpansion: true). local-path is NOT
+# expandable, so use longhorn (installed in this cluster). Start small (2Gi) so
+# the volume fills past usageThreshold quickly when you write data.
+apiVersion: kubedb.com/v1alpha2
+kind: DocumentDB
+metadata:
+  name: dcdb
+  namespace: demo
+spec:
+  version: 'pg17-0.109.0'
+  storageType: Durable
+  deletionPolicy: Delete
+  replicas: 3
+  podTemplate:
+    spec:
+      containers:
+        - name: documentdb
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+  storage:
+    storageClassName: "longhorn"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi

@@ -143,7 +143,7 @@ metadata:
   name: mssqlserver-standalone
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   storageType: Durable
   tls:
@@ -178,7 +178,7 @@ mssqlserver.kubedb.com/mssqlserver-standalone created
 
 Here,
 
-- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2022-cu12` database is going to be created.
+- `spec.version` is the name of the MSSQLServerVersion CR where the docker images are specified. In this tutorial, a MSSQLServer `2025-cu0` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MSSQLServer database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MSSQLServer database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.tls` specifies the TLS/SSL configurations. The KubeDB operator supports TLS management by using the [cert-manager](https://cert-manager.io/). Here `tls.clientTLS: false` means tls will not be enabled for SQL Server but the Issuer will be used to configure tls enabled wal-g proxy-server which is required for SQL Server backup operation.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
@@ -376,7 +376,7 @@ mssql@mssqlserver-standalone-0:/$
 
 You can connect to the database using the `sqlcmd` utility, which comes with the mssql-tools package on Linux. To check the installed version of sqlcmd, run the following command:
 ```bash
-mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd "-?"
+mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd "-?"
 Microsoft (R) SQL Server Command Line Tool
 Version 17.10.0001.1 Linux
 Copyright (C) 2017 Microsoft Corporation. All rights reserved.
@@ -412,7 +412,7 @@ usage: sqlcmd            [-U login id]          [-P password]
 
 Now, connect to the database using username and password
 ```bash
-mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK"
+mssql@mssqlserver-standalone-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "axgXHj4oRIVQ1ocK" -No
 1> select name from sys.databases
 2> go
 name                                                  

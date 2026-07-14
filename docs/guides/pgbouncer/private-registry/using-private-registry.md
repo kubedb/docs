@@ -36,7 +36,7 @@ namespace/demo created
 - You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/r/kubedb/) into your private registry. For pgbouncer, push `SERVER_IMAGE`, `EXPORTER_IMAGE` of following PgBouncerVersions, where `deprecated` is not true, to your private registry.
 
   ```bash
-  $ kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.server.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
+  $ kubectl get pgbouncerversions -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.pgBouncer.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   SERVER_IMAGE              EXPORTER_IMAGE                     DEPRECATED
   1.17.0   1.17.0    kubedb/pgbouncer:1.17.0   kubedb/pgbouncer_exporter:v0.1.1   false
   ```
@@ -94,12 +94,12 @@ Now, create the PgBouncerVersion crd,
 
 ```bash
 $ kubectl apply -f pvt-pgbouncerversion.yaml
-pgbouncerversion.kubedb.com/pvt-1.17.0 created
+pgbouncerversion.kubedb.com/1.17.0 created
 ```
 
 ## Deploy PgBouncer from Private Registry
 
-While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `pvt-1.17.0` in `spec.version` field.
+While deploying PgBouncer from private repository, you have to add `myregistrykey` secret in PgBouncer `spec.podTemplate.spec.imagePullSecrets` and specify `1.17.0` in `spec.version` field.
 
 Below is the PgBouncer object we will create in this tutorial
 

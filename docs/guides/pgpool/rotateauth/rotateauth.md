@@ -57,7 +57,7 @@ Here,
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 ```shell
- $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotate-auth/rotate-auth.yaml
+ $kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauth.yaml
  pgpoolopsrequest.ops.kubedb.com/pgpops-rotate-auth-generated created
 ```
 Let's wait for `PgpoolOpsrequest` to be `Successful`. Run the following command to watch `PgpoolOpsrequest` CR
@@ -210,13 +210,13 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing rotate authentication operation on `quick-pgpool`cluster.
 - `spec.type` specifies that we are performing `RotateAuth` on Pgpool.
-- `spec.authentication.secretRef.name` specifies that we are using `quick-pp-user-auth` as `spec.authsecret.name` for authentication.
+- `spec.authentication.secretRef.name` specifies that we are using `quick-pp-user-auth` as `spec.authSecret.name` for authentication.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotate-auth/rotateauthuser.yaml
-Pgpoolopsrequest.ops.kubedb.com/pbops-rotate-auth-user created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/rotateauth/rotateauthuser.yaml
+pgpoolopsrequest.ops.kubedb.com/ppops-rotate-auth-user created
 ```
 Let’s wait for `PgpoolOpsRequest` to be Successful. Run the following command to watch `PgpoolOpsRequest` CR:
 

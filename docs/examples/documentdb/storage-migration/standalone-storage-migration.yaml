@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DocumentDBOpsRequest
+metadata:
+  name: documentdb-sa-storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: documentdb-sa-sample
+  timeout: 10m
+  migration:
+    storageClassName: standard-custom
+    oldPVReclaimPolicy: Delete

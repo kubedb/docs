@@ -41,7 +41,7 @@ namespace/demo created
 
 ## Autoscaling of ClickHouse
 
-In this section, we are going to deploy a ClickHouse with version `24.4.1`  Then, in the next section we will set up autoscaling for this ClickHouse using `ClickHouseAutoscaler` CRD. Below is the YAML of the `ClickHouse` CR that we are going to create,
+In this section, we are going to deploy a ClickHouse with version `26.2.6`  Then, in the next section we will set up autoscaling for this ClickHouse using `ClickHouseAutoscaler` CRD. Below is the YAML of the `ClickHouse` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -50,7 +50,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false

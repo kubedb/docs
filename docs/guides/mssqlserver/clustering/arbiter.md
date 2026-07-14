@@ -97,7 +97,7 @@ metadata:
   name: ms-even-cluster
   namespace: demo
 spec:
-  version: "2022-cu16"
+  version: "2025-cu0"
   replicas: 2
   topology:
     mode: AvailabilityGroup

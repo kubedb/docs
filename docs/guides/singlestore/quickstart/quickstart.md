@@ -164,7 +164,7 @@ data-sdb-quickstart-aggregator-0          Bound    pvc-75057e3d-e1d7-4770-905b-6
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                                          STORAGECLASS   VOLUMEATTRIBUTESCLASS   REASON   AGE
 pvc-4f45c51b-47d4-4254-8275-782bf3588667   10Gi       RWO            Delete           Bound    demo/data-sdb-quickstart-leaf-0                standard       <unset>                          87s
-pvc-75057e3d-e1d7-4770-905b-6049f2edbcde   1Gi        RWO            Delete           Bound    demo/data-sdb-quickstart-master-aggregator-0   standard       <unset>                          91s
+pvc-75057e3d-e1d7-4770-905b-6049f2edbcde   1Gi        RWO            Delete           Bound    demo/data-sdb-quickstart-aggregator-0   standard       <unset>                          91s
 pvc-769e68f4-80a9-4e3e-b2bc-e974534b9dee   10Gi       RWO            Delete           Bound    demo/data-sdb-quickstart-leaf-1                standard       <unset>                          80s
 $ kubectl get service -n demo
 NAME                  TYPE           CLUSTER-IP     EXTERNAL-IP   PORT(S)                         AGE
@@ -194,7 +194,7 @@ metadata:
   uid: 29d6a814-e801-45b5-8217-b59fc77d84e5
 spec:
   authSecret:
-    name: sdb-quickstart-root-cred
+    name: sdb-quickstart-auth
   healthChecker:
     failureThreshold: 1
     periodSeconds: 10
@@ -397,28 +397,28 @@ status:
 
 ## Connect with SingleStore database
 
-KubeDB operator has created a new Secret called `sdb-quickstart-root-cred` *(format: {singlestore-object-name}-root-cred)* for storing the password for `singlestore` superuser. This secret contains a `username` key which contains the *username* for SingleStore superuser and a `password` key which contains the *password* for SingleStore superuser.
+KubeDB operator has created a new Secret called `sdb-quickstart-auth` *(format: {singlestore-object-name}-auth)* for storing the password for `singlestore` superuser. This secret contains a `username` key which contains the *username* for SingleStore superuser and a `password` key which contains the *password* for SingleStore superuser.
 
-If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/database/index.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [the SingleStore database secret reference](/docs/guides/mysql/concepts/database/index.md#specauthsecret).
 
-Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sdb-quickstart-root-cred` secret holds username and password
+Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sdb-quickstart-auth` secret holds username and password
 
 ```bash
-$ kubectl get pod -n demo sdb-quickstart-master-aggregator-0 -oyaml | grep podIP
+$ kubectl get pod -n demo sdb-quickstart-aggregator-0 -oyaml | grep podIP
   podIP: 10.244.0.14
-$ kubectl get secrets -n demo sdb-quickstart-root-cred -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
   root
-$ kubectl get secrets -n demo sdb-quickstart-root-cred -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo sdb-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
   J0h_BUdJB8mDO31u
 ```
-we will exec into the pod `sdb-quickstart-master-aggregator-0` and connect to the database using username and password
+we will exec into the pod `sdb-quickstart-aggregator-0` and connect to the database using username and password
 
 ```bash
 $ kubectl exec -it -n demo sdb-quickstart-aggregator-0 -- bash
   Defaulting container name to singlestore.
   Use 'kubectl describe pod/sdb-quickstart-aggregator-0 -n demo' to see all of the containers in this pod.
   
-  [memsql@sdb-quickstart-master-aggregator-0 /]$ memsql -uroot -p"J0h_BUdJB8mDO31u"
+  [memsql@sdb-quickstart-aggregator-0 /]$ memsql -uroot -p"J0h_BUdJB8mDO31u"
   singlestore-client: [Warning] Using a password on the command line interface can be insecure.
   Welcome to the MySQL monitor.  Commands end with ; or \g.
   Your MySQL connection id is 1114
@@ -501,12 +501,12 @@ Now, run the following command to get all singlestore resources in `demo` namesp
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/sdb-quickstart-root-cred   kubernetes.io/basic-auth   2      3m35s
+secret/sdb-quickstart-auth   kubernetes.io/basic-auth   2      3m35s
 
 NAME                                                            STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 persistentvolumeclaim/data-sdb-quickstart-leaf-0                Bound    pvc-389f40a8-09bc-4724-aa52-94705d56ff77   1Gi        RWO            standard       <unset>                 3m18s
 persistentvolumeclaim/data-sdb-quickstart-leaf-1                Bound    pvc-8dfbf04e-41a8-4cdd-ba14-7ad42d8701bb   1Gi        RWO            standard       <unset>                 3m11s
-persistentvolumeclaim/data-sdb-quickstart-master-aggregator-0   Bound    pvc-c4f7d255-7307-4455-b195-70c71b81706f   1Gi        RWO            standard       <unset>                 3m29s
+persistentvolumeclaim/data-sdb-quickstart-aggregator-0   Bound    pvc-c4f7d255-7307-4455-b195-70c71b81706f   1Gi        RWO            standard       <unset>                 3m29s
 
 ```
 
@@ -532,7 +532,7 @@ Now, run the following command to get all singlestore resources in `demo` namesp
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/sdb-quickstart-root-cred   kubernetes.io/basic-auth   2      17m
+secret/sdb-quickstart-auth   kubernetes.io/basic-auth   2      17m
 
 ```
 

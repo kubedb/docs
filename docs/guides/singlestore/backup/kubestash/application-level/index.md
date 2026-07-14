@@ -157,7 +157,7 @@ The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Servic
 ```bash
 $ kubectl get secret -n demo -l=app.kubernetes.io/instance=sample-singlestore
 NAME                           TYPE                       DATA   AGE
-sample-singlestore-root-cred   kubernetes.io/basic-auth   2      4m58s
+sample-singlestore-auth   kubernetes.io/basic-auth   2      4m58s
 
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-singlestore
 NAME                       TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
@@ -166,7 +166,7 @@ sample-singlestore-pods   ClusterIP   None             <none>        3306/TCP   
 
 ```
 
-Here, we have to use service `sample-singlestore` and secret `sample-singlestore-root-cred` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/singlestore/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
+Here, we have to use service `sample-singlestore` and secret `sample-singlestore-auth` to connect with the database. `KubeDB` creates an [AppBinding](/docs/guides/singlestore/concepts/appbinding.md) CR that holds the necessary information to connect with the database.
 
 **Verify AppBinding:**
 
@@ -233,7 +233,7 @@ spec:
         restoreTask:
           name: ""
   secret:
-    name: sample-singlestore-root-cred
+    name: sample-singlestore-auth
   type: kubedb.com/singlestore
   version: 8.9.3
 
@@ -263,10 +263,10 @@ sample-singlestore-leaf-2         2/2     Running   0          15m
 And copy the username and password of the `root` user to access into `memsql` shell.
 
 ```bash
-$ kubectl get secret -n demo  sample-singlestore-root-cred -o jsonpath='{.data.username}'| base64 -d
+$ kubectl get secret -n demo  sample-singlestore-auth -o jsonpath='{.data.username}'| base64 -d
 root⏎           
 
-kubectl get secret -n demo  sample-singlestore-root-cred -o jsonpath='{.data.password}'| base64 -d
+kubectl get secret -n demo  sample-singlestore-auth -o jsonpath='{.data.password}'| base64 -d
 xEJv73q3w_m1~H.G⏎ 
 ```
 
@@ -765,10 +765,10 @@ sample-singlestore-leaf-2         2/2     Running   0          15m
 And copy the username and password of the `root` user to access into `mysql` shell.
 
 ```bash
-$ kubectl get secret -n demo  sample-singlestore-root-cred -o jsonpath='{.data.username}'| base64 -d
+$ kubectl get secret -n demo  sample-singlestore-auth -o jsonpath='{.data.username}'| base64 -d
 root⏎           
 
-kubectl get secret -n demo  sample-singlestore-root-cred -o jsonpath='{.data.password}'| base64 -d
+kubectl get secret -n demo  sample-singlestore-auth -o jsonpath='{.data.password}'| base64 -d
 xEJv73q3w_m1~H.G⏎ 
 ```
 

@@ -326,10 +326,10 @@ If you want to use an existing secret please specify that when creating the MySQ
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo semi-sync-mysql-auth -o jsonpath='{.data.password}' | base64 -d
 y~EC~984Et1Yfs~i
 ```
 

@@ -37,7 +37,7 @@ An `AppBinding` object created by `KubeDB` for Ignite database is shown below,
   metadata:
     annotations:
       kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"ignite-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"ignite","name":"ig","namespace":"demo"},"clientConfig":{"service":{"name":"ignite","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"ignite-auth"},"type":"kubedb.com/ignite","version":"2.17.0"}}
+        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"ignite-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"ignite","name":"ig","namespace":"demo"},"clientConfig":{"service":{"name":"ignite","namespace":"demo","port":10800,"scheme":"http"}},"secret":{"name":"ignite-auth"},"type":"kubedb.com/ignite","version":"2.18.0"}}
     creationTimestamp: "2025-04-26T09:51:57Z"
     generation: 1
     name: ignite-appbinding
@@ -55,11 +55,11 @@ An `AppBinding` object created by `KubeDB` for Ignite database is shown below,
         name: ignite
         namespace: demo
         port: 10800
-        scheme: tcp
+        scheme: http
     secret:
       name: ignite-auth
     type: kubedb.com/ignite
-    version: 2.17.0
+    version: 2.18.0
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 

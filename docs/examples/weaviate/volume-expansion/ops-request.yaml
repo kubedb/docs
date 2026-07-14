@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: wv-volume-expansion-offline
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: weaviate-sample
+  volumeExpansion:
+    node: 3Gi
+    mode: Offline

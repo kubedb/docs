@@ -86,7 +86,7 @@ metadata:
   name: mssql-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -157,12 +157,12 @@ $ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
 mssql@mssql-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
-mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Q9kDWVQMnawLcnZq" -N
+mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Q9kDWVQMnawLcnZq" -N
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SSL Provider: [error:0A000086:SSL routines::certificate verify failed:self-signed certificate].
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establish connection.
 
 So Now, we have to connect with -C [Trust Server Certificate]
-mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "Q9kDWVQMnawLcnZq" -N -C
+mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "Q9kDWVQMnawLcnZq" -N -C
 1> 
 ```
 
@@ -376,7 +376,7 @@ forceencryption = 1
 tlscert = /var/opt/mssql/tls/server.crt
 tlskey = /var/opt/mssql/tls/server.key
 tlsprotocols = 1.2,1.1,1.0
-mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N
+mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N
 1> 
 ```
 
@@ -965,13 +965,13 @@ $ kubectl exec -it -n demo mssql-ag-cluster-1 -c mssql -- bash
 mssql@mssql-ag-cluster-1:/$ cat /var/opt/mssql/mssql.conf
 [language]
 lcid = 1033
-mssql@mssql-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N
+mssql@mssql-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : SSL Provider: [error:0A000086:SSL routines::certificate verify failed:self-signed certificate].
 Sqlcmd: Error: Microsoft ODBC Driver 17 for SQL Server : Client unable to establish connection.
 
 
 So Now, we have to connect with -C [Trust Server Certificate]
-mssql@mssql-ag-cluster-1:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N -C
+mssql@mssql-ag-cluster-1:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P Q9kDWVQMnawLcnZq -N -C
 1> 
 ```
 

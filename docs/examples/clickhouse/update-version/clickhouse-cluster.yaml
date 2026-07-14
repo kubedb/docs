@@ -4,7 +4,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 25.12.3
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false

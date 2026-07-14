@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: mg-standalone
   updateVersion:
-    targetVersion: 4.4.26
+    targetVersion: 8.0.17
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -605,6 +605,7 @@ If you want to scale-up or scale-down your MongoDB cluster or different componen
 - `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
 - `spec.verticalScaling.arbiter` indicates the desired resources for arbiter node of MongoDB database after scaling.
 - `spec.verticalScaling.coordinator` indicates the desired resources for the coordinator container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 All of them has the below structure:
 

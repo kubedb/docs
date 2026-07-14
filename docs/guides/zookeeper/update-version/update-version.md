@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/zookeeper](/docs/examples/zookeeper) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Prepare ZooKeeper Ensemble
 
@@ -77,7 +77,7 @@ Now, wait until `zk-quickstart` created has status `Ready`. i.e,
 ```bash
 $ kubectl get zk -n demo                                                                                                                                             
 NAME               VERSION    STATUS    AGE
-zk-quickstart      3.9.1      Ready     109s
+zk-quickstart      3.8.3      Ready     109s
 ```
 
 We are now ready to apply the `ZooKeeperOpsRequest` CR to update this database.

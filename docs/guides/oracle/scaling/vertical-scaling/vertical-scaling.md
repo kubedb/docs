@@ -16,6 +16,26 @@ section_menu_id: guides
 
 This guide will show you how to use the `KubeDB` Ops-manager operator to update the resources (CPU and memory) of an Oracle database.
 
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `OracleOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
@@ -130,6 +150,7 @@ Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `oracle-sa-sample` database.
 - `spec.verticalScaling.node.resources` specifies the desired resources (`requests`/`limits`) of the database node after scaling. KubeDB automatically recomputes the Oracle memory parameters (SGA/PGA) from the new container memory.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](#vertical-scaling-modes).
 
 Let's create the `OracleOpsRequest` CR we have shown above,
 
@@ -197,6 +218,43 @@ $ kubectl get pod -n demo oracle-sa-sample-0 -o json | jq '.spec.containers[] | 
 ```
 
 The resources of the Oracle database have been updated successfully.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`OracleOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: standalone-vertical-scaling-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: oracle-sa-sample
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        limits:
+          memory: "10Gi"
+          cpu: "5"
+        requests:
+          memory: "10Gi"
+          cpu: "3"
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/scaling/standalone-vertical-scaling-inplace.yaml
+oracleopsrequest.ops.kubedb.com/standalone-vertical-scaling-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Vertically scaling a DataGuard cluster
 

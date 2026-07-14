@@ -54,7 +54,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -101,8 +101,8 @@ KubeDB will create the necessary resources to deploy the Elasticsearch database 
 ```console
 ❯ kubectl get elasticsearch -n demo -w
 NAME        VERSION          STATUS         AGE
-sample-es   xpack-8.19.9   Provisioning   89s
-sample-es   xpack-8.19.9   Ready          5m26s
+sample-es   xpack-9.2.3   Provisioning   89s
+sample-es   xpack-9.2.3   Ready          5m26s
 ```
 
 The database is in `Ready` state. It means the database is ready to accept connections.
@@ -139,16 +139,16 @@ KubeDB will create some Secrets for the database. Let's check which Secrets have
 ❯ kubectl get secret -n demo | grep sample-es
 sample-es-ca-cert          kubernetes.io/tls                     2      21m
 sample-es-config           Opaque                                1      21m
-sample-es-elastic-cred     kubernetes.io/basic-auth              2      21m
+sample-es-auth     kubernetes.io/basic-auth              2      21m
 sample-es-token-ctzn5      kubernetes.io/service-account-token   3      21m
 sample-es-transport-cert   kubernetes.io/tls                     3      21m
 ```
 
-Here, `sample-es-elastic-cred` contains the credentials require to connect with the database. Let's export the credentials as environment variable to our current shell so that we can easily environment variables to connect with the database.
+Here, `sample-es-auth` contains the credentials require to connect with the database. Let's export the credentials as environment variable to our current shell so that we can easily environment variables to connect with the database.
 
 ```bash
-❯ export USER=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.\username}' | base64 -d)
-❯ export PASSWORD=$(kubectl get secrets -n demo sample-es-elastic-cred -o jsonpath='{.data.\password}' | base64 -d)
+❯ export USER=$(kubectl get secrets -n demo sample-es-auth -o jsonpath='{.data.username}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n demo sample-es-auth -o jsonpath='{.data.password}' | base64 -d)
 ```
 
 #### Insert data
@@ -318,7 +318,7 @@ spec:
       port: 9200
       scheme: http
   secret:
-    name: sample-es-elastic-cred
+    name: sample-es-auth
   parameters:
     apiVersion: appcatalog.appscode.com/v1alpha1
     kind: StashAddon
@@ -400,7 +400,7 @@ spec:
 Let's create the `Repository` we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/backup/repository.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/repository.yaml
 repository.stash.appscode.com/gcs-repo created
 ```
 
@@ -453,7 +453,7 @@ Here,
 Let's create the `BackupConfiguration` object we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/backup/backupconfiguration.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/backup/backupconfiguration.yaml
 backupconfiguration.stash.appscode.com/sample-es-backup created
 ```
 
@@ -626,7 +626,7 @@ Here,
 Let's create the `RestoreSession` object object we have shown above,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/restore/restoresession.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/restore/restoresession.yaml
 restoresession.stash.appscode.com/sample-es-restore created
 ```
 
@@ -834,7 +834,7 @@ metadata:
   name: init-sample
   namespace: restored
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   init:
     waitForInitialRestore: true
@@ -871,12 +871,12 @@ spec:
             storage: 1Gi
 ```
 
-Notice that this time, we are using `1.9.0-opendistro` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
+Notice that this time, we are using `opensearch-3.4.0` variant for Elasticsearch. Also, notice that we have added an `init` section in the `spec`. Here, `waitForInitialRestore: true` tells KubeDB to wait for the first restore to complete before marking this database as ready to use.
 
 Let's deploy the above Elasticsearch,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/elasticsearch/init_sample.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/elasticsearch/init_sample.yaml
 elasticsearch.kubedb.com/init-sample created
 ```
 
@@ -966,7 +966,7 @@ spec:
 Let's create the above RestoreSession,
 
 ```bash
-❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubedb/examples/restore/init_sample_restore.yaml
+❯ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/stash/kubedb/examples/restore/init_sample_restore.yaml
 restoresession.stash.appscode.com/init-sample-restore created
 ```
 
@@ -1003,7 +1003,7 @@ Now, let's export the credentials of this Elasticsearch,
 
 ```bash
 ❯ kubectl get secret -n restored | grep init-sample
-init-sample-admin-cred                            kubernetes.io/basic-auth              2      55m
+init-sample-auth                            kubernetes.io/basic-auth              2      55m
 init-sample-ca-cert                               kubernetes.io/tls                     2      55m
 init-sample-config                                Opaque                                3      55m
 init-sample-kibanaro-cred                         kubernetes.io/basic-auth              2      55m
@@ -1016,11 +1016,11 @@ init-sample-transport-cert                        kubernetes.io/tls             
 stash-restore-init-sample-restore-0-token-vscdt   kubernetes.io/service-account-token   3      4m40s
 ```
 
-Here, we are going to use the `init-sample-admin-cred` for connecting with the database. Let's export the `username` and `password` keys.
+Here, we are going to use the `init-sample-auth` for connecting with the database. Let's export the `username` and `password` keys.
 
 ```bash
-❯ export USER=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.\username}' | base64 -d)
-❯ export PASSWORD=$(kubectl get secrets -n restored init-sample-admin-cred -o jsonpath='{.data.\password}' | base64 -d)
+❯ export USER=$(kubectl get secrets -n restored init-sample-auth -o jsonpath='{.data.username}' | base64 -d)
+❯ export PASSWORD=$(kubectl get secrets -n restored init-sample-auth -o jsonpath='{.data.password}' | base64 -d)
 ```
 
 Now, let's verify whether the indexes have been restored or not.

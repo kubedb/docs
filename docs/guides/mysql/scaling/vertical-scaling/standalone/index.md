@@ -111,8 +111,8 @@ Every 3.0s: kubectl get my -n demo my-standalone                 suaas-appscode:
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   2m58s
 
-$ watch -n 3 kubectl get sts -n demo my-standalone
-Every 3.0s: kubectl get sts -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020
+$ watch -n 3 kubectl get petset -n demo my-standalone
+Every 3.0s: kubectl get petset -n demo my-standalone                suaas-appscode: Wed Jul  1 17:48:52 2020
 
 NAME            READY   AGE
 my-standalone   1/1     3m36s
@@ -169,6 +169,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/index.md#vertical-scaling-modes).
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 

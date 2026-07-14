@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MariaDB instance named `quick-postges` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a MariaDB instance named `sample-mariadb` to provide the bare minimum access permissions.
 
 ## Custom RBAC for MariaDB
 

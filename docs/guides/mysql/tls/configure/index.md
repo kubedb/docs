@@ -318,8 +318,8 @@ Every 3.0s: kubectl get my -n demo some-mysql                 suaas-appscode: Th
 NAME           VERSION   STATUS    AGE
 some-mysql   8.4.8    Running   9m41s
 
-$ watch -n 3 kubectl get sts -n demo some-mysql
-Every 3.0s: kubectl get sts -n demo some-mysql                suaas-appscode: Thu Aug 13 19:02:42 2020
+$ watch -n 3 kubectl get petset -n demo some-mysql
+Every 3.0s: kubectl get petset -n demo some-mysql                suaas-appscode: Thu Aug 13 19:02:42 2020
 
 NAME           READY   AGE
 some-mysql   3/3     9m51s

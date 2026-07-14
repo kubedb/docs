@@ -6,7 +6,7 @@ metadata:
 spec:
   enableSSL: true
   deletionPolicy: DoNotTerminate
-  version: 9.6.1
+  version: 9.8.0
   zookeeperRef:
     name: zoo-com
     namespace: demo

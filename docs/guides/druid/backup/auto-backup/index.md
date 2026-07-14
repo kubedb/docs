@@ -266,7 +266,7 @@ metadata:
     blueprint.kubestash.com/name: druid-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -438,7 +438,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   name: default-blueprint-appbinding-samruid-frequent-backup-1726741846
   namespace: demo
   ownerReferences:
@@ -551,7 +551,7 @@ Here,
   - `.repositories[*].directory` defines two variables, `${namespace}` and `${targetName}`, which are used to determine the path where the backup will be stored. 
   - `.addon.tasks[*]databases` defines `${targetedDatabases}` variable, which identifies list of databases to backup.
 
-> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-restore`
+> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-backup`
 
 Let's create the `BackupBlueprint` we have shown above,
 
@@ -587,7 +587,7 @@ metadata:
     variables.kubestash.com/targetName: sample-druid-2
     variables.kubestash.com/targetedDatabases: druid
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -755,7 +755,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   name: customize-blueprint-appbinding-sid-2-frequent-backup-1726743656
   namespace: demo
   ownerReferences:

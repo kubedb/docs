@@ -42,7 +42,7 @@ Here, we are going to deploy a `Cassandra` topology cluster using a supported ve
 
 ### Prepare Cassandra Topology cluster
 
-Now, we are going to deploy a `Cassandra` topology cluster with version `5.0.3`.
+Now, we are going to deploy a `Cassandra` topology cluster with version `5.0.7`.
 
 ### Deploy Cassandra topology cluster
 
@@ -55,7 +55,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -261,7 +261,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing horizontal scaling down operation on `cassandra-prod` cluster.
 - `spec.type` specifies that we are performing `HorizontalScaling` on cassandra.
-- `spec.horizontalScaling.topology.node` specifies the desired replicas after scaling for the cassandra nodes.
+- `spec.horizontalScaling.node` specifies the desired replicas after scaling for the cassandra nodes.
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 

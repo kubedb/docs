@@ -80,7 +80,7 @@ It specifies the desired version information required for the Solr version updat
 > KubeDB does not support downgrade for Solr.
 
 **Samples:**
-Let's assume we have and Solr cluster of version `9.4.1`. The Solr custom resource is named `solr-cluster` and it's provisioned in demo namespace. Now, you want to update your Solr cluster to `9.6.1`. Apply this YAML to update to your desired version.
+Let's assume we have and Solr cluster of version `9.7.0`. The Solr custom resource is named `solr-cluster` and it's provisioned in demo namespace. Now, you want to update your Solr cluster to `9.8.0`. Apply this YAML to update to your desired version.
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: SolrOpsRequest
@@ -92,7 +92,7 @@ spec:
     name: solr-cluster
   type: UpdateVersion
   updateVersion:
-    targetVersion: 9.6.1
+    targetVersion: 9.8.0
 ```
 
 ### spec.horizontalScaling
@@ -165,6 +165,7 @@ spec:
 - `verticalScaling.overseer` - specifies the desired resources for the overseer nodes. It takes input same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.data` - specifies the desired node resources for the data nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
 - `verticalScaling.coordinator` - specifies the desired node resources for the coordinator nodes. It takes input  same as the k8s [resources](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#resource-types).
+- `verticalScaling.mode` - specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 > Note: It is recommended not to use resources below the default one; `cpu: 900m, memory: 2Gi`.
 

@@ -45,7 +45,7 @@ The following diagram shows how KubeDB Provisioner operator monitor `Ignite` usi
 
 ## Find out required labels for ServiceMonitor
 
-We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of Ignite crd so that KubeDB creates `ServiceMonitor` object accordingly.
+We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.serviceMonitor.labels` field of Ignite crd so that KubeDB creates `ServiceMonitor` object accordingly.
 
 At first, let's find out the available Prometheus server in our cluster.
 
@@ -168,7 +168,7 @@ status:
   updatedReplicas: 1
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Ignite crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of Ignite crd.
 
 ## Deploy Ignite with Monitoring Enabled
 
@@ -182,7 +182,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "2.17.0"
+  version: "2.18.0"
   deletionPolicy: WipeOut
   podTemplate:
     spec:
@@ -206,11 +206,10 @@ spec:
 
 Here,
 - `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
-- `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 
-- `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
+- `monitor.prometheus.serviceMonitor.labels` specifies that KubeDB should create `ServiceMonitor` with these labels. The `ServiceMonitor` is created in the same namespace as the database.
 
-- `monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
+- `monitor.prometheus.serviceMonitor.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
 
 Let's create the Ignite object that we have shown above,
 
@@ -224,7 +223,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get ig -n demo ignite
 NAME        VERSION   STATUS   AGE
-ignite      2.17.0    Ready    2m
+ignite      2.18.0    Ready    2m
 ```
 
 KubeDB will create a separate stats service with name `{Ignite crd name}-stats` for monitoring purpose.
@@ -232,8 +231,8 @@ KubeDB will create a separate stats service with name `{Ignite crd name}-stats` 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ignite"
 NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-ignite            ClusterIP   10.96.91.51   <none>        11211/TCP   3m9s
-ignite-pods       ClusterIP   None          <none>        11211/TCP   3m9s
+ignite            ClusterIP   10.96.91.51   <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   3m9s
+ignite-pods       ClusterIP   None          <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   3m9s
 ignite-stats      ClusterIP   10.96.50.21   <none>        56790/TCP   3m9s
 ```
 
@@ -319,7 +318,7 @@ spec:
 
 Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Ignite crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `ignite-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `ignite-stats` service. It also, target the `metrics` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -341,7 +340,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `ignite-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `ignite-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/ignite/monitoring/ig-coreos-prom-target.png" style="padding:10px">
@@ -366,7 +365,7 @@ kubectl delete -n monitoring service prometheus-operated
 
 # cleanup prometheus operator resources
 kubectl delete -n monitoring deployment prometheus-operator
-kubectl delete -n dmeo serviceaccount prometheus-operator
+kubectl delete -n demo serviceaccount prometheus-operator
 kubectl delete clusterrolebinding prometheus-operator
 kubectl delete clusterrole prometheus-operator
 

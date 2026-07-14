@@ -287,7 +287,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql-v1.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/external/examples/sample-proxy-v1.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
 
@@ -308,7 +308,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/xtradbext/examples/sample-proxysql-v1alpha2.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/xtradb-galera/external/examples/sample-proxy-v1alpha2.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
 
@@ -349,8 +349,8 @@ You can find the description of the associated objects here.
 Let's exec into the ProxySQL server pod and get into the admin panel. 
 
 ```bash
-$ kubectl exec -it -n demo proxy-mysql-0 -- bash                                                  11:20
-root@proxy-mysql-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
+$ kubectl exec -it -n demo proxy-server-0 -- bash                                                  11:20
+root@proxy-server-0:/# mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > " 
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1204
 Server version: 8.0.35 (ProxySQL Admin Module)

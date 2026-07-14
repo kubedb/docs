@@ -23,4 +23,4 @@ spec:
           runAsUser: 0
           runAsGroup: 0
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore
