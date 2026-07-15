@@ -280,7 +280,9 @@ The `exporter` sidecar inside each PostgreSQL pod serves metrics at `:56790/metr
 
 ```bash
 $ kubectl exec -n demo pg-grafana-demo-0 -c exporter -- \
-    wget -qO- localhost:56790/metrics | grep pg_up
+                                      wget -qO- localhost:56790/metrics | grep pg_up
+# HELP pg_up Whether the last scrape of metrics from PostgreSQL was able to connect to the server (1 for yes, 0 for no).
+# TYPE pg_up gauge
 pg_up 1
 ```
 
