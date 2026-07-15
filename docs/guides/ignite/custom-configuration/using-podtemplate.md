@@ -62,7 +62,7 @@ Read about the fields in details in [PodTemplate concept](/docs/guides/ignite/co
 
 Below is the YAML for the Ignite created in this example. Here, `spec.podTemplate.spec.containers[].env` specifies additional environment variables by users.
 
-In this tutorial, we will register additional two users at starting time of Ignite. So, the fact is any environment variable with having `suffix: USERNAME` and `suffix: PASSWORD` will be key value pairs of username and password and will be registered in the `pool_passwd` file of Ignite. So we can use these users after Ignite initialize without even syncing them.
+In this tutorial, we will set additional environment variables at starting time of Ignite. Any environment variable specified in `spec.podTemplate.spec.containers[].env` will be available inside the Ignite container.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -71,7 +71,7 @@ metadata:
   name: custom-ignite
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   podTemplate:
     spec:
@@ -146,7 +146,7 @@ metadata:
   name: ignite-custom-sidecar
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   podTemplate:
     spec:
@@ -195,7 +195,7 @@ kind: Ignite
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Ignite","metadata":{"annotations":{},"name":"ignite-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"ignite","resources":{"limits":{"cpu":"500m","memory":"500Mi"},"requests":{"cpu":"500m","memory":"500Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"2.17.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Ignite","metadata":{"annotations":{},"name":"ignite-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"ignite","resources":{"limits":{"cpu":"500m","memory":"500Mi"},"requests":{"cpu":"500m","memory":"500Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"2.18.0"}}
   creationTimestamp: "2024-12-02T10:59:59Z"
   finalizers:
   - kubedb.com
@@ -250,7 +250,7 @@ spec:
         fsGroup: 999
       serviceAccountName: ignite-custom-sidecar
   replicas: 1
-  version: 2.17.0
+  version: 2.18.0
 status:
   conditions:
   - lastTransitionTime: "2024-12-02T10:59:59Z"
@@ -343,7 +343,7 @@ metadata:
   name: ignite-node-selector
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   podTemplate:
     spec:
@@ -432,7 +432,7 @@ metadata:
   name: ignite-without-tolerations
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   deletionPolicy: WipeOut
 ```
@@ -456,7 +456,7 @@ Namespace:        demo
 Priority:         0
 Service Account:  default
 Node:             <none>
-Labels:           app.kubernetes.io/component=connection-pooler
+Labels:           app.kubernetes.io/component=database
                   app.kubernetes.io/instance=ignite-without-tolerations
                   app.kubernetes.io/managed-by=kubedb.com
                   app.kubernetes.io/name=ignites.kubedb.com
@@ -470,7 +470,7 @@ IPs:              <none>
 Controlled By:    PetSet/ignite-without-tolerations
 Containers:
   ignite:
-    Image:           ghcr.io/appscode-images/ignite:2.17.0
+    Image:           ghcr.io/appscode-images/ignite:2.18.0
     Ports:           10800/TCP
     Host Ports:      0/TCP, 0/TCP
     SeccompProfile:  RuntimeDefault
@@ -508,7 +508,7 @@ volumes:
       items:
       - key: node-configuration.xml
         path: node-configuration.xml
-      secretName: ignite-quickstart-config
+      secretName: ignite-without-tolerations-1d3146
   - name: kube-api-access-62rc6
     projected:
       defaultMode: 420
@@ -530,8 +530,8 @@ volumes:
 Node-Selectors:               <none>
 Tolerations:                  node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
                               node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
-Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
-                              topology.kubernetes.io/zone:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=connection-pooler,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
+Topology Spread Constraints:  kubernetes.io/hostname:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=database,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
+                              topology.kubernetes.io/zone:ScheduleAnyway when max skew 1 is exceeded for selector app.kubernetes.io/component=database,app.kubernetes.io/instance=ignite-without-tolerations,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=ignites.kubedb.com
 Events:
   Type     Reason             Age                   From                Message
   ----     ------             ----                  ----                -------
@@ -549,7 +549,7 @@ metadata:
   name: ignite-with-tolerations
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   podTemplate:
     spec:
@@ -587,7 +587,7 @@ We can successfully verify that our pod was scheduled to the node which it has t
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete -n demo pp custom-sidecar node-selector with-tolerations without-tolerations
+kubectl delete -n demo ig custom-ignite ignite-custom-sidecar ignite-node-selector ignite-with-tolerations ignite-without-tolerations
 kubectl delete ns demo
 ```
 

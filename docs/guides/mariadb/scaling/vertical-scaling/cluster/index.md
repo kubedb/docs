@@ -137,6 +137,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-mariadb` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mariadb` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/#vertical-scaling-modes).
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -175,6 +176,45 @@ $ kubectl get pod -n demo sample-mariadb-0 -o json | jq '.spec.containers[].reso
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MariaDB database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`MariaDBOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MariaDBOpsRequest
+metadata:
+  name: mdops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: sample-mariadb
+  verticalScaling:
+    mode: InPlace
+    mariadb:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+```
+
+Let's apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/scaling/vertical-scaling/cluster/example/mdops-vscale-inplace.yaml
+mariadbopsrequest.ops.kubedb.com/mdops-vscale-inplace created
+```
+
+The resources update in place with no Pod restart.
+
+> **Note:** For a **distributed** `MariaDB` deployment, true in-place resize is not possible, so `InPlace` automatically degrades to `Restart`.
 
 ## Cleaning Up
 

@@ -46,7 +46,7 @@ The high-level flow is:
 
 Milvus exposes two independent TLS surfaces, both configured under `spec.tls`:
 
-- **`external`** — controls client-facing traffic (gRPC/REST on port `19530`). Modes: `Disabled`, `TLS` (server-only) and `mTLS` (mutual — clients must present the `client` certificate).
+- **`external`** — controls client-facing traffic (gRPC on port `19530` and REST on port `8080`). Modes: `Disabled`, `TLS` (server-only) and `mTLS` (mutual — clients must present the `client` certificate).
 - **`internal`** — controls inter-component traffic between Milvus roles. Modes: `Disabled` and `TLS`.
 
 Certificates are described by aliases:

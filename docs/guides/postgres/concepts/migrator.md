@@ -1,9 +1,9 @@
 ---
-title: Migration CRD
+title: PostgresMigration CRD
 menu:
   docs_{{ .version }}:
     identifier: pg-migrator-concepts
-    name: Migration
+    name: PostgresMigration
     parent: pg-concepts-postgres
     weight: 26
 menu_name: docs_{{ .version }}
@@ -12,58 +12,55 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Migration
+# PostgresMigration
 
-## What is Migration
+## What is PostgresMigration
 
-`Migration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
+`PostgresMigration` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to
 migrate an existing database — such as one running on an external or managed instance — into a
-KubeDB-managed database. You only need to describe the source and target databases in a `Migration`
+KubeDB-managed database. You only need to describe the source and target databases in a `PostgresMigration`
 object, and the kubedb-courier operator will run the migration Job that copies the data and keeps
 the target in sync until you cut over.
 
-`Migration` is a single shared CRD (`courier.kubedb.com/v1alpha1`). Its `spec.source` and
-`spec.target` each carry a per-database sub-spec (`mysql`, `mariadb`, `postgres`, `mongodb`). This
-page describes the `Migration` object for a **PostgreSQL** source and target.
+`PostgresMigration` is the PostgreSQL-specific migration CRD (`courier.kubedb.com/v1alpha1`) whose
+`spec.source` and `spec.target` describe the PostgreSQL source and target directly.
 
-## Migration Spec
+## PostgresMigration Spec
 
-As with all other Kubernetes objects, a `Migration` needs `apiVersion`, `kind`, and `metadata`
-fields. It also needs a `.spec` section. Below is an example `Migration` object for migrating a
+As with all other Kubernetes objects, a `PostgresMigration` needs `apiVersion`, `kind`, and `metadata`
+fields. It also needs a `.spec` section. Below is an example `PostgresMigration` object for migrating a
 PostgreSQL database.
 
 ```yaml
 apiVersion: courier.kubedb.com/v1alpha1
-kind: Migration
+kind: PostgresMigration
 metadata:
   name: postgres-migrate
   namespace: demo
 spec:
   source:
-    postgres:
-      connectionInfo:
-        appBinding:
-          name: source-postgres
-          namespace: demo
-        dbName: postgres
-        maxConnections: 100
-      pgDump:
-        schemaOnly: true
-      logicalReplication:
-        copyData: true
-        publication:
-          name: "pub"
-          mode: default
-        subscription:
-          name: "sub"
+    connectionInfo:
+      appBinding:
+        name: source-postgres
+        namespace: demo
+      dbName: shop
+      maxConnections: 100
+    pgDump:
+      schemaOnly: true
+    logicalReplication:
+      copyData: true
+      publication:
+        name: "pub"
+        mode: default
+      subscription:
+        name: "sub"
   target:
-    postgres:
-      connectionInfo:
-        appBinding:
-          name: target-postgres
-          namespace: demo
-        dbName: postgres
-        maxConnections: 100
+    connectionInfo:
+      appBinding:
+        name: target-postgres
+        namespace: demo
+      dbName: shop
+      maxConnections: 100
   jobDefaults:
     imagePullPolicy: IfNotPresent
     backoffLimit: 6
@@ -77,17 +74,17 @@ spec:
 
 ### spec.source
 
-`spec.source` is a required field that describes the database being migrated **from**. It holds a
-per-database sub-spec; for a PostgreSQL migration you set `spec.source.postgres`.
+`spec.source` is a required field that describes the database being migrated **from**. It holds the
+PostgreSQL source fields directly under `spec.source`.
 
 ### spec.target
 
 `spec.target` is a required field that describes the KubeDB-managed database being migrated **into**.
-It holds a per-database sub-spec; for a PostgreSQL migration you set `spec.target.postgres`.
+It holds the PostgreSQL target fields directly under `spec.target`.
 
-### spec.source.postgres.connectionInfo
+### spec.source.connectionInfo
 
-`connectionInfo` (also under `spec.target.postgres`) tells the Migration how to connect to the
+`connectionInfo` (also under `spec.target`) tells the PostgresMigration how to connect to the
 PostgreSQL instance. There are two ways to provide the connection details — set **either**
 `appBinding` **or** `url`:
 
@@ -113,7 +110,7 @@ PostgreSQL instance. There are two ways to provide the connection details — se
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
 > create one for the source. Learn more about [AppBinding](/docs/guides/postgres/concepts/appbinding.md).
 
-### spec.source.postgres.pgDump
+### spec.source.pgDump
 
 `pgDump` configures the schema migration phase, which uses `pg_dump` to extract object definitions
 from the source. These fields map directly to `pg_dump` command-line options.
@@ -126,7 +123,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 - `extraOptions` — additional raw `pg_dump` command-line flags not explicitly modeled by the fields
   above.
 
-### spec.source.postgres.logicalReplication
+### spec.source.logicalReplication
 
 `logicalReplication` configures the data copy and streaming phases using PostgreSQL
 [logical replication](https://www.postgresql.org/docs/current/logical-replication.html).
@@ -161,7 +158,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 (a `PodTemplateSpec`). Use it to set pod-level settings such as `securityContext`, `nodeSelector`,
 `resources`, `serviceAccountName`, and so on.
 
-## Migration Status
+## PostgresMigration Status
 
 `status` reflects the observed state of the migration.
 
@@ -173,7 +170,7 @@ from the source. These fields map directly to `pg_dump` command-line options.
 - `status.progress` — the current progress of the migration:
   - `dbType` — the type of database being migrated.
   - `info` — additional progress information, including the current `Stage`, `Lag`, and `Progress`
-    (these are surfaced as columns in `kubectl get migration`).
+    (these are surfaced as columns in `kubectl get postgresmigrations`).
 - `status.conditions` — an array of conditions describing the migration's state over time (for
   example, `MigratorJobTriggered`, `MigrationRunning`, `MigrationSucceeded`, `MigrationFailed`).
 

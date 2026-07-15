@@ -168,6 +168,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `clickhouse-prod` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on clickhouse.
 - `spec.verticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/clickhouse/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `ClickHouseOpsRequest` CR we have shown above,
 
@@ -329,6 +330,43 @@ Now, we are going to verify from one of the Pod yaml whether the resources of th
 ```
 
 The above output verifies that we have successfully scaled up the resources of the ClickHouse cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`ClickHouseOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: ch-scale-vertical-cluster-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: clickhouse-prod
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "3"
+        limits:
+          memory: "3Gi"
+          cpu: "3"
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/scaling/vertical-scaling/ch-vertical-ops-cluster-inplace.yaml
+clickhouseopsrequest.ops.kubedb.com/ch-scale-vertical-cluster-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 

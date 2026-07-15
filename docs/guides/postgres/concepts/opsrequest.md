@@ -168,6 +168,8 @@ Here, when you specify the resource request for `Postgres` container, the schedu
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.postgres` and you can scale the resource the same way as `postgres` container.
 
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`. For a distributed deployment, in-place resize is not possible, so `InPlace` degrades to `Restart`.
+
 >You can increase/decrease resources for both `postgres` container and `exporter` container on a single `PostgresOpsRequest` CR.
 
 #### spec.timeout

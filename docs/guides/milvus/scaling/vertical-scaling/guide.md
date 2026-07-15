@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/milvus/scaling/vertical-scaling/overview.md)
 
-- An object-storage secret named `my-release-minio` must exist in the `demo` namespace.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/scaling/vertical-scaling/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -63,7 +63,10 @@ spec:
   apply: IfReady
 ```
 
-Here, `spec.verticalScaling.node` carries the new resources for the **standalone** workload (use the `node` key for standalone).
+Here,
+
+- `spec.verticalScaling.node` carries the new resources for the **standalone** workload (use the `node` key for standalone).
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/milvus/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-standalone.yaml
@@ -111,6 +114,45 @@ $ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.
 $ kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
 {"limits":{"cpu":"1","memory":"2Gi"},"requests":{"cpu":"1","memory":"2Gi"}}
 ```
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`MilvusOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+`vertical-scaling-standalone-inplace.yaml`
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: vertical-scaling-standalone-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: milvus-standalone
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-standalone-inplace.yaml
+milvusopsrequest.ops.kubedb.com/vertical-scaling-standalone-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Vertical Scaling Distributed Milvus
 

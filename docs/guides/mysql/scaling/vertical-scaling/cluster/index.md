@@ -274,6 +274,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/index.md#vertical-scaling-modes).
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -394,6 +395,36 @@ $ kubectl get pod -n demo my-group-0 -o json | jq '.spec.containers[1].resources
 ```
 
 The above output verifies that we have successfully updated the resources of the `MySQL` group replication.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`MySQLOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: my-scale-group-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: my-group
+  verticalScaling:
+    mode: InPlace
+    mysql:
+      resources:
+        requests:
+          memory: "1200Mi"
+          cpu: "0.7"
+        limits:
+          memory: "1200Mi"
+          cpu: "0.7"
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

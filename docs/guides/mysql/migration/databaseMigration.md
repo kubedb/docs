@@ -29,7 +29,7 @@ This guide will show you how to use `KubeDB` Migration to migrate an existing `M
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mysql/concepts/appbinding/)
     - [MySQL](/docs/guides/mysql/concepts/mysqldatabase)
-    - [Migration](/docs/guides/mysql/concepts/migrator/)
+    - [MySQLMigration](/docs/guides/mysql/concepts/migrator/)
     - [Migration](/docs/operatormanual/migration/)
 
 To keep everything isolated, we are going to use a separate namespace called `demo` throughout this tutorial.
@@ -237,64 +237,62 @@ mysql.kubedb.com/target-mysql created
 
 Wait untill target-mysql has status `Ready`
 
-## Apply Migration CR
+## Apply MySQLMigration CR
 
-To Migrate database we have to create a `Migration` CR. Below is the YAML of the `Migration` CR that we are going to create,
+To Migrate database we have to create a `MySQLMigration` CR. Below is the YAML of the `MySQLMigration` CR that we are going to create,
 
 ```yaml
 apiVersion: courier.kubedb.com/v1alpha1
-kind: Migration
+kind: MySQLMigration
 metadata:
   name: mysql-migrate
   namespace: demo
 spec:
   source:
-    mysql:
-      connectionInfo:
-        appBinding:
-          name: source-mysql
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
-      schema:
-        enabled: true
-        database:
-          - shop
-        excludeDatabase: []
-      snapshot:
-        enabled: true
-        pipeline:
-          workers: 3
-          sinkers: 4
-          buffer: 12
-          write_batch_size: 200
-          read_batch_size: 1000
-      streaming:
-        enabled: true
+    connectionInfo:
+      appBinding:
+        name: source-mysql
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
+    schema:
+      enabled: true
+      database:
+        - shop
+      excludeDatabase: []
+    snapshot:
+      enabled: true
+      pipeline:
+        workers: 3
+        sinkers: 4
+        buffer: 12
+        write_batch_size: 200
+        read_batch_size: 1000
+    streaming:
+      enabled: true
 
   target:
-    mysql:
-      connectionInfo:
-        appBinding:
-          name: target-mysql
-          namespace: demo
-        dbName: "mysql"
-        maxConnections: 100
+    connectionInfo:
+      appBinding:
+        name: target-mysql
+        namespace: demo
+      dbName: "mysql"
+      maxConnections: 100
 ```
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/migration/mysql-migrate.yaml
-migration.courier.kubedb.com/mysql-migrate created
+mysqlmigration.courier.kubedb.com/mysql-migrate created
 ```
 
-Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [Migration CRD reference](/docs/guides/mysql/concepts/migrator/).
+Here we scope the migration to the `shop` database (`schema.database: [shop]`), enable both the bulk snapshot and CDC streaming phases, and cap connections at 100 on each side. For a full description of every field, see the [MySQLMigration CRD reference](/docs/guides/mysql/concepts/migrator/).
 
 ## Watch Migration Progress
 
-Let's wait for the `LAG` to reach near zero. Run the following command to watch `Migration` CR:
+Let's wait for the `LAG` to reach near zero. Run the following command to watch `MySQLMigration` CR:
 
 ```bash
-Every 2.0s: kubectl get migration -n demo 
+Every 2.0s: kubectl get mysqlmigrations -n demo 
 
 NAME            PHASE     DBTYPE   STAGE       LAG   PROGRESS   AGE
 mysql-migrate   Running   mysql    Streaming   0B    100%       4h36m
@@ -362,11 +360,11 @@ The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming
 
 Once the `LAG` drops to near zero, stop all writes to the source database. Wait until the `LAG` reaches exactly zero — at that point both databases are fully in sync.
 
-Now delete the `Migration` CR to stop the migration process:
+Now delete the `MySQLMigration` CR to stop the migration process:
 
 ```bash
-$ kubectl delete migration -n demo mysql-migrate
-migration.courier.kubedb.com "mysql-migrate" deleted
+$ kubectl delete mysqlmigrations -n demo mysql-migrate
+mysqlmigration.courier.kubedb.com "mysql-migrate" deleted
 ```
 
 Finally, update your application's connection string to point to the target KubeDB-managed `MySQL` database. The migration is complete.

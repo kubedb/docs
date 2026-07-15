@@ -24,6 +24,26 @@ A `DocumentDBOpsRequest` of type `VerticalScaling` lets you set new resource req
 either or both. The operator rolls the change out pod by pod (evicting standbys first, the
 primary last) so the cluster stays available.
 
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `DocumentDBOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
+
 ## Before You Begin
 
 - You need a Kubernetes cluster and the `kubectl` CLI configured to talk to it.
@@ -46,6 +66,10 @@ documentdb-coordinator: requests={"cpu":"200m","memory":"256Mi"} limits={"memory
 
 This request bumps the `documentdb` engine and, at the same time, *lowers* the coordinator's CPU
 request — both containers are addressed in one OpsRequest:
+
+Here,
+
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](#vertical-scaling-modes).
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -128,6 +152,46 @@ $ kubectl exec -n demo documentdb-cls-sample-0 -c documentdb -- \
     --quiet --eval 'db.runCommand({ ping: 1 })'
 { ok: 1 }
 ```
+
+## In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`DocumentDBOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DocumentDBOpsRequest
+metadata:
+  name: documentdb-cls-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: documentdb-cls-sample
+  verticalScaling:
+    mode: InPlace
+    documentdb:
+      resources:
+        requests:
+          cpu: 600m
+          memory: 2.5Gi
+        limits:
+          cpu: "1"
+          memory: 2.5Gi
+    coordinator:
+      resources:
+        requests:
+          cpu: 100m
+          memory: 256Mi
+```
+
+```bash
+$ kubectl apply -f cluster-vertical-scaling-inplace.yaml
+documentdbopsrequest.ops.kubedb.com/documentdb-cls-vscale-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Standalone
 

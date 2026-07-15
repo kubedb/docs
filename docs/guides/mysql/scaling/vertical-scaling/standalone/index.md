@@ -169,6 +169,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` `MySQL` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mysql` specifies the expected mysql container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/index.md#vertical-scaling-modes).
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 

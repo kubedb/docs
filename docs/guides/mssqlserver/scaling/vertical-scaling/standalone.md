@@ -207,6 +207,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `mssql-standalone` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mssqlserver` specifies the expected `mssql` container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/mssqlserver/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 
@@ -339,6 +340,42 @@ $ kubectl get pod -n demo mssql-standalone-0 -o json | jq '.spec.containers[0].r
 ```
 
 The above output verifies that we have successfully scaled up the resources of the MSSQLServer.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`MSSQLServerOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: mops-vscale-standalone-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: mssql-standalone
+  verticalScaling:
+    mode: InPlace
+    mssqlserver:
+      resources:
+        requests:
+          memory: "5Gi"
+          cpu: "1000m"
+        limits:
+          memory: "5Gi"
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/scaling/vertical-scaling/mops-vscale-standalone-inplace.yaml
+mssqlserveropsrequest.ops.kubedb.com/mops-vscale-standalone-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 

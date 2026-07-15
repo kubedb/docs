@@ -85,6 +85,10 @@ Each type reads its own sub-spec:
   configuration. `restart` is `auto` (default), `true`, or `false`.
 - `spec.tls` — `{ issuerRef, certificates, rotateCertificates, remove }` for `ReconfigureTLS`.
 - `spec.verticalScaling` — `{ hanadb, coordinator, exporter }` resources for `VerticalScaling`.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the
+  new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the
+  Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod
+  whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 - `spec.volumeExpansion` — `{ hanadb, mode }` where `mode` is `Online` or `Offline`, for `VolumeExpansion`.
 - `spec.horizontalScaling` — `{ replicas }` for `HorizontalScaling` (System Replication only, `>= 2`).
 - `spec.migration` — `{ storageClassName, oldPVReclaimPolicy }` for `StorageMigration`.

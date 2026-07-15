@@ -174,6 +174,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `kafka-prod` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on kafka.
 - `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](overview.md#vertical-scaling-modes).
 
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
@@ -374,6 +375,53 @@ $ kubectl get pod -n demo kafka-prod-controller-1 -o json | jq '.spec.containers
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Kafka topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`KafkaOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: KafkaOpsRequest
+metadata:
+  name: kfops-vscale-topology-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: kafka-prod
+  verticalScaling:
+    mode: InPlace
+    broker:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+    controller:
+      resources:
+        requests:
+          memory: "1.1Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.1Gi"
+          cpu: "0.6"
+  timeout: 5m
+  apply: IfReady
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/scaling/vertical-scaling/kafka-vertical-scaling-topology-inplace.yaml
+kafkaopsrequest.ops.kubedb.com/kfops-vscale-topology-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 

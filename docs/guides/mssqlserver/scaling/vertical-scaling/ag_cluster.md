@@ -244,6 +244,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `mssql-ag-cluster` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.mssqlserver` specifies the expected `mssql` container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/mssqlserver/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,
 

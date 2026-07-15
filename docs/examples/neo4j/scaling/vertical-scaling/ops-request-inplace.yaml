@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-vertical-scale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: neo4j-test
+  verticalScaling:
+    mode: InPlace
+    server:
+      resources:
+        limits:
+          cpu: 1500m
+          memory: 4Gi
+        requests:
+          cpu: 700m
+          memory: 4Gi
