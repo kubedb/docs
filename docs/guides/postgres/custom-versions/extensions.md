@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Please start [the KubeDB documentation homepage](/docs/README.md).
 
 # PostgreSQL Extensions
 
@@ -40,7 +40,7 @@ to communicate with your cluster. If you do not already have a cluster, you can 
 [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
 Now, install KubeDB cli on your workstation and KubeDB operator in your cluster following the steps
-[here](/docs/setup/README.md).
+[the KubeDB installation guide](/docs/setup/README.md).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout.
 
@@ -382,7 +382,7 @@ postgresversion.catalog.kubedb.com/18.3-ext created
 
 The available sample files are:
 
-```
+```text
 postgresversion-16.13-ext.yaml            postgresversion-16.13-bookworm-ext.yaml
 postgresversion-17.9-ext.yaml             postgresversion-17.9-bookworm-ext.yaml
 postgresversion-18.3-ext.yaml             postgresversion-18.3-bookworm-ext.yaml
@@ -409,4 +409,3 @@ kubectl delete ns demo
 - Monitor your PostgreSQL database with KubeDB using [built-in Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Detail concepts of [PostgresVersion object](/docs/guides/postgres/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
-```

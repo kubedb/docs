@@ -39,6 +39,12 @@ spec:
   securityContext:
     runAsAnyNonRoot: false
     runAsUser: 70
+  stash:
+    addon:
+      backupTask:
+        name: postgres-backup-18.2
+      restoreTask:
+        name: postgres-restore-18.2
   ui:
   - name: pgadmin
     version: v2026.3.30
