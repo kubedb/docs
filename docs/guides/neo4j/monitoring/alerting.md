@@ -29,6 +29,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-neo4j created
   ```
 
+* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
@@ -159,9 +161,9 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
 
   # Create a legacy API key with Editor role
   $ curl -s -X POST -H "Content-Type: application/json" \
-      -u admin:<grafana-admin-password> \
+      -u admin:MYKzaXURot8YSQmkjL2n7c1GlBfMh9rV3ruhz7Z9 \
       http://localhost:3000/api/auth/keys \
-      -d '{"name":"neo4j-alerts-demo-key","role":"Editor"}'
+      -d '{"name":"neo4j-alerts-alert-demo-key","role":"Editor"}'
   # Note the returned "key"
 
   $ kill %1
@@ -258,10 +260,11 @@ The `neo4j` container serves its own Prometheus metrics at `:2004/metrics` — n
 
 ```bash
 $ kubectl exec -n alert-neo4j neo4j-alert-demo-0 -c neo4j -- \
-    wget -qO- localhost:2004/metrics | grep neo4j_dbms_page_cache_hit_ratio
-# HELP neo4j_dbms_page_cache_hit_ratio Generated from Dropwizard metric import ...
+                                      wget -qO- localhost:2004/metrics | grep neo4j_dbms_page_cache_hit_ratio
+# HELP neo4j_dbms_page_cache_hit_ratio Generated from Dropwizard metric import (metric=neo4j.dbms.page_cache.hit_ratio, type=com.neo4j.metrics.source.db.PageCacheHitRatioGauge)
 # TYPE neo4j_dbms_page_cache_hit_ratio gauge
 neo4j_dbms_page_cache_hit_ratio 1.0
+
 ```
 
 ### 2. Check the Prometheus target is UP
