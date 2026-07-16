@@ -151,24 +151,31 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
 * **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
 * **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5 used while verifying this tutorial): use the legacy **API Keys** endpoint instead:
 
-  ```bash
-  # Port-forward Grafana
-  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+ ```bash
+# Port-forward Grafana
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 
-  # Retrieve the admin password
-  $ kubectl get secret -n monitoring prometheus-grafana \
-      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+# Retrieve the admin password
+$ kubectl get secret -n monitoring prometheus-grafana \
+    -o jsonpath='{.data.admin-password}' | base64 -d && echo
 
-  # Create a legacy API key with Editor role
-  $ curl -s -X POST -H "Content-Type: application/json" \
-      -u admin:MYKzaXURot8YSQmkjL2n7c1GlBfMh9rV3ruhz7Z9 \
-      http://localhost:3000/api/auth/keys \
-      -d '{"name":"neo4j-alerts-alert-demo-key","role":"Editor"}'
-  # Note the returned "key"
+# Create a service account with Editor role
+$ curl -s -X POST -H "Content-Type: application/json" \
+    -u admin:<grafana_password> \
+    http://localhost:3000/api/serviceaccounts \
+    -d '{"name":"neo4j-alerts-demo","role":"Editor"}'
+# Note the returned "id"
 
-  $ kill %1
-  ```
+# Create a token for the service account (replace <id> with the returned service account ID)
+$ curl -s -X POST -H "Content-Type: application/json" \
+    -u admin:<grafana_password> \
+    http://localhost:3000/api/serviceaccounts/<id>/tokens \
+    -d '{"name":"neo4j-alerts-demo-key","secondsToLive":0}'
+# Note the returned "key"
 
+# Stop the port-forward
+$ kill %1
+```
 Either way, you end up with a bearer token to use as `grafana.apikey` below.
 
 ## Step 2 — Install neo4j-alerts
@@ -287,7 +294,7 @@ Open `http://localhost:9090/alerts`.
   <img alt="Prometheus Alerts — Neo4j groups inactive" src="/docs/images/neo4j/monitoring/neo4j-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-> **Known chart bug (v2026.7.14):** `DiskUsageHigh` and `DiskAlmostFull` may show **FIRING** here even on a healthy cluster with plenty of free space. Their PromQL expression divides `kubelet_volume_stats_used_bytes` by `(kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)` instead of the PVC's actual capacity metric (`kubelet_volume_stats_capacity_bytes`), which mathematically evaluates to ~100% regardless of real usage. This was confirmed by comparing against `df -h` inside the pod (actual usage: 83%) and against the correct formula used by other `*-alerts` charts (e.g. `postgres-alerts`). The Grafana dashboard's own "Neo4j High Disk Usage" panel is unaffected and shows the correct percentage — only these two `PrometheusRule` expressions are wrong. Until fixed upstream, treat `DiskUsageHigh`/`DiskAlmostFull` from this chart as unreliable, or override them with a correct expression via `form.alert.groups.database.rules.diskUsageHigh` / `diskAlmostFull` in a custom values file.
+All 10 rules across the `neo4j.database` and `neo4j.provisioner` groups show **INACTIVE**, confirming the cluster is healthy and no alert thresholds are breached.
 
 ### 4. Check AlertManager
 
@@ -304,7 +311,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/neo4j/monitoring/neo4j-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-Because of the disk-alert bug above, you'll see `DiskUsageHigh`/`DiskAlmostFull` here too (one per pod) even though the cluster is healthy — this is expected until the chart is fixed.
+No alerts are firing for the `alert-neo4j` namespace.
 
 ### 5. Explore the Grafana dashboard
 
@@ -400,8 +407,8 @@ Fired based on live metrics from the Neo4j container's built-in metrics endpoint
 | `Neo4jPageCacheHitRatioLow` | warning | 5m | Page cache hit ratio has dropped below 98% — the database is going to disk too often. |
 | `Neo4jPageFaultsHigh` | warning | 5m | More than 5000 page faults in the last 5 minutes — may indicate more page cache is required. |
 | `Neo4jPageFaultFailuresHigh` | critical | 5m | Any failed page faults in the last 5 minutes — indicates potential disk I/O issues or corruption. |
-| `DiskUsageHigh` | warning | 1m | Persistent volume usage exceeds 80%. **Known chart bug** — see [Verify End-to-End, step 3](#3-confirm-the-neo4j-alerts-are-inactive); currently fires regardless of actual usage. |
-| `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. **Known chart bug** — same as above. |
+| `DiskUsageHigh` | warning | 1m | Persistent volume usage exceeds 80%. |
+| `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. |
 
 ### Provisioner Group
 

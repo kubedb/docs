@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-backend-alert
+  namespace: alert-pgpool
+spec:
+  version: "16.13"
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
