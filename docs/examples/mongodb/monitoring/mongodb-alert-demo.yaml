@@ -1,0 +1,24 @@
+apiVersion: kubedb.com/v1
+kind: MongoDB
+metadata:
+  name: mongodb-alert-demo
+  namespace: alert-mongodb
+spec:
+  version: "6.0.14"
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

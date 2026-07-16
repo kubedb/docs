@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: clickhouse-alert-demo
+  namespace: alert-clickhouse
+spec:
+  version: "24.4.1"
+  replicas: 1
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

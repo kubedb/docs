@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zoo-alert-demo
+  namespace: alert-solr
+spec:
+  version: "3.8.3"
+  replicas: 3
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi

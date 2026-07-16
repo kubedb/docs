@@ -69,7 +69,7 @@ metadata:
   name: cas-alert-demo
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
