@@ -14,4 +14,8 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  configuration:
+    inline:
+      user.conf: |
+        max_connections=200
   deletionPolicy: WipeOut

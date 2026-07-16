@@ -8,6 +8,11 @@ spec:
   postgresRef:
     name: pg-backend-alert
     namespace: alert-pgpool
+  configuration:
+    inline:
+      pgpool.conf: |
+        num_init_children=5
+        max_pool=15
   deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
