@@ -28,14 +28,14 @@ KubeDB exposes Elasticsearch metrics through a sidecar exporter. Once Prometheus
 
   `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (Step 2) uses to expose metrics to Prometheus.
 
-- To keep monitoring resources isolated, we use a separate `monitoring` namespace and deploy the database in the `demo` namespace.
+- To keep monitoring resources isolated, we use a separate `monitoring` namespace and deploy the database in the `grafana-es` namespace.
 
   ```bash
   $ kubectl create ns monitoring
   namespace/monitoring created
 
-  $ kubectl create ns demo
-  namespace/demo created
+  $ kubectl create ns grafana-es
+  namespace/grafana-es created
   ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -116,20 +116,38 @@ Below is the Elasticsearch object with monitoring configured to use Prometheus O
 apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
-  name: es-grafana-demo
-  namespace: demo
+  name: es-grafana-topo
+  namespace: grafana-es
 spec:
-  version: "xpack-9.1.9"
-  enableSSL: true
-  replicas: 1
-  storageType: Durable
-  storage:
-    storageClassName: "standard"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  version: "xpack-9.2.3"
+  topology:
+    master:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      replicas: 3
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
   deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
@@ -150,38 +168,40 @@ Create the Elasticsearch instance:
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/monitoring/coreos-prom-es.yaml
-elasticsearch.kubedb.com/es-grafana-demo created
+elasticsearch.kubedb.com/es-grafana-topo created
 ```
 
 Wait for it to be `Ready`:
 
 ```bash
-$ kubectl get elasticsearch -n demo es-grafana-demo
-NAME              VERSION        STATUS   AGE
-es-grafana-demo   xpack-9.1.9   Ready    3m
+$ kubectl get elasticsearch -n grafana-es es-grafana-topo
+NAME              VERSION       STATUS   AGE
+es-grafana-topo   xpack-9.2.3   Ready    83m
 ```
 
 KubeDB creates a stats service named `{elasticsearch-name}-stats` for the exporter:
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=es-grafana-demo"
-NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-es-grafana-demo         ClusterIP   10.96.10.1     <none>        9200/TCP    3m
-es-grafana-demo-stats   ClusterIP   10.96.10.2     <none>        9114/TCP    3m
+$ kubectl get svc -n grafana-es --selector="app.kubernetes.io/instance=es-grafana-topo"
+NAME                     TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
+es-grafana-topo          ClusterIP   10.43.201.71   <none>        9200/TCP    84m
+es-grafana-topo-master   ClusterIP   None           <none>        9300/TCP    84m
+es-grafana-topo-pods     ClusterIP   None           <none>        9200/TCP    84m
+es-grafana-topo-stats    ClusterIP   10.43.18.99    <none>        56790/TCP   84m
 ```
 
-KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
+KubeDB also creates a `ServiceMonitor` in the `grafana-es` namespace:
 
 ```bash
-$ kubectl get servicemonitor -n demo
+$ kubectl get servicemonitor -n grafana-es
 NAME                    AGE
-es-grafana-demo-stats   3m
+es-grafana-topo-stats   3m
 ```
 
 Verify it carries the correct label:
 
 ```bash
-$ kubectl get servicemonitor -n demo es-grafana-demo-stats -o jsonpath='{.metadata.labels}'
+$ kubectl get servicemonitor -n grafana-es es-grafana-topo-stats -o jsonpath='{.metadata.labels}'
 {"release":"prometheus", ...}
 ```
 
@@ -196,7 +216,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `es-grafana-demo-stats`. Its state should be **UP**.
+Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `es-grafana-topo-stats`. Its state should be **UP**.
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
@@ -291,8 +311,8 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 | Variable      | Applies to              | What to select                                                 |
 |---------------|-------------------------|----------------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your Elasticsearch is deployed (e.g., `demo`) |
-| **app**       | All dashboards          | Name of your Elasticsearch instance (e.g., `es-grafana-demo`) |
+| **namespace** | All dashboards          | Namespace where your Elasticsearch is deployed (e.g., `grafana-es`) |
+| **app**       | All dashboards          | Name of your Elasticsearch instance (e.g., `es-grafana-topo`) |
 | **pod**       | Pod, Database dashboards | A specific pod, or `All` for an aggregated view              |
 | **index**     | Database dashboard only | A specific index, or `All`                                    |
 
@@ -331,10 +351,10 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 ```bash
 # Remove the Elasticsearch instance
-kubectl delete elasticsearch -n demo es-grafana-demo
+kubectl delete elasticsearch -n grafana-es es-grafana-topo
 
 # Remove namespaces
-kubectl delete ns demo
+kubectl delete ns grafana-es
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring
