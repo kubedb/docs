@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Elasticsearch Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Elasticsearch instance using the `elasticsearch-alerts` Helm chart.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Elasticsearch instance using the `elasticsearch-alerts` Helm chart, and how to visualise live metrics using the `kubedb-grafana-dashboards` chart.
 
 ## Before You Begin
 
@@ -43,17 +43,22 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/elasticsearch/monitoring/overview.md).
 
-* For dashboards and visualisation, see [Grafana Dashboard](grafana-dashboard.md) for Elasticsearch.
-
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
+
+The diagram below shows the full alerting architecture — from Elasticsearch metric export through to alert delivery and Grafana visualisation.
+
+<p align="center">
+  <img alt="Elasticsearch Alerting Architecture" src="/docs/images/elasticsearch/monitoring/es-alerting-overview.svg">
+</p>
 
 - **KubeDB** deploys Elasticsearch with a built-in [elasticsearch_exporter](https://github.com/prometheus-community/elasticsearch_exporter) sidecar that exposes metrics on port `56790`.
 - **ServiceMonitor** (named `{elasticsearch-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `elasticsearch-alerts` chart and contains all Elasticsearch alert definitions grouped by concern: database health, provisioner, ops-manager, Stash backup/restore, and KubeStash backup/restore.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
+- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
 
 Unlike some KubeDB databases, Elasticsearch's exporter does not publish a single boolean "is the database up" gauge. Instead, the chart watches the health signals a real Elasticsearch cluster actually exposes — JVM heap usage, filesystem usage on the data path, cluster health color (`green`/`yellow`/`red`), node/data-node counts, and shard state — and fires alerts when any of those cross a threshold.
 
@@ -113,7 +118,7 @@ Here,
 
 - `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
 - `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
-- `spec.topology.*.storage.storageClassName: "local-path"` — use whichever storage class is available/default in your cluster (`kubectl get storageclass`). Note that `local-path` is a `hostPath`-backed class with no capacity quota — the PVC's `1Gi` request is only used for scheduling, and the volume is really backed by however much space is free on the node's own disk. That's fine for this tutorial, but it matters later: the [disk-usage alert simulation](#simulating-a-firing-alert) needs a real quota-bound class (e.g. `longhorn`) to be safe and reliable.
+- `spec.topology.*.storage.storageClassName: "local-path"` — use whichever storage class is available/default in your cluster (`kubectl get storageclass`). Note that `local-path` is a `hostPath`-backed class with no capacity quota — the PVC's `1Gi` request is only used for scheduling, and the volume is really backed by however much space is free on the node's own disk. That's fine throughout this tutorial, including the [firing-alert simulation](#simulating-a-firing-alert) later, since that simulation scales the data-node count rather than filling disk.
 
 Let's create the Elasticsearch resource.
 
@@ -250,6 +255,99 @@ The `elasticsearch.database.alert-elasticsearch.es-alert.rules` group is visible
 
 ---
 
+## Step 2 — Install kubedb-grafana-dashboards
+
+The `kubedb-grafana-dashboards` chart creates `GrafanaDashboard` CRDs containing pre-built Elasticsearch dashboard JSON. A separate controller, `grafana-operator`, watches these CRDs and pushes the dashboards into Grafana over its HTTP API — both pieces are required.
+
+### Install grafana-operator
+
+If your cluster doesn't already have it (check with `kubectl get crd grafanadashboards.openviz.dev`), install the operator that reconciles `GrafanaDashboard`/`GrafanaDatasource` objects into a real Grafana instance:
+
+```bash
+$ helm upgrade -i grafana-operator appscode/grafana-operator \
+    -n kubeops --create-namespace \
+    --version=v2026.6.12 \
+    --wait
+```
+
+### Mark your Grafana instance as the cluster default
+
+The chart looks up Grafana connection details from an `AppBinding` annotated as the cluster's default Grafana. If you deployed Grafana via `kube-prometheus-stack` (as in this tutorial), that `AppBinding` doesn't exist yet and must be created once per cluster:
+
+```bash
+# Create a Grafana API key (adjust the endpoint/payload shape for your Grafana version)
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 &
+$ GRAFANA_PW=$(kubectl get secret -n monitoring prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d)
+$ curl -s -X POST -H "Content-Type: application/json" -u admin:$GRAFANA_PW \
+    http://localhost:3000/api/auth/keys \
+    -d '{"name":"kubedb-dashboards","role":"Admin"}'
+# Note the returned "key"
+$ kill %1
+```
+
+```yaml
+# grafana-appbinding.yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: grafana-admin-token
+  namespace: kubeops
+type: Opaque
+stringData:
+  token: "<api-key-from-above>"
+---
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  name: grafana
+  namespace: kubeops
+  annotations:
+    monitoring.appscode.com/is-default-grafana: "true"   # must be an ANNOTATION, not a label
+spec:
+  type: monitoring.appscode.com/grafana
+  clientConfig:
+    url: "http://prometheus-grafana.monitoring.svc:80"
+  secret:
+    name: grafana-admin-token
+```
+
+```bash
+$ kubectl apply -f grafana-appbinding.yaml
+```
+
+> **Why an AppBinding at all?** `GrafanaDashboard` objects don't carry connection details themselves — `grafana-operator` looks up the one `AppBinding` across the cluster marked with the `monitoring.appscode.com/is-default-grafana: "true"` **annotation** and uses its `clientConfig.url` + referenced `secret` (must contain a `token` key) to talk to Grafana. Skip this step only if your cluster already provisions Grafana through an Appscode-managed chart that creates this `AppBinding` automatically.
+
+### Install the dashboards
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update appscode
+
+$ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+    -n kubeops \
+    --version=v2026.7.10 \
+    --set featureGates.Elasticsearch=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<api-key-from-above>" \
+  | kubectl apply -n kubeops -f -
+```
+
+> **Note:** The `kubedb-grafana-dashboards` chart bundles many large Grafana dashboard JSON files. Even with a single `featureGate` enabled, the rendered manifests can exceed Kubernetes' hard 1 MB Secret limit that Helm uses to store release state. To work around this, render the chart locally with `helm template` and apply the output directly with `kubectl apply`, which bypasses Helm's Secret storage entirely. Because this doesn't create a Helm release object, `helm uninstall` will not work for cleanup — use `kubectl delete` directly (see [Cleaning up](#cleaning-up)). Also note that `featureGates.<DB>` defaults to `true` for almost every database in this chart (only `Aerospike` defaults `false`), so one `helm template | kubectl apply` installs dashboards for many databases at once, not just Elasticsearch — this is expected.
+
+### Verify dashboards are created
+
+```bash
+$ kubectl get grafanadashboards -n kubeops | grep elasticsearch
+NAME                            TITLE                            STATUS    AGE
+kubedb-elasticsearch-database   KubeDB / Elasticsearch / Database   Current   2m
+kubedb-elasticsearch-pod        KubeDB / Elasticsearch / Pod         Current   2m
+kubedb-elasticsearch-summary    KubeDB / Elasticsearch / Summary     Current   2m
+```
+
+`Current` means `grafana-operator` successfully pushed the dashboard into Grafana. If a dashboard stays `Failed` with a message like `no default Grafana appbinding found`, revisit the AppBinding step above.
+
+---
+
 ## Verify End-to-End
 
 ### 1. Check the exporter is running
@@ -297,73 +395,121 @@ $ kubectl port-forward -n monitoring \
 
 Open `http://localhost:9093`. With a healthy Elasticsearch instance, no alerts for `es-alert` will be listed here.
 
+<p align="center">
+  <img alt="AlertManager — No Active Alerts" src="/docs/images/elasticsearch/monitoring/es-alerting-alertmanager.png" style="padding:10px">
+</p>
+
+### 5. Explore Grafana dashboards
+
+Port-forward Grafana and log in.
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+Open `http://localhost:3000` (username: `admin`). Search for **elasticsearch** in the Dashboards section.
+
+<p align="center">
+  <img alt="Grafana — Elasticsearch Dashboard List" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-dashboards.png" style="padding:10px">
+</p>
+
+Three pre-built dashboards are available. The `Namespace` and `app` drop-downs at the top of each dashboard let you switch between instances.
+
+**KubeDB / Elasticsearch / Summary** — cluster-wide health: database status, version, node count, CPU/memory/storage requests vs. usage.
+
+<p align="center">
+  <img alt="Grafana — KubeDB Elasticsearch Summary" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-summary.png" style="padding:10px">
+</p>
+
+**KubeDB / Elasticsearch / Pod** — per-node detail: node status color, open file count, connected/active data nodes, memory and heap usage, GC time, documents indexed.
+
+<p align="center">
+  <img alt="Grafana — KubeDB Elasticsearch Pod" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-pod.png" style="padding:10px">
+</p>
+
+**KubeDB / Elasticsearch / Database** — cluster status, shard counts, documents indexed, index size, indexing/query rate, and ingest-node system metrics.
+
+<p align="center">
+  <img alt="Grafana — KubeDB Elasticsearch Database" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-database.png" style="padding:10px">
+</p>
+
 ---
 
 ## Simulating a Firing Alert
 
-The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `ElasticsearchDiskOutOfSpace` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `ElasticsearchHealthyDataNodes` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge, and restarting a node recovers in a few seconds, too fast to reliably observe in a scrape/evaluation cycle. Instead, we simulate a real resource-exhaustion scenario: filling a data node's volume, which is exactly the kind of incident this alert exists to catch.
+Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge. Killing the `elasticsearch` process inside a pod doesn't work either: the container restarts in under 2 seconds (faster than the cluster's fault-detection window), so the other nodes never actually perceive the node as gone. Instead, we shrink the `data` role from 3 nodes to 2 — a real, sustained, cleanly-reversible change that reliably crosses the alert's default `val: 3` threshold.
 
-> **Requires a quota-bound storage class.** This only works reliably against a volume whose capacity is actually isolated to the Pod — e.g. `longhorn` — rather than `hostPath`-backed classes like `local-path`. With `local-path`, the "volume" is really just a directory on the node's own disk: `df` inside the Pod reports the *node's* total/used/free space, not the PVC's nominal size. Padding the volume to 90% would mean filling a large fraction of the underlying node's real disk — which is shared with every other Pod scheduled there — rather than a small, isolated 1Gi volume. If your data nodes are on `local-path` (as in the topology example above), either redeploy that node's storage on a quota-bound class first, or treat this section as a reference for what to expect rather than a live exercise.
-
-### 1. Fill the data volume
-
-Pick one data pod (e.g. `es-alert-data-0`) and write a padding file into its data directory to push usage past the `90%` critical threshold.
+### 1. Scale down the data nodes
 
 ```bash
-$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
-    sh -c "df -h /usr/share/elasticsearch/data"
-Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  896K  957M   1% /usr/share/elasticsearch/data
-
-$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
-    sh -c "mkdir -p /usr/share/elasticsearch/data/_disk_filler && \
-           dd if=/dev/zero of=/usr/share/elasticsearch/data/_disk_filler/pad.bin bs=1M count=870"
-870+0 records in
-870+0 records out
-912261120 bytes (912 MB, 870 MiB) copied, 11.1736 s, 81.6 MB/s
-
-$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
-    sh -c "df -h /usr/share/elasticsearch/data"
-Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  871M   87M  91% /usr/share/elasticsearch/data
+$ kubectl patch elasticsearch -n alert-elasticsearch es-alert \
+    --type=merge -p '{"spec":{"topology":{"data":{"replicas":2}}}}'
+elasticsearch.kubedb.com/es-alert patched
 ```
 
-Wait 30–60 seconds for the next Prometheus scrape cycle (configured at 10 s) and rule-evaluation cycle (30 s) to register the new disk usage.
+KubeDB terminates one data pod to bring the topology down to the new desired count:
+
+```bash
+$ kubectl get pods -n alert-elasticsearch -l app.kubernetes.io/instance=es-alert
+NAME                READY   STATUS    RESTARTS   AGE
+es-alert-data-0     2/2     Running   0          162m
+es-alert-data-1     2/2     Running   0          162m
+es-alert-ingest-0   2/2     Running   0          163m
+es-alert-ingest-1   2/2     Running   0          162m
+es-alert-master-0   2/2     Running   0          162m
+es-alert-master-1   2/2     Running   0          162m
+```
+
+Wait 30–60 seconds for the next Prometheus scrape cycle (configured at 10 s) and rule-evaluation cycle (30 s) to register the smaller data-node count.
 
 ### 2. Watch the alert fire in Prometheus
 
 Open `http://localhost:9090/alerts?search=elasticsearch`.
 
-Because `ElasticsearchDiskOutOfSpace` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `elasticsearch.database` group stays **INACTIVE**.
+<p align="center">
+  <img alt="Prometheus Alerts — ElasticsearchHealthyDataNodes Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-alerts-firing.png" style="padding:10px">
+</p>
+
+Because `ElasticsearchHealthyDataNodes` has `for: instant` (no wait), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `elasticsearch.database` group stays **INACTIVE**. Note that it fires once per surviving node's exporter (6 series here, one per remaining pod), since each node independently reports its own view of cluster-wide node counts — this is normal, not 6 separate incidents.
 
 ### 3. Check the AlertManager dashboard
 
 Open `http://localhost:9093/#/alerts?filter={namespace="alert-elasticsearch"}`.
 
-AlertManager shows the `ElasticsearchDiskOutOfSpace` alert. The alert card displays:
+<p align="center">
+  <img alt="AlertManager — ElasticsearchHealthyDataNodes Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-alertmanager-firing.png" style="padding:10px">
+</p>
+
+AlertManager shows the `ElasticsearchHealthyDataNodes` alert grouped by namespace. Each alert card displays:
 
 - **Severity**: `critical`
-- **Instance**: the pod you filled (e.g. `es-alert-data-0`) in the `alert-elasticsearch` namespace
-- **job**: `es-alert-stats`
-- **mount**: `/usr/share/elasticsearch/data (/dev/longhorn/pvc-...)`
+- **app** / **job**: `es-alert` / `es-alert-stats`
+- **pod**: the surviving node reporting the low count (e.g. `es-alert-data-0`, `es-alert-master-1`, ...)
 - **Started**: timestamp when the alert first fired
 
 AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
 
-### 4. Restore the disk
+### 4. Restore the data nodes
 
-Delete the padding file to free up space.
+Scale the data role back to 3 to resolve the alert.
 
 ```bash
-$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
-    sh -c "rm -rf /usr/share/elasticsearch/data/_disk_filler && df -h /usr/share/elasticsearch/data"
-Filesystem                                              Size  Used Avail Use% Mounted on
-/dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  924K  957M   1% /usr/share/elasticsearch/data
+$ kubectl patch elasticsearch -n alert-elasticsearch es-alert \
+    --type=merge -p '{"spec":{"topology":{"data":{"replicas":3}}}}'
+elasticsearch.kubedb.com/es-alert patched
 ```
 
-Once usage drops back under the threshold, Prometheus marks the alert **INACTIVE** again and AlertManager sends a **resolved** notification to all receivers.
+Wait for the pod to rejoin and for the next scrape cycle to register the recovered count.
+
+```bash
+$ kubectl get elasticsearch -n alert-elasticsearch es-alert
+NAME       VERSION       STATUS   AGE
+es-alert   xpack-9.2.3   Ready    163m
+```
+
+Once the Elasticsearch resource returns to `Ready` and `elasticsearch_cluster_health_number_of_data_nodes` reports `3` again, Prometheus marks the alert **INACTIVE** and AlertManager sends a **resolved** notification to all receivers.
 
 ---
 
@@ -481,6 +627,15 @@ $ helm upgrade es-alert oci://ghcr.io/appscode-charts/elasticsearch-alerts \
 To remove all resources created in this tutorial, run the following commands.
 
 ```bash
+# Remove the Grafana dashboards (installed via helm template | kubectl apply, not helm install)
+$ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+    -n kubeops \
+    --version=v2026.7.10 \
+    --set featureGates.Elasticsearch=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<api-key>" \
+  | kubectl delete -n kubeops -f - --ignore-not-found
+
 # Remove the elasticsearch-alerts release
 $ helm uninstall es-alert -n alert-elasticsearch
 
@@ -489,6 +644,11 @@ $ kubectl delete elasticsearch -n alert-elasticsearch es-alert
 
 # Delete namespace
 $ kubectl delete ns alert-elasticsearch
+
+# Optional: only if nothing else in the cluster depends on them
+$ kubectl delete appbinding -n kubeops grafana
+$ kubectl delete secret -n kubeops grafana-admin-token
+$ helm uninstall grafana-operator -n kubeops
 ```
 
 ## Next Steps
