@@ -61,24 +61,45 @@ Unlike some KubeDB databases, Elasticsearch's exporter does not publish a single
 
 ## Deploy Elasticsearch with Monitoring Enabled
 
-At first, let's deploy an Elasticsearch database with monitoring enabled. Below is the Elasticsearch object we are going to create.
+At first, let's deploy an Elasticsearch database with monitoring enabled. This tutorial uses a topology cluster (dedicated master, data, and ingest nodes) rather than a single-node instance, since that's representative of a real deployment and is what the rest of this guide's screenshots are taken from. Below is the Elasticsearch object we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1
 kind: Elasticsearch
 metadata:
-  name: es-alert-demo
+  name: es-alert
   namespace: alert-elasticsearch
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   deletionPolicy: WipeOut
-  storage:
-    storageClassName: "longhorn"
-    accessModes:
-    - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  topology:
+    master:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      replicas: 3
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -92,46 +113,60 @@ Here,
 
 - `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
 - `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
-- `spec.storage.storageClassName: "longhorn"` — we use a real, quota-bound block-storage class here rather than a `hostPath`-backed one. Later in this tutorial we deliberately fill the data volume to demonstrate the disk-usage alert firing, and doing that safely requires a volume whose capacity is actually isolated to this Pod rather than shared with the underlying node's disk. Use whichever storage class is available/default in your cluster (`kubectl get storageclass`).
+- `spec.topology.*.storage.storageClassName: "local-path"` — use whichever storage class is available/default in your cluster (`kubectl get storageclass`). Note that `local-path` is a `hostPath`-backed class with no capacity quota — the PVC's `1Gi` request is only used for scheduling, and the volume is really backed by however much space is free on the node's own disk. That's fine for this tutorial, but it matters later: the [disk-usage alert simulation](#simulating-a-firing-alert) needs a real quota-bound class (e.g. `longhorn`) to be safe and reliable.
 
 Let's create the Elasticsearch resource.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/monitoring/es-alert-demo.yaml
-elasticsearch.kubedb.com/es-alert-demo created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/monitoring/es-alert.yaml
+elasticsearch.kubedb.com/es-alert created
 ```
 
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get elasticsearch -n alert-elasticsearch es-alert-demo
-NAME            VERSION        STATUS   AGE
-es-alert-demo   xpack-8.19.9   Ready    2m12s
+$ kubectl get elasticsearch -n alert-elasticsearch es-alert
+NAME       VERSION       STATUS   AGE
+es-alert   xpack-9.2.3   Ready    37m
+```
+
+KubeDB brings up 2 master, 3 data, and 2 ingest pods for this topology:
+
+```bash
+$ kubectl get pods -n alert-elasticsearch
+NAME                READY   STATUS    RESTARTS   AGE
+es-alert-data-0     2/2     Running   0          37m
+es-alert-data-1     2/2     Running   0          37m
+es-alert-data-2     2/2     Running   0          37m
+es-alert-ingest-0   2/2     Running   0          37m
+es-alert-ingest-1   2/2     Running   0          37m
+es-alert-master-0   2/2     Running   0          37m
+es-alert-master-1   2/2     Running   0          37m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
 
 ```bash
-$ kubectl get svc -n alert-elasticsearch --selector="app.kubernetes.io/instance=es-alert-demo"
-NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
-es-alert-demo          ClusterIP   10.43.247.174   <none>        9200/TCP    2m21s
-es-alert-demo-master   ClusterIP   None            <none>        9300/TCP    2m21s
-es-alert-demo-pods     ClusterIP   None            <none>        9200/TCP    2m21s
-es-alert-demo-stats    ClusterIP   10.43.223.213   <none>        56790/TCP   2m16s
+$ kubectl get svc -n alert-elasticsearch --selector="app.kubernetes.io/instance=es-alert"
+NAME              TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)     AGE
+es-alert          ClusterIP   10.43.126.120   <none>        9200/TCP    37m
+es-alert-master   ClusterIP   None            <none>        9300/TCP    37m
+es-alert-pods     ClusterIP   None            <none>        9200/TCP    37m
+es-alert-stats    ClusterIP   10.43.49.18     <none>        56790/TCP   37m
 ```
 
 KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 
 ```bash
 $ kubectl get servicemonitor -n alert-elasticsearch
-NAME                  AGE
-es-alert-demo-stats   2m16s
+NAME             AGE
+es-alert-stats   115s
 ```
 
 Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
 
 ```bash
-$ kubectl get servicemonitor -n alert-elasticsearch es-alert-demo-stats \
+$ kubectl get servicemonitor -n alert-elasticsearch es-alert-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
@@ -144,56 +179,54 @@ The `elasticsearch-alerts` chart creates a `PrometheusRule` resource containing 
 
 ### Why the Helm release name matters
 
-The chart derives the PromQL `job`/instance scoping (and the `PrometheusRule` name) from the **Helm release name**, not from a values field — so the release name must match the Elasticsearch object's name (`es-alert-demo`) for the rules to be correctly scoped to this instance.
+The chart derives the PromQL `job`/instance scoping (and the `PrometheusRule` name) from the **Helm release name**, not from a values field — so the release name must match the Elasticsearch object's name (`es-alert`) for the rules to be correctly scoped to this instance.
 
 The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector`.
 
-### A note on defaults vs. this single-node demo
+### A note on chart defaults
 
-A handful of the chart's default `database` group rules are tuned for a production, multi-node Elasticsearch cluster and don't make sense for our single-node demo instance out of the box:
+The chart's default `database` group rules are tuned for a production, multi-node Elasticsearch cluster, which is exactly what this tutorial's `es-alert` topology (2 master + 3 data + 2 ingest = 7 nodes) already is — so the node-count and shard-allocation defaults (`elasticsearchHealthyNodes` / `elasticsearchHealthyDataNodes` at `val: 3`, `elasticsearchUnassignedShards` enabled) apply as-is with no overrides needed.
 
-- `elasticsearchHealthyNodes` / `elasticsearchHealthyDataNodes` default to `val: 3` (fire if fewer than 3 nodes are up). Our demo only ever has 1 node, so we override both to `val: 1`.
-- `elasticsearchUnassignedShards` fires whenever any shard is unassigned. A single-node cluster can never assign a replica shard (there's no second node to place it on), so this rule would fire permanently in a single-node topology — we disable it for this demo.
+One rule pair still needs overriding regardless of topology:
+
 - `diskUsageHigh` / `diskAlmostFull` compute PVC usage as `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)`. The `..._info` series is a constant label metric (always `1`), not a byte count, so this expression evaluates to ~100% regardless of actual usage — a chart-level expression defect. We disable both and rely instead on `elasticsearchDiskOutOfSpace` / `elasticsearchDiskSpaceLow`, which are computed from the exporter's own accurate `elasticsearch_filesystem_data_available_bytes` / `elasticsearch_filesystem_data_size_bytes` metrics.
 
 ### Install
 
 ```bash
-$ helm upgrade -i es-alert-demo oci://ghcr.io/appscode-charts/elasticsearch-alerts \
-    -n alert-elasticsearch \
-    --create-namespace \
-    --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus \
-    --set form.alert.groups.database.rules.elasticsearchHealthyNodes.val=1 \
-    --set form.alert.groups.database.rules.elasticsearchHealthyDataNodes.val=1 \
-    --set form.alert.groups.database.rules.elasticsearchUnassignedShards.enabled=false \
-    --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
-    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
+$ helm repo add appscode oci://ghcr.io/appscode-charts
+$ helm repo update
+$ helm search repo appscode/elasticsearch-alerts --version=v2026.7.14
+NAME                         	CHART VERSION	APP VERSION	DESCRIPTION                                     
+appscode/elasticsearch-alerts	v2026.7.14   	v0.7.0     	A Helm chart for Elasticsearch Alert by AppsCode
+
+$ helm upgrade -i es-alert appscode/elasticsearch-alerts -n alert-elasticsearch --create-namespace --version=v2026.7.14 \
+  --set form.alert.labels.release=prometheus \
+  --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
+  --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
 ```
 
 | Flag | Value | Purpose |
 |------|-------|---------|
-| `es-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="es-alert-demo-stats"`) |
+| `es-alert` (release name) | — | Scopes every PromQL expression to this instance (`job="es-alert-stats"`). **This must exactly match the Elasticsearch object's name** — see [above](#why-the-helm-release-name-matters). A mismatched release name is the most common cause of alerts silently never firing (and Grafana/Prometheus showing nothing for a healthy instance): the chart's rules end up scoped to a `job` label that no target ever carries. |
 | `-n alert-elasticsearch` | `alert-elasticsearch` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
-| `...elasticsearchHealthyNodes.val` / `...elasticsearchHealthyDataNodes.val` | `1` | Matches our single-node demo topology instead of the production default of `3` |
-| `...elasticsearchUnassignedShards.enabled` | `false` | Avoids a permanently-firing alert on a single-node cluster (see above) |
 | `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Works around the PVC-usage expression defect described above |
 
-> If you're running against a multi-node production cluster, skip the four threshold/disable overrides above and just install with the release name and label override.
+> If you're running against a single-node instance instead of a topology cluster, also override `...elasticsearchHealthyNodes.val` / `...elasticsearchHealthyDataNodes.val` to `1` (the default `3` will never be satisfied by one node), and disable `...elasticsearchUnassignedShards` (a single-node cluster can never assign a replica shard, so this rule fires permanently).
 
 ### Verify the PrometheusRule is created
 
 ```bash
 $ kubectl get prometheusrule -n alert-elasticsearch
-NAME            AGE
-es-alert-demo   30s
+NAME       AGE
+es-alert   22s
 ```
 
 Confirm the `release: prometheus` label is present.
 
 ```bash
-$ kubectl get prometheusrule -n alert-elasticsearch es-alert-demo \
+$ kubectl get prometheusrule -n alert-elasticsearch es-alert \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
@@ -213,7 +246,7 @@ Open `http://localhost:9090/rules?search=elasticsearch`.
   <img alt="Prometheus Rule Health" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-The `elasticsearch.database.alert-elasticsearch.es-alert-demo.rules` group is visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Elasticsearch alert definitions every 30 seconds.
+The `elasticsearch.database.alert-elasticsearch.es-alert.rules` group is visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Elasticsearch alert definitions every 30 seconds.
 
 ---
 
@@ -224,24 +257,24 @@ The `elasticsearch.database.alert-elasticsearch.es-alert-demo.rules` group is vi
 The `exporter` sidecar inside the Elasticsearch pod serves metrics at `:56790/metrics`. The `elasticsearch_cluster_health_status` series confirms the exporter can reach Elasticsearch and report cluster health.
 
 ```bash
-$ kubectl exec -n alert-elasticsearch es-alert-demo-0 -c exporter -- \
+$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c exporter -- \
     wget -qO- localhost:56790/metrics | grep elasticsearch_cluster_health_status
-elasticsearch_cluster_health_status{cluster="es-alert-demo",color="green"} 0
-elasticsearch_cluster_health_status{cluster="es-alert-demo",color="red"} 0
-elasticsearch_cluster_health_status{cluster="es-alert-demo",color="yellow"} 1
+elasticsearch_cluster_health_status{cluster="es-alert",color="green"} 1
+elasticsearch_cluster_health_status{cluster="es-alert",color="red"} 0
+elasticsearch_cluster_health_status{cluster="es-alert",color="yellow"} 0
 ```
 
-A single-node Elasticsearch cluster reports `yellow` (not `green`) because it can never assign replica shards without a second node — this is expected and not an outage.
+With master, data, and ingest nodes all up, the cluster can fully assign both primary and replica shards, so it reports `green`. (A single-node cluster would instead report `yellow` — it can never assign replica shards without a second node to place them on — which is expected and not an outage.)
 
 ### 2. Check the Prometheus target is UP
 
-Open `http://localhost:9090/targets?search=es-alert-demo`.
+Open `http://localhost:9090/targets?search=es-alert`.
 
 <p align="center">
   <img alt="Prometheus Target UP" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-target.png" style="padding:10px">
 </p>
 
-The target `serviceMonitor/alert-elasticsearch/es-alert-demo-stats/0` shows **UP**, confirming metrics are being scraped from `es-alert-demo-0` in the `alert-elasticsearch` namespace.
+The target group `serviceMonitor/alert-elasticsearch/es-alert-stats/0` shows **7 / 7 up** — one entry per master/data/ingest pod, confirming metrics are being scraped from every node in the `alert-elasticsearch` namespace.
 
 ### 3. Confirm all Elasticsearch alerts are inactive
 
@@ -251,7 +284,7 @@ Open `http://localhost:9090/alerts?search=elasticsearch` to see the Elasticsearc
   <img alt="Prometheus Alerts — All Inactive" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-All 5 rules in the `elasticsearch.database` group show **INACTIVE (5)**, meaning the database is healthy and no thresholds are breached.
+All 6 rules in the `elasticsearch.database` group show **INACTIVE (6)**, meaning the database is healthy and no thresholds are breached.
 
 ### 4. Check AlertManager
 
@@ -262,7 +295,7 @@ $ kubectl port-forward -n monitoring \
     svc/prometheus-kube-prometheus-alertmanager 9093:9093
 ```
 
-Open `http://localhost:9093`. With a healthy Elasticsearch instance, no alerts for `es-alert-demo` will be listed here.
+Open `http://localhost:9093`. With a healthy Elasticsearch instance, no alerts for `es-alert` will be listed here.
 
 ---
 
@@ -270,26 +303,28 @@ Open `http://localhost:9093`. With a healthy Elasticsearch instance, no alerts f
 
 The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `ElasticsearchDiskOutOfSpace` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge, and restarting the single node in this demo recovers in a few seconds, too fast to reliably observe in a scrape/evaluation cycle. Instead, we simulate a real resource-exhaustion scenario: filling the data volume, which is exactly the kind of incident this alert exists to catch.
+Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge, and restarting a node recovers in a few seconds, too fast to reliably observe in a scrape/evaluation cycle. Instead, we simulate a real resource-exhaustion scenario: filling a data node's volume, which is exactly the kind of incident this alert exists to catch.
+
+> **Requires a quota-bound storage class.** This only works reliably against a volume whose capacity is actually isolated to the Pod — e.g. `longhorn` — rather than `hostPath`-backed classes like `local-path`. With `local-path`, the "volume" is really just a directory on the node's own disk: `df` inside the Pod reports the *node's* total/used/free space, not the PVC's nominal size. Padding the volume to 90% would mean filling a large fraction of the underlying node's real disk — which is shared with every other Pod scheduled there — rather than a small, isolated 1Gi volume. If your data nodes are on `local-path` (as in the topology example above), either redeploy that node's storage on a quota-bound class first, or treat this section as a reference for what to expect rather than a live exercise.
 
 ### 1. Fill the data volume
 
-The Elasticsearch container mounts its data directory from the 1Gi `longhorn` PVC we provisioned earlier. Write a padding file to push usage past the `90%` critical threshold.
+Pick one data pod (e.g. `es-alert-data-0`) and write a padding file into its data directory to push usage past the `90%` critical threshold.
 
 ```bash
-$ kubectl exec -n alert-elasticsearch es-alert-demo-0 -c elasticsearch -- \
+$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
     sh -c "df -h /usr/share/elasticsearch/data"
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  896K  957M   1% /usr/share/elasticsearch/data
 
-$ kubectl exec -n alert-elasticsearch es-alert-demo-0 -c elasticsearch -- \
+$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
     sh -c "mkdir -p /usr/share/elasticsearch/data/_disk_filler && \
            dd if=/dev/zero of=/usr/share/elasticsearch/data/_disk_filler/pad.bin bs=1M count=870"
 870+0 records in
 870+0 records out
 912261120 bytes (912 MB, 870 MiB) copied, 11.1736 s, 81.6 MB/s
 
-$ kubectl exec -n alert-elasticsearch es-alert-demo-0 -c elasticsearch -- \
+$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
     sh -c "df -h /usr/share/elasticsearch/data"
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  871M   87M  91% /usr/share/elasticsearch/data
@@ -301,25 +336,17 @@ Wait 30–60 seconds for the next Prometheus scrape cycle (configured at 10 s) a
 
 Open `http://localhost:9090/alerts?search=elasticsearch`.
 
-<p align="center">
-  <img alt="Prometheus Alerts — ElasticsearchDiskOutOfSpace Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-alerts-firing.png" style="padding:10px">
-</p>
-
-Because `ElasticsearchDiskOutOfSpace` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle. The rest of the `elasticsearch.database` group stays **INACTIVE (4)**.
+Because `ElasticsearchDiskOutOfSpace` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `elasticsearch.database` group stays **INACTIVE**.
 
 ### 3. Check the AlertManager dashboard
 
 Open `http://localhost:9093/#/alerts?filter={namespace="alert-elasticsearch"}`.
 
-<p align="center">
-  <img alt="AlertManager — ElasticsearchDiskOutOfSpace Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-alertmanager-firing.png" style="padding:10px">
-</p>
-
 AlertManager shows the `ElasticsearchDiskOutOfSpace` alert. The alert card displays:
 
 - **Severity**: `critical`
-- **Instance**: `es-alert-demo-0` in the `alert-elasticsearch` namespace
-- **job**: `es-alert-demo-stats`
+- **Instance**: the pod you filled (e.g. `es-alert-data-0`) in the `alert-elasticsearch` namespace
+- **job**: `es-alert-stats`
 - **mount**: `/usr/share/elasticsearch/data (/dev/longhorn/pvc-...)`
 - **Started**: timestamp when the alert first fired
 
@@ -330,7 +357,7 @@ AlertManager routes this alert to every receiver configured in your `alertmanage
 Delete the padding file to free up space.
 
 ```bash
-$ kubectl exec -n alert-elasticsearch es-alert-demo-0 -c elasticsearch -- \
+$ kubectl exec -n alert-elasticsearch es-alert-data-0 -c elasticsearch -- \
     sh -c "rm -rf /usr/share/elasticsearch/data/_disk_filler && df -h /usr/share/elasticsearch/data"
 Filesystem                                              Size  Used Avail Use% Mounted on
 /dev/longhorn/pvc-4f05381c-a1c8-49db-9e30-b5ea0007c77b  974M  924K  957M   1% /usr/share/elasticsearch/data
@@ -342,7 +369,7 @@ Once usage drops back under the threshold, Prometheus marks the alert **INACTIVE
 
 ## Alert Reference
 
-All alerts are scoped to the `es-alert-demo` instance in the `alert-elasticsearch` namespace via the PromQL label filters `job="es-alert-demo-stats"` and `namespace="alert-elasticsearch"`.
+All alerts are scoped to the `es-alert` instance in the `alert-elasticsearch` namespace via the PromQL label filters `job="es-alert-stats"` and `namespace="alert-elasticsearch"`.
 
 ### Database Group
 
@@ -441,7 +468,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade es-alert-demo oci://ghcr.io/appscode-charts/elasticsearch-alerts \
+$ helm upgrade es-alert oci://ghcr.io/appscode-charts/elasticsearch-alerts \
     -n alert-elasticsearch \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
@@ -455,10 +482,10 @@ To remove all resources created in this tutorial, run the following commands.
 
 ```bash
 # Remove the elasticsearch-alerts release
-$ helm uninstall es-alert-demo -n alert-elasticsearch
+$ helm uninstall es-alert -n alert-elasticsearch
 
 # Remove the Elasticsearch instance
-$ kubectl delete elasticsearch -n alert-elasticsearch es-alert-demo
+$ kubectl delete elasticsearch -n alert-elasticsearch es-alert
 
 # Delete namespace
 $ kubectl delete ns alert-elasticsearch
