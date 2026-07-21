@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Visualize Neo4j Metrics with Grafana Dashboard
 
-KubeDB exposes Neo4j metrics through a sidecar exporter. Once Prometheus scrapes those metrics, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Neo4j instance, and importing the Grafana dashboards.
+KubeDB exposes Neo4j metrics by enabling Neo4j's built-in metrics support. Once Prometheus scrapes those metrics, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Neo4j instance, and importing the Grafana dashboards.
 
 ## Before You Begin
 
@@ -271,7 +271,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 | **Neo4j**     | All dashboards           | Name of your instance (e.g., `neo4j-grafana-demo`)         |
 | **pod**       | Pod dashboard             | A specific pod (e.g., `neo4j-grafana-demo-0`)              |
 | **database**  | Pod, Database dashboards | Target database name (e.g., `neo4j`, `system`)             |
-| **leader**    | Pod, Database dashboards | The pod currently holding cluster leadership                |
+| **leader**    | Pod, Database dashboards | The pod currently holding database leadership                |
 
 **KubeDB / Neo4j / Summary** — instance-level overview:
 
