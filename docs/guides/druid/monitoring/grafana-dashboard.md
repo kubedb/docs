@@ -167,13 +167,16 @@ apiVersion: kubedb.com/v1alpha2
 kind: Druid
 metadata:
   name: druid-grafana-demo
-  namespace: demo
+  namespace: alert-druid
 spec:
-  version: "28.0.1"
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
       name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
   deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
@@ -202,7 +205,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get druid -n demo druid-grafana-demo
 NAME                 VERSION   STATUS   AGE
-druid-grafana-demo   28.0.1    Ready    5m
+druid-grafana-demo   36.0.0    Ready    5m
 ```
 
 KubeDB creates a stats service named `{druid-name}-stats` for monitoring:
