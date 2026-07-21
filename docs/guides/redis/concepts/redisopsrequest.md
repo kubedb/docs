@@ -151,6 +151,7 @@ limits:
 Here, when you specify the resource request for `Redis` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `Redis` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.redis` and you can scale the resource the same way as `redis` container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 >You can increase/decrease resources for both `redis` container and `exporter` container on a single `RedisOpsRequest` CR.
 

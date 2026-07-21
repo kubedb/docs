@@ -91,7 +91,7 @@ metadata:
 spec:
   replicas: 3
   deletionPolicy: WipeOut
-  version: "2025.11.2"
+  version: "2025.12.1"
   storage:
     storageClassName: local-path
     accessModes:
@@ -126,7 +126,7 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get neo4j -n demo coreos-prom-neo4j
 NAME                VERSION      STATUS   AGE
-coreos-prom-neo4j   2025.11.2    Ready    3m
+coreos-prom-neo4j   2025.12.1    Ready    3m
 ```
 
 KubeDB will create a separate stats service with the name `{Neo4j CR name}-stats` for monitoring purposes.

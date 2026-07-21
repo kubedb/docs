@@ -37,7 +37,7 @@ namespace/demo created
 
 ## Prepare MariaDB Cluster
 
-Now, we are going to deploy a `MariaDB` cluster database with version `10.4.32`.
+Now, we are going to deploy a `MariaDB` cluster database with version `11.8.5`.
 
 ### Deploy MariaDB cluster
 
@@ -52,7 +52,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "10.4.32"
+  version: "11.8.5"
   replicas: 3
   storageType: Durable
   storage:
@@ -78,14 +78,14 @@ Now, wait until `sample-mariadb` created has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo                                                                                                                                             
 NAME             VERSION    STATUS     AGE
-sample-mariadb   10.4.32    Ready     3m15s
+sample-mariadb   11.8.5    Ready     3m15s
 ```
 
 We are now ready to apply the `MariaDBOpsRequest` CR to update this database.
 
 ### update MariaDB Version
 
-Here, we are going to update `MariaDB` cluster from `10.4.32` to `10.5.23`.
+Here, we are going to update `MariaDB` cluster from `11.8.5` to `12.1.2`.
 
 #### Create MariaDBOpsRequest:
 
@@ -102,14 +102,14 @@ spec:
   databaseRef:
     name: sample-mariadb
   updateVersion:
-    targetVersion: "10.5.23"
+    targetVersion: "12.1.2"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-mariadb` MariaDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `10.5.23`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `12.1.2`.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -137,13 +137,13 @@ Now, we are going to verify whether the `MariaDB` and the related `PetSets` and 
 
 ```bash
 $ kubectl get mariadb -n demo sample-mariadb -o=jsonpath='{.spec.version}{"\n"}'
-10.5.23
+12.1.2
 
-$ kubectl get sts -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mariadb:10.5.23
+$ kubectl get petset -n demo sample-mariadb -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mariadb:12.1.2
 
 $ kubectl get pods -n demo sample-mariadb-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mariadb:10.5.23
+mariadb:12.1.2
 ```
 
 You can see from above, our `MariaDB` cluster database has been updated with the new version. So, the update process is successfully completed.

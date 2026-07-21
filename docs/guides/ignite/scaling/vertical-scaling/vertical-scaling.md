@@ -42,7 +42,7 @@ Here, we are going to deploy a  `Ignite` using a supported version by `KubeDB` o
 
 ### Prepare Ignite Database
 
-Now, we are going to deploy a `Ignite` database with version `2.17.0`.
+Now, we are going to deploy a `Ignite` database with version `2.18.0`.
 
 ### Deploy Ignite 
 
@@ -55,7 +55,7 @@ metadata:
   name: ig
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -78,7 +78,7 @@ Now, wait until `ig` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            VERSION    STATUS    AGE
-ig   2.17.0      Ready     5m56s
+ig   2.18.0      Ready     5m56s
 ```
 
 Let's check the Pod containers resources,
@@ -134,9 +134,10 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `igps-vscale` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on the `ig` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.VerticalScaling.Node` specifies the desired resources after scaling.
+- `spec.verticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/ignite/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `IgniteOpsRequest` CR we have shown above,
@@ -292,6 +293,43 @@ $ kubectl get pod -n demo ig-0 -o json | jq '.spec.containers[].resources'
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Ignite database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`IgniteOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: IgniteOpsRequest
+metadata:
+  name: igops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: ig
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/scaling/vertical-scaling/igops-vscale-inplace.yaml
+igniteopsrequest.ops.kubedb.com/igops-vscale-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

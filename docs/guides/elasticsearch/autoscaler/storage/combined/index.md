@@ -58,7 +58,7 @@ Now, we are going to deploy a `Elasticsearch` combined cluster using a supported
 
 #### Deploy Elasticsearch Combined Cluster
 
-In this section, we are going to deploy an Elasticsearch combined cluster with version `xpack-8.19.9`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch combined cluster with version `xpack-9.2.3`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -68,7 +68,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   replicas: 1
   storage:
@@ -93,14 +93,14 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo -w
 NAME          VERSION             STATUS         AGE
-es-combined   xpack-8.19.9   Provisioning   5s
-es-combined   xpack-8.19.9   Ready          50s
+es-combined   xpack-9.2.3   Provisioning   5s
+es-combined   xpack-9.2.3   Ready          50s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1Gi"
@@ -308,7 +308,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the combined cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-combined -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1594884096"

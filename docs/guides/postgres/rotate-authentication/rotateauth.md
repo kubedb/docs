@@ -45,7 +45,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
      storageClassName: "standard"
@@ -76,7 +76,7 @@ Now, wait until quick-postgres has status Ready. i.e,
 ```shell
 $ kubectl get pg -n demo -w
 NAME             VERSION   STATUS   AGE
-quick-postgres   13.13     Ready    7m36s
+quick-postgres   18.3     Ready    7m36s
 ```
 ## Verify authentication 
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the secret.
@@ -95,7 +95,7 @@ $ kubectl exec -it -n demo quick-postgres-0 -- bash
 Defaulted container "postgres" out of: postgres, postgres-init-container (init)
  
 quick-postgres-0:/$ PGPASSWORD=yFj_WnVA9rxfQlLt psql -U postgres -d postgres -p 5432 -h quick-postgres.demo.svc
-psql (13.13)
+psql (18.3)
 Type "help" for help.
 postgres=# \dt
                List of relations
@@ -130,7 +130,7 @@ Here,
 
 Let's create the `PostgresOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/postgres-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/postgres/rotate-auth/rotate-auth-generated.yaml
  postgresopsrequest.ops.kubedb.com/pgops-rotate-auth-generated created
 ```
 Let's wait for `PostgresOpsrequest` to be `Successful`. Run the following command to watch `PostgresOpsrequest` CRO
@@ -386,9 +386,9 @@ Events:
 ```shell
 $ kubectl get pg -n demo quick-postgres -ojson | jq .spec.authSecret.name
 "quick-postgres-user-auth"
-$ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.username}' | base64 -d
 postgres                                        
-$ kubectl get secret -n demo quick-postgres-user-auth-new -o=jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo quick-postgres-user-auth -o=jsonpath='{.data.password}' | base64 -d
 postgres-secret                                                                
 ```
 Also, there will be two more new keys in the secret that stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secret and its data by running the following command:

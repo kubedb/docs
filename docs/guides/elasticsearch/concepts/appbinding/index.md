@@ -80,7 +80,7 @@ spec:
             - name: args
               value: --match=^(?![.])(?!apm-agent-configuration)(?!kubedb-system).+
   secret:
-    name: es-quickstart-elastic-cred
+    name: es-quickstart-auth
   tlsSecret:
     name: es-quickstart-client-cert
   type: kubedb.com/elasticsearch

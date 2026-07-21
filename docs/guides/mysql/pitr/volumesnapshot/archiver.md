@@ -104,7 +104,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/volumesnapshot/yamls/retentionPolicy.yaml 
 retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 
@@ -221,7 +221,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -422,7 +422,7 @@ spec:
         name: mysql-full
         namespace: demo
       recoveryTimestamp: "2024-12-03T06:09:34Z"
-  version: "8.2.0"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication

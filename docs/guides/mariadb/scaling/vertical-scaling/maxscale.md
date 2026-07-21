@@ -50,7 +50,7 @@ metadata:
   name: md-replication
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.1.2"
   replicas: 3
   topology:
     mode: MariaDBReplication
@@ -86,7 +86,7 @@ Now, wait until `md-replication` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-md-replication   10.5.23   Ready    2m39s
+md-replication   11.8.5   Ready    2m39s
 ```
 
 Let's check the Pod containers resources,
@@ -139,8 +139,9 @@ spec:
 
 Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
-- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-mariadb` database.
+- `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `md-replication` database.
 - `spec.VerticalScaling.maxscale` specifies the desired resources of maxscale server after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/mariadb/scaling/vertical-scaling/overview/#vertical-scaling-modes).
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 

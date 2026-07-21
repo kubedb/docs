@@ -75,7 +75,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -99,7 +99,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -120,7 +120,7 @@ Here,
 
 - `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.4.8` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
@@ -307,7 +307,7 @@ spec:
   storageType: Durable
   deletionPolicy: Delete
   useAddressType: DNS
-  version: 8.4.8
+  version: 9.6.0
 status:
   conditions:
   - lastTransitionTime: "2022-06-03T06:50:40Z"
@@ -353,10 +353,10 @@ Now, we need `username` and `password` to connect to this database from `kubectl
 $ kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
   podIP: 10.244.0.30
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 H(Y.s)pg&cX1Ds3J
 ```
 we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
@@ -514,7 +514,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
 secret/mysql-quickstart-auth   Opaque                                2      20h
@@ -543,7 +543,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
 secret/mysql-quickstart-auth   Opaque
@@ -567,7 +567,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
@@ -584,7 +584,7 @@ Suppose we have a database running `mysql-quickstart` in our cluster. Now, we ar
 Run the following command to get MySQL resources,
 
 ```bash
-$ kubectl get my,sts,secret,svc,pvc -n demo
+$ kubectl get my,petset,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
 mysql.kubedb.com/mysql-quickstart   8.4.8    Halted   22m
 

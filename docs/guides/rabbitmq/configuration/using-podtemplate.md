@@ -72,7 +72,7 @@ metadata:
   name: rm-misc-config
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -113,7 +113,7 @@ Now, check if the rabbitmq has started with the custom configuration we have pro
 
 ```bash
 $ kubectl exec -it -n demo  -- bash
-  ##  ##      RabbitMQ 3.13.2
+  ##  ##      RabbitMQ 4.2.4
   ##  ##
   ##########  Copyright (c) 2007-2024 Broadcom Inc and/or its subsidiaries
   ######  ##
@@ -168,7 +168,7 @@ metadata:
   name: rabbitmq-custom-sidecar
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -275,7 +275,7 @@ metadata:
   name: rabbitmq-node-selector
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   podTemplate:
     spec:
@@ -372,7 +372,7 @@ metadata:
   name: rabbitmq-without-tolerations
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   storage:
     accessModes:
@@ -418,7 +418,7 @@ IPs:              <none>
 Controlled By:    PetSet/rabbitmq-without-tolerations
 Containers:
   rabbitmq:
-    Image:           ghcr.io/appscode-images/rabbitmq:3.13.2@sha256:7f2537e3dc69dae2cebea3500502e6a2b764b42911881e623195eeed32569217
+    Image:           ghcr.io/appscode-images/rabbitmq:4.2.4@sha256:7f2537e3dc69dae2cebea3500502e6a2b764b42911881e623195eeed32569217
     Ports:           9999/TCP, 9595/TCP
     Host Ports:      0/TCP, 0/TCP
     SeccompProfile:  RuntimeDefault
@@ -467,7 +467,7 @@ metadata:
   name: rabbitmq-with-tolerations
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   storage:
     accessModes:

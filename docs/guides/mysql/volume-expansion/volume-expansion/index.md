@@ -54,7 +54,7 @@ topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsum
 
 We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We will use this storage class. You can install topolvm from [here](https://github.com/topolvm/topolvm).
 
-Now, we are going to deploy a `MySQL` database of 3 replicas with version `8.4.8`.
+Now, we are going to deploy a `MySQL` database of 3 replicas with version `9.6.0`.
 
 ### Deploy MySQL
 
@@ -89,7 +89,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -157,7 +157,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: SemiSync
@@ -194,7 +194,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "topolvm-provisioner"
@@ -227,7 +227,7 @@ sample-mysql     8.4.8    Ready    5m4s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -350,7 +350,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volumes` whether the volume of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mysql -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "2Gi"
 
 $ kubectl get pv -n demo

@@ -46,7 +46,7 @@ metadata:
   name: pxc
   namespace: demo
 spec:
-  version: "8.0.40"
+  version: "8.4.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -62,7 +62,7 @@ Let's create the `PerconaXtraDB` CR we have shown above,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/restart/yamls/pxc.yaml
-PerconaXtraDB.kubedb.com/PerconaXtraDB created
+perconaxtradb.kubedb.com/pxc created
 ```
 let's wait until all pods are in the `Running` state,
 
@@ -77,15 +77,15 @@ let's check database is ready to accept connections,
 
 ```bash
 $ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\username}' | base64 -d
-root⏎                                                                                         banusree@bonusree-datta-PC ~> kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
-kP!VVJ2e~DUtcD*D⏎                                                                             banusree@bonusree-datta-PC ~> kubectl exec -it -n demo sample-pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
-Error from server (NotFound): pods "sample-pxc-0" not found
-banusree@bonusree-datta-PC ~ [1]> kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
+root
+$ kubectl get secrets -n demo pxc-auth -o jsonpath='{.data.\password}' | base64 -d
+kP!VVJ2e~DUtcD*D
+$ kubectl exec -it -n demo pxc-0 -- mysql -u root --password='kP!VVJ2e~DUtcD*D'
 Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 651
-Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel31, Revision 4b32153, WSREP version 26.1.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
@@ -263,7 +263,7 @@ Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-in
 mysql: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 112
-Server version: 8.0.40-31.1 Percona XtraDB Cluster (GPL), Release rel31, Revision 4b32153, WSREP version 26.1.4.3
+Server version: 8.4.3-3.1 Percona XtraDB Cluster (GPL), Release rel3, Revision cf742b4, WSREP version 26.1.4.3
 
 Copyright (c) 2009-2024 Percona LLC and/or its affiliates
 Copyright (c) 2000, 2024, Oracle and/or its affiliates.
@@ -295,8 +295,8 @@ Bye
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete  PerconaXtraDBopsrequest -n demo restart
-kubectl delete PerconaXtraDB -n demo PerconaXtraDB
+kubectl delete perconaxtradbopsrequest -n demo restart
+kubectl delete perconaxtradb -n demo pxc
 kubectl delete ns demo
 ```
 

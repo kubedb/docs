@@ -186,7 +186,7 @@ metadata:
   name: coreos-prom-pp
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   postgresRef:
     name: ha-postgres
     namespace: demo

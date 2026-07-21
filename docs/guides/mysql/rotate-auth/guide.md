@@ -78,7 +78,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -98,7 +98,7 @@ Let's wait for `MySQL` status is `Ready`. Run the following command to watch `My
 ```shell
 $ kubectl get mysql -n demo -w
 NAME             VERSION   STATUS   AGE
-mysql-quickstart 10.5.23   Ready    30m
+mysql-quickstart 9.6.0   Ready    30m
 ```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To
@@ -173,18 +173,18 @@ Here,
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mysql/rotate-auth/rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-generated.yaml
  MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-generated created
 ```
 Let's wait for `MySQLOpsRequest` to be `Successful`. Run the following command to watch `MySQLOpsRequest` CRO
 ```shell
- $ kubectl get MySQLOpsRequest-n demo
+ $ kubectl get mysqlopsrequest -n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   82s
 ```
 If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-generated
+$ kubectl describe mysqlopsrequest -n demo myops-rotate-auth-generated
 Name:         myops-rotate-auth-generated
 Namespace:    demo
 Labels:       <none>
@@ -369,20 +369,20 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/mysql/rotate-auth/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mysql/rotate-auth/rotate-auth-user.yaml
 MySQLOpsRequest.ops.kubedb.com/myops-rotate-auth-user created
 ```
 Let’s wait for `MySQLOpsRequest` to be Successful. Run the following command to watch `MySQLOpsRequest` CRO:
 
 ```shell
-$ kubectl get MySQLOpsRequest-n demo
+$ kubectl get mysqlopsrequest -n demo
 NAME                          TYPE         STATUS       AGE
 myops-rotate-auth-generated   RotateAuth   Successful   35m
 myops-rotate-auth-user        RotateAuth   Successful   2m18s
 ```
 We can see from the above output that the `MySQLOpsRequest` has succeeded. If we describe the `MySQLOpsRequest` we will get an overview of the steps that were followed.
 ```shell
-$ kubectl describe MySQLOpsRequest-n demo myops-rotate-auth-user 
+$ kubectl describe mysqlopsrequest -n demo myops-rotate-auth-user 
 Name:         myops-rotate-auth-user
 Namespace:    demo
 Labels:       <none>
@@ -534,7 +534,7 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Alternatively, you can delete individual resources by name. To do so, run:
 
 ```shell
-$ kubectl delete MySQLOpsRequestmyops-rotate-auth-generated myops-rotate-auth-user -n demo
+$ kubectl delete mysqlopsrequest myops-rotate-auth-generated myops-rotate-auth-user -n demo
 MySQLOpsRequest.ops.kubedb.com "myops-rotate-auth-generated" "myops-rotate-auth-user" deleted
 $ kubectl delete secret -n demo mysql-quickstart-auth-user
 secret "mysql-quickstart-auth-user" deleted
@@ -545,7 +545,7 @@ secret "mysql-quickstart-auth " deleted
 
 ## Next Steps
 
-- Learn about [backup and restore](/docs/guides/mysql/backup/overview/index.md) SQL Server using KubeStash.
-- Want to set up SQL Server Availability Group clusters? Check how to [Configure SQL Server Availability Gruop Cluster](/docs/guides/mysql/clustering/ag_cluster.md)
-- Detail concepts of [Mysql object](/docs/guides/mysql/concepts/mysql.md).
+- Learn about [backup and restore](/docs/guides/mysql/backup/kubestash/overview/index.md) MySQL using KubeStash.
+- Want to set up a MySQL cluster? Check how to configure a [MySQL Group Replication](/docs/guides/mysql/clustering/group-replication/index.md).
+- Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

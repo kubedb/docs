@@ -148,7 +148,7 @@ metadata:
   name: druid-cluster-tls
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   enableSSL: true
   tls:
     issuerRef:
@@ -179,11 +179,11 @@ $ kubectl get druid -n demo -w
 
 Every 2.0s: kubectl get druid -n demo                                                                                                                          aadee: Fri Sep  6 12:34:51 2024
 NAME                TYPE                  VERSION   STATUS          AGE
-druid-cluster-tls   kubedb.com/v1alpha2   28.0.1    Ready           20s
-druid-cluster-tls   kubedb.com/v1alpha2   28.0.1    Provisioning    1m
+druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Ready           20s
+druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Provisioning    1m
 ...
 ...
-druid-cluster-tls   kubedb.com/v1alpha2   28.0.1    Ready           38m
+druid-cluster-tls   kubedb.com/v1alpha2   36.0.0    Ready           38m
 ```
 
 ### Verify TLS/SSL in Druid Cluster
@@ -267,14 +267,14 @@ After that you will be prompted to provide the credential of the druid database.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-tls-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-tls-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 

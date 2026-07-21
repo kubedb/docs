@@ -34,7 +34,7 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/minorversion/standalone/yamls](/docs/guides/mysql/update-version/minorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/mysql/update-version/minorversion/standalone/yamls](/docs/guides/mysql/update-version/minorversion/standalone/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Apply Version updating on Standalone
 
@@ -145,7 +145,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints.denylist` is showing that updating below version of `8.4.8` is not possible for both standalone and group replication. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` standalone using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.
+The above `spec.updateConstraints.denylist` is showing that updating below version of `8.4.8` is not possible for both standalone and group replication. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` standalone using MySQL  `9.4.0`. Then we are going to update this version to `9.6.0`.
 
 **Deploy MySQL standalone:**
 
@@ -158,7 +158,7 @@ metadata:
   name: my-standalone
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.4.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -188,7 +188,7 @@ $ watch -n 3 kubectl get my -n demo my-standalone
 NAME            VERSION      STATUS    AGE
 my-standalone   8.4.8    Running   3m
 
-$ watch -n 3 kubectl get sts -n demo my-standalone
+$ watch -n 3 kubectl get petset -n demo my-standalone
 
 NAME            READY   AGE
 my-standalone   1/1     3m42s
@@ -205,7 +205,7 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
 8.4.8
 
-$ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 mysql:8.4.8
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
@@ -216,7 +216,7 @@ We are ready to apply updating on this `MySQL` standalone.
 
 #### UpdateVersion
 
-Here, we are going to update `MySQL` standalone from `8.4.8` to `9.0.1`.
+Here, we are going to update `MySQL` standalone from `9.4.0` to `9.6.0`.
 
 **Create MySQLOpsRequest:**
 
@@ -233,19 +233,19 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "9.0.1"
+    targetVersion: "9.6.0"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `9.0.1` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.6.0` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/standalone/yamls/update_minor_version_standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/standalone/yamls/upgrade_minor_version_standalone.yaml
 mysqlopsrequest.ops.kubedb.com/my-update-minor-standalone created
 ```
 
@@ -332,7 +332,7 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
 9.0.1
 
-$ kubectl get sts -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+$ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
 kubedb/my:9.0.1
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'

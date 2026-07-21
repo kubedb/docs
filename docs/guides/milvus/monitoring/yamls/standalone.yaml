@@ -1,0 +1,36 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-standalone
+  namespace: demo
+spec:
+  version: "2.6.11"
+  topology:
+    mode: Standalone
+  objectStorage:
+    configSecret:
+      name: "my-release-minio"
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    storageClassName: local-path
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  tls:
+    issuerRef:
+      name: milvus-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    external:
+      mode: mTLS
+    internal:
+      mode: TLS

@@ -68,7 +68,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 11.1.3
+  version: 12.1.2
   replicas: 3
   storageType: Durable
   storage:
@@ -181,7 +181,7 @@ spec:
   secret:
     name: sample-mariadb-auth
   type: kubedb.com/mariadb
-  version: 11.1.3
+  version: 12.1.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -391,7 +391,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 ```
 
@@ -569,7 +569,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 11.1.3
+  version: 12.1.2
   replicas: 3
   storageType: Durable
   storage:
@@ -585,7 +585,7 @@ Let's create the above database,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restored-mariadb.yaml
-mariadb.kubedb.com/restore-mariadb created
+mariadb.kubedb.com/restored-mariadb created
 ```
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.

@@ -47,7 +47,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Create Solr Topology Cluster
 
-We are going to create a Solr Cluster in topology mode. Our cluster will be composed of 1 overseer nodes, 2 data nodes, 1 coordinator nodes. Here, we are using Solr version ( `9.4.1` ). To learn more about the Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
+We are going to create a Solr Cluster in topology mode. Our cluster will be composed of 1 overseer nodes, 2 data nodes, 1 coordinator nodes. Here, we are using Solr version ( `9.8.0` ). To learn more about the Solr CR, visit [here](/docs/guides/solr/concepts/solr.md).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -72,7 +72,7 @@ spec:
       ipAddresses:
       - "127.0.0.1"
   deletionPolicy: DoNotTerminate
-  version: 9.4.1
+  version: 9.8.0
   zookeeperRef:
     name: zoo-com
     namespace: demo
@@ -107,7 +107,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the SolrVersion CR. Here, we are using Solr version `9.4.1`.
+- `spec.version` - is the name of the SolrVersion CR. Here, we are using Solr version `9.8.0`.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.storageType` - specifies the type of storage that will be used for Solr database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Solr database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology` - specifies the node-specific properties for the Solr cluster.

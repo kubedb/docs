@@ -41,7 +41,7 @@ Now, we are going to deploy a  `Solr` cluster using a supported version by `Kube
 
 ### Prepare Solr Cluster
 
-Now, we are going to deploy a `Solr` cluster with version `9.6.1`.
+Now, we are going to deploy a `Solr` cluster with version `9.8.0`.
 
 ### Deploy Solr
 
@@ -92,7 +92,7 @@ metadata:
 spec:
 +  configuration:
 +    secretName: sl-custom-config
-  version: 9.6.1
+  version: 9.8.0
   replicas: 2
   zookeeperRef:
     name: zoo

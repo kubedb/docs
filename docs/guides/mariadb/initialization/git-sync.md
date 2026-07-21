@@ -52,7 +52,7 @@ spec:
        - --root=/root
        # terminate after one successful sync
        - --one-time 
-  version: "10.5.23"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce
@@ -80,7 +80,7 @@ Now, wait until `sample-mariadb` has status `Ready`. i.e,
 ```bash
 $ kubectl get mariadb -n demo
 NAME             VERSION   STATUS   AGE
-sample-mariadb   10.5.23   Ready    5m
+sample-mariadb   11.8.5   Ready    5m
 ```
 
 Next, we will connect to the MariaDB database and verify the data inserted from the `*.sql` script stored in the Git repository.
@@ -89,10 +89,10 @@ Next, we will connect to the MariaDB database and verify the data inserted from 
 kubectl exec -it -n demo sample-mariadb-0 -- bash
 Defaulted container "mariadb" out of: mariadb, mariadb-init (init), git-sync (init)
 
-mysql@sample-mariadb-0:/$ mysql -uroot -p$MYSQL_ROOT_PASSWORD
+mysql@sample-mariadb-0:/$ mariadb -uroot -p$MYSQL_ROOT_PASSWORD
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 6
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~ubu2004 mariadb.org binary distribution
+Server version: 10.5.23-MariaDB-1:11.8.5+maria~ubu2004 mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -175,7 +175,7 @@ spec:
        # run as git sync user 
        securityContext:
          runAsUser: 65533
-  version: "10.5.23"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce
@@ -229,7 +229,7 @@ spec:
        # run as git sync user 
        securityContext:
          runAsUser: 65533
-  version: "10.5.23"
+  version: "12.1.2"
   storage:
     accessModes:
     - ReadWriteOnce

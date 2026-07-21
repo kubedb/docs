@@ -115,7 +115,7 @@ spec:
   authSecret:
     kind: Secret
     name: mysql-singapore-auth
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -163,10 +163,10 @@ mysql-singapore   8.4.8    Ready    22h
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-singapore-auth -o jsonpath='{.data.password}' | base64 -d
 pass
 ```
 
@@ -299,7 +299,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     disableWriteCheck: true
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 1
   topology:
     mode: RemoteReplica

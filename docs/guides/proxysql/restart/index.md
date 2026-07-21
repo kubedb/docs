@@ -61,7 +61,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -89,7 +89,7 @@ metadata:
   name: mysql-proxy
   namespace: demo
 spec:
-  version: "2.7.3-debian"
+  version: "3.0.1-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -98,7 +98,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
 proxysql.kubedb.com/mysql-proxy created
 ```
 
@@ -108,7 +108,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get proxysql -n demo
 NAME          VERSION        STATUS   AGE
-mysql-proxy   2.7.3-debian   Ready    3m45s
+mysql-proxy   3.0.1-debian   Ready    3m45s
 ``` 
 ## Apply Restart opsRequest
 ```yaml

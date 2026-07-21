@@ -39,7 +39,7 @@ namespace/demo created
 
 ## Prepare MongoDB ReplicaSet Database
 
-Now, we are going to deploy a `MongoDB` replicaset database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` replicaset database with version `7.0.28`.
 
 ### Deploy MongoDB replicaset
 
@@ -52,7 +52,7 @@ metadata:
   name: mg-replicaset
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "7.0.28"
   replicaSet: 
     name: "replicaset"
   replicas: 3
@@ -78,14 +78,14 @@ Now, wait until `mg-replicaset` created has status `Ready`. i.e,
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME            VERSION    STATUS    AGE
-mg-replicaset   4.4.26   Ready     109s
+mg-replicaset   7.0.28   Ready     109s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
 
 ### update MongoDB Version
 
-Here, we are going to update `MongoDB` replicaset from `3.6.8` to `4.0.5`.
+Here, we are going to update `MongoDB` replicaset from `7.0.28` to `8.0.17`.
 
 #### Create MongoDBOpsRequest:
 
@@ -102,7 +102,7 @@ spec:
   databaseRef:
     name: mg-replicaset
   updateVersion:
-    targetVersion: 4.4.26
+    targetVersion: 8.0.17
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -114,7 +114,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mg-replicaset` MongoDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `4.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.0.17`.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
@@ -244,13 +244,13 @@ Now, we are going to verify whether the `MongoDB` and the related `PetSets` and 
 
 ```bash
 $ kubectl get mg -n demo mg-replicaset -o=jsonpath='{.spec.version}{"\n"}'
-4.4.26
+8.0.17
 
-$ kubectl get sts -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+$ kubectl get petset -n demo mg-replicaset -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mongo:8.0.17
 
 $ kubectl get pods -n demo mg-replicaset-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+mongo:8.0.17
 ```
 
 You can see from above, our `MongoDB` replicaset database has been updated with the new version. So, the updateVersion process is successfully completed.

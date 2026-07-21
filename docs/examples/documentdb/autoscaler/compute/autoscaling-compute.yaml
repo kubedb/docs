@@ -1,0 +1,33 @@
+# COMPUTE (vertical) autoscaler for DocumentDB.
+# The compute loop creates a VPA named after the DB's petset (= db name "dcdb"),
+# polls VPA recommendations, and when the recommendation differs from the current
+# request by more than resourceDiffPercentage (and the pod is older than
+# podLifeTimeThreshold, OR the current request is outside the min/max band),
+# it creates a VerticalScaling DocumentDBOpsRequest named dcops-dcdb-<rand>.
+#
+# Deterministic scale-UP: the base DB requests 500m/1Gi which is BELOW minAllowed
+# (600m/1.5Gi) here, so the recommendation floor pushes it up to minAllowed.
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: DocumentDBAutoscaler
+metadata:
+  name: dcdb-compute-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: dcdb
+  opsRequestOptions:
+    timeout: 5m
+    apply: IfReady          # IfReady | Always
+  compute:
+    documentdb:
+      trigger: "On"          # "On" | "Off"
+      podLifeTimeThreshold: 1m
+      resourceDiffPercentage: 5
+      minAllowed:
+        cpu: 600m
+        memory: 1.5Gi
+      maxAllowed:
+        cpu: "2"
+        memory: 3Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"   # RequestsAndLimits | RequestsOnly

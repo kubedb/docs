@@ -307,9 +307,9 @@ If you want to update you ClickHouse version, you have to specify the `spec.upda
 
 > You can only update between ClickHouse versions. KubeDB does not support downgrade for ClickHouse.
 
-### spec.horizontalScaling.node
+### spec.horizontalScaling.replicas
 
-If you want to scale-up or scale-down your ClickHouse cluster or different components of it, you have to specify `spec.horizontalScaling.node` section.
+If you want to scale-up or scale-down your ClickHouse cluster or different components of it, you have to specify `spec.horizontalScaling.replicas` section.
 
 ### spec.verticalScaling.node
 
@@ -326,6 +326,8 @@ limits:
 ```
 
 Here, when you specify the resource request, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for the container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. You can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
+
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 ### spec.volumeExpansion
 

@@ -111,7 +111,7 @@ metadata:
   name: mssql-standalone-tls
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   storageType: Durable
   tls:
@@ -201,7 +201,7 @@ C2vU3HOCWY0hQHaj
 
 ```bash
 $ kubectl exec -it -n demo mssql-standalone-tls-0 -c mssql -- bash
-mssql@mssql-standalone-tls-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "C2vU3HOCWY0hQHaj" -N
+mssql@mssql-standalone-tls-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "C2vU3HOCWY0hQHaj" -N
 1> select name from sys.databases
 2> go
 name                                                                                                                            

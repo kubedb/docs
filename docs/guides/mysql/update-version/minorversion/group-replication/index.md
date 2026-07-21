@@ -145,7 +145,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.
+The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `9.4.0`. Then we are going to update this version to `9.6.0`.
 
 **Deploy MySQL Group Replication:**
 
@@ -158,7 +158,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.0.36"
+  version: "9.4.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -194,7 +194,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 NAME       VERSION   STATUS         AGE
 my-group   8.0.36    Ready          5m
 
-$ watch -n 3 kubectl get sts -n demo my-group
+$ watch -n 3 kubectl get petset -n demo my-group
 
 NAME       READY   AGE
 my-group   3/3     7m12s
@@ -213,7 +213,7 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 8.0.36
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "mysql:8.0.36"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
@@ -225,10 +225,10 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 Let's also verify that the PetSet’s pods have joined into the group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 XbUHi_Cp&SLSXTmo
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='XbUHi_Cp&SLSXTmo' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -247,7 +247,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVersion
 
-Here, we are going to update the `MySQL` group replication from `8.4.8` to `8.4.8`.
+Here, we are going to update the `MySQL` group replication from `9.4.0` to `9.6.0`.
 
 **Create MySQLOpsRequest:**
 
@@ -264,19 +264,19 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.4.8"
+    targetVersion: "9.6.0"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.4.8` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.6.0` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/group-replication/yamls/update_minor_version_group.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/minorversion/group-replication/yamls/upgrade_minor_version_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-update-minor-group created
 ```
 
@@ -368,7 +368,7 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 8.4.8
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "mysql:8.4.8"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
@@ -380,10 +380,10 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 Let's also check the PetSet pods have joined the `MySQL` group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 XbUHi_Cp&SLSXTmo
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='XbUHi_Cp&SLSXTmo' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"

@@ -49,7 +49,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Create an OpenSearch Cluster
 
-We are going to create a OpenSearch Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `opensearch-2.19.2` ) of OpenSearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We are going to create a OpenSearch Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `opensearch-3.4.0` ) of OpenSearch distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -59,7 +59,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   topology:
     master:
@@ -93,7 +93,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `opensearch-2.19.2` of OpenSearch distribution.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `opensearch-3.4.0` of OpenSearch distribution.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology` - specifies the node-specific properties for the OpenSearch cluster.
@@ -110,7 +110,7 @@ Here,
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch//elasticsearch-dashboard/opensearch/yamls/os-cluster.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster.yaml
 elasticsearch.kubedb.com/os-cluster created
 ```
 KubeDB will create the necessary resources to deploy the OpenSearch cluster according to the above specification. Let’s wait until the database to be ready to use,
@@ -118,7 +118,7 @@ KubeDB will create the necessary resources to deploy the OpenSearch cluster acco
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION            STATUS   AGE
-os-cluster   opensearch-2.19.2   Ready    3m25s
+os-cluster   opensearch-3.4.0   Ready    3m25s
 ```
 Here, OpenSearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -141,7 +141,7 @@ Metadata:
   UID:               2aeef9b3-fcb6-47c8-9df0-54a4fa018413
 Spec:
   Auth Secret:
-    Name:                os-cluster-admin-cred
+    Name:                os-cluster-auth
   Enable SSL:            true
   Heap Size Percentage:  50
   Internal Users:
@@ -149,7 +149,7 @@ Spec:
       Backend Roles:
         admin
       Reserved:     true
-      Secret Name:  os-cluster-admin-cred
+      Secret Name:  os-cluster-auth
     Kibanaro:
       Secret Name:  os-cluster-kibanaro-cred
     Kibanaserver:
@@ -260,7 +260,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   opensearch-2.19.2
+  Version:                   opensearch-3.4.0
 Status:
   Conditions:
     Last Transition Time:  2022-06-08T06:01:54Z
@@ -337,7 +337,7 @@ appbinding.appcatalog.appscode.com/os-cluster   kubedb.com/elasticsearch   1.3.2
 
 NAME                                     TYPE                       DATA   AGE
 secret/os-cluster-admin-cert             kubernetes.io/tls          3      16m
-secret/os-cluster-admin-cred             kubernetes.io/basic-auth   2      16m
+secret/os-cluster-auth             kubernetes.io/basic-auth   2      16m
 secret/os-cluster-ca-cert                kubernetes.io/tls          2      16m
 secret/os-cluster-client-cert            kubernetes.io/tls          3      16m
 secret/os-cluster-config                 Opaque                     3      16m
@@ -393,7 +393,7 @@ spec:
 Let's deploy the above yaml by the following command:
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch/yamls/os-cluster-dashboard.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/elasticsearch-dashboard/opensearch-dashboards/yamls/os-cluster-dashboard.yaml
 elasticsearchdashboard.elasticsearch.kubedb.com/os-cluster-dashboard created
 ```
 
@@ -440,7 +440,7 @@ KubeDB also create some Secrets for the database. Let’s check which Secrets ha
 ```bash
 $ kubectl get secret -n demo | grep es-cluster
 os-cluster-admin-cert              kubernetes.io/tls                     3      16m
-os-cluster-admin-cred              kubernetes.io/basic-auth              2      16m
+os-cluster-auth              kubernetes.io/basic-auth              2      16m
 os-cluster-ca-cert                 kubernetes.io/tls                     2      16m
 os-cluster-client-cert             kubernetes.io/tls                     3      16m
 os-cluster-config                  Opaque                                3      16m
@@ -456,16 +456,16 @@ os-cluster-snapshotrestore-cred    kubernetes.io/basic-auth              2      
 os-cluster-token-wq8b9             kubernetes.io/service-account-token   3      16m
 os-cluster-transport-cert          kubernetes.io/tls                     3      16m
 ```
-Now, we can connect to the database with `os-cluster-elastic-cred` which contains the admin credentials to connect with the database.
+Now, we can connect to the database with `os-cluster-auth` which contains the admin credentials to connect with the database.
 
 ### Accessing Database Through Dashboard
 
 To access the database through Dashboard, we have to get the credentials. We can do that by following command,
 
 ```bash
-$ kubectl get secret -n demo os-cluster-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo os-cluster-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo os-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 Oyj8FdPzA.DZqEyS
 ```
 

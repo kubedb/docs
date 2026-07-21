@@ -75,7 +75,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/mssqlserver-ca-issuer created
 ```
 
-Now, we are going to deploy a `MSSQLServer` availability group with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` availability group with version `2022-cu22`.
 
 ### Deploy MSSQLServer AG Cluster
 
@@ -90,7 +90,7 @@ metadata:
   name: mssql-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2022-cu22"
   replicas: 3
   topology:
     mode: AvailabilityGroup
@@ -149,7 +149,7 @@ We are now ready to apply the `MSSQLServerOpsRequest` CR to update this database
 
 ### Update MSSQLServer Version
 
-Here, we are going to update `MSSQLServer` ag cluster from `2022-cu12` to `2022-cu14`.
+Here, we are going to update `MSSQLServer` ag cluster from `2022-cu22` to `2025-cu0`.
 
 #### Create MSSQLServerOpsRequest:
 
@@ -167,7 +167,7 @@ spec:
   databaseRef:
     name: mssql-ag-cluster
   updateVersion:
-    targetVersion: 2022-cu14
+    targetVersion: 2025-cu0
   timeout: 5m
   apply: IfReady
 ```
@@ -176,7 +176,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mssql-ag-cluster` MSSQLServer database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `2022-cu14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `2025-cu0`.
 - Have a look [here](/docs/guides/mssqlserver/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `MSSQLServerOpsRequest` CR we have shown above,

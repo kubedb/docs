@@ -56,7 +56,7 @@ metadata:
   name: redis-announce
   namespace: demo
 spec:
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3
@@ -125,7 +125,7 @@ metadata:
   name: redis
   namespace: demo
 spec:
-  version: 7.4.0
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3

@@ -38,7 +38,7 @@ Now, we are going to deploy a  `MySQL` Cluster using a supported version by `Kub
 
 ### Prepare MySQL Cluster
 
-Now, we are going to deploy a `MySQL` Cluster database with version `8.4.8`.
+Now, we are going to deploy a `MySQL` Cluster database with version `9.6.0`.
 
 ### Deploy MySQL
 
@@ -91,7 +91,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: GroupReplication
   replicas: 3
@@ -149,7 +149,7 @@ spec:
 Let's create the `MySQL` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/innob-cluster.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/inndob-cluster.yaml
 mysql.kubedb.com/sample-mysql created
 ```
 
@@ -164,7 +164,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   topology:
     mode: SemiSync
     semiSync:
@@ -204,7 +204,7 @@ metadata:
   name: sample-mysql
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   configuration:
     secretName: my-configuration
   storageType: Durable
@@ -242,10 +242,10 @@ Now, we will check if the database has started with the custom configuration we 
 First we need to get the username and password to connect to a mysql instance,
 
 ```bash
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\username}' | base64 -d                                                                       
+$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.username}' | base64 -d                                                                       
 root
 
-$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.\password}' | base64 -d                                                                         
+$ kubectl get secrets -n demo sample-mysql-auth -o jsonpath='{.data.password}' | base64 -d                                                                         
 86TwLJ!2Kpq*vv1y
 ```
 
@@ -522,20 +522,20 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/yamls/reconfigure-steps/reconfigure-remove.yaml
-mysqlopsrequest.ops.kubedb.com/mdops-reconfigure-remove created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-remove.yaml
+mysqlopsrequest.ops.kubedb.com/myops-reconfigure-remove created
 ```
 
 #### Verify the new configuration is working
 
 If everything goes well, `KubeDB` Enterprise operator will update the `configSecret` of `MySQL` object.
 
-Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MariaDBOpsRequest` CR,
+Let's wait for `MySQLOpsRequest` to be `Successful`.  Run the following command to watch `MySQLOpsRequest` CR,
 
 ```bash
 $ kubectl get mysqlopsrequest --all-namespaces
 NAMESPACE   NAME                       TYPE          STATUS       AGE
-demo        mdops-reconfigure-remove   Reconfigure   Successful   2m1s
+demo        myops-reconfigure-remove   Reconfigure   Successful   2m1s
 ```
 
 Now let's connect to a mysql instance and run a mysql internal command to check the new configuration we have provided.
@@ -586,6 +586,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  mdops-reconfigure-remove
+$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  myops-reconfigure-remove
 $ kubectl delete ns demo
 ```

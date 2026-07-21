@@ -42,9 +42,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
-  configuration:
-    secretName: cas-configuration
+  version: 5.0.7
   topology:
     rack:
       - name: r0

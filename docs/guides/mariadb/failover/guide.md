@@ -71,7 +71,7 @@ metadata:
   name: ha-mariadb
   namespace: demo
 spec:
-  version: "10.6.16"
+  version: "12.1.2"
   replicas: 3
   topology:
     mode: MariaDBReplication
@@ -120,7 +120,7 @@ See the database is ready.
 ```shell
 $ kubectl get mariadb,petset,pods -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/ha-mariadb   10.6.16   Ready    3m27s
+mariadb.kubedb.com/ha-mariadb   11.8.5   Ready    3m27s
 
 NAME                                             AGE
 petset.apps.k8s.appscode.com/ha-mariadb      3m20s
@@ -178,7 +178,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 443
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -207,7 +207,7 @@ $ kubectl exec -it -n demo svc/ha-mariadb -- bash
 mysql@ha-mariadb-0:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 26
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -225,11 +225,11 @@ MariaDB [(none)]> quit;
 Bye
 
 # Slave Node
-$ kubectl exec -it -n demo svc/ha-mariadb-slave -- bash
+$ kubectl exec -it -n demo svc/ha-mariadb-standby -- bash
 mysql@ha-mariadb-1:/ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 94
-Server version: 10.5.23-MariaDB-1:10.5.23+maria~focal mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -266,7 +266,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-0:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 3459
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -275,7 +275,7 @@ Type 'help;' or '\h' for help. Type '\c' to clear the current input statement.
 MariaDB [(none)]> CREATE DATABASE playground;
 Query OK, 1 row affected (0.001 sec)
 
-MariaDB [(none)]> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), `Master` KEY(id));
+MariaDB [(none)]> CREATE TABLE playground.equipment ( id INT NOT NULL AUTO_INCREMENT, type VARCHAR(50), quant INT, color VARCHAR(25), PRIMARY KEY(id));
 Query OK, 0 rows affected (0.032 sec)
 
 MariaDB [(none)]> INSERT INTO playground.equipment (type, quant, color) VALUES ('slide', 2, 'blue');
@@ -301,7 +301,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-1:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 2304
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -387,7 +387,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-1:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 652
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -423,7 +423,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 340
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -483,7 +483,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-0:/$ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 377
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 
@@ -519,7 +519,7 @@ Defaulted container "mariadb" out of: mariadb, md-coordinator, mariadb-init (ini
 mysql@ha-mariadb-2:/$ mariadb -utestuser -ptestpassword
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 47
-Server version: 10.6.16-MariaDB-1:10.6.16+maria~ubu2004-log mariadb.org binary distribution
+Server version: 11.8.5-MariaDB-1:11.8.5+maria~ubu2004-log mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

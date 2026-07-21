@@ -36,6 +36,5 @@ aliases:
 
 ## User Guide
 
-- [Quickstart Oracle](/docs/guides/oracle/quickstart/guide.md) with KubeDB Operator.
-
+- [Quickstart Oracle](/docs/guides/oracle/quickstart/index.md) with KubeDB Operator.
 

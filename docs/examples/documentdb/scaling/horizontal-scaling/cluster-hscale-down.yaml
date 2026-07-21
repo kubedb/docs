@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DocumentDBOpsRequest
+metadata:
+  name: documentdb-cls-hscale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: documentdb-cls-sample
+  horizontalScaling:
+    replicas: 3

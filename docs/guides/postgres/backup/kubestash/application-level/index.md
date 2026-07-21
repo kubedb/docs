@@ -65,7 +65,7 @@ metadata:
   name: sample-postgres
   namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous
@@ -93,7 +93,7 @@ Let's check if the database is ready to use,
 ```bash
 $ kubectl get pg -n demo sample-postgres
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    5m1s
+sample-postgres   18.3      Ready    5m1s
 ```
 
 The database is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this database using the following commands,
@@ -120,7 +120,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                       TYPE                  VERSION   AGE
-sample-postgres            kubedb.com/postgres   16.1      9m30s
+sample-postgres            kubedb.com/postgres   18.3      9m30s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -135,7 +135,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"sample-postgres","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","replicas":3,"standbyMode":"Hot","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","streamingMode":"Synchronous","version":"16.1"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Postgres","metadata":{"annotations":{},"name":"sample-postgres","namespace":"demo"},"spec":{"deletionPolicy":"DoNotTerminate","replicas":3,"standbyMode":"Hot","storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"storageType":"Durable","streamingMode":"Synchronous","version":"18.3"}}
   creationTimestamp: "2024-09-04T10:07:04Z"
   generation: 1
   labels:
@@ -173,13 +173,13 @@ spec:
     stash:
       addon:
         backupTask:
-          name: postgres-backup-16.1
+          name: postgres-backup-18.2
         restoreTask:
-          name: postgres-restore-16.1
+          name: postgres-restore-18.2
   secret:
     name: sample-postgres-auth
   type: kubedb.com/postgres
-  version: "16.1"
+  version: "18.3"
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -209,7 +209,7 @@ $ kubectl exec -it -n demo sample-postgres-0 -- sh
 
 # login as "postgres" superuser.
 / $ psql -U postgres
-psql (16.1)
+psql (18.3)
 Type "help" for help.
 
 # list available databases
@@ -430,7 +430,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/kubestash/application-level/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/backup/kubestash/application-level/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-postgres-backup created
 ```
 
@@ -520,13 +520,13 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: "16.1"
+    kubedb.com/db-version: "18.3"
     kubestash.com/app-ref-kind: Postgres
     kubestash.com/app-ref-name: sample-postgres
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: gcs-postgres-repo
   annotations:
-    kubedb.com/db-version: "16.1"
+    kubedb.com/db-version: "18.3"
   name: gcs-postgres-repo-sample-postgres-backup-frequent-backup-1725449400
   namespace: demo
   ownerReferences:
@@ -680,7 +680,7 @@ In this section, we will verify whether the desired `PostgreSQL` database manife
 ```bash
 $ kubectl get postgres -n dev 
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    9m46s
+sample-postgres   18.3      Ready    9m46s
 ```
 
 The output confirms that the `PostgreSQL` database has been successfully created with the same configuration as it had at the time of backup.
@@ -695,7 +695,7 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get postgres -n dev sample-postgres
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    9m46s
+sample-postgres   18.3      Ready    9m46s
 ```
 
 Now, find out the database `Pod` by the following command,

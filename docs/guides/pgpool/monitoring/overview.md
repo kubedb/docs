@@ -53,7 +53,7 @@ metadata:
   name: sample-pgpool
   namespace: databases
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   deletionPolicy: WipeOut
   postgresRef:
     name: ha-postgres

@@ -3,7 +3,7 @@ title: Distributed MariaDB Cluster Storage Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed-autoscaling-storage-cluster
-    name: Cluster
+    name: Galera Cluster
     parent: guides-mariadb-distributed-autoscaling-storage
     weight: 20
 menu_name: docs_{{ .version }}
@@ -46,22 +46,33 @@ namespace/demo created
 
 ## Storage Autoscaling of Distributed Cluster Database
 
-At first verify that your clusters have a storage class that supports volume expansion. Let's check,
+At first verify that your clusters have a storage class that supports volume expansion. First let's check the storagclass of `Controler` cluster,
+```bash
+$ kubectl get storageclass --context demo-controller
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4d
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   24h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   24h
+```
+Then check the storageclass of `Worker` cluster,
 
 ```bash
 $ kubectl get storageclass --context demo-worker
-NAME                  PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-standard (default)    rancher.io/local-path   Delete          WaitForFirstConsumer   false                  79m
-topolvm-provisioner   topolvm.cybozu.com      Delete          WaitForFirstConsumer   true                   78m
+NAME                   PROVISIONER             RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+local-path (default)   rancher.io/local-path   Delete          WaitForFirstConsumer   false                  4d
+longhorn (default)     driver.longhorn.io      Delete          Immediate              true                   23h
+longhorn-static        driver.longhorn.io      Delete          Immediate              true                   23h
 ```
 
-We can see from the output the `topolvm-provisioner` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install topolvm from [here](https://github.com/topolvm/topolvm)
+We can see from the output the `longhorn (default)` and `longhorn-static` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it. You can install `longhorn` from [here](https://longhorn.io/docs/1.11.2/deploy/install/)
 
 ### Deploy PlacementPolicy
 
-For distributed MariaDB autoscaling, the `PlacementPolicy` must include a `monitoring.prometheus.url` for each spoke cluster. The autoscaler uses these endpoints to monitor storage usage across all clusters where MariaDB pods are running.
+For distributed `MariaDB` autoscaling, the PlacementPolicy must define a valid `monitoring.prometheus.url` for each spoke cluster. These endpoints are required by the autoscaler to collect metrics and monitor storage usage across all clusters where MariaDB pods are deployed.
 
-Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 4 replicas across two clusters and provides the Prometheus endpoint for each:
+Additionally, it is essential to explicitly specify the storage class for each cluster using `spec.clusterSpreadConstraint.distributionRules.storageClassName`. If this field is not provided, the system will fall back to the default storage class, which may lead to unintended behavior or potential data management risks in a distributed environment.
+
+Below is the YAML of the `PlacementPolicy` that we are going to create. It distributes 3 replicas across two clusters and provides the Prometheus endpoint for each:
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1
@@ -74,6 +85,7 @@ spec:
   clusterSpreadConstraint:
     distributionRules:
       - clusterName: demo-controller
+        storageClassName: local-path
         monitoring:
           prometheus:
             url: http://prometheus-operated.monitoring.svc.cluster.local:9090
@@ -81,6 +93,7 @@ spec:
           - 0
           - 2
       - clusterName: demo-worker
+        storageClassName: local-path
         monitoring:
           prometheus:
             url: http://prometheus-operated.monitoring.svc.cluster.local:9090
@@ -113,7 +126,7 @@ placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
-In this section, we are going to deploy a distributed MariaDB replicaset database with version `11.5.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
+In this section, we are going to deploy a distributed MariaDB replicaset database with version `12.1.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
 
 Below is the YAML of the `MariaDB` CR that we are going to create. Note that `spec.distributed` is set to `true` and the `PlacementPolicy` is referenced via `spec.podTemplate.spec.podPlacementPolicy`:
 
@@ -124,7 +137,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.5.2"
+  version: "12.1.2"
   distributed: true
   replicas: 3
   storageType: Durable
@@ -173,7 +186,7 @@ sample-mariadb-1   3/3     Running   0          3m46s
 Let's check volume size from petset, and from the persistent volume on `demo-worker`,
 
 ```bash
-$ kubectl get sts -n demo sample-mariadb -o json --context demo-worker | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mariadb -o json --context demo-worker | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo --context demo-worker
@@ -324,7 +337,7 @@ Status:
 Now, we are going to verify from the `Petset` and the `Persistent Volume` whether the volume of the distributed replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo sample-mariadb -o json --context demo-worker | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo sample-mariadb -o json --context demo-worker | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo --context demo-worker
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                        STORAGECLASS          REASON   AGE

@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: standalone-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: oracle-sa-sample
+  configuration:
+    configSecret:
+      name: oracle-custom

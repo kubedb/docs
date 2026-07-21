@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-appbinding
     name: AppBinding
     parent: guides-mariadb-concepts
-    weight: 25
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -49,7 +49,7 @@ spec:
   secret:
     name: sample-mariadb-auth
   type: kubedb.com/mariadb
-  version: 10.5.23
+  version: 12.1.2
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

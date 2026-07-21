@@ -75,7 +75,7 @@ metadata:
   labels:
     app: kubedb
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   db:
     image: "PRIVATE_DOCKER_REGISTRY/mongo:4.4.26"
   exporter:
@@ -130,7 +130,7 @@ metadata:
   name: mgo-pvt-reg
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   storage:
     storageClassName: "standard"
     accessModes:

@@ -44,7 +44,7 @@ Now, we are going to deploy a  `Pgpool` using a supported version by `KubeDB` op
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` with version `4.5.0`.
+Now, we are going to deploy a `Pgpool` with version `4.6.0`.
 
 ### Deploy Pgpool 
 
@@ -72,7 +72,7 @@ metadata:
   name: pp-custom
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   configuration:
     secretName: pp-custom-config
@@ -85,7 +85,7 @@ spec:
 Let's create the `Pgpool` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure/pp-custom-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/pp-custom-config.yaml
 pgpool.kubedb.com/pp-custom created
 ```
 
@@ -186,15 +186,15 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `pp-csutom` pgpool.
+- `spec.databaseRef.name` specifies that we are reconfiguring `pp-custom` pgpool.
 - `spec.type` specifies that we are performing `Reconfigure` on our pgpool.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
-- Have a look [here](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
+- Have a look at the [Pgpool OpsRequest concept](/docs/guides/pgpool/concepts/opsrequest.md#spectimeout) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure/ppops-reconfigure.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure.yaml
 pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure created
 ```
 
@@ -390,7 +390,7 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure/ppops-reconfigure-apply.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-apply.yaml
 pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-apply created
 ```
 
@@ -585,7 +585,7 @@ Here,
 Let's create the `PgpoolOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfigure/ppops-reconfigure-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgpool/reconfiguration/ppops-reconfigure-remove.yaml
 pgpoolopsrequest.ops.kubedb.com/ppops-reconfigure-remove created
 ```
 

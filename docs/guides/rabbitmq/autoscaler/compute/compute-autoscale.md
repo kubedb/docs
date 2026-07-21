@@ -41,7 +41,7 @@ namespace/demo created
 
 ## Autoscaling of RabbitMQ
 
-In this section, we are going to deploy a RabbitMQ with version `3.13.2`  Then, in the next section we will set up autoscaling for this RabbitMQ using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to deploy a RabbitMQ with version `4.2.4`  Then, in the next section we will set up autoscaling for this RabbitMQ using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -50,7 +50,7 @@ metadata:
   name: rabbitmq-autoscale
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   storage:
     accessModes:
@@ -90,7 +90,7 @@ Now, wait until `rabbitmq-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo
 NAME                 TYPE                  VERSION   STATUS   AGE
-rabbitmq-autoscale   kubedb.com/v1alpha2   3.13.2     Ready    22s
+rabbitmq-autoscale   kubedb.com/v1alpha2   4.2.4     Ready    22s
 ```
 
 Let's check the Pod containers resources,

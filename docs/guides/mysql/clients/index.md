@@ -48,7 +48,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -86,8 +86,8 @@ Every 3.0s: kubectl get my -n demo my-group                      suaas-appscode:
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get sts -n demo my-group
-ery 3.0s: kubectl get sts -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
+$ watch -n 3 kubectl get petset -n demo my-group
+ery 3.0s: kubectl get petset -n demo my-group                     suaas-appscode: Wed Sep  9 10:53:52 2020
 
 NAME       READY   AGE
 my-group   3/3     15m
@@ -276,20 +276,21 @@ my-group   10.244.1.8:3306   5h49m
 You can also find the service which selects for secondary replicas have the following selector,
 
 ```bash
-$ kubectl get svc -n demo my-group-replicas -o json | jq '.spec.selector'
+$ kubectl get svc -n demo my-group-standby -o json | jq '.spec.selector'
 {
-  "app.kubernetes.io/name": "mysqls.kubedb.com",
   "app.kubernetes.io/instance": "my-group",
-  "mysql.kubedb.com/role": "secondary"
+  "app.kubernetes.io/managed-by": "kubedb.com",
+  "app.kubernetes.io/name": "mysqls.kubedb.com",
+  "kubedb.com/role": "standby"
 }
 ```
 
 If you get the endpoint of the above service, you will see the podIP of the secondary replicas,
 
 ```bash
-$ kubectl get endpoints -n demo my-group-replicas
+$ kubectl get endpoints -n demo my-group-standby
 NAME                ENDPOINTS                           AGE
-my-group-replicas   10.244.2.11:3306,10.244.2.13:3306   5h53m
+my-group-standby   10.244.2.11:3306,10.244.2.13:3306   5h53m
 ```
 
 ## Connecting Information
@@ -299,10 +300,10 @@ KubeDB operator has created a new Secret called `my-group-auth` **(format: {mysq
 Now, you can connect to this database from your terminal using the `mysql` user and password.
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 RmxLjEomvE6tVj4-
 ```
 
@@ -359,14 +360,14 @@ You can see from the above output that both write and read operations are perfor
 
 ## Connection with Secondary Replicas
 
-The secondary replica has only the permission of read operation. So the clients are able to perform only read operation using the service `my-group-replicas` which select only secondary replicas(already shown above). First, we will try to insert data into the database cluster, then we will read existing data from the cluster using `my-group-replicas` service.
+The secondary replica has only the permission of read operation. So the clients are able to perform only read operation using the service `my-group-standby` which select only secondary replicas(already shown above). First, we will try to insert data into the database cluster, then we will read existing data from the cluster using `my-group-standby` service.
 
 At first, we are going to port-forward the service to connect to the database cluster from the outside of the cluster.
 
-Let's port-forward the `my-group-replicas` service using the following command,
+Let's port-forward the `my-group-standby` service using the following command,
 
 ```bash
-$ kubectl port-forward service/my-group-replicas -n demo 8080:3306
+$ kubectl port-forward service/my-group-standby -n demo 8080:3306
 Forwarding from 127.0.0.1:8080 -> 3306
 Forwarding from [::1]:8080 -> 3306
 ```
@@ -394,7 +395,7 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +----+-------+-------+-------+
 ```
 
-You can see from the above output that only read operations are performed successfully using secondary pod selector service named `my-group-replicas`. No data is inserted by using this service. The error `--super-read-only` indicates that the secondary pod has only read permission.
+You can see from the above output that only read operations are performed successfully using secondary pod selector service named `my-group-standby`. No data is inserted by using this service. The error `--super-read-only` indicates that the secondary pod has only read permission.
 
 ## Automatic Failover
 
@@ -427,12 +428,12 @@ NAME       ENDPOINTS          AGE
 my-group   10.244.2.13:3306   111m
 ```
 
-If you get the endpoint of the `my-group-replicas` service, you will see the podIP of the secondary replicas,
+If you get the endpoint of the `my-group-standby` service, you will see the podIP of the secondary replicas,
 
 ```bash
-$ kubectl get endpoints -n demo my-group-replicas
+$ kubectl get endpoints -n demo my-group-standby
 NAME                ENDPOINTS                           AGE
-my-group-replicas   10.244.2.11:3306,10.244.2.18:3306   112m
+my-group-standby   10.244.2.11:3306,10.244.2.18:3306   112m
 ```
 
 ## Cleaning up

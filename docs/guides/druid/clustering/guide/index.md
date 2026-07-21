@@ -95,7 +95,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -107,7 +107,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-with-monitoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/clustering/guide/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -180,7 +180,7 @@ Metadata:
   UID:               a2e12db2-6694-419f-ad07-2c906df5b611
 Spec:
   Auth Secret:
-    Name:  druid-cluster-admin-cred
+    Name:  druid-cluster-auth
   Deep Storage:
     Config Secret:
       Name:         deep-storage-config
@@ -432,7 +432,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-cluster-zk
     Namespace:  demo
@@ -552,7 +552,7 @@ Metadata:
   UID:               a2e12db2-6694-419f-ad07-2c906df5b611
 Spec:
   Auth Secret:
-    Name:  druid-cluster-admin-cred
+    Name:  druid-cluster-auth
   Deep Storage:
     Config Secret:
       Name:         deep-storage-config
@@ -804,7 +804,7 @@ Spec:
           Security Context:
             Fs Group:  1000
       Replicas:        1
-  Version:             28.0.1
+  Version:             36.0.0
   Zookeeper Ref:
     Name:       druid-cluster-zk
     Namespace:  demo
@@ -884,14 +884,14 @@ Now hit the `http://localhost:8888` from any browser, and you will be prompted t
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.username}' | base64 -d
   admin
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo druid-cluster-admin-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo druid-cluster-auth -o jsonpath='{.data.password}' | base64 -d
   LzJtVRX5E8MorFaf
   ```
 
@@ -909,7 +909,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl patch -n demo druid druid-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
-kafka.kubedb.com/druid-cluster patched
+druid.kubedb.com/druid-cluster patched
 
 $ kubectl delete dr druid-cluster  -n demo
 druid.kubedb.com "druid-cluster" deleted

@@ -256,7 +256,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/nfs/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/pitr/nfs/yamls/retentionPolicy.yaml 
 retentionpolicy.storage.kubestash.com/mariadb-retention-policy created
 ```
 ### EncryptionSecret
@@ -355,7 +355,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "11.1.3"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:
@@ -512,7 +512,7 @@ spec:
         name: mariadb-full
         namespace: demo
       recoveryTimestamp: "2024-09-17T05:28:26Z"
-  version: "11.1.3"
+  version: "12.1.2"
   replicas: 3
   storageType: Durable
   storage:

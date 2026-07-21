@@ -42,8 +42,8 @@ At first, we will create a ConfigMap from `init.sh` file. Then, we will provide 
 Let's create a ConfigMap with initialization script,
 
 ```bash
-$ kubectl create configmap -n demo rd-init-script --from-literal=init.sh="redis-cli set hello world"
-configmap/rd-init-script created
+$ kubectl create configmap -n demo redis-init-script --from-literal=init.sh="redis-cli set hello world"
+configmap/redis-init-script created
 ```
 
 ## Create a Redis database with Init-Script
@@ -57,7 +57,7 @@ metadata:
   name: rd-init-script
   namespace: demo
 spec:
-  version: 7.2.3
+  version: 8.2.2
   disableAuth: false
   storageType: Durable
   init:
@@ -269,7 +269,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   terminationPolicy: WipeOut
-  version: 7.2.3
+  version: 8.2.2
 status:
   conditions:
   - lastTransitionTime: "2024-08-06T05:59:40Z"
@@ -331,10 +331,10 @@ type: kubernetes.io/basic-auth
 Now, you can connect to this database through redis cli. In this tutorial, we are connecting to the Redis server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.username}' | base64 -d
 default
 
-$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo rd-init-script-auth -o jsonpath='{.data.password}' | base64 -d
 I4LN__V2nh9lvwar
 
 $ kubectl exec -it rd-init-script-0 -n demo -- bash

@@ -3,7 +3,7 @@ title: Distributed MariaDB Cluster Compute Autoscaling
 menu:
   docs_{{ .version }}:
     identifier: guides-mariadb-distributed-autoscaling-compute-cluster
-    name: Cluster
+    name: Galera Cluster
     parent: guides-mariadb-distributed-autoscaling-compute
     weight: 20
 menu_name: docs_{{ .version }}
@@ -91,7 +91,7 @@ placementpolicy.apps.k8s.appscode.com/distributed-mariadb created
 
 ### Deploy Distributed MariaDB Cluster
 
-In this section, we are going to deploy a distributed MariaDB Galera cluster with version `11.5.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
+In this section, we are going to deploy a distributed MariaDB Galera cluster with version `12.1.2`. Then, in the next section we will set up autoscaling for this database using `MariaDBAutoscaler` CRD.
 
 Below is the YAML of the `MariaDB` CR that we are going to create. Note that `spec.distributed` is set to `true` and the `PlacementPolicy` is referenced via `spec.podTemplate.spec.podPlacementPolicy`:
 
@@ -102,7 +102,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "11.5.2"
+  version: "12.1.2"
   distributed: true
   replicas: 3
   storageType: Durable
@@ -249,7 +249,7 @@ Let's create the `MariaDBAutoscaler` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/distributed/autoscaler/compute/cluster/examples/mdas-compute.yaml --context demo-controller
-mariadbautoscaler.autoscaling.kubedb.com/mdas-compute created
+mariadbautoscaler.autoscaling.kubedb.com/md-as-compute created
 ```
 
 #### Verify Autoscaling is set up successfully

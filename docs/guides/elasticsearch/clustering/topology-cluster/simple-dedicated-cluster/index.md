@@ -47,7 +47,7 @@ Here, we have `standard` StorageClass in our cluster from [Local Path Provisione
 
 ## Create Elasticsearch Simple Dedicated Cluster
 
-We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `xpack-8.19.9` ) of SearchGuard distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+We are going to create a Elasticsearch Simple Dedicated Cluster in topology mode. Our cluster will be consist of 2 master nodes, 3 data nodes, 2 ingest nodes. Here, we are using Elasticsearch version ( `xpack-9.2.3` ) of x-pack distribution for this demo. To learn more about the Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -57,7 +57,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -91,7 +91,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-8.19.9` of SearchGuard distribution.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using Elasticsearch version `xpack-9.2.3` of x-pack distribution.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.storageType` - specifies the type of storage that will be used for Elasticsearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Elasticsearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.topology` - specifies the node-specific properties for the Elasticsearch cluster.
@@ -116,7 +116,7 @@ KubeDB will create the necessary resources to deploy the Elasticsearch cluster a
 ```bash
 $ watch kubectl get elasticsearch -n demo
 NAME         VERSION              STATUS   AGE
-es-cluster   xpack-8.19.9   Ready    3m32s
+es-cluster   xpack-9.2.3   Ready    3m32s
 ```
 Here, Elasticsearch is in `Ready` state. It means the database is ready to accept connections.
 
@@ -139,7 +139,7 @@ Metadata:
   UID:               1dff00c8-5a90-4916-bf8a-ed28f19dd433
 Spec:
   Auth Secret:
-    Name:                es-cluster-elastic-cred
+    Name:                es-cluster-auth
   Enable SSL:            true
   Heap Size Percentage:  50
   Kernel Settings:
@@ -234,7 +234,7 @@ Spec:
             Storage:         1Gi
         Storage Class Name:  standard
       Suffix:                master
-  Version:                   xpack-8.19.9
+  Version:                   xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2022-04-07T09:48:51Z
@@ -316,7 +316,7 @@ NAME                               TYPE                       DATA   AGE
 secret/es-cluster-archiver-cert    kubernetes.io/tls          3      31m
 secret/es-cluster-ca-cert          kubernetes.io/tls          2      31m
 secret/es-cluster-config           Opaque                     1      31m
-secret/es-cluster-elastic-cred     kubernetes.io/basic-auth   2      31m
+secret/es-cluster-auth     kubernetes.io/basic-auth   2      31m
 secret/es-cluster-http-cert        kubernetes.io/tls          3      31m
 secret/es-cluster-transport-cert   kubernetes.io/tls          3      31m
 
@@ -375,21 +375,21 @@ $ kubectl get secret -n demo | grep es-cluster
 es-cluster-archiver-cert           kubernetes.io/tls                     3      12m
 es-cluster-ca-cert                 kubernetes.io/tls                     2      12m
 es-cluster-config                  Opaque                                1      12m
-es-cluster-elastic-cred            kubernetes.io/basic-auth              2      12m
+es-cluster-auth            kubernetes.io/basic-auth              2      12m
 es-cluster-http-cert               kubernetes.io/tls                     3      12m
 es-cluster-token-hx5mn             kubernetes.io/service-account-token   3      12m
 es-cluster-transport-cert          kubernetes.io/tls                     3      12m
 ```
-Now, we can connect to the database with `es-cluster-elastic-cred` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database with `es-cluster-auth` which contains the admin level credentials to connect with the database.
 
 ### Accessing Database Through CLI
 
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.username}' | base64 -d
 elastic
-$ kubectl get secret -n demo es-cluster-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-cluster-auth -o jsonpath='{.data.password}' | base64 -d
 tS$k!2IBI.ASI7FJ
 ```
 

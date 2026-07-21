@@ -61,7 +61,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1
@@ -122,7 +122,7 @@ Now, wait until `sample-sdb` has status `Ready`. i.e,
 ```bash
 $ kubectl get sdb -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-sample-sdb   kubedb.com/v1alpha2   8.7.10    Ready    101s
+sample-sdb   kubedb.com/v1alpha2   8.9.3    Ready    101s
 ```
 
 Let's check the Pod containers resources,
@@ -178,6 +178,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `sample-sdb` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.aggregator` specifies the desired `aggregator` nodes resources after scaling. As well you can scale resources for leaf node, standalone node and coordinator container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/#vertical-scaling-modes).
 
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
@@ -216,6 +217,43 @@ $ kubectl get pod -n demo sample-sdb-aggregator-0 -o json | jq '.spec.containers
 ```
 
 The above output verifies that we have successfully scaled up the resources of the SingleStore database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`SinglestoreOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdbops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: sample-sdb
+  verticalScaling:
+    mode: InPlace
+    aggregator:
+      resources:
+        requests:
+          memory: "2500Mi"
+          cpu: "0.7"
+        limits:
+          memory: "2500Mi"
+          cpu: "0.7"
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/singlestore/scaling/vertical-scaling/cluster/example/sdbops-vscale-inplace.yaml
+singlestoreopsrequest.ops.kubedb.com/sdbops-vscale-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 

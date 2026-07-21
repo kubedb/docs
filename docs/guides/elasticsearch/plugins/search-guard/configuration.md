@@ -390,7 +390,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $ kubectl get es -n demo config-elasticsearch -o wide
 NAME                   VERSION   STATUS    AGE
-config-elasticsearch   6.3-v1    Running   1m
+config-elasticsearch   searchguard-7.9.3    Running   1m
 ```
 
 ## Connect to Elasticsearch Database

@@ -49,7 +49,7 @@ metadata:
   name: sample-es
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -97,7 +97,7 @@ Now, wait until `sample-es` has status Ready. i.e,
 ```shell
 $ kubectl get Elasticsearch -n demo -w
 NAME        VERSION        STATUS   AGE
-sample-es   xpack-8.19.9   Ready    3m12s
+sample-es   xpack-9.2.3   Ready    3m12s
 ```
 ## Verify authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database using the `kubectl exec` command. Below is an example showing how to retrieve the credentials from the Secret.
@@ -174,7 +174,7 @@ Here,
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotate-auth/yamls/rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-generated.yaml
  Elasticsearchopsrequest.ops.kubedb.com/essops-rotate-auth-generated created
 ```
 Let's wait for `ElasticsearchOpsrequest` to be `Successful`. Run the following command to watch `ElasticsearchOpsrequest` CRO
@@ -413,7 +413,7 @@ Here,
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotate-auth/yamls/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/rotateauth/yamls/rotate-auth-user.yaml
 Elasticsearchopsrequest.ops.kubedb.com/esops-rotate-auth-user created
 ```
 Let’s wait for `ElasticsearchOpsRequest` to be Successful. Run the following command to watch `ElasticsearchOpsRequest` CRO:
