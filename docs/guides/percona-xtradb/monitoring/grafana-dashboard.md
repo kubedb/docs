@@ -5,7 +5,7 @@ menu:
     identifier: guides-perconaxtradb-grafana-dashboard
     name: Grafana Dashboard
     parent: guides-perconaxtradb-monitoring
-    weight: 25
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
