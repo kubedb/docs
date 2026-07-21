@@ -16,6 +16,8 @@ section_menu_id: guides
 
 This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed ClickHouse instance using the `clickhouse-alerts` Helm chart.
 
+> **No Grafana dashboard is available for ClickHouse yet.** Unlike `neo4j-alerts`/`cassandra-alerts` (which bundle a dashboard-import `Job`) or the separate `kubedb-grafana-dashboards` chart (which covers most other KubeDB databases), neither mechanism currently ships a ClickHouse dashboard. Confirmed two ways while writing this tutorial: `clickhouse-alerts` v2026.7.14 exposes the same `grafana.enabled`/`grafana.jobName`/`grafana.url`/`grafana.apikey` values as `neo4j-alerts`/`cassandra-alerts`, but rendering the chart with `grafana.enabled=true` produces **only** a `PrometheusRule` — no `Job`/`ConfigMap` is rendered, so these values are currently dead/vestigial. Separately, `helm template kubedb-grafana-dashboards --set featureGates.ClickHouse=true` produces zero ClickHouse-named resources, even though `ClickHouse` is a valid key in that chart's `featureGates` map. This tutorial therefore covers alerting only; revisit if/when either chart adds real ClickHouse dashboard support.
+
 ## Before You Begin
 
 * Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
@@ -28,8 +30,6 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   $ kubectl create ns alert-clickhouse
   namespace/alert-clickhouse created
   ```
-
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
@@ -49,12 +49,11 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
-- **KubeDB** deploys ClickHouse with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter) running as a **Java agent inside the `clickhouse` container itself** — not a separate sidecar container. KubeDB uses the JMX agent because the officially recognized ClickHouse exporter image does not yet expose metrics for the KRaft-mode versions KubeDB supports.
-- **ServiceMonitor** (named `{clickhouse-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the JMX agent's HTTP endpoint every 10 seconds.
+- **KubeDB** deploys ClickHouse with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter)-style Java agent running **inside the `clickhouse` container itself** on port `9363` — there is no separate exporter sidecar container, and only one container runs in the pod.
+- **ServiceMonitor** (named `{clickhouse-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `clickhouse-alerts` chart and contains ClickHouse alert definitions grouped by concern: database health, provisioner, ops-manager, and KubeStash backup/restore.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for ClickHouse are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -107,18 +106,18 @@ KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring
 
 ```bash
 $ kubectl get svc -n alert-clickhouse --selector="app.kubernetes.io/instance=clickhouse-alert-demo"
-NAME                             TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                      AGE
-clickhouse-alert-demo            ClusterIP   10.43.10.20    <none>        8123/TCP,9000/TCP,9009/TCP   3m
-clickhouse-alert-demo-pods       ClusterIP   None           <none>        8123/TCP,9000/TCP,9009/TCP   3m
-clickhouse-alert-demo-stats      ClusterIP   10.43.10.21    <none>        8001/TCP                     3m
+NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)              AGE
+clickhouse-alert-demo         ClusterIP   10.43.102.159   <none>        9000/TCP,8123/TCP    3m
+clickhouse-alert-demo-pods    ClusterIP   None            <none>        9000/TCP,8123/TCP    3m
+clickhouse-alert-demo-stats   ClusterIP   10.43.76.0      <none>        9363/TCP             3m
 ```
 
 KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 
 ```bash
 $ kubectl get servicemonitor -n alert-clickhouse
-NAME                           AGE
-clickhouse-alert-demo-stats    3m
+NAME                          AGE
+clickhouse-alert-demo-stats   3m
 ```
 
 Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
@@ -144,7 +143,7 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i clickhouse-alert-demo oci://ghcr.io/appscode-charts/clickhouse-alerts \
+$ helm upgrade -i clickhouse-alert-demo appscode/clickhouse-alerts \
     -n alert-clickhouse \
     --create-namespace \
     --version=v2026.7.14 \
@@ -157,12 +156,14 @@ $ helm upgrade -i clickhouse-alert-demo oci://ghcr.io/appscode-charts/clickhouse
 | `-n alert-clickhouse` | `alert-clickhouse` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
 
+> Don't bother with `--set grafana.enabled=true` — as explained at the top of this tutorial, this chart version doesn't actually render anything for it.
+
 ### Verify the PrometheusRule is created
 
 ```bash
 $ kubectl get prometheusrule -n alert-clickhouse
-NAME                     AGE
-clickhouse-alert-demo    30s
+NAME                    AGE
+clickhouse-alert-demo   30s
 ```
 
 Confirm the `release: prometheus` label is present.
@@ -182,13 +183,13 @@ $ kubectl port-forward -n monitoring \
     svc/prometheus-kube-prometheus-prometheus 9090:9090
 ```
 
-Open `http://localhost:9090/rules` and locate the `clickhouse.database`, `clickhouse.provisioner`, `clickhouse.opsManager`, and `clickhouse.kubeStash` groups.
+Open `http://localhost:9090/rules?search=clickhouse`.
 
 <p align="center">
   <img alt="Prometheus Rule Health" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-All groups should show **OK**, confirming that Prometheus has loaded and is evaluating the ClickHouse alert definitions every 30 seconds.
+All four groups — `clickhouse.database`, `clickhouse.provisioner`, `clickhouse.opsManager`, and `clickhouse.kubeStash` — are visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the ClickHouse alert definitions every 30 seconds. The `database` group's `DiskUsageHigh`/`DiskAlmostFull` rules correctly divide by `kubelet_volume_stats_capacity_bytes` in this chart — unlike the same-named rules in a few other `*-alerts` charts in this project, they don't have the false-firing PVC-usage bug.
 
 ---
 
@@ -196,25 +197,23 @@ All groups should show **OK**, confirming that Prometheus has loaded and is eval
 
 ### 1. Check the Prometheus target is UP
 
-Prometheus discovers more than 20 scrape pools on a shared cluster, so instead of the Target health page, query `up` directly for a reliable view.
-
 Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-clickhouse%22%7D&g0.tab=1`.
 
 <p align="center">
   <img alt="Prometheus up query — clickhouse-alert-demo-0 UP" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-prom-target.png" style="padding:10px">
 </p>
 
-The `clickhouse-alert-demo-0` pod should report `up == 1` via the `clickhouse-alert-demo-stats` service/job, confirming Prometheus is scraping the JMX agent successfully.
+The `clickhouse-alert-demo-0` pod reports `up == 1` via the `clickhouse-alert-demo-stats` service/job on port `9363`, confirming Prometheus is scraping the JMX agent successfully.
 
 ### 2. Confirm the ClickHouse alerts are inactive
 
-Open `http://localhost:9090/alerts`.
+Open `http://localhost:9090/alerts?search=clickhouse`.
 
 <p align="center">
   <img alt="Prometheus Alerts — ClickHouse groups inactive" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-All rules across the `clickhouse.database`, `clickhouse.provisioner`, `clickhouse.opsManager`, and `clickhouse.kubeStash` groups should show **INACTIVE**, confirming the instance is healthy and no thresholds are breached. (`clickhouse.kubeStash` rules stay INACTIVE with no data unless KubeStash backups are configured on this instance.)
+All rules across the `clickhouse.database`, `clickhouse.provisioner`, `clickhouse.opsManager`, and `clickhouse.kubeStash` groups show **INACTIVE**, confirming the instance is healthy and no thresholds are breached. (`clickhouse.kubeStash` rules stay INACTIVE with no data unless KubeStash backups are configured on this instance.)
 
 ### 3. Check AlertManager
 
@@ -231,65 +230,71 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-No alerts should be firing for the `alert-clickhouse` namespace.
-
-### 4. Grafana dashboard
-
-Grafana dashboards for ClickHouse are documented separately rather than duplicated in this alerting guide — see [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the ClickHouse dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.ClickHouse=true`).
+No alerts are firing for the `alert-clickhouse` namespace.
 
 ---
 
 ## Simulating a Firing Alert
 
-This section deliberately triggers `KubeDBClickHousePhaseNotReady` so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+This section deliberately triggers `ClickhouseInstanceDown` so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-Since the JMX exporter runs as a Java agent inside the `clickhouse` process itself rather than a separate sidecar, crashing the ClickHouse process takes the metrics endpoint down with it. Find the main ClickHouse process and crash-loop it long enough for the KubeDB operator to mark the resource `NotReady` and hold it there past the alert's `for: 1m` window.
+The `clickhouse` container's `PID 1` is the `clickhouse-server` process itself, unlike most other KubeDB images in this project where `PID 1` is a supervisor (`tini`, a wrapper script) around the real database process. This matters: **`kubectl exec ... kill -9 1` does nothing here.** A container's `PID 1` is also PID 1 of that container's own PID namespace, and Linux unconditionally ignores `SIGKILL`/`SIGSTOP` sent to a namespace's PID 1 *from within that same namespace* (`kubectl exec` attaches to the same namespace) — confirmed by checking `readlink /proc/1/ns/pid` and `/proc/self/ns/pid` inside the container (identical), then observing `kill -9 1` return exit code `0` while `/proc/1`'s elapsed-time counter kept climbing, completely unaffected. This is a kernel-level protection, not a bug — only a signal delivered from *outside* the namespace (e.g. the container runtime stopping the container) can kill a namespace's PID 1 this way.
+
+**What works instead:** ask ClickHouse to shut itself down via SQL — `SYSTEM SHUTDOWN` — which exits the process voluntarily rather than relying on an external signal, and Kubernetes restarts the container normally afterward. A single shutdown recovers in only a few seconds (too fast to reliably observe), so loop it from *outside* the container: each `SYSTEM SHUTDOWN` call takes down the very `kubectl exec` session that issued it (its container just exited), so the retry has to be a fresh `kubectl exec` per iteration, not a loop running inside one exec session.
 
 ### 1. Crash the ClickHouse process repeatedly
 
 ```bash
-$ kubectl exec -n alert-clickhouse clickhouse-alert-demo-0 -c clickhouse -- sh -c '
-    end=$(( $(date +%s) + 90 ));
-    while [ $(date +%s) -lt $end ]; do
-      pid=$(pgrep -f clickhouse-server | head -1);
-      [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null;
-      sleep 1;
-    done'
+$ end=$(( $(date +%s) + 90 ))
+$ while [ $(date +%s) -lt $end ]; do
+    kubectl exec -n alert-clickhouse clickhouse-alert-demo-0 -c clickhouse -- \
+      clickhouse-client --user admin --password "<password-from-clickhouse-alert-demo-auth-secret>" \
+      --query "SYSTEM SHUTDOWN" >/dev/null 2>&1
+    sleep 3
+  done
 ```
 
-> If the container's entrypoint respawns `clickhouse-server` faster than the loop above can catch it, run the loop directly inside a single `exec` session (as above, not from repeated external `kubectl exec` calls) to avoid round-trip latency — see the general technique notes in the pgbouncer/pgpool alerting tutorials for why this matters.
+Retrieve the password first if you don't have it: `kubectl get secret -n alert-clickhouse clickhouse-alert-demo-auth -o jsonpath='{.data.password}' | base64 -d`. Run the loop in the background (or a separate terminal) — each iteration either succeeds (shutting the instance down again) or fails harmlessly while a previous shutdown is still restarting, so 90 seconds comfortably holds the instance in a crash loop.
 
 ### 2. Watch the alert fire in Prometheus
 
-Open `http://localhost:9090/alerts`.
+Open `http://localhost:9090/alerts?search=clickhouse`.
 
 <p align="center">
-  <img alt="Prometheus Alerts — KubeDBClickHousePhaseNotReady Firing" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-prom-alerts-firing.png" style="padding:10px">
+  <img alt="Prometheus Alerts — ClickhouseInstanceDown Firing" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-`KubeDBClickHousePhaseNotReady` should transition from **INACTIVE** to **FIRING** once `kubedb_com_clickhouse_status_phase{phase="NotReady"}` has read `1` continuously for the full `for: 1m` duration.
+`ClickhouseInstanceDown` (`up{job="clickhouse-alert-demo-stats"} == 0`, `for: 1m`) transitions from **INACTIVE** to **FIRING** once the crash loop has kept the scrape target down continuously for the full window, while the rest of the `clickhouse.database` group stays **INACTIVE**.
 
 ### 3. Check the AlertManager dashboard
 
-Open `http://localhost:9093`.
+Open `http://localhost:9093/#/alerts?filter={namespace="alert-clickhouse"}`.
 
 <p align="center">
-  <img alt="AlertManager — KubeDBClickHousePhaseNotReady Firing" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-alertmanager-firing.png" style="padding:10px">
+  <img alt="AlertManager — ClickhouseInstanceDown Firing" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
-AlertManager should show the `KubeDBClickHousePhaseNotReady` alert with **Severity: critical**.
+AlertManager shows the `ClickhouseInstanceDown` alert. The alert card displays:
+
+- **Severity**: `critical`
+- **pod**: `clickhouse-alert-demo-0`
+- **job**: `clickhouse-alert-demo-stats`
+- **namespace** / **app_namespace**: `alert-clickhouse`
+- **Started**: timestamp when the alert first fired
+
+AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
 
 ### 4. Restore ClickHouse
 
-Stop the loop from step 1 and give the operator a few reconcile cycles to mark the resource `Ready` again.
+Let the loop from step 1 finish (or stop it early) — the pod recovers on its own once no further shutdowns land.
 
 ```bash
-$ kubectl get clickhouse -n alert-clickhouse clickhouse-alert-demo -w
-NAME                    VERSION   STATUS   AGE
-clickhouse-alert-demo   24.4.1    Ready    24m
+$ kubectl get pods -n alert-clickhouse
+NAME                      READY   STATUS    RESTARTS   AGE
+clickhouse-alert-demo-0   1/1     Running   5          18m
 ```
 
-If the pod does not recover cleanly, force a clean restart with `kubectl delete pod -n alert-clickhouse clickhouse-alert-demo-0`.
+Once the pod is stably `1/1 Running` and the next scrape reports `up == 1`, Prometheus marks the alert **INACTIVE** again (took about a minute after the loop ended in testing, since the `for: 1m` window has to elapse clean) and AlertManager sends a **resolved** notification to all receivers. If the pod doesn't stabilize on its own, force a clean restart: `kubectl delete pod -n alert-clickhouse clickhouse-alert-demo-0`.
 
 ---
 
@@ -363,7 +368,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade clickhouse-alert-demo oci://ghcr.io/appscode-charts/clickhouse-alerts \
+$ helm upgrade clickhouse-alert-demo appscode/clickhouse-alerts \
     -n alert-clickhouse \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
