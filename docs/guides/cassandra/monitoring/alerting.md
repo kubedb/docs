@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Cassandra Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Cassandra cluster using the `cassandra-alerts` Helm chart.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Cassandra cluster using the `cassandra-alerts` Helm chart. Like `neo4j-alerts`, this chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -22,14 +22,16 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * Install the KubeDB operator by following the steps [here](/docs/setup/README.md).
 
-* Deploy the database in the `demo` namespace:
+* Deploy the database in the `alert-cas` namespace:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  $ kubectl create ns alert-cas
+  namespace/alert-cas created
   ```
 
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md#configuration) guide for how to deploy kube-prometheus-stack if you don't have it yet.
+* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
 
@@ -43,7 +45,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/cassandra/monitoring/overview.md).
 
-* For dashboards and visualisation, see [Grafana Dashboard](grafana-dashboard.md) for Cassandra.
+* You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -53,6 +55,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **Stats Service** (named `{cassandra-name}-stats`) is created automatically by KubeDB and fronts the exporter's metrics endpoint on port `56790`, which is proxied to the exporter's actual listening port `8080` inside the pod.
 - **ServiceMonitor** (named `{cassandra-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `cassandra-alerts` chart and contains all Cassandra alert definitions grouped by concern: database health and provisioner.
+- **Dashboard-import Job** — when `grafana.enabled` is `true` (default `false`), the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
@@ -67,7 +70,7 @@ apiVersion: kubedb.com/v1alpha2
 kind: Cassandra
 metadata:
   name: cas-alert-demo
-  namespace: demo
+  namespace: alert-cas
 spec:
   version: 5.0.7
   topology:
@@ -107,42 +110,86 @@ cassandra.kubedb.com/cas-alert-demo created
 Now, wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get cassandra -n demo cas-alert-demo
+$ kubectl get cassandra -n alert-cas cas-alert-demo
 NAME             VERSION   STATUS   AGE
-cas-alert-demo   5.0.3     Ready    2m
+cas-alert-demo   5.0.7     Ready    5m
+```
+
+KubeDB brings up 2 rack pods:
+
+```bash
+$ kubectl get pods -n alert-cas
+NAME                        READY   STATUS    RESTARTS   AGE
+cas-alert-demo-rack-r0-0    2/2     Running   0          5m
+cas-alert-demo-rack-r0-1    2/2     Running   0          4m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=cas-alert-demo"
+$ kubectl get svc -n alert-cas --selector="app.kubernetes.io/instance=cas-alert-demo"
 NAME                          TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                               AGE
-cas-alert-demo                ClusterIP   10.43.49.40     <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   2m
-cas-alert-demo-rack-r0-pods   ClusterIP   None            <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   2m
-cas-alert-demo-stats          ClusterIP   10.43.160.146   <none>        56790/TCP                             2m
+cas-alert-demo                ClusterIP   10.43.120.17    <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   5m
+cas-alert-demo-rack-r0-pods   ClusterIP   None            <none>        9042/TCP,7000/TCP,7199/TCP,7001/TCP   5m
+cas-alert-demo-stats          ClusterIP   10.43.90.186    <none>        56790/TCP                             5m
 ```
 
 KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 
 ```bash
-$ kubectl get servicemonitor -n demo
+$ kubectl get servicemonitor -n alert-cas
 NAME                   AGE
-cas-alert-demo-stats   2m
+cas-alert-demo-stats   5m
 ```
 
 Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
 
 ```bash
-$ kubectl get servicemonitor -n demo cas-alert-demo-stats \
+$ kubectl get servicemonitor -n alert-cas cas-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
 
 ---
 
-## Step 1 — Install cassandra-alerts
+## Step 1 — Create a Grafana API Key
 
-The `cassandra-alerts` chart creates a `PrometheusRule` resource containing all Cassandra alert definitions grouped by concern: database health and provisioner.
+The chart's dashboard-import Job authenticates to Grafana with a bearer token, so create one first.
+
+* **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
+* **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5 used while verifying this tutorial): use the legacy **API Keys** endpoint instead:
+
+  ```bash
+  # Port-forward Grafana
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+  # Retrieve the admin password
+  $ kubectl get secret -n monitoring prometheus-grafana \
+      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+
+  # Create a service account with Editor role
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/serviceaccounts \
+      -d '{"name":"cas-alerts-demo","role":"Editor"}'
+  # Note the returned "id"
+
+  # Create a token for the service account (replace <id> with the returned service account ID)
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/serviceaccounts/<id>/tokens \
+      -d '{"name":"cas-alerts-demo-key","secondsToLive":0}'
+  # Note the returned "key"
+
+  # Stop the port-forward
+  $ kill %1
+  ```
+
+Either way, you end up with a bearer token to use as `grafana.apikey` below.
+
+## Step 2 — Install cassandra-alerts
+
+The `cassandra-alerts` chart creates a `PrometheusRule` resource containing all Cassandra alert definitions, **and** (when `grafana.enabled=true`) a `Job` that imports a pre-built Grafana dashboard.
 
 ### Why the Helm release name matters
 
@@ -155,25 +202,38 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i cas-alert-demo oci://ghcr.io/appscode-charts/cassandra-alerts \
-    -n demo \
+$ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
+    -n alert-cas \
     --create-namespace \
     --version=v2026.7.14 \
     --set form.alert.labels.release=prometheus \
-    --set form.alert.groups.database.rules.cassandraDown.val=0
+    --set form.alert.groups.database.rules.cassandraDown.val=0 \
+    --set grafana.enabled=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<grafana-token-from-step-1>" \
+    --set grafana.jobName="cas-alert-demo-stats"
 ```
 
 | Flag | Value | Purpose |
 |------|-------|---------|
 | `cas-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="cas-alert-demo-stats"`) |
-| `-n demo` | `demo` | Installs the `PrometheusRule` in the same namespace as the database |
+| `-n alert-cas` | `alert-cas` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
 | `form.alert.groups.database.rules.cassandraDown.val` | `0` | Fixes the chart's missing default so the `CassandraDown` expression is valid PromQL |
+| `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
+| `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
+| `grafana.jobName` | `cas-alert-demo-stats` | **Required** — the chart's default (`kubedb-databases`) doesn't match any real Prometheus job, so half the dashboard's panels silently show "No data" unless you override it to your instance's actual stats-service name. See the caveat below. |
+
+> To install **alerts only, without the dashboard**, set `--set grafana.enabled=false`.
+
+> **Chart limitation found while verifying this tutorial:** even with `grafana.jobName` set correctly, the dashboard's **title** and its two "Cassandra Phase" panels (`KubeDB Cassandra Phase Not Ready` / `Critical`) remain hardcoded to the literal strings `demo` and `cassandra` inside the chart's bundled dashboard JSON — confirmed by rendering the chart with `helm template` against different release names/namespaces and observing the title and those two panels' PromQL (`kubedb_com_cassandra_status_phase{app="...",namespace="demo",...}`) never change. There is no values field that fixes this. Practically: the dashboard will always be titled `kubedb.com / Cassandra / demo / cassandra` in Grafana's UI regardless of your actual release/namespace, and the two Phase panels will only ever show data if you happen to deploy in a namespace literally named `demo`. The `Cassandra Server Status` row (six panels driven by the exporter's own metrics) is correctly scoped by `grafana.jobName` and does **not** have this problem.
+>
+> **Also note:** the dashboard-import payload has `overwrite: false` hardcoded (also not exposed as a value). Combined with the fixed title above, re-running the import Job (e.g. after changing `grafana.jobName`, or on a `helm upgrade`) fails with `"A dashboard with the same name in the folder already exists"` unless you first delete the existing one: `curl -s -X DELETE -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboards/uid/<uid>` (and `kubectl delete job -n alert-cas cas-alert-demo-post-job` so the Job re-runs on upgrade).
 
 ### Verify the PrometheusRule is created
 
 ```bash
-$ kubectl get prometheusrule -n demo
+$ kubectl get prometheusrule -n alert-cas
 NAME             AGE
 cas-alert-demo   30s
 ```
@@ -181,10 +241,23 @@ cas-alert-demo   30s
 Confirm the `release: prometheus` label is present.
 
 ```bash
-$ kubectl get prometheusrule -n demo cas-alert-demo \
+$ kubectl get prometheusrule -n alert-cas cas-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
+
+### Verify the dashboard-import Job
+
+```bash
+$ kubectl get job -n alert-cas
+NAME                      STATUS     COMPLETIONS   AGE
+cas-alert-demo-post-job   Complete   1/1           8s
+
+$ kubectl logs -n alert-cas job/cas-alert-demo-post-job
+{"pluginId":"","title":"kubedb.com / Cassandra / demo / cassandra","imported":true, ...}
+```
+
+A `"imported":true` response confirms the dashboard now exists in Grafana — under the literal title `kubedb.com / Cassandra / demo / cassandra` regardless of this instance's real name/namespace (see the chart-limitation note above).
 
 ### Confirm Prometheus loaded the rules
 
@@ -201,7 +274,7 @@ Open `http://localhost:9090/rules?search=cassandra`.
   <img alt="Prometheus Rule Health" src="/docs/images/cassandra/monitoring/cas-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-Both the `cassandra.database.demo.cas-alert-demo.rules` and `cassandra.provisioner.demo.cas-alert-demo.rules` groups are visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Cassandra alert definitions every 30 seconds.
+Both the `cassandra.database.alert-cas.cas-alert-demo.rules` and `cassandra.provisioner.alert-cas.cas-alert-demo.rules` groups are visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Cassandra alert definitions every 30 seconds.
 
 ---
 
@@ -212,7 +285,7 @@ Both the `cassandra.database.demo.cas-alert-demo.rules` and `cassandra.provision
 The `exporter` sidecar inside the Cassandra pod scrapes JMX and serves metrics at `:8080/metrics`. A metric named `java:lang:runtime:uptime` confirms the exporter can reach the Cassandra JVM.
 
 ```bash
-$ kubectl exec -n demo cas-alert-demo-rack-r0-0 -c cassandra -- \
+$ kubectl exec -n alert-cas cas-alert-demo-rack-r0-0 -c cassandra -- \
     curl -s localhost:8080/metrics | grep 'name="java:lang:runtime:uptime"'
 cassandra_stats{cluster="Test Cluster",datacenter="dc1",keyspace="",table="",name="java:lang:runtime:uptime",} 458763.0
 ```
@@ -227,7 +300,7 @@ Open `http://localhost:9090/targets?search=cas-alert-demo`.
   <img alt="Prometheus Target UP" src="/docs/images/cassandra/monitoring/cas-alerting-prom-target.png" style="padding:10px">
 </p>
 
-The target `serviceMonitor/demo/cas-alert-demo-stats/0` shows **2 / 2 up**, confirming metrics are being scraped from both `cas-alert-demo-rack-r0-0` and `cas-alert-demo-rack-r0-1` in the `demo` namespace.
+The target `serviceMonitor/alert-cas/cas-alert-demo-stats/0` shows **2 / 2 up**, confirming metrics are being scraped from both `cas-alert-demo-rack-r0-0` and `cas-alert-demo-rack-r0-1` in the `alert-cas` namespace.
 
 ### 3. Confirm all Cassandra alerts are inactive
 
@@ -250,6 +323,26 @@ $ kubectl port-forward -n monitoring \
 
 Open `http://localhost:9093`. With a healthy Cassandra cluster, no alerts for `cas-alert-demo` will be listed here.
 
+<p align="center">
+  <img alt="AlertManager" src="/docs/images/cassandra/monitoring/cas-alerting-alertmanager.png" style="padding:10px">
+</p>
+
+### 5. Explore the Grafana dashboard
+
+Port-forward Grafana and log in.
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Cassandra / demo / cassandra` that the Job imported in Step 2 (search doesn't help here since the title never changes — see the chart-limitation note above; find it by `dashboardId`/`uid` from the Job's log output if you have several).
+
+<p align="center">
+  <img alt="Grafana — Cassandra Alerts Dashboard" src="/docs/images/cassandra/monitoring/cas-alerting-grafana-dashboard.png" style="padding:10px">
+</p>
+
+The dashboard mirrors the alert groups: **Cassandra Phase** (Not Ready / Critical — both show "No data" here since this tutorial deploys to `alert-cas`, not the hardcoded `demo` namespace the panels are wired to) and **Cassandra Server Status** (Down, Service Respawn, Connection Timeout, Dropped Messages, High Read/Write Latency — all live and correctly scoped once `grafana.jobName` is set as shown above). The **Cassandra Down** panel's flat, healthy line is the query `count(up{job="cas-alert-demo-stats",namespace="alert-cas"}) OR vector(0)` — note the `OR vector(0)` fallback means this panel reads as "0 down" both when the instance is genuinely healthy *and* when the job name is wrong and matches nothing, so don't mistake a flat 0 line for confirmation the wiring is correct — cross-check against the Prometheus target/alert pages above.
+
 ---
 
 ## Simulating a Firing Alert
@@ -263,7 +356,7 @@ Unlike some other KubeDB charts, `CassandraDown` is **not** driven by a custom e
 On this build, the exporter's HTTP server (the process actually scraped by Prometheus on port `8080`) runs inside the `exporter` container — killing the `cassandra` container alone leaves the exporter's HTTP endpoint reachable (Prometheus would keep scraping it successfully), so `up` would stay `1` and `CassandraDown` would never fire. To reproduce a real scrape failure, stop the `exporter` container's process instead:
 
 ```bash
-$ kubectl exec -n demo cas-alert-demo-rack-r0-1 -c exporter -- kill 1
+$ kubectl exec -n alert-cas cas-alert-demo-rack-r0-1 -c exporter -- kill 1
 ```
 
 Kubernetes restarts the crashed `exporter` container in the background. The restart is quick, so the outage window can be short — if the alert resolves before you finish inspecting it, repeat the `kill 1` command a few times in a row; Kubernetes' crash-loop backoff will keep the container down for a longer stretch on subsequent attempts, giving you a wider window to observe the firing state.
@@ -278,11 +371,11 @@ Open `http://localhost:9090/alerts?search=cassandra`.
   <img alt="Prometheus Alerts — CassandraDown Firing" src="/docs/images/cassandra/monitoring/cas-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-Because `CassandraDown` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle. Note that `KubeDBCassandraPhaseCritical` also enters **PENDING** shortly after, since the KubeDB operator observes the degraded rack.
+Because `CassandraDown` has `for: 0m` (instant), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `cassandra.database` group stays **INACTIVE**.
 
 ### 3. Check the AlertManager dashboard
 
-Open `http://localhost:9093`.
+Open `http://localhost:9093/#/alerts?filter={app_namespace="alert-cas"}`.
 
 <p align="center">
   <img alt="AlertManager — CassandraDown Firing" src="/docs/images/cassandra/monitoring/cas-alerting-alertmanager-firing.png" style="padding:10px">
@@ -292,7 +385,7 @@ AlertManager shows the `CassandraDown` alert. The alert card displays labels inc
 
 - **alertname**: `CassandraDown`
 - **severity**: `critical`
-- **app**: `cas-alert-demo`, **app_namespace**: `demo`
+- **app**: `cas-alert-demo`, **app_namespace**: `alert-cas`
 - **job**: `cas-alert-demo-stats`
 
 > Note: this chart's alert labels use `app_namespace` rather than a plain `namespace` label — filter or group on `app_namespace` when searching for these alerts in AlertManager.
@@ -304,7 +397,7 @@ AlertManager routes this alert to every receiver configured in your `alertmanage
 Delete the pod so KubeDB recreates it cleanly.
 
 ```bash
-$ kubectl delete pod -n demo cas-alert-demo-rack-r0-1
+$ kubectl delete pod -n alert-cas cas-alert-demo-rack-r0-1
 ```
 
 Once the exporter's `/metrics` endpoint is reachable again, Prometheus marks the alert **INACTIVE** and AlertManager sends a **resolved** notification to all receivers.
@@ -313,7 +406,7 @@ Once the exporter's `/metrics` endpoint is reachable again, Prometheus marks the
 
 ## Alert Reference
 
-All alerts are scoped to the `cas-alert-demo` instance in the `demo` namespace via the PromQL label filters `job="cas-alert-demo-stats"` and `app_namespace="demo"`.
+All alerts are scoped to the `cas-alert-demo` instance in the `alert-cas` namespace via the PromQL label filters `job="cas-alert-demo-stats"` and `app_namespace="alert-cas"`.
 
 ### Database Group
 
@@ -367,11 +460,14 @@ form:
 ```
 
 ```bash
-$ helm upgrade cas-alert-demo oci://ghcr.io/appscode-charts/cassandra-alerts \
-    -n demo \
+$ helm upgrade cas-alert-demo appscode/cassandra-alerts \
+    -n alert-cas \
     --version=v2026.7.14 \
+    --set grafana.enabled=false \
     -f custom-alerts.yaml
 ```
+
+> Note: `-f` values files don't merge `grafana.url`/`grafana.apikey`/`grafana.jobName` automatically — re-pass them (or set `grafana.enabled=false`) on every `helm upgrade`, otherwise the dashboard-import Job re-runs with an empty URL/token and fails, or re-imports with the broken default `jobName` again.
 
 ---
 
@@ -380,14 +476,18 @@ $ helm upgrade cas-alert-demo oci://ghcr.io/appscode-charts/cassandra-alerts \
 To remove all resources created in this tutorial, run the following commands.
 
 ```bash
-# Remove the cassandra-alerts release
-$ helm uninstall cas-alert-demo -n demo
+# Remove the cassandra-alerts release (PrometheusRule + dashboard-import Job)
+$ helm uninstall cas-alert-demo -n alert-cas
+
+# Remove the imported Grafana dashboard (it is not removed by helm uninstall)
+$ curl -s -X DELETE -H "Authorization: Bearer <grafana-token>" \
+    http://localhost:3000/api/dashboards/uid/<uid-from-job-log>
 
 # Remove the Cassandra instance
-$ kubectl delete cassandra -n demo cas-alert-demo
+$ kubectl delete cassandra -n alert-cas cas-alert-demo
 
 # Delete namespace
-$ kubectl delete ns demo
+$ kubectl delete ns alert-cas
 ```
 
 ## Next Steps
