@@ -110,7 +110,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Step 1: Deploy MongoDB with Monitoring Enabled
 
-Below is the MongoDB object with monitoring configured to use Prometheus Operator.
+Below is the MongoDB object with monitoring configured to use Prometheus Operator. It deploys a 3-member replica set — this is what lets you see meaningful data in the dashboard's replication and oplog panels later on.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -120,6 +120,9 @@ metadata:
   namespace: demo
 spec:
   version: "8.0.17"
+  replicas: 3
+  replicaSet:
+    name: rs0
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"
@@ -139,6 +142,7 @@ spec:
 
 Here,
 
+- `replicas: 3` and `replicaSet.name: rs0` deploy a 3-member replica set named `rs0`, which is required for the replication and oplog panels to show meaningful data.
 - `monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` for this instance.
 - `monitor.prometheus.serviceMonitor.labels` must match the `serviceMonitorSelector` label of your Prometheus (`release: prometheus`).
 - `monitor.prometheus.serviceMonitor.interval` sets the scrape interval to 10 seconds.
@@ -146,7 +150,7 @@ Here,
 Create the MongoDB instance:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/monitoring/coreos-prom-mongodb.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/monitoring/mg-grafana-demo.yaml
 mongodb.kubedb.com/mg-grafana-demo created
 ```
 
@@ -155,7 +159,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get mongodb -n demo mg-grafana-demo
 NAME              VERSION   STATUS   AGE
-mg-grafana-demo   8.0.17     Ready    2m
+mg-grafana-demo   8.0.17    Ready    5m
 ```
 
 KubeDB creates a stats service named `{mongodb-name}-stats` for the exporter:
@@ -163,8 +167,9 @@ KubeDB creates a stats service named `{mongodb-name}-stats` for the exporter:
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=mg-grafana-demo"
 NAME                    TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-mg-grafana-demo         ClusterIP   10.96.10.1     <none>        27017/TCP   2m
-mg-grafana-demo-stats   ClusterIP   10.96.10.2     <none>        56790/TCP   2m
+mg-grafana-demo         ClusterIP   10.96.10.1     <none>        27017/TCP   5m
+mg-grafana-demo-pods    ClusterIP   None           <none>        27017/TCP   5m
+mg-grafana-demo-stats   ClusterIP   10.96.10.2     <none>        56790/TCP   5m
 ```
 
 KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
@@ -172,7 +177,7 @@ KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
 ```bash
 $ kubectl get servicemonitor -n demo
 NAME                    AGE
-mg-grafana-demo-stats   2m
+mg-grafana-demo-stats   5m
 ```
 
 Verify it carries the correct label:
@@ -252,13 +257,13 @@ For a standalone Grafana installation:
 
 The KubeDB MongoDB dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-Three dashboards are available. Download all three JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/mongodb) repository (`mongodb/` folder):
+Three dashboards are available. Download all three JSON files from the [opnpulse/dashboards](https://github.com/opnpulse/dashboards/tree/master/mongodb) repository (`mongodb/` folder):
 
 | File | Dashboard |
 |------|-----------|
-| `mongodb_summary_dashboard.json` | KubeDB / MongoDB / Summary |
-| `mongodb_pods_dashboard.json` | KubeDB / MongoDB / Pod |
-| `mongodb_databases_replicaset_dashboard.json` | KubeDB / MongoDB / Database (ReplicaSet) |
+| `mongodb-summary-dashboard.json` | KubeDB / MongoDB / Summary |
+| `mongodb-pod-dashboard.json` | KubeDB / MongoDB / Pod |
+| `mongodb-database-replset-dashboard.json` | KubeDB / MongoDB / Database (ReplicaSet) |
 
 **Import steps (repeat for each of the three files):**
 
@@ -286,8 +291,10 @@ After importing all three files, they will appear under `Dashboards` in the left
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable        | Applies to                | What to select                                                |
-|------------------|---------------------------|----------------------------------------------------------------|
+| Variable         | Applies to                | What to select                                                |
+|------------------|----------------------------|-----------------------------------------------------------------|
+| **Datasource**   | All dashboards             | Your Prometheus data source                                    |
+| **Interval**     | Pod, Database dashboards   | Query resolution/step interval (e.g., `auto`, `1m`)             |
 | **namespace**    | All dashboards             | Namespace where your MongoDB is deployed (e.g., `demo`)       |
 | **MongoDB**      | Summary, Pod dashboards    | Name of your MongoDB instance (e.g., `mg-grafana-demo`)       |
 | **pod**          | Pod, Database dashboards   | A specific pod (e.g., `mg-grafana-demo-0`)                    |

@@ -151,39 +151,39 @@ Here,
 Create the Redis instance:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/coreos-prom-redis.yaml
-redis.kubedb.com/redis-grafana-demo created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/redis-cluster.yaml
+redis.kubedb.com/redis-cluster created
 ```
 
 Wait for it to be `Ready`:
 
 ```bash
-$ kubectl get redis -n demo redis-grafana-demo
-NAME                 VERSION   STATUS   AGE
-redis-grafana-demo   8.2.2     Ready    2m
+$ kubectl get redis -n demo redis-cluster
+NAME            VERSION   STATUS   AGE
+redis-cluster   8.2.2     Ready    5m
 ```
 
 KubeDB creates a stats service named `{redis-name}-stats` for the exporter:
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=redis-grafana-demo"
-NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-redis-grafana-demo         ClusterIP   10.96.10.1     <none>        6379/TCP    2m
-redis-grafana-demo-stats   ClusterIP   10.96.10.2     <none>        9121/TCP    2m
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=redis-cluster"
+NAME                  TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
+redis-cluster         ClusterIP   10.96.10.1     <none>        6379/TCP    5m
+redis-cluster-stats   ClusterIP   10.96.10.2     <none>        56790/TCP   5m
 ```
 
 KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
 
 ```bash
 $ kubectl get servicemonitor -n demo
-NAME                       AGE
-redis-grafana-demo-stats   2m
+NAME                  AGE
+redis-cluster-stats   5m
 ```
 
 Verify it carries the correct label:
 
 ```bash
-$ kubectl get servicemonitor -n demo redis-grafana-demo-stats -o jsonpath='{.metadata.labels}'
+$ kubectl get servicemonitor -n demo redis-cluster-stats -o jsonpath='{.metadata.labels}'
 {"release":"prometheus", ...}
 ```
 
@@ -198,7 +198,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `redis-grafana-demo-stats`. Its state should be **UP**.
+Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `redis-cluster-stats`. Its state should be **UP**.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/redis/monitoring/rd-prom-targets.png" style="padding:10px">
@@ -257,17 +257,15 @@ For a standalone Grafana installation:
 
 The KubeDB Redis dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-Five dashboards are available. Download the JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/redis) repository (`redis/` folder):
+Three dashboards are available. Download the JSON files from the [opnpulse/dashboards](https://github.com/opnpulse/dashboards/tree/master/redis) repository (`redis/` folder):
 
 | File | Dashboard |
 |------|-----------|
 | `redis_summary_dashboard.json` | KubeDB / Redis / Summary |
-| `redis_pods_dashboard.json` | KubeDB / Redis / Pod |
-| `redis_shard_dashboard.json` | KubeDB / Redis / Shard |
-| `redis_sentinel_summary_dashboard.json` | KubeDB / Redis Sentinel / Summary |
-| `redis_sentinel_pods_dashboard.json` | KubeDB / Redis Sentinel / Pod |
+| `redis_pod_dashboard.json` | KubeDB / Redis / Pod |
+| `redis_shards_dashboard.json` | KubeDB / Redis / Shard |
 
-> The Shard dashboard is relevant for Redis Cluster mode (`spec.mode: Cluster`). The Sentinel dashboards are relevant for Redis Sentinel deployments (`spec.mode: Sentinel`).
+> The Shard dashboard is relevant for Redis Cluster mode (`spec.mode: Cluster`); its panels stay empty for a standalone (non-cluster) Redis instance.
 
 **Import steps (repeat for each file you need):**
 
@@ -290,22 +288,22 @@ After importing the files you need, they will appear under `Dashboards` in the l
 | KubeDB / Redis / Summary | Instance overview: status, version, mode, node count, resource requests/limits, CPU usage |
 | KubeDB / Redis / Pod | Per-pod role, master/slaves, connected clients, memory, commands/sec, network I/O, CPU/memory |
 | KubeDB / Redis / Shard | Cluster shard slot health, node/slave count, per-slave status, cluster mode |
-| KubeDB / RedisSentinel / Summary | Sentinel quorum, monitored masters, last failover time, connected sentinels |
-| KubeDB / RedisSentinel / Pod | Per-sentinel status, last ping/pong time, subjectively/objectively down flags |
 
 ## Step 6: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
-| Variable      | Applies to              | What to select                                             |
-|---------------|-------------------------|--------------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your Redis is deployed (e.g., `demo`)     |
-| **redis**     | All dashboards          | Name of your Redis instance (e.g., `redis-grafana-demo`)  |
-| **Pod Name**  | Pod, Shard dashboards   | A specific pod                                              |
-| **Filters**   | Shard dashboard          | Additional label filters for the selected shard             |
+| Variable       | Applies to              | What to select                                             |
+|----------------|--------------------------|--------------------------------------------------------------|
+| **datasource** | All dashboards          | Your Prometheus data source                                |
+| **Namespace**  | All dashboards          | Namespace where your Redis is deployed (e.g., `demo`)      |
+| **app**        | Summary dashboard       | Name of your Redis instance (e.g., `redis-cluster`)        |
+| **redis**      | Pod, Shard dashboards   | Name of your Redis instance (e.g., `redis-cluster`)        |
+| **Pod Name**   | Pod, Shard dashboards   | A specific pod (e.g., `redis-cluster-shard0-0`)            |
+| **Filters**    | Shard dashboard         | Additional label filters for the selected shard             |
 
 **KubeDB / Redis / Summary** — start here for an instance overview:
-- **General Info** — database status, version, max clients, Redis mode, termination policy, total nodes
+- **General Info** — database status, version, max clients, Redis mode, deletion policy, total nodes
 - **Resource Requests / Limits** — configured CPU, memory, and storage requests and limits
 - **CPU Info / CPU Quota** — per-pod CPU usage over time and quota utilization
 
@@ -333,32 +331,11 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
   <img alt="KubeDB Redis Shard Dashboard" src="/docs/images/redis/monitoring/rd-grafana-shard.png" style="padding:10px">
 </p>
 
-**KubeDB / Redis Sentinel / Summary** — Sentinel deployment overview:
-- **Monitored Masters** — number of masters being watched
-- **Sentinels Count** — active sentinel processes
-- **Slaves Count** — replicas per monitored master
-- **Failover Count** — number of automatic failovers performed
-- **Last Failover Duration** — time the last failover took
-
-<p align="center">
-  <img alt="KubeDB Redis Sentinel Summary Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / Redis Sentinel / Pod** — per-sentinel metrics:
-- **Memory** — RSS and used memory per sentinel pod
-- **CPU** — per-pod CPU usage
-- **Tilt Mode** — whether the sentinel is in tilt mode (clock skew detection)
-- **Monitored Instances** — masters and slaves visible from this sentinel
-
-<p align="center">
-  <img alt="KubeDB Redis Sentinel Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-sentinel-pod.png" style="padding:10px">
-</p>
-
 ## Cleaning up
 
 ```bash
 # Remove the Redis instance
-kubectl delete redis -n demo redis-grafana-demo
+kubectl delete redis -n demo redis-cluster
 
 # Remove namespaces
 kubectl delete ns demo

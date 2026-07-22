@@ -122,7 +122,7 @@ spec:
   version: "26.2.6"
   deletionPolicy: WipeOut
   storage:
-    storageClassName: "standard"
+    storageClassName: "local-path"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -317,15 +317,30 @@ Once you set these, all panels update automatically. Below is what each dashboar
   <img alt="KubeDB ClickHouse Pod Dashboard" src="/docs/images/clickhouse/monitoring/ch-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / ClickHouse / Database** — per-table and per-database metrics:
-- **Insert Rate** — rows inserted per second per table
-- **Select Rate** — SELECT queries per second per table
-- **Part Count** — number of active data parts per table (high counts may need compaction)
-- **Mutations** — ongoing ALTER/UPDATE/DELETE mutations
-- **Replication Queue** — per-table replication lag
+**KubeDB / ClickHouse / Database** — service health and query-level metrics, grouped into three collapsible sections:
+
+*General* — service reachability and cluster role:
+- **Service Status / Service Uptime** — whether the exporter endpoint is UP, and how long the pod has been running
+- **Healthy Pods Count** — number of ClickHouse pods currently healthy
+- **Cluster Status** — this pod's role (`Primary` or replica)
+- **Current QPS / Active ClickHouse Connections** — live query rate and open client connections
+- **ClickHouse Metrics reads vs writes** — read vs. write operation rate
+- **ClickHouse network received vs sent** — network throughput in/out
 
 <p align="center">
-  <img alt="KubeDB ClickHouse Database Dashboard" src="/docs/images/clickhouse/monitoring/ch-grafana-database.png" style="padding:10px">
+  <img alt="KubeDB ClickHouse Database Dashboard - General" src="/docs/images/clickhouse/monitoring/ch-grafana-database.png" style="padding:10px">
+</p>
+
+*Service Health* and *Queries Overview* — cache efficiency and query success rates:
+- **ClickHouse Opened File Cache Hits / File Cache Miss Rate** — file cache effectiveness
+- **Max Parts Per Partition** — highest number of active data parts in any partition (high counts may need compaction)
+- **Percent of Failed SELECTs / INSERTs**, **logged errors** — error rates (should stay at 0)
+- **ClickHouse Cluster Query Rate** — total queries per second across the cluster
+- **Queries with MEMORY_LIMIT_EXCEEDED**, **Failed Queries**, **Failed SELECT Queries**, **Failed Asynchronous INSERT Queries** — failure counters (should stay at 0)
+- **SELECT Queries**, **Synchronous / Asynchronous INSERT Queries** — query throughput by type
+
+<p align="center">
+  <img alt="KubeDB ClickHouse Database Dashboard - Service Health and Queries" src="/docs/images/clickhouse/monitoring/ch-grafana-database-2.png" style="padding:10px">
 </p>
 
 ## Cleaning up

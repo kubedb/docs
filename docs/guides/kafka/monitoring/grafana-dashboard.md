@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Visualize Kafka Metrics with Grafana Dashboard
 
-KubeDB exposes Kafka metrics through a JMX Exporter running as a Java agent inside each Kafka container. Once Prometheus scrapes those metrics, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Kafka instance, and importing the Grafana dashboards.
+KubeDB exposes Kafka metrics — including JVM, broker/topic, and KRaft controller/quorum metrics — through a JMX Exporter running as a Java agent inside each Kafka container. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Kafka instance, and importing the Grafana dashboard.
 
 ## Before You Begin
 
@@ -38,7 +38,7 @@ KubeDB exposes Kafka metrics through a JMX Exporter running as a Java agent insi
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/kafka/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/kafka/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/monitoring) and [docs/examples/kafka/tls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka/tls) folders in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Configuration
 
@@ -110,6 +110,23 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Step 1: Deploy Kafka with Monitoring Enabled
 
+Kafka runs in KRaft mode (no ZooKeeper), so the combined broker+controller nodes need at least 3 replicas to form a working Raft quorum — this is also what lets you see meaningful data in the dashboard's KRaft Controller and KRaft Quorum panels later on.
+
+This example also enables TLS, so first create a self-signed `Issuer` that KubeDB will use to issue certificates for the cluster:
+
+```bash
+$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout ./ca.key -out ./ca.crt -subj "/CN=kafka/O=kubedb"
+
+$ kubectl create secret tls kafka-ca \
+  --cert=ca.crt \
+  --key=ca.key \
+  --namespace=demo
+secret/kafka-ca created
+
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kf-Issuer.yaml
+issuer.cert-manager.io/kafka-ca-issuer created
+```
+
 Below is the Kafka object with monitoring configured to use Prometheus Operator.
 
 ```yaml
@@ -119,11 +136,11 @@ metadata:
   name: kafka-grafana-demo
   namespace: demo
 spec:
-  version: "3.9.0"
+  version: "4.2.0"
   replicas: 1
   deletionPolicy: WipeOut
   storage:
-    storageClassName: "standard"
+    storageClassName: "local-path"
     accessModes:
     - ReadWriteOnce
     resources:
@@ -140,46 +157,48 @@ spec:
 
 Here,
 
+- `replicas: 3` deploys a 3-node combined KRaft cluster (each node acts as both broker and controller), which is required for the quorum panels to show meaningful data.
 - `monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` for this instance.
+- `monitor.prometheus.exporter.port` sets the port the JMX exporter serves metrics on.
 - `monitor.prometheus.serviceMonitor.labels` must match the `serviceMonitorSelector` label of your Prometheus (`release: prometheus`).
 - `monitor.prometheus.serviceMonitor.interval` sets the scrape interval to 10 seconds.
 
 Create the Kafka instance:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kafka-grafana-demo.yaml
-kafka.kubedb.com/kafka-grafana-demo created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kf-with-monitoring.yaml
+kafka.kubedb.com/kafka created
 ```
 
 Wait for it to be `Ready`:
 
 ```bash
-$ kubectl get kafka -n demo kafka-grafana-demo
-NAME                 VERSION   STATUS   AGE
-kafka-grafana-demo   3.9.0     Ready    3m
+$ kubectl get kafka -n demo kafka
+NAME    VERSION   STATUS   AGE
+kafka   3.9.0     Ready    5m
 ```
 
 KubeDB creates a stats service named `{kafka-name}-stats` for monitoring:
 
 ```bash
-$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=kafka-grafana-demo"
-NAME                       TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-kafka-grafana-demo         ClusterIP   10.96.10.1     <none>        9092/TCP    3m
-kafka-grafana-demo-stats   ClusterIP   10.96.10.2     <none>        9101/TCP    3m
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=kafka"
+NAME          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                       AGE
+kafka-pods    ClusterIP   None           <none>        9092/TCP,9093/TCP,29092/TCP   5m
+kafka-stats   ClusterIP   10.96.10.2     <none>        56790/TCP                     5m
 ```
 
 KubeDB also creates a `ServiceMonitor` in the `demo` namespace:
 
 ```bash
 $ kubectl get servicemonitor -n demo
-NAME                       AGE
-kafka-grafana-demo-stats   3m
+NAME          AGE
+kafka-stats   5m
 ```
 
 Verify it carries the correct label:
 
 ```bash
-$ kubectl get servicemonitor -n demo kafka-grafana-demo-stats -o jsonpath='{.metadata.labels}'
+$ kubectl get servicemonitor -n demo kafka-stats -o jsonpath='{.metadata.labels}'
 {"release":"prometheus", ...}
 ```
 
@@ -194,7 +213,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `kafka-grafana-demo-stats`. Its state should be **UP**.
+Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for an entry whose `service` label matches `kafka-stats`. Its state should be **UP**.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/kafka/monitoring/kf-prom-targets.png" style="padding:10px">
@@ -251,28 +270,14 @@ For a standalone Grafana installation:
 
 ## Step 5: Import KubeDB Kafka Dashboard
 
-The KubeDB Kafka dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
+The KubeDB Kafka dashboard is distributed as a single JSON file: `kafka_database_dashboard.json` in the [opnpulse/dashboards](https://github.com/opnpulse/dashboards/tree/master/kafka) repository (`kafka/` folder). The JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
-Six dashboards are available. Download the JSON files from the [appscode/grafana-dashboards](https://github.com/appscode/grafana-dashboards/tree/master/kafka) repository (`kafka/` folder):
+Download `kafka_database_dashboard.json` from that repository, then:
 
-| File | Dashboard |
-|------|-----------|
-| `kafka_summary_dashboard.json` | KubeDB / Kafka / Summary |
-| `kafka_pods_dashboard.json` | KubeDB / Kafka / Pod |
-| `kafka_databases_dashboard.json` | KubeDB / Kafka / Database |
-| `kafka_connectcluster_summary_dashboard.json` | KubeDB / Kafka / ConnectCluster Summary |
-| `kafka_connectcluster_pods_dashboard.json` | KubeDB / Kafka / ConnectCluster Pod |
-| `kafka_connectcluster_connect_dashboard.json` | KubeDB / Kafka / ConnectCluster Connect |
-
-> The ConnectCluster dashboards (last three) are only relevant if you deploy a `ConnectCluster` resource alongside your Kafka cluster. The core three dashboards (Summary, Pod, Database) cover the base Kafka cluster.
-
-**Import steps (repeat for each file you need):**
-
-1. In Grafana, click **Dashboards** in the left sidebar.
-2. Select **Import** from the menu.
-3. Click **Upload dashboard JSON file** and select one of the downloaded `.json` files.
-4. In the **Prometheus** dropdown that appears, select your Prometheus data source.
-5. Click **Import**.
+1. In Grafana, click the **+** icon in the left sidebar and select **Import**.
+2. Click **Upload JSON file** and select the downloaded file.
+3. In the **datasource** dropdown that appears, select your Prometheus data source.
+4. Click **Import**.
 
 The import page looks like this:
 
@@ -280,94 +285,86 @@ The import page looks like this:
   <img alt="Grafana Import Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-import.png" style="padding:10px">
 </p>
 
-After importing the files you need, they will appear under **Dashboards** in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / Kafka / Summary | Broker count, topic/partition count, bytes in/out, consumer group lag, CPU/memory/storage |
-| KubeDB / Kafka / Pod | Per-broker bytes in/out, request rate, log flush rate, CPU/memory usage |
-| KubeDB / Kafka / Database | Topic-level bytes in/out, message rate, log size, under-replicated partitions |
-| KubeDB / Kafka / ConnectCluster / Summary | Worker count, connector/task status, bytes in/out, CPU/memory |
-| KubeDB / Kafka / ConnectCluster / Pod | Per-worker connector count, task count, CPU/memory |
-| KubeDB / Kafka / ConnectCluster / Connect | Per-connector status, offset lag, error rate, records in/out |
+After importing, the dashboard appears as **KubeDB Kafka Dashboard** under **Dashboards** in the left sidebar. It contains four sections: **Kafka Server**, **Broker Topic Metrics**, **KRaft Controller Monitoring Metrics**, and **KRaft Quorum Monitoring Metrics**.
 
 ## Step 6: Explore the Dashboard
 
-After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
+Use the dropdown filters at the top of the dashboard to focus on a specific instance.
 
-| Variable      | Applies to              | What to select                                           |
-|---------------|-------------------------|----------------------------------------------------------|
-| **namespace** | All dashboards          | Namespace where your Kafka is deployed (e.g., `demo`)   |
-| **app**       | All dashboards          | Name of your Kafka instance (e.g., `kafka-grafana-demo`) |
-| **pod**       | Pod dashboards          | A specific pod, or `All` for an aggregated view         |
-| **topic**     | Database dashboard      | A specific Kafka topic, or `All`                        |
+| Variable        | What to select                                              |
+|------------------|--------------------------------------------------------------|
+| **datasource**   | Your Prometheus data source                                  |
+| **namespace**    | Namespace where your Kafka is deployed (e.g., `demo`)        |
+| **service**      | Stats service of your Kafka instance (e.g., `kafka-stats`)   |
+| **pod**          | A specific broker pod, or `All` for an aggregated view       |
+| **container**    | Container to inspect (`kafka`)                                |
 
-**KubeDB / Kafka / Summary** — start here for a broker-level overview:
-- **Broker Count** — number of active brokers
-- **Under-Replicated Partitions** — partitions with fewer in-sync replicas than configured (non-zero means degraded replication)
-- **Offline Partitions** — partitions with no leader (non-zero means data unavailability)
-- **Active Controller** — exactly one broker should be controller at all times
-- **Message Rate** — messages in/out per second
-- **Bytes Rate** — bytes in/out per second across all topics
-- **CPU / Memory / JVM Heap** — resource consumption per broker
+**Kafka Server** — JVM and process-level health of the selected broker:
+- **Status / Uptime / Start time** — whether the broker's JMX exporter is reachable, and how long it has been up
+- **JVM Version** — the JVM the broker is running on
+- **Average number of CPUs used** — CPU consumption of the process
+- **Memory area [heap] / [nonheap]** — heap and non-heap JVM memory usage over time
+- **GC time increase / GC count increase** — garbage collection pauses and frequency, by generation
+- **JVM classes loaded** — number of loaded classes (a rough proxy for a leak if it keeps growing)
+- **Threads used** — current and daemon JVM thread counts
 
 <p align="center">
-  <img alt="KubeDB Kafka Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-summary.png" style="padding:10px">
+  <img alt="KubeDB Kafka Server Dashboard" src="/docs/images/kafka/monitoring/Kafka-server-metrics-0.png" style="padding:10px">
 </p>
 
-**KubeDB / Kafka / Pod** — drill into a specific broker:
-- **JVM Heap Used** — heap usage on this broker
-- **GC Time** — time spent in garbage collection
-- **Network Request Rate** — fetch and produce requests per second
-- **Log Flush Rate** — frequency of log segment flushes to disk
-- **CPU / Memory** — per-pod resource usage over time
-
 <p align="center">
-  <img alt="KubeDB Kafka Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-pod.png" style="padding:10px">
+  <img alt="KubeDB Kafka Server Dashboard JVM Panels" src="/docs/images/kafka/monitoring/kafka-server-metrics-1.png" style="padding:10px">
 </p>
 
-**KubeDB / Kafka / Database** — topic-level metrics:
-- **Produce / Fetch Rate** — per-topic throughput
-- **Partition Count** — partitions per topic
-- **Leader Election Rate** — frequency of leader elections (spikes indicate instability)
-- **Consumer Group Lag** — messages pending consumption per group
+**Broker Topic Metrics** — throughput at the broker/topic level:
+- **Messages in topics** — incoming message rate
+- **Byte in / out rate from clients** — client-facing produce/consume throughput
+- **Byte in / out rate from / to other brokers** — inter-broker replication traffic
+- **Fetch request rate / Produce request rate** — request throughput
+- **Failed produce request rate** — produce requests that failed (should stay at 0)
 
 <p align="center">
-  <img alt="KubeDB Kafka Database Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-database.png" style="padding:10px">
+  <img alt="KubeDB Kafka Broker Topic Metrics" src="/docs/images/kafka/monitoring/Kafka-broker-topic-metrics-0.png" style="padding:10px">
 </p>
 
-**KubeDB / Kafka / ConnectCluster Summary** — connector fleet health:
-- **Task Count** — total running tasks across all connectors
-- **Failed Tasks** — tasks in failed state
-- **Connector Count** — number of deployed connectors
-- **Worker Rebalancing** — whether a worker rebalance is in progress
-
 <p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Summary Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-summary.png" style="padding:10px">
+  <img alt="KubeDB Kafka Broker Topic Metrics Produce Panels" src="/docs/images/kafka/monitoring/kafka-broker-topic-metrics-1.png" style="padding:10px">
 </p>
 
-**KubeDB / Kafka / ConnectCluster Pod** — per-worker metrics:
-- **CPU / Memory** — resource usage per worker pod
-- **Task Throughput** — records processed per second
+**KRaft Controller Monitoring Metrics** — health of the KRaft metadata quorum's controller layer:
+- **Number of Active Brokers / Number of active controllers** — cluster membership; exactly one broker should be the active controller
+- **Fenced Broker Count** — brokers the controller has fenced out (non-zero means a broker is unhealthy)
+- **Metadata Error Count** — errors while applying metadata records (should stay at 0)
+- **Global Partition Count / Global Topic count** — partitions and topics tracked cluster-wide
+- **Offline Partition Count** — partitions with no leader (non-zero means data unavailability)
+- **Preferred Replica Imbalance Count** — partitions not currently led by their preferred replica
 
 <p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Pod Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-pod.png" style="padding:10px">
+  <img alt="KubeDB Kafka KRaft Controller Monitoring Metrics" src="/docs/images/kafka/monitoring/kafka-kraft-controller-monitoring-metrics.png" style="padding:10px">
 </p>
 
-**KubeDB / Kafka / ConnectCluster Connect** — per-connector metrics:
-- **Offset Lag** — how far behind the connector is from the source
-- **Record Throughput** — records processed per second
-- **Error Rate** — records skipped due to errors
+**KRaft Quorum Monitoring Metrics** — health of the Raft replication protocol itself:
+- **Current Leader ID / Current quorum epoch** — which node is the metadata leader, and the current election epoch
+- **High Watermark / Raft Log End Offset** — how far the metadata log has been committed and written
+- **Number of Unknown Voter Connections** — connections to voters outside the current quorum (should stay at 0)
+- **Average Commit Latency** — time to commit a metadata record to the quorum
+- **Append Records Rate** — rate of metadata records appended to the log, per node
+- **Current Voted** — which candidate each node voted for in the current epoch
+- **Average Poll Idle Ratio** — fraction of time each node's Raft I/O thread spends idle (a low value means the thread is saturated)
 
 <p align="center">
-  <img alt="KubeDB Kafka ConnectCluster Connect Dashboard" src="/docs/images/kafka/monitoring/kf-grafana-connectcluster-connect.png" style="padding:10px">
+  <img alt="KubeDB Kafka KRaft Quorum Monitoring Metrics" src="/docs/images/kafka/monitoring/kafka-kraft-quorum-monitoring-metrics.png" style="padding:10px">
 </p>
 
 ## Cleaning up
 
 ```bash
 # Remove the Kafka instance
-kubectl delete kafka -n demo kafka-grafana-demo
+kubectl delete kafka -n demo kafka
+
+# Remove the issuer and CA secret
+kubectl delete issuer -n demo kafka-ca-issuer
+kubectl delete secret -n demo kafka-ca
 
 # Remove namespaces
 kubectl delete ns demo
