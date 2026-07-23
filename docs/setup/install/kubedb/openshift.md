@@ -39,7 +39,7 @@ Equivalent values file:
 ```yaml
 global:
   distro:
-    openshift: false
+    openshift: true
     ubi: "operator"
 ```
 
