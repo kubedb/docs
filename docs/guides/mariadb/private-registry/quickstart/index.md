@@ -28,21 +28,22 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 ```bash
 $ kubectl get mariadbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
-NAME      VERSION   DB_IMAGE                                        EXPORTER_IMAGE                           INITCONTAINER_IMAGE                 DEPRECATED
-10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal   docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
+NAME      VERSION   DB_IMAGE                                        DEPRECATED   AGE
+10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                10d
+10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                10d
+10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                10d
+10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                10d
+10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                10d
+11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 10d
+11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 10d
+11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 10d
+11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 10d
+11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 10d
+11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 10d
+11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 10d
+11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble                 10d
+12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble                 10d
+12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble                 2d1h
 ```
 
 Docker hub repositories:
