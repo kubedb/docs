@@ -68,7 +68,7 @@ metadata:
   name: clickhouse-alert-demo
   namespace: alert-clickhouse
 spec:
-  version: "24.4.1"
+  version: "26.2.6"
   replicas: 1
   storage:
     storageClassName: "local-path"
@@ -245,12 +245,12 @@ The `clickhouse` container's `PID 1` is the `clickhouse-server` process itself, 
 ### 1. Crash the ClickHouse process repeatedly
 
 ```bash
-$ end=$(( $(date +%s) + 90 ))
-$ while [ $(date +%s) -lt $end ]; do
-    kubectl exec -n alert-clickhouse clickhouse-alert-demo-0 -c clickhouse -- \
-      clickhouse-client --user admin --password "<password-from-clickhouse-alert-demo-auth-secret>" \
-      --query "SYSTEM SHUTDOWN" >/dev/null 2>&1
-    sleep 3
+$ end=$(( $(date +%s) + 45 ))
+while [ $(date +%s) -lt $end ]; do
+  kubectl exec -n alert-clickhouse clickhouse-alert-demo-rack-r0-0 -c exporter -- kill 1 >/dev/null 2>&1
+  sleep 1
+done
+
   done
 ```
 

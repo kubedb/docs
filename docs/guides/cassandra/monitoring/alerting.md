@@ -205,13 +205,7 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 $ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
     -n alert-cas \
     --create-namespace \
-    --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus \
-    --set form.alert.groups.database.rules.cassandraDown.val=0 \
-    --set grafana.enabled=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<grafana-token-from-step-1>" \
-    --set grafana.jobName="cas-alert-demo-stats"
+    --version=v2026.7.14 
 ```
 
 | Flag | Value | Purpose |
@@ -286,8 +280,8 @@ The `exporter` sidecar inside the Cassandra pod scrapes JMX and serves metrics a
 
 ```bash
 $ kubectl exec -n alert-cas cas-alert-demo-rack-r0-0 -c cassandra -- \
-    curl -s localhost:8080/metrics | grep 'name="java:lang:runtime:uptime"'
-cassandra_stats{cluster="Test Cluster",datacenter="dc1",keyspace="",table="",name="java:lang:runtime:uptime",} 458763.0
+                                      curl -s localhost:8080/metrics | grep 'name="java:lang:runtime:uptime"'
+cassandra_stats{cluster="Test Cluster",datacenter="dc1",keyspace="",table="",name="java:lang:runtime:uptime",} 1867282.0
 ```
 
 > The `exporter` container's own image ships neither `curl` nor `wget`, so the check above runs from the `cassandra` container instead — both containers share the pod's network namespace, so `localhost:8080` reaches the exporter's HTTP server either way.
@@ -356,7 +350,12 @@ Unlike some other KubeDB charts, `CassandraDown` is **not** driven by a custom e
 On this build, the exporter's HTTP server (the process actually scraped by Prometheus on port `8080`) runs inside the `exporter` container — killing the `cassandra` container alone leaves the exporter's HTTP endpoint reachable (Prometheus would keep scraping it successfully), so `up` would stay `1` and `CassandraDown` would never fire. To reproduce a real scrape failure, stop the `exporter` container's process instead:
 
 ```bash
-$ kubectl exec -n alert-cas cas-alert-demo-rack-r0-1 -c exporter -- kill 1
+$ end=$(( $(date +%s) + 45 ))
+while [ $(date +%s) -lt $end ]; do
+  kubectl exec -n alert-cas cas-alert-demo-rack-r0-0 -c exporter -- kill 1 >/dev/null 2>&1
+  sleep 1
+done
+
 ```
 
 Kubernetes restarts the crashed `exporter` container in the background. The restart is quick, so the outage window can be short — if the alert resolves before you finish inspecting it, repeat the `kill 1` command a few times in a row; Kubernetes' crash-loop backoff will keep the container down for a longer stretch on subsequent attempts, giving you a wider window to observe the firing state.
