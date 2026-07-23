@@ -77,43 +77,6 @@ WAL encryption itself was on. Restore a `Postgres` with
 `spec.init.archiver.recoveryTimestamp` exactly as shown in the
 [PITR guide](/docs/guides/postgres/pitr/archiver.md#restore-postgresql).
 
-## Pulling the Percona TDE images
-
-The Percona Server for PostgreSQL image (and, if your environment mirrors
-images through a private registry, the matching archiver/backup plugin
-images) may not be publicly pullable in every environment. If your registry
-requires credentials, create a `Secret` of type
-`kubernetes.io/dockerconfigjson` and reference it via
-`spec.podTemplate.spec.imagePullSecrets` on the `Postgres` object. WAL archiving
-runs as part of the same Postgres Pod, so it reuses that secret too and needs no
-separate configuration. KubeStash's own `BackupConfiguration`
-and `RestoreSession` Jobs are created by the KubeStash operator, not the Postgres
-operator, and do **not** inherit `Postgres.spec.podTemplate.spec.imagePullSecrets`.
-If your registry requires credentials for the `postgres-addon` image used by
-those Jobs, set `imagePullSecrets` on their own `jobTemplate.template.spec`
-separately:
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: Postgres
-metadata:
-  name: tde-postgres
-  namespace: demo
-spec:
-  version: "17.9-percona"
-  podTemplate:
-    spec:
-      imagePullSecrets:
-      - name: image-pull-secret
-  # ...
-```
-
-See [using a private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md)
-for how KubeDB propagates `imagePullSecrets` to the database Pods themselves.
-For KubeStash `BackupConfiguration`/`RestoreSession` Jobs, configure
-`imagePullSecrets` on each object's own `jobTemplate.template.spec` instead, as
-described above.
-
 ## Next Steps
 
 - Review the [TDE overview](/docs/guides/postgres/tde/overview/index.md) for
