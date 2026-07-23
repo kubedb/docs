@@ -102,7 +102,7 @@ stringData:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/deep-storage-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/monitoring/yamls/deep-storage-config-alert-druid.yaml
 secret/deep-storage-config created
 ```
 
@@ -534,9 +534,9 @@ Monitors the KubeDB operator's view of the Druid resource phase.
 | `KubeDBDruidPhaseNotReady` | critical | 1m | KubeDB marked the Druid resource `NotReady` — operator cannot reach the cluster. |
 | `KubeDBDruidPhaseCritical` | warning | 15m | The instance is in a degraded/critical phase. |
 
-### OpsManager Group
+### OpsManager Group (declared but not rendered)
 
-Tracks `DruidOpsRequest` lifecycle during upgrades, scaling, and reconfiguration. These rules are defined in the chart's `values.yaml` under `form.alert.groups.opsManager`, following the same convention used by the ops-manager group in other `*-alerts` charts (e.g. `memcached-alerts`).
+The chart's `values.yaml` declares an `opsManager` group (under `form.alert.groups.opsManager`) meant to track `DruidOpsRequest` lifecycle during upgrades, scaling, and reconfiguration — following the same convention as the ops-manager group in other `*-alerts` charts (e.g. `memcached-alerts`). **At chart version `v2026.7.14`, this group is not actually rendered into the `PrometheusRule`** — `kubectl get prometheusrule -n alert-druid druid-alert-demo -o jsonpath='{.spec.groups[*].name}'` only ever returns the `database` and `provisioner` groups, confirmed both via `helm template` and against the live rule object on a real cluster. This is the same declared-but-unrendered pattern seen in several other `*-alerts` charts (rabbitmq, cassandra, zookeeper, pgbouncer, pgpool) — the values below are what the chart *would* produce if this gap is fixed in a future chart version, not alerts you can currently rely on.
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
