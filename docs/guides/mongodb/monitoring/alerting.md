@@ -67,8 +67,10 @@ metadata:
   name: mongodb-alert-demo
   namespace: alert-mongodb
 spec:
-  version: "6.0.14"
-  replicas: 1
+  version: "8.0.17"
+  replicaSet:
+    name: "rs1"
+  replicas: 3
   storageType: Durable
   storage:
     storageClassName: "local-path"
@@ -97,7 +99,7 @@ Wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get mongodb -n alert-mongodb mongodb-alert-demo
 NAME                 VERSION   STATUS   AGE
-mongodb-alert-demo   6.0.14    Ready    3m
+mongodb-alert-demo   8.0.17    Ready    3m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
@@ -132,12 +134,13 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 
 ### Install
 
+> **Chart bug — disable `diskUsageHigh`/`diskAlmostFull` at install time:** at chart version `v2026.7.14`, both alerts divide by the wrong denominator — `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)` instead of `kubelet_volume_stats_capacity_bytes`. `kube_pod_spec_volumes_persistentvolumeclaims_info` is just a presence marker that's always `1`, so the denominator ≈ the numerator and the computed usage reads ~99.9999% **regardless of real usage** — confirmed on a live cluster where the real PVC usage (`kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes`) was 68.5% while both alerts read 99.9999% and fired. Same bug already found in `elasticsearch-alerts` and `mariadb-alerts` — no accurate alternative expression exists in this chart, so disable both rules rather than chase a working threshold:
+
 ```bash
 $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alerts \
     -n alert-mongodb \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
 ```
 
 ### Verify the PrometheusRule is created
@@ -210,19 +213,23 @@ See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore t
 
 ## Simulating a Firing Alert
 
-This section deliberately triggers `MongoDBDown` (the fastest of the down-detection alerts, `for: 30s`) by crashing the main `mongod` process.
+This section deliberately triggers `MongoDBDown` (the fastest of the down-detection alerts, `for: 30s`) so you can observe the full alert lifecycle.
 
-### 1. Crash the MongoDB process
+> **`kill -9` does not work on this image — confirmed, not assumed.** MongoDB's container has no `tini`/supervisor wrapper: `mongod` runs directly as the container's own `PID 1` (`kubectl exec ... ps aux` shows `PID 1 mongod ...`). `readlink /proc/1/ns/pid` and `readlink /proc/self/ns/pid` inside the container return the identical inode, confirming a `kubectl exec` session shares that same PID namespace — and Linux unconditionally ignores `SIGKILL`/`SIGSTOP` sent to a namespace's PID 1 from within that same namespace (`man 7 pid_namespaces`). A kill-loop targeting `pgrep -x mongod` therefore reports success on every iteration while doing nothing: 0 pod restarts, phase stays `Ready` throughout. Any KubeDB image without a supervisor wrapper in front of its main process will behave the same way.
+>
+> **What actually works:** `MongoDBDown` (like `KubeDBMongoDBPhaseNotReady`) is driven by the KubeDB operator's own view of the resource `phase`, not a per-pod metric — so disrupting just one pod of a 3-member replica set isn't enough (the other two keep serving and the operator still reports `Ready`). Force-deleting *all* member pods in a repeating loop reliably denies the resource enough healthy members to stay `Ready` for the duration of the loop.
+
+### 1. Disrupt every MongoDB pod
 
 ```bash
-$ kubectl exec -n alert-mongodb mongodb-alert-demo-0 -c mongodb -- sh -c '
-    end=$(( $(date +%s) + 60 ));
-    while [ $(date +%s) -lt $end ]; do
-      pid=$(pgrep -x mongod | head -1);
-      [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null;
-      sleep 1;
-    done'
+$ end=$(( $(date +%s) + 90 ))
+$ while [ $(date +%s) -lt $end ]; do
+    kubectl delete pod -n alert-mongodb -l app.kubernetes.io/instance=mongodb-alert-demo --grace-period=0 --force >/dev/null 2>&1
+    sleep 3
+  done
 ```
+
+Run this in the background (or a separate terminal) — repeatedly force-deleting all 3 pods keeps the replica set from having a stable `Ready` majority for the duration of the loop, which the KubeDB operator reports as the resource leaving `Ready`.
 
 ### 2. Watch the alert fire in Prometheus
 
@@ -244,15 +251,21 @@ Open `http://localhost:9093`.
 
 ### 4. Restore MongoDB
 
-Stop the loop from step 1.
+Let the loop from step 1 finish (or stop it early) — the StatefulSet recreates all 3 pods on its own once nothing is deleting them anymore.
 
 ```bash
+$ kubectl get pods -n alert-mongodb
+NAME                   READY   STATUS    RESTARTS   AGE
+mongodb-alert-demo-0   3/3     Running   2          65s
+mongodb-alert-demo-1   3/3     Running   0          37s
+mongodb-alert-demo-2   3/3     Running   0          21s
+
 $ kubectl get mongodb -n alert-mongodb mongodb-alert-demo -w
 NAME                 VERSION   STATUS   AGE
-mongodb-alert-demo   6.0.14    Ready    24m
+mongodb-alert-demo   8.0.17    Ready    65m
 ```
 
-If MongoDB does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-mongodb mongodb-alert-demo-0`.
+Once all 3 pods are stably `Running` and the replica set has re-elected a primary, Prometheus marks `MongoDBDown` **INACTIVE** again and AlertManager sends a **resolved** notification. In testing this took well under a minute after the disruption loop ended.
 
 ---
 
@@ -275,8 +288,8 @@ All alerts are scoped to the `mongodb-alert-demo` instance in the `alert-mongodb
 | `MongoDBHighTicketUtilization` | warning | 10m | WiredTiger concurrency tickets are close to exhausted. |
 | `MongoDBRecurrentCursorTimeout` | warning | 30m | Cursor timeouts recurring over a longer window. |
 | `MongoDBRecurrentMemoryPageFaults` | warning | 30m | Page faults recurring over a longer window. |
-| `DiskUsageHigh` | warning | 1m | Persistent volume usage exceeds 80%. |
-| `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. |
+| `DiskUsageHigh` | warning | 1m | **Disabled by the install command above** — broken denominator always reads ~100% usage regardless of real usage. See the callout in [Step 1](#install). |
+| `DiskAlmostFull` | critical | 1m | **Disabled by the install command above** — same broken-denominator bug as `DiskUsageHigh`. |
 
 ### Provisioner Group
 

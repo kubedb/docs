@@ -4,8 +4,10 @@ metadata:
   name: mongodb-alert-demo
   namespace: alert-mongodb
 spec:
-  version: "6.0.14"
-  replicas: 1
+  version: "8.0.17"
+  replicaSet:
+    name: "rs1"
+  replicas: 3
   storageType: Durable
   storage:
     storageClassName: "local-path"
