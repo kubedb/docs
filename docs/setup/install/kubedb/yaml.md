@@ -16,6 +16,10 @@ section_menu_id: setup
 
 If you prefer to not use Helm, you can generate YAMLs from KubeDB chart and deploy using `kubectl`. Here we are going to show the procedure using Helm 3.
 
+## Get a Free License
+
+Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) before you begin. You can also automate this from your CI/CD pipeline using the [offline license server](https://github.com/appscode/offline-license-server#offline-license-server).
+
 ```bash
 $ helm template kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \

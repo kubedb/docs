@@ -16,6 +16,10 @@ section_menu_id: setup
 
 KubeDB supports OpenShift in three different ways. Pick the one that best matches your deployment workflow.
 
+## Get a Free License
+
+Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) before you begin. You can also automate this from your CI/CD pipeline using the [offline license server](https://github.com/appscode/offline-license-server#offline-license-server).
+
 ## Option A: Standard KubeDB chart with OpenShift overrides
 
 The standard `kubedb` chart can be deployed on OpenShift by enabling the OpenShift distro flags. The `openshift` flag is also auto-detected when the cluster exposes the `project.openshift.io/v1` API, so you can leave it `false` and only switch the image flavor to UBI.
@@ -25,7 +29,7 @@ $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \
   --namespace kubedb --create-namespace \
   --set-file global.license=/path/to/the/license.txt \
-  --set global.distro.openshift=false \
+  --set global.distro.openshift=true \
   --set global.distro.ubi=operator \
   --wait --burst-limit=10000 --debug
 ```
