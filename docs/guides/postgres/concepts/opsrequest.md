@@ -178,7 +178,7 @@ Here, when you specify the resource request for `Postgres` container, the schedu
 
 `spec.rotatePrincipalKey` is used with the `RotatePrincipalKey` type to rotate the
 [TDE](/docs/guides/postgres/tde/overview/index.md) principal key. The principal
-key wraps the per relation internal keys, so rotating it re-wraps those keys
+key wraps the per-relation internal keys, so rotating it re-wraps those keys
 online, without rewriting data and without a restart. This field consists of the
 following optional sub-field:
 
@@ -190,9 +190,12 @@ Requires `spec.tde` to be configured on the referenced Postgres.
 #### spec.enableWALEncryption
 
 `spec.enableWALEncryption` is used with the `EnableWALEncryption` type to turn on
-WAL (write-ahead log) encryption for a TDE enabled cluster. The operator sets the
+WAL (write-ahead log) encryption for a TDE-enabled cluster. The operator sets the
 server key, flips `spec.tde.encryptWAL` on the Postgres object, and performs a
-rolling restart so every node reloads with `pg_tde.wal_encrypt=on`. WAL encryption
+rolling restart so every node reloads with `pg_tde.wal_encrypt=on`.
+`spec.tde.encryptWAL` is mutable, but this OpsRequest is the supported way to
+change it: patching the field directly skips the server-key setup and rolling
+restart, so replicas would not agree on WAL encryption state. WAL encryption
 requires a global (`vault` or `kmip`) key provider. This field consists of the
 following optional sub-field:
 
