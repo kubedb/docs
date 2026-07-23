@@ -123,7 +123,7 @@ metadata:
   name: mysql-pvt-reg
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   storage:
     storageClassName: "standard"
     accessModes:

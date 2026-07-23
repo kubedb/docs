@@ -61,9 +61,9 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
 8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
 9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
-9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
-9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 ```
 
 ## Create a Mysql Database
@@ -78,7 +78,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -98,7 +98,7 @@ Let's wait for `MySQL` status is `Ready`. Run the following command to watch `My
 ```shell
 $ kubectl get mysql -n demo -w
 NAME             VERSION   STATUS   AGE
-mysql-quickstart 9.6.0   Ready    30m
+mysql-quickstart 9.7.1   Ready    30m
 ```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To

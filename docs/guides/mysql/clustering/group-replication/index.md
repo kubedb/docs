@@ -48,7 +48,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -269,7 +269,7 @@ spec:
     group:
       name: dc002fc3-c412-4d18-b1d4-66c1fbfbbc9b
     mode: GroupReplication
-  version: 9.6.0
+  version: 9.7.1
 status:
   phase: Ready
 ```

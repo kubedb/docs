@@ -62,9 +62,9 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 45h
 8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 45h
 9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 45h
-9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
-9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 ```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -134,9 +134,9 @@ spec:
   updateConstraints:
     allowlist:
       groupReplication:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
       standalone:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
     denylist:
       groupReplication:
       - < 8.4.8
@@ -145,7 +145,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints` is showing that for both standalone and group replication, updating below version of `8.4.8` is not possible (denylist) and updating is allowed within the range `>= 8.4.8, <= 9.1.0` (allowlist). Here, we are going to create a `MySQL` standalone using MySQL  `8.4.8`. Then we are going to update this version to `9.1.0`.
+The above `spec.updateConstraints` is showing that for both standalone and group replication, updating below version of `8.4.8` is not possible (denylist) and updating is allowed within the range `>= 8.4.8, <= 9.7.1` (allowlist). Here, we are going to create a `MySQL` standalone using MySQL  `8.4.8`. Then we are going to update this version to `9.7.1`.
 
 **Deploy MySQL standalone:**
 
@@ -216,7 +216,7 @@ We are ready to apply updating on this `MySQL` standalone.
 
 #### UpdateVersion
 
-Here, we are going to update `MySQL` standalone from `8.4.8` to `9.1.0`.
+Here, we are going to update `MySQL` standalone from `8.4.8` to `9.7.1`.
 
 **Create MySQLOpsRequest:**
 
@@ -233,14 +233,14 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "9.1.0"
+    targetVersion: "9.7.1"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-standalone` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `9.1.0` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.7.1` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
@@ -284,7 +284,7 @@ Spec:
     Name:  my-standalone
   Type:    UpdateVersion
   UpdateVersion:
-    TargetVersion:  9.1.0
+    TargetVersion:  9.7.1
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -330,13 +330,13 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get my -n demo my-standalone -o=jsonpath='{.spec.version}{"\n"}'
-9.1.0
+9.7.1
 
 $ kubectl get petset -n demo my-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mysql:9.1.0
+mysql:9.7.1
 
 $ kubectl get pod -n demo my-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mysql:9.1.0
+mysql:9.7.1
 ```
 
 You can see above that our `MySQL`standalone has been updated with the new version. It verifies that we have successfully updated our standalone.

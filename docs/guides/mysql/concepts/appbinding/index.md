@@ -76,7 +76,7 @@ spec:
   secret:
     name: mysql-group-auth
   type: kubedb.com/mysql
-  version: 9.6.0
+  version: 9.7.1
 
 ```
 

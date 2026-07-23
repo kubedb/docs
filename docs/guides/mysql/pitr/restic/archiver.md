@@ -190,7 +190,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -384,7 +384,7 @@ spec:
         name: mysql-full
         namespace: demo
       recoveryTimestamp: "2024-12-02T06:38:42Z"
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication

@@ -41,8 +41,8 @@ NAME      VERSION   DB_IMAGE                                        EXPORTER_IMA
 11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
-12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
+12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
+12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble    docker.io/prom/mysqld-exporter:v0.18.0   ghcr.io/kubedb/mariadb-init:0.8.0   <none>
 ```
 
 Docker hub repositories:
@@ -57,12 +57,12 @@ Docker hub repositories:
     apiVersion: catalog.kubedb.com/v1alpha1
     kind: MariaDBVersion
     metadata:
-      name: 11.8.5
+      name: 12.3.2
     spec:
       coordinator:
         image: PRIVATE_REGISTRY/mariadb-coordinator:v0.40.0
       db:
-        image: PRIVATE_REGISTRY/mariadb:11.8.5
+        image: PRIVATE_REGISTRY/mariadb:12.3.2
       exporter:
         image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
       initContainer:
@@ -73,7 +73,7 @@ Docker hub repositories:
           runAsUser: 995
       podSecurityPolicies:
         databasePolicyName: maria-db
-      version: 12.1.2
+      version: 12.3.2
     ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -118,7 +118,7 @@ metadata:
   name: md-pvt-reg
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   storage:
     storageClassName: "standard"
     accessModes:

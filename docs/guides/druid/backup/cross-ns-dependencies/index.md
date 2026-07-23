@@ -184,7 +184,7 @@ Here, we have to use service `sample-druid-routers` and secret `sample-druid-aut
 ```bash
 $ kubectl get mysql -n dev1
 NAME                           VERSION   STATUS   AGE
-mysql.kubedb.com/my-dev1       9.1.0    Ready    6m31s
+mysql.kubedb.com/my-dev1       9.7.1    Ready    6m31s
 
 $ kubectl get zk -n dev
 NAME                            TYPE                  VERSION   STATUS   AGE
@@ -203,7 +203,7 @@ sample-druid   kubedb.com/druid       36.0.0    4m7s
 
 $ kubectl get appbindings -n dev1 
 NAME           TYPE                   VERSION   AGE
-my-dev1        kubedb.com/mysql       9.1.0    6m31s
+my-dev1        kubedb.com/mysql       9.7.1    6m31s
 
 $ kubectl get appbindings -n dev
 NAME           TYPE                   VERSION   AGE
@@ -817,7 +817,7 @@ Verify the dependencies have been restored:
 ```bash
 $ $ kubectl get mysql -n dev1
 NAME                           VERSION   STATUS   AGE
-mysql.kubedb.com/my-dev1       9.1.0    Ready    6m30s
+mysql.kubedb.com/my-dev1       9.7.1    Ready    6m30s
 
 $ kubectl get zk -n dev
 NAME                            TYPE                  VERSION   STATUS   AGE

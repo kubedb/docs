@@ -811,7 +811,7 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 
 List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request in the [Updating MySQL Overview](/docs/guides/mysql/update-version/overview/index.md).
 
-Let's choose `9.6.0` in this example.
+Let's choose `9.7.1` in this example.
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -821,7 +821,7 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 4
   configSecret:
     name: my-config
@@ -865,7 +865,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `9.6.0`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Update the `version` field to `9.7.1`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MySQLOpsRequest to update the `MySQL` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -875,7 +875,7 @@ NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
+mysql.kubedb.com/my-gitops   9.7.1     Ready    22h
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   20h
@@ -893,11 +893,11 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get MySQL -n demo my-gitops -o=jsonpath='{.spec.version}{"\n"}'
-9.6.0
+9.7.1
 $ kubectl get petset -n demo my-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+ghcr.io/appscode-images/mysql:9.7.1-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 $ kubectl get pod -n demo my-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+ghcr.io/appscode-images/mysql:9.7.1-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 ```
 
 ### Enable Monitoring
@@ -912,7 +912,7 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 4
   configSecret:
     name: my-config
@@ -965,7 +965,7 @@ NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
+mysql.kubedb.com/my-gitops   9.7.1     Ready    22h
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   21h
