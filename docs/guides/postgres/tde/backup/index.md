@@ -14,13 +14,14 @@ section_menu_id: guides
 
 # Backup & Restore a TDE-Encrypted Postgres
 
-A TDE-encrypted Postgres cannot be backed up or restored with the community
-backup/restore path: the physical backup tool (`pg_basebackup`) and the WAL
-reader used for continuous archiving cannot read `pg_tde`-encrypted files or
-its custom WAL records. KubeDB and [KubeStash](https://kubestash.com) ship
-`pg_tde`-aware equivalents for both the logical and physical paths, so backup
-and restore work the same way you would expect, once you point at the right
-catalog entries.
+A TDE-encrypted Postgres cannot use the community physical backup and WAL
+archiving path: the physical backup tool (`pg_basebackup`) and the WAL reader
+used for continuous archiving cannot read `pg_tde`-encrypted files or its
+custom WAL records. KubeDB ships `pg_tde`-aware equivalents for the physical
+path, so once you point at the right catalog entries, physical backup and
+restore work the same way you would expect. Logical backups are unaffected:
+KubeStash's logical backup path already talks to Postgres over the normal
+protocol, described below.
 
 Read the [TDE overview](/docs/guides/postgres/tde/overview/index.md) and
 [TDE guide](/docs/guides/postgres/tde/guide/index.md) first.
