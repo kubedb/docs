@@ -10,7 +10,7 @@ menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-> New to KubeDB? Please start [here](/docs/README.md).
+> New to KubeDB? Please start with the [KubeDB documentation](/docs/README.md).
 
 # Deploy a TDE Encrypted Postgres
 
@@ -47,11 +47,15 @@ namespace/demo created
 ## Provide the KMS credentials
 
 Create the Secret holding the Vault token (key `token`). The operator projects it
-into every pod at `/etc/pg-tde/vault.token`, outside the data directory.
+into every pod at `/etc/pg-tde/vault.token`, outside the data directory. Read the
+token from a prompt instead of typing it inline, so it never lands in your shell
+history:
 
 ```bash
-$ kubectl create secret generic vault-token -n demo --from-literal=token='<your-vault-token>'
+$ read -s -p 'Vault token: ' VAULT_TOKEN
+$ kubectl create secret generic vault-token -n demo --from-literal=token="$VAULT_TOKEN"
 secret/vault-token created
+$ unset VAULT_TOKEN
 ```
 
 ## Deploy the encrypted Postgres
@@ -102,9 +106,14 @@ every table you create is encrypted without any extra syntax.
 
 ## Verify encryption
 
-Exec into the primary and create a table, then confirm it is encrypted:
+Find the current primary pod (this cluster runs 3 replicas, so the primary may
+not be `tde-postgres-0`, especially after a failover), then exec into it to
+create a table and confirm it is encrypted:
 
 ```bash
+$ kubectl get pods -n demo --selector="app.kubernetes.io/instance=tde-postgres,kubedb.com/role=primary" -o jsonpath='{.items[0].metadata.name}'
+tde-postgres-0
+
 $ kubectl exec -it -n demo tde-postgres-0 -c postgres -- bash
 
 # inside the pod
@@ -120,7 +129,7 @@ postgres=# SELECT pg_tde_is_encrypted('secrets');
 `pg_tde_is_encrypted` returning `t` confirms the table's data files are encrypted
 on disk. You can inspect the active principal key with `SELECT pg_tde_key_info();`.
 
-To convert a pre existing, unencrypted table:
+To convert a pre-existing, unencrypted table:
 
 ```sql
 ALTER TABLE legacy SET ACCESS METHOD tde_heap;
@@ -128,7 +137,7 @@ ALTER TABLE legacy SET ACCESS METHOD tde_heap;
 
 ## Rotate the principal key
 
-The principal key wraps the per relation internal keys, so rotating it does not
+The principal key wraps the per-relation internal keys, so rotating it does not
 rewrite any data and needs no restart. Use a `RotatePrincipalKey`
 `PostgresOpsRequest`:
 
@@ -158,7 +167,7 @@ tde-rotate-key   RotatePrincipalKey   Successful   40s
 
 ## Enable WAL encryption
 
-WAL encryption is cluster wide, requires a global provider (Vault or KMIP), and a
+WAL encryption is cluster-wide, requires a global provider (Vault or KMIP), and a
 rolling restart. Enable it with an `EnableWALEncryption` `PostgresOpsRequest`,
 which sets the server key, flips `spec.tde.encryptWAL`, and restarts every node:
 
@@ -193,10 +202,10 @@ on
 ## Cleanup
 
 ```bash
-$ kubectl delete postgresopsrequest -n demo tde-rotate-key tde-enable-wal
-$ kubectl delete pg -n demo tde-postgres
-$ kubectl delete secret -n demo vault-token
-$ kubectl delete ns demo
+kubectl delete postgresopsrequest -n demo tde-rotate-key tde-enable-wal
+kubectl delete pg -n demo tde-postgres
+kubectl delete secret -n demo vault-token
+kubectl delete ns demo
 ```
 
 ## Next Steps
@@ -206,4 +215,4 @@ $ kubectl delete ns demo
 - Combine TDE (at rest) with [TLS/SSL](/docs/guides/postgres/tls/overview/index.md)
   (in transit) for defense in depth.
 - Set up [backup, continuous archiving, and PITR](/docs/guides/postgres/tde/backup/index.md)
-  for a TDE encrypted Postgres.
+  for a TDE-encrypted Postgres.
