@@ -26,11 +26,6 @@ Read the [overview](/docs/guides/postgres/tde/overview/index.md) first.
 - A reachable HashiCorp Vault (or KMIP server). This guide uses Vault.
 - A `PostgresVersion` with `spec.distribution: Percona` and
   `spec.tde.supported: true`. Confirm one is available:
-- If the Percona TDE image is pulled from a private registry in your
-  environment, you will need a docker-registry `Secret` referenced from
-  `spec.podTemplate.spec.imagePullSecrets` on the `Postgres` object (see
-  [backup & restore](/docs/guides/postgres/tde/backup/index.md#pulling-the-percona-tde-images)
-  for details).
 
 ```bash
 $ kubectl get postgresversion 17.9-percona -o jsonpath='{.spec.distribution} tde={.spec.tde.supported}{"\n"}'
