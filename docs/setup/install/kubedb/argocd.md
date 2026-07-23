@@ -18,10 +18,6 @@ KubeDB can be deployed via [ArgoCD](https://argo-cd.readthedocs.io/) using the [
 
 Ready-to-use `Application` manifests for KubeDB and the rest of the AppsCode stack (e.g. `kubestash`, `kubevault`, `stash`, `panopticon`, `monitoring-operator`) are maintained in the [appscode/gitops](https://github.com/appscode/gitops/tree/2025-06/argocd/helm) repository. Install `ace-user-roles` and `license-proxyserver` first, then pick whichever component manifests you need from there.
 
-## Get a Free License
-
-Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) before you begin. You can also automate this from your CI/CD pipeline using the [offline license server](https://github.com/appscode/offline-license-server#offline-license-server).
-
 ## 1. Install `ace-user-roles`
 
 The `ace-user-roles` chart provisions the cluster roles required by KubeDB and related operators. Create the following ArgoCD `Application`:

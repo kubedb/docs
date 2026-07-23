@@ -16,10 +16,6 @@ section_menu_id: setup
 
 KubeDB can be deployed via [FluxCD](https://fluxcd.io/) using its [Helm Controller](https://fluxcd.io/flux/components/helm/) against the OCI Helm registry at `ghcr.io/appscode-charts`. Apply the manifests below in order.
 
-## Get a Free License
-
-Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) before you begin. You can also automate this from your CI/CD pipeline using the [offline license server](https://github.com/appscode/offline-license-server#offline-license-server).
-
 ## 1. Configure the OCI Helm repository
 
 ```yaml
