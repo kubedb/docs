@@ -119,3 +119,5 @@ table.
 
 - Follow the [TDE guide](/docs/guides/postgres/tde/guide/index.md) to deploy an
   encrypted Postgres, rotate the principal key, and enable WAL encryption.
+- Read [backup & restore for a TDE encrypted Postgres](/docs/guides/postgres/tde/backup/index.md)
+  before you set up logical backup, continuous archiving, or PITR.
