@@ -168,7 +168,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 $ kubectl get appbindings -n demo
 NAME                          TYPE                   VERSION   AGE
 sample-druid                  kubedb.com/druid       36.0.0    2m26s
-sample-druid-mysql-metadata   kubedb.com/mysql       9.1.0    5m40s
+sample-druid-mysql-metadata   kubedb.com/mysql       9.7.1    5m40s
 sample-druid-zk               kubedb.com/zookeeper   3.7.2     5m43s
 ```
 

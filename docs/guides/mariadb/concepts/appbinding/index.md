@@ -49,7 +49,7 @@ spec:
   secret:
     name: sample-mariadb-auth
   type: kubedb.com/mariadb
-  version: 12.1.2
+  version: 12.3.2
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

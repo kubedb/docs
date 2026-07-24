@@ -12,7 +12,7 @@ metadata:
     variables.kubestash.com/targetName: sample-mariadb-2
     variables.kubestash.com/targetedDatabase: mysql
 spec:
-  version: 12.1.2
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:

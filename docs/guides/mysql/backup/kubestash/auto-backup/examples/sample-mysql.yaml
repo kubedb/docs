@@ -7,7 +7,7 @@ metadata:
     blueprint.kubestash.com/name: mysql-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 1
   storageType: Durable
   storage:

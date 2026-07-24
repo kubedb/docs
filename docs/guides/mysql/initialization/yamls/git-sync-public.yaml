@@ -14,7 +14,7 @@ spec:
           - --root=/git
           # terminate after one successful sync
           - --one-time
-  version: "9.6.0"
+  version: "9.7.1"
   storage:
     accessModes:
       - ReadWriteOnce
