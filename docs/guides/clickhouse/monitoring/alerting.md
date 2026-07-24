@@ -251,7 +251,6 @@ while [ $(date +%s) -lt $end ]; do
   sleep 1
 done
 
-  done
 ```
 
 Retrieve the password first if you don't have it: `kubectl get secret -n alert-clickhouse clickhouse-alert-demo-auth -o jsonpath='{.data.password}' | base64 -d`. Run the loop in the background (or a separate terminal) — each iteration either succeeds (shutting the instance down again) or fails harmlessly while a previous shutdown is still restarting, so 90 seconds comfortably holds the instance in a crash loop.

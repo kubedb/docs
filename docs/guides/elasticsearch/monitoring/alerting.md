@@ -88,7 +88,7 @@ spec:
           requests:
             storage: 1Gi
     data:
-      replicas: 3
+      replicas: 2
       storage:
         storageClassName: "local-path"
         accessModes:
@@ -135,14 +135,13 @@ NAME       VERSION       STATUS   AGE
 es-alert   xpack-9.2.3   Ready    37m
 ```
 
-KubeDB brings up 2 master, 3 data, and 2 ingest pods for this topology:
+KubeDB brings up 2 master, 2 data, and 2 ingest pods for this topology — 6 nodes total:
 
 ```bash
 $ kubectl get pods -n alert-elasticsearch
 NAME                READY   STATUS    RESTARTS   AGE
 es-alert-data-0     2/2     Running   0          37m
 es-alert-data-1     2/2     Running   0          37m
-es-alert-data-2     2/2     Running   0          37m
 es-alert-ingest-0   2/2     Running   0          37m
 es-alert-ingest-1   2/2     Running   0          37m
 es-alert-master-0   2/2     Running   0          37m
@@ -190,11 +189,11 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 
 ### A note on chart defaults
 
-The chart's default `database` group rules are tuned for a production, multi-node Elasticsearch cluster, which is exactly what this tutorial's `es-alert` topology (2 master + 3 data + 2 ingest = 7 nodes) already is — so the node-count and shard-allocation defaults (`elasticsearchHealthyNodes` / `elasticsearchHealthyDataNodes` at `val: 3`, `elasticsearchUnassignedShards` enabled) apply as-is with no overrides needed.
+The chart's default `database` group rules assume a specific minimum topology: `elasticsearchHealthyNodes` and `elasticsearchHealthyDataNodes` both default to `val: 3` — i.e. "fire if fewer than 3 nodes / fewer than 3 data nodes are healthy." **These defaults do not match every topology, including this tutorial's own `es-alert` (2 master + 2 data + 2 ingest = 6 nodes total, 2 data nodes)** — confirmed live: installing with the chart's plain defaults left `ElasticsearchHealthyDataNodes` firing permanently (`2 < 3` is always true for this topology), even though the cluster was fully healthy. Always override both `val`s to match your actual node counts at install time — don't assume the defaults fit just because you're running a multi-node cluster instead of a single node.
 
-One rule pair still needs overriding regardless of topology:
+One rule pair needs overriding regardless of topology:
 
-- `diskUsageHigh` / `diskAlmostFull` compute PVC usage as `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)`. The `..._info` series is a constant label metric (always `1`), not a byte count, so this expression evaluates to ~100% regardless of actual usage — a chart-level expression defect. We disable both and rely instead on `elasticsearchDiskOutOfSpace` / `elasticsearchDiskSpaceLow`, which are computed from the exporter's own accurate `elasticsearch_filesystem_data_available_bytes` / `elasticsearch_filesystem_data_size_bytes` metrics.
+- `diskUsageHigh` / `diskAlmostFull` compute PVC usage as `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)`. The `..._info` series is a constant label metric (always `1`), not a byte count, so this expression evaluates to ~100% regardless of actual usage — a chart-level expression defect, confirmed live (real PVC usage was 69.6% while both alerts read ~100% and fired). We disable both and rely instead on `elasticsearchDiskOutOfSpace` / `elasticsearchDiskSpaceLow`, which are computed from the exporter's own accurate `elasticsearch_filesystem_data_available_bytes` / `elasticsearch_filesystem_data_size_bytes` metrics.
 
 ### Install
 
@@ -208,7 +207,9 @@ appscode/elasticsearch-alerts	v2026.7.14   	v0.7.0     	A Helm chart for Elastic
 $ helm upgrade -i es-alert appscode/elasticsearch-alerts -n alert-elasticsearch --create-namespace --version=v2026.7.14 \
   --set form.alert.labels.release=prometheus \
   --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
-  --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
+  --set form.alert.groups.database.rules.diskAlmostFull.enabled=false \
+  --set form.alert.groups.database.rules.elasticsearchHealthyNodes.val=6 \
+  --set form.alert.groups.database.rules.elasticsearchHealthyDataNodes.val=2
 ```
 
 | Flag | Value | Purpose |
@@ -217,8 +218,10 @@ $ helm upgrade -i es-alert appscode/elasticsearch-alerts -n alert-elasticsearch 
 | `-n alert-elasticsearch` | `alert-elasticsearch` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
 | `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Works around the PVC-usage expression defect described above |
+| `...elasticsearchHealthyNodes.val` | `6` | Matches this tutorial's real total node count (2 master + 2 data + 2 ingest) |
+| `...elasticsearchHealthyDataNodes.val` | `2` | Matches this tutorial's real data-node count |
 
-> If you're running against a single-node instance instead of a topology cluster, also override `...elasticsearchHealthyNodes.val` / `...elasticsearchHealthyDataNodes.val` to `1` (the default `3` will never be satisfied by one node), and disable `...elasticsearchUnassignedShards` (a single-node cluster can never assign a replica shard, so this rule fires permanently).
+> Whatever topology you actually deploy, set both `val`s to your real node counts — total nodes for `elasticsearchHealthyNodes`, data nodes for `elasticsearchHealthyDataNodes`. For a single-node instance that means `val: 1` for both, and you should also disable `elasticsearchUnassignedShards` (a single-node cluster can never assign a replica shard, so this rule fires permanently).
 
 ### Verify the PrometheusRule is created
 
@@ -366,13 +369,13 @@ With master, data, and ingest nodes all up, the cluster can fully assign both pr
 
 ### 2. Check the Prometheus target is UP
 
-Open `http://localhost:9090/targets?search=es-alert`.
+Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-elasticsearch%22%7D&g0.tab=1`.
 
 <p align="center">
   <img alt="Prometheus Target UP" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-target.png" style="padding:10px">
 </p>
 
-The target group `serviceMonitor/alert-elasticsearch/es-alert-stats/0` shows **7 / 7 up** — one entry per master/data/ingest pod, confirming metrics are being scraped from every node in the `alert-elasticsearch` namespace.
+All 6 series report `up == 1` — one entry per master/data/ingest pod, confirming metrics are being scraped from every node in the `alert-elasticsearch` namespace.
 
 ### 3. Confirm all Elasticsearch alerts are inactive
 
@@ -437,15 +440,15 @@ Three pre-built dashboards are available. The `Namespace` and `app` drop-downs a
 
 ## Simulating a Firing Alert
 
-The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `ElasticsearchHealthyDataNodes` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering `ElasticsearchHealthyDataNodes` — along with two alerts it drags along with it, see the note below — so you can observe the full alert lifecycle and then resolve it.
 
-Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge. Killing the `elasticsearch` process inside a pod doesn't work either: the container restarts in under 2 seconds (faster than the cluster's fault-detection window), so the other nodes never actually perceive the node as gone. Instead, we shrink the `data` role from 3 nodes to 2 — a real, sustained, cleanly-reversible change that reliably crosses the alert's default `val: 3` threshold.
+Elasticsearch doesn't have a single "process down" style alert the way some other databases do — its exporter reports live cluster metrics rather than a boolean liveness gauge. Killing the `elasticsearch` process inside a pod doesn't work either: the container restarts in under 2 seconds (faster than the cluster's fault-detection window), so the other nodes never actually perceive the node as gone. Instead, we shrink the `data` role from 2 nodes to 1 — a real, sustained, cleanly-reversible change that reliably crosses this tutorial's `elasticsearchHealthyDataNodes.val: 2` threshold set in [Step 1](#install).
 
 ### 1. Scale down the data nodes
 
 ```bash
 $ kubectl patch elasticsearch -n alert-elasticsearch es-alert \
-    --type=merge -p '{"spec":{"topology":{"data":{"replicas":2}}}}'
+    --type=merge -p '{"spec":{"topology":{"data":{"replicas":1}}}}'
 elasticsearch.kubedb.com/es-alert patched
 ```
 
@@ -454,12 +457,11 @@ KubeDB terminates one data pod to bring the topology down to the new desired cou
 ```bash
 $ kubectl get pods -n alert-elasticsearch -l app.kubernetes.io/instance=es-alert
 NAME                READY   STATUS    RESTARTS   AGE
-es-alert-data-0     2/2     Running   0          162m
-es-alert-data-1     2/2     Running   0          162m
-es-alert-ingest-0   2/2     Running   0          163m
-es-alert-ingest-1   2/2     Running   0          162m
-es-alert-master-0   2/2     Running   0          162m
-es-alert-master-1   2/2     Running   0          162m
+es-alert-data-0     2/2     Running   0          37m
+es-alert-ingest-0   2/2     Running   0          37m
+es-alert-ingest-1   2/2     Running   0          37m
+es-alert-master-0   2/2     Running   0          37m
+es-alert-master-1   2/2     Running   0          37m
 ```
 
 Wait 30–60 seconds for the next Prometheus scrape cycle (configured at 10 s) and rule-evaluation cycle (30 s) to register the smaller data-node count.
@@ -472,7 +474,13 @@ Open `http://localhost:9090/alerts?search=elasticsearch`.
   <img alt="Prometheus Alerts — ElasticsearchHealthyDataNodes Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-Because `ElasticsearchHealthyDataNodes` has `for: instant` (no wait), it moves directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `elasticsearch.database` group stays **INACTIVE**. Note that it fires once per surviving node's exporter (6 series here, one per remaining pod), since each node independently reports its own view of cluster-wide node counts — this is normal, not 6 separate incidents.
+Dropping to 5 total nodes (1 data + 2 master + 2 ingest) crosses **three** thresholds at once, confirmed live — all `for: instant`, so all three move directly from **INACTIVE** to **FIRING** within one evaluation cycle, while the rest of the `elasticsearch.database` group stays **INACTIVE**:
+
+- `ElasticsearchHealthyDataNodes` — data-node count (1) is below `val: 2`.
+- `ElasticsearchHealthyNodes` — total node count (5) is below `val: 6`.
+- `ElasticsearchUnassignedShards` — with only one data node left, replica shards have nowhere to be placed.
+
+Each fires once per surviving node's exporter (5 series each here — one per remaining pod), since every node independently reports its own view of cluster-wide state; that's 15 alert instances in total, not 15 separate incidents.
 
 ### 3. Check the AlertManager dashboard
 
@@ -482,22 +490,22 @@ Open `http://localhost:9093/#/alerts?filter={namespace="alert-elasticsearch"}`.
   <img alt="AlertManager — ElasticsearchHealthyDataNodes Firing" src="/docs/images/elasticsearch/monitoring/es-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
-AlertManager shows the `ElasticsearchHealthyDataNodes` alert grouped by namespace. Each alert card displays:
+AlertManager shows all three alerts grouped by namespace (15 alerts total). Each alert card displays:
 
 - **Severity**: `critical`
 - **app** / **job**: `es-alert` / `es-alert-stats`
-- **pod**: the surviving node reporting the low count (e.g. `es-alert-data-0`, `es-alert-master-1`, ...)
+- **pod**: the surviving node reporting the condition (e.g. `es-alert-data-0`, `es-alert-master-1`, ...)
 - **Started**: timestamp when the alert first fired
 
-AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
+AlertManager routes these alerts to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alerts are visible here but silently dropped.
 
 ### 4. Restore the data nodes
 
-Scale the data role back to 3 to resolve the alert.
+Scale the data role back to 2 to resolve the alert.
 
 ```bash
 $ kubectl patch elasticsearch -n alert-elasticsearch es-alert \
-    --type=merge -p '{"spec":{"topology":{"data":{"replicas":3}}}}'
+    --type=merge -p '{"spec":{"topology":{"data":{"replicas":2}}}}'
 elasticsearch.kubedb.com/es-alert patched
 ```
 
@@ -506,10 +514,10 @@ Wait for the pod to rejoin and for the next scrape cycle to register the recover
 ```bash
 $ kubectl get elasticsearch -n alert-elasticsearch es-alert
 NAME       VERSION       STATUS   AGE
-es-alert   xpack-9.2.3   Ready    163m
+es-alert   xpack-9.2.3   Ready    41m
 ```
 
-Once the Elasticsearch resource returns to `Ready` and `elasticsearch_cluster_health_number_of_data_nodes` reports `3` again, Prometheus marks the alert **INACTIVE** and AlertManager sends a **resolved** notification to all receivers.
+Once the Elasticsearch resource returns to `Ready` and `elasticsearch_cluster_health_number_of_data_nodes` reports `2` again, Prometheus marks all three alerts **INACTIVE** and AlertManager sends **resolved** notifications to all receivers.
 
 ---
 
@@ -529,15 +537,15 @@ Fired based on live metrics from the Elasticsearch exporter.
 | `ElasticsearchDiskSpaceLow` | warning | 2m | The disk usage is over 80%. |
 | `ElasticsearchClusterRed` | critical | instant | Elastic Cluster Red status — one or more primary shards are not allocated. |
 | `ElasticsearchClusterYellow` | warning | instant | Elastic Cluster Yellow status — one or more replica shards are not allocated. |
-| `ElasticsearchHealthyNodes` | critical | instant | Fewer than the configured minimum number of nodes (default 3) are healthy in the cluster. |
-| `ElasticsearchHealthyDataNodes` | critical | instant | Fewer than the configured minimum number of data nodes (default 3) are healthy in the cluster. |
+| `ElasticsearchHealthyNodes` | critical | instant | Fewer than the configured minimum number of nodes are healthy in the cluster (default `val: 3`; this tutorial overrides it to `6` — see [Step 1](#install)). |
+| `ElasticsearchHealthyDataNodes` | critical | instant | Fewer than the configured minimum number of data nodes are healthy in the cluster (default `val: 3`; this tutorial overrides it to `2`). |
 | `ElasticsearchRelocatingShards` | info | instant | Elasticsearch is relocating shards. |
 | `ElasticsearchInitializingShards` | info | instant | Elasticsearch is initializing shards. |
 | `ElasticsearchUnassignedShards` | critical | instant | Elasticsearch has unassigned shards. |
 | `ElasticsearchPendingTasks` | warning | 15m | Elasticsearch has pending tasks — the cluster is working slowly. |
 | `ElasticsearchNoNewDocuments10m` | info | instant | No new documents were indexed in the last 10 minutes (disabled by default). |
-| `DiskUsageHigh` | warning | 1m | Persistent volume usage is high (see the PVC-usage caveat above). |
-| `DiskAlmostFull` | critical | 1m | Persistent volume is almost full (see the PVC-usage caveat above). |
+| `DiskUsageHigh` | warning | 1m | **Disabled by the install command above** — broken denominator always reads ~100% usage regardless of real usage (confirmed: real usage 69.6% while this alert read ~100%). |
+| `DiskAlmostFull` | critical | 1m | **Disabled by the install command above** — same broken-denominator bug as `DiskUsageHigh`. |
 
 ### Provisioner Group
 

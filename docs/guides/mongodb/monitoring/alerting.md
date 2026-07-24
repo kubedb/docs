@@ -223,7 +223,7 @@ This section deliberately triggers `MongoDBDown` (the fastest of the down-detect
 
 ```bash
 $ end=$(( $(date +%s) + 90 ))
-$ while [ $(date +%s) -lt $end ]; do
+while [ $(date +%s) -lt $end ]; do
     kubectl delete pod -n alert-mongodb -l app.kubernetes.io/instance=mongodb-alert-demo --grace-period=0 --force >/dev/null 2>&1
     sleep 3
   done
