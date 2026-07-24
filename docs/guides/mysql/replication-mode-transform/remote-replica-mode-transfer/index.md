@@ -97,7 +97,7 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/issuer.yaml
 issuer.cert-manager.io/mysql-issuer created
 ```
 
@@ -115,7 +115,7 @@ metadata:
 type: kubernetes.io/basic-auth
 ```
 ```bash 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore-auth.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-singapore-auth.yaml
 secret/mysql-singapore-auth created
 ```
 ### Deploy MySQL with TLS/SSL configuration
@@ -161,7 +161,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-singapore.yaml
 mysql.kubedb.com/mysql created
 ```
 
@@ -249,7 +249,7 @@ spec:
         pathType: Prefix
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-ingress.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-ingress.yaml
 ingress.networking.k8s.io/mysql-singapore created
 $ kubectl get ingress -n demo
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
@@ -297,7 +297,7 @@ type: kubernetes.io/basic-auth
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london-auth.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-london-auth.yaml
 ```
 
 ```yaml
@@ -340,7 +340,7 @@ Here,
 - `spec.topology.remoteReplica.sourceref` we are referring to source to read. The  mysql instance we previously created.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specdeletionpolicy).
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-london.yaml
 mysql.kubedb.com/mysql-london created
 ```
 
@@ -440,7 +440,7 @@ Here,
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/mode-transform-ops-request.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/mode-transform-ops-request.yaml
 mysqlopsrequest.ops.kubedb.com/mysql-replication-mode-transform created
 ```
 

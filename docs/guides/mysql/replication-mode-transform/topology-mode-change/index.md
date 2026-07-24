@@ -22,7 +22,7 @@ The target topology is selected with `spec.replicationModeTransformation.targetM
 `GroupReplication`, `InnoDBCluster` or `SemiSync`.
 
 > Transforming a **Remote Replica** is covered separately in
-> [Remote/Read Only Replica Mode Transfer](/docs/guides/mysql/replication-mode-transform/replication-mode-transform/index.md).
+> [Remote/Read Only Replica Mode Transfer](/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/index.md).
 
 ### Supported Mode Changes
 

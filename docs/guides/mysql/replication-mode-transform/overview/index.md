@@ -21,7 +21,7 @@ Two step-by-step guides build on this overview:
 - [MySQL Topology Mode Change](/docs/guides/mysql/replication-mode-transform/topology-mode-change/index.md) — change the mode of an
   existing database: standalone → `GroupReplication` (Single-Primary or Multi-Primary) /
   `InnoDBCluster` / `SemiSync`, and changes between clustered topologies.
-- [MySQL Remote/Read Only Replica Mode Transfer](/docs/guides/mysql/replication-mode-transform/replication-mode-transform/index.md) —
+- [MySQL Remote/Read Only Replica Mode Transfer](/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/index.md) —
   transform a Remote Replica into a standalone or clustered database.
 
 ## Supported Transformations
