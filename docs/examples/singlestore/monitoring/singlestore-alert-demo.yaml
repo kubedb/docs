@@ -1,0 +1,37 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: singlestore-alert-demo
+  namespace: alert-singlestore
+spec:
+  version: "8.5.7"
+  storageType: Durable
+  topology:
+    aggregator:
+      replicas: 1
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    leaf:
+      replicas: 1
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  licenseSecret:
+    name: license-secret
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
