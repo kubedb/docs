@@ -67,3 +67,5 @@ The following database has migration support.
 [MariaDB](/docs/guides/mariadb/migration/databaseMigration.md)
 
 [MongoDB](/docs/guides/mongodb/migration/databaseMigration.md)
+
+[MSSQL Server](/docs/guides/mssqlserver/migration/databaseMigration.md)

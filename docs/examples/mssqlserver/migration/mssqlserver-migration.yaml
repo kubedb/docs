@@ -1,0 +1,34 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: MSSQLServerMigration
+metadata:
+  name: mssqlserver-migration
+  namespace: demo
+spec:
+  source:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-source
+        namespace: demo
+      database: master
+    schema:
+      enabled: true
+      database:
+        - RestaurantMigrationDB
+    snapshot:
+      enabled: true
+      pipeline:
+        workers: 3
+        sinkers: 5
+        buffer: 16
+        read_batch_size: 1000
+        write_batch_size: 100
+    streaming:
+      enabled: true
+      autoEnableCDC: true
+      batchSize: 1000
+  target:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-standalone
+        namespace: demo
+      database: master
