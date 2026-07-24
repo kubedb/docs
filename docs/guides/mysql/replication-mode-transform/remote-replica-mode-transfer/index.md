@@ -1,9 +1,9 @@
 ---
-title: MySQL Replication Mode Transform
+title: MySQL Remote/Read Only Replica Mode Transfer
 menu:
   docs_{{ .version }}:
-    identifier: guides-mysql-replication-mode-transform
-    name: MySQL Replication Mode Transform
+    identifier: guides-mysql-remote-replica-mode-transfer
+    name: Remote/Read Only Replica Mode Transfer
     parent: guides-mysql-mode-transform
     weight: 12
 menu_name: docs_{{ .version }}
@@ -12,9 +12,22 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-## MySQL Replication Mode Transform
+## MySQL Remote/Read Only Replica Mode Transfer
 
-This guide will show you how to use the `KubeDB` OpsRequest operator to transform the replication mode of a MySQL database. Currently, transforming from Remote Replica to Group Replication is supported. 
+This guide shows how to use the `KubeDB` OpsRequest operator to transform a **Remote Replica
+(read-only replica)** into a clustered topology — for example when the primary cluster is gone and
+you want to promote the remote replica into a self-standing cluster.
+
+> Looking to change the mode of an existing database (standalone → cluster, or between clustered
+> topologies)? See [MySQL Topology Mode Change](/docs/guides/mysql/replication-mode-transform/topology-mode-change/index.md).
+
+The target topology is chosen with `spec.replicationModeTransformation.targetMode`. See the
+[overview](/docs/guides/mysql/replication-mode-transform/overview/index.md) for the full support
+matrix.
+
+> **Note:** Replication Mode Transformation requires MySQL **8.4.2 or newer**.
+> `spec.replicationModeTransformation.mode` supports both **`Single-Primary`** (default) and
+> **`Multi-Primary`** (multi-master).
 
 ### MySQL Remote Replica
 
@@ -84,7 +97,7 @@ spec:
 Let’s create the `Issuer` cr we have shown above,
 
 ```bash
-kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/issuer.yaml
 issuer.cert-manager.io/mysql-issuer created
 ```
 
@@ -102,7 +115,7 @@ metadata:
 type: kubernetes.io/basic-auth
 ```
 ```bash 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore-auth.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-singapore-auth.yaml
 secret/mysql-singapore-auth created
 ```
 ### Deploy MySQL with TLS/SSL configuration
@@ -148,7 +161,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-singapore.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-singapore.yaml
 mysql.kubedb.com/mysql created
 ```
 
@@ -236,7 +249,7 @@ spec:
         pathType: Prefix
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-ingress.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-ingress.yaml
 ingress.networking.k8s.io/mysql-singapore created
 $ kubectl get ingress -n demo
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
@@ -284,7 +297,7 @@ type: kubernetes.io/basic-auth
 ```
 
 ```bash
-kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london-auth.yaml
+kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-london-auth.yaml
 ```
 
 ```yaml
@@ -327,7 +340,7 @@ Here,
 - `spec.topology.remoteReplica.sourceref` we are referring to source to read. The  mysql instance we previously created.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete the operation of MySQL CR. *Wipeout* means that the database will be deleted without restrictions. It can also be "Halt", "Delete" and "DoNotTerminate". Learn More about these [HERE](https://kubedb.com/docs/latest/guides/mysql/concepts/database/#specdeletionpolicy).
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/examples/mysql-london.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/examples/mysql-london.yaml
 mysql.kubedb.com/mysql-london created
 ```
 
@@ -393,7 +406,8 @@ spec:
   databaseRef:
     name: mysql-london
   replicationModeTransformation:
-    mode: Multi-Primary
+    targetMode: GroupReplication
+    mode: Single-Primary
     requireSSL: true
     issuerRef:
       apiGroup: cert-manager.io
@@ -416,13 +430,17 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing Replication Mode Transformation operation on `mysql-london` database.
 - `spec.type` specifies that we are performing `ReplicationModeTransformation` on our database.
+- `spec.replicationModeTransformation.targetMode` specifies the topology to transform into —
+  `GroupReplication` (default), `InnoDBCluster` or `SemiSync`.
 - `spec.replicationModeTransformation.requireSSL` or `issuerRef` specifies tls or ssl enable group replication which is a optional field.
-- `spec.replicationModeTransformation.mode` specifies the desired Group Replication Primary Mode (`Multi-Primary` or `Single-Primary`).
+- `spec.replicationModeTransformation.mode` specifies the desired Group Replication Primary Mode —
+  **`Single-Primary`** (default; one writable primary) or **`Multi-Primary`** (multi-master; every
+  member accepts writes). This field is ignored when `targetMode` is `SemiSync`.
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/replication-mode-transform/mode-transform-ops-request.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/mode-transform-ops-request.yaml
 mysqlopsrequest.ops.kubedb.com/mysql-replication-mode-transform created
 ```
 

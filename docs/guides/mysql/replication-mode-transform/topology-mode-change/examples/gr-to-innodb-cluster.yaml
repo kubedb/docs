@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: gr-to-innodb
+  namespace: demo
+spec:
+  type: ReplicationModeTransformation
+  databaseRef:
+    name: my-cluster
+  replicationModeTransformation:
+    targetMode: InnoDBCluster
+    mode: Single-Primary
+  timeout: 20m
+  apply: Always

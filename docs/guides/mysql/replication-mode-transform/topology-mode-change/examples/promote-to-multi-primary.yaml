@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: promote-to-multi-primary
+  namespace: demo
+spec:
+  type: ReplicationModeTransformation
+  databaseRef:
+    name: my-standalone
+  replicationModeTransformation:
+    targetMode: GroupReplication
+    mode: Multi-Primary
+  timeout: 15m
+  apply: Always

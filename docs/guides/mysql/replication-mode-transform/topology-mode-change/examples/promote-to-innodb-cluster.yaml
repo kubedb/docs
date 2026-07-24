@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: promote-to-innodb
+  namespace: demo
+spec:
+  type: ReplicationModeTransformation
+  databaseRef:
+    name: my-standalone
+  replicationModeTransformation:
+    targetMode: InnoDBCluster
+    mode: Single-Primary
+  timeout: 15m
+  apply: Always

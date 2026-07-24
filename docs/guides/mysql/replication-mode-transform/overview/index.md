@@ -14,7 +14,43 @@ section_menu_id: guides
 
 # MySQL Replication Mode Transform
 
-This guide will give an overview on how KubeDB Ops Manager transform replication mode of `MySQL`. Currently, you can transform `remote replica` to `group replication`.
+This guide will give an overview on how KubeDB Ops Manager transforms the replication mode of a `MySQL` database — including **promoting a standalone MySQL into a clustered topology** and switching an existing cluster from one topology to another.
+
+Two step-by-step guides build on this overview:
+
+- [MySQL Topology Mode Change](/docs/guides/mysql/replication-mode-transform/topology-mode-change/index.md) — change the mode of an
+  existing database: standalone → `GroupReplication` (Single-Primary or Multi-Primary) /
+  `InnoDBCluster` / `SemiSync`, and changes between clustered topologies.
+- [MySQL Remote/Read Only Replica Mode Transfer](/docs/guides/mysql/replication-mode-transform/remote-replica-mode-transfer/index.md) —
+  transform a Remote Replica into a standalone or clustered database.
+
+## Supported Transformations
+
+The target topology is selected with `spec.replicationModeTransformation.targetMode`, which accepts
+`GroupReplication` (default), `InnoDBCluster` or `SemiSync`.
+
+| From (source) | To `GroupReplication` | To `InnoDBCluster` | To `SemiSync` |
+|---------------|:---------------------:|:------------------:|:-------------:|
+| **Standalone** (no `spec.topology`) | ✅ | ✅ | ✅ |
+| **RemoteReplica** | ✅ | ✅ | ✅ |
+| **GroupReplication** | — | ✅ | ✅ |
+| **InnoDBCluster** | ✅ | — | ❌ not supported yet |
+| **SemiSync** | ❌ not supported yet | ❌ not supported yet | — |
+
+Notes:
+
+- **Your data is preserved.** Promotions and transformations never delete a volume. When a new
+  replica has to be seeded, it is seeded in place with MySQL's `CLONE INSTANCE`, which overwrites
+  the data directory while the `PersistentVolumeClaim` is retained.
+- **Transformations between clustered topologies happen in place.** `GroupReplication` ⇄
+  `InnoDBCluster` keeps the running group and simply hands over management (adopting the group into
+  an InnoDB Cluster, or releasing it back to plain Group Replication) — no teardown and no re-clone.
+- A standalone database is scaled up to at least 3 members when it is promoted, since a clustered
+  topology needs a quorum.
+- `spec.replicationModeTransformation.mode` selects the Group Replication primary mode —
+  **`Single-Primary`** (default) or **`Multi-Primary`** (multi-master, every member accepts writes).
+  It applies to the group-based targets; it is ignored for `SemiSync`.
+- Replication Mode Transformation requires MySQL **8.4.2 or newer**.
 
 ## Before You Begin
 
