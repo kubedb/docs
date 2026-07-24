@@ -8,7 +8,8 @@ spec:
   databaseRef:
     name: mysql-london
   replicationModeTransformation:
-    mode: Multi-Primary
+    targetMode: GroupReplication
+    mode: Single-Primary
     requireSSL: true
     issuerRef:
       apiGroup: cert-manager.io
