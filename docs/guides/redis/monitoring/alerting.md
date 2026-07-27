@@ -22,11 +22,11 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * Install the KubeDB operator by following the steps [here](/docs/setup/README.md).
 
-* Deploy the database in the `demo` namespace:
+* Deploy the database in the `alert-redis` namespace:
 
   ```bash
-  $ kubectl create ns demo
-  namespace/demo created
+  $ kubectl create ns alert-redis
+  namespace/alert-redis created
   ```
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md#configuration) guide for how to deploy kube-prometheus-stack if you don't have it yet.
@@ -91,12 +91,9 @@ Here,
 - `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
 - `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
 
-Let's create the namespace and the Redis resource.
+Let's create the Redis resource.
 
 ```bash
-$ kubectl create ns alert-redis
-namespace/alert-redis created
-
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/rd-alert-demo.yaml
 redis.kubedb.com/rd-alert-demo created
 ```
@@ -188,7 +185,7 @@ $ kubectl port-forward -n monitoring \
     svc/prometheus-kube-prometheus-prometheus 9090:9090
 ```
 
-Open `http://localhost:9090/rules?search=rd-alert-demo`.
+Open `http://localhost:9090/rules?search=redis`.
 
 <p align="center">
   <img alt="Prometheus Rule Health" src="/docs/images/redis/monitoring/rd-alerting-prom-rules.png" style="padding:10px">
@@ -206,13 +203,20 @@ The `exporter` sidecar inside the Redis pod serves metrics at `:56790/metrics`. 
 
 ```bash
 $ kubectl exec -n alert-redis rd-alert-demo-0 -c exporter -- \
-    wget -qO- localhost:56790/metrics | grep redis_up
+
+                                          wget -qO- localhost:56790/metrics | grep redis_up
+# HELP redis_up Information about the Redis instance
+# TYPE redis_up gauge
 redis_up 1
+# HELP redis_uptime_in_seconds uptime_in_seconds metric
+# TYPE redis_uptime_in_seconds gauge
+redis_uptime_in_seconds 2591
+
 ```
 
 ### 2. Check the Prometheus target is UP
 
-Open `http://localhost:9090/targets?search=rd-alert-demo`. Prometheus discovers more than 20 scrape pools on this cluster, so it will ask you to pick one from the dropdown — select `serviceMonitor/alert-redis/rd-alert-demo-stats/0`.
+Open `http://localhost:9090/targets?search=rd-alert-demo-stats`. Prometheus discovers more than 20 scrape pools on this cluster, so it will ask you to pick one from the dropdown — select `serviceMonitor/alert-redis/rd-alert-demo-stats/0`.
 
 <p align="center">
   <img alt="Prometheus Target UP" src="/docs/images/redis/monitoring/rd-alerting-prom-target.png" style="padding:10px">
@@ -222,7 +226,7 @@ The target `serviceMonitor/alert-redis/rd-alert-demo-stats/0` shows **UP**, conf
 
 ### 3. Confirm all Redis alerts are inactive
 
-Open `http://localhost:9090/alerts?search=rd-alert-demo` to see the Redis alert groups.
+Open `http://localhost:9090/alerts?search=redis` to see the Redis alert groups.
 
 <p align="center">
   <img alt="Prometheus Alerts — All Inactive" src="/docs/images/redis/monitoring/rd-alerting-prom-alerts.png" style="padding:10px">
@@ -241,13 +245,17 @@ $ kubectl port-forward -n monitoring \
 
 Open `http://localhost:9093`. With a healthy Redis instance, no alerts for `rd-alert-demo` will be listed here.
 
+<p align="center">
+  <img alt="AlertManager — No Active Alerts" src="/docs/images/redis/monitoring/rd-alerting-alertmanager.png" style="padding:10px">
+</p>
+
 ---
 
 ## Simulating a Firing Alert
 
 The previous section confirmed that all alerts are **INACTIVE** while the database is healthy. This section walks through deliberately triggering the `RedisDown` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-Unlike some other database exporters, the Redis exporter runs as a **separate sidecar container** that keeps running fine even if the main `redis` container crashes and gets restarted by Kubernetes. Because `RedisDown` requires the outage to persist for `for: 2m` (not instant), and Kubernetes tends to restart a crashed container within a few seconds, a single `kill` is usually not enough to keep Redis down long enough to breach the 2-minute window. In practice, repeatedly stopping the Redis process for a couple of minutes (so the container keeps crash-looping) reliably keeps `redis_up` at `0` for long enough for the alert to fire.
+Unlike some other database exporters, the Redis exporter runs as a **separate sidecar container** that keeps running fine even if the main `redis` container crashes and gets restarted by Kubernetes. Because `RedisDown` requires the outage to persist for `for: 2m` (not instant), and Kubernetes tends to restart a crashed container within a few seconds, a single `redis-cli shutdown` is not reliable — confirmed live: one isolated shutdown attempt produced zero pod restarts over what should have been a full window (the container came back before the next scrape landed), while a **sustained** loop reliably kept it down and fired the alert on the very next try. Don't trust a one-shot kill for this alert; always use the loop below for the full duration.
 
 ### 1. Stop the Redis process repeatedly
 
@@ -257,20 +265,21 @@ Shut down the `redis` process inside the pod. This crashes the main container so
 $ kubectl exec -n alert-redis rd-alert-demo-0 -c redis -- redis-cli shutdown nosave
 ```
 
-Because Kubernetes restarts the container quickly, repeat this command every few seconds for about two minutes to keep Redis down continuously long enough for the `for: 2m` window on `RedisDown` to be satisfied:
+Because Kubernetes restarts the container quickly, repeat this command every second for at least two and a half minutes to keep Redis down continuously long enough for the `for: 2m` window on `RedisDown` to be satisfied — confirmed live at exactly this cadence:
 
 ```bash
-$ while true; do
+$ end=$(( $(date +%s) + 150 ))
+while [ $(date +%s) -lt $end ]; do
     kubectl exec -n alert-redis rd-alert-demo-0 -c redis -- redis-cli shutdown nosave >/dev/null 2>&1
     sleep 1
-  done
+done
 ```
 
-Let this loop run for about two minutes, then move on to the next step (leave the loop running while you check).
+Run this in the background (or a separate terminal) and let it run for the full 150 seconds before moving to the next step — stopping early risks landing back in the same "restarted before the next scrape" gap described above.
 
 ### 2. Watch the alert fire in Prometheus
 
-Open `http://localhost:9090/alerts?search=rd-alert-demo`.
+Open `http://localhost:9090/alerts?search=redis`.
 
 <p align="center">
   <img alt="Prometheus Alerts — RedisDown Firing" src="/docs/images/redis/monitoring/rd-alerting-prom-alerts-firing.png" style="padding:10px">
@@ -280,30 +289,34 @@ Open `http://localhost:9090/alerts?search=rd-alert-demo`.
 
 ### 3. Check the AlertManager dashboard
 
-Open `http://localhost:9093/#/alerts?filter=%7Bnamespace%3D%22alert-redis%22%7D`.
+Open `http://localhost:9093/#/alerts?filter=%7Bapp_namespace%3D%22alert-redis%22%7D`.
+
+> Note: like several other `*-alerts` charts in this project (e.g. Cassandra), Redis's operator-sourced alerts carry `app_namespace` rather than a plain `namespace` label — filtering on `namespace="alert-redis"` silently returns nothing (no error, just an empty "No alert groups found" that looks identical to "healthy") even while alerts are actively firing. Always filter/group on `app_namespace` here.
 
 <p align="center">
   <img alt="AlertManager — RedisDown Firing" src="/docs/images/redis/monitoring/rd-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
-AlertManager shows the `RedisDown` alert (alongside `KubeDBRedisPhaseNotReady`, since the KubeDB operator also observes the pod is not ready). The alert card displays:
+AlertManager shows `RedisDown` and `RedisMissingMaster` together (confirmed live — dropping to zero visible master nodes trips both at once), alongside `KubeDBRedisPhaseNotReady` (the KubeDB operator's own view that the pod isn't ready) and, if your cluster happens to have real disk pressure at the time, possibly `DiskUsageHigh` too — that one is unrelated to this simulation and reflects genuine node-disk usage, not a side effect of the kill loop. Each alert card displays:
 
-- **Severity**: `critical`
+- **Severity**: `critical` (`warning` for `DiskUsageHigh`)
 - **pod**: `rd-alert-demo-0` in the `alert-redis` namespace
 - **job**: `rd-alert-demo-stats`
 - **Started**: timestamp when the alert first fired
 
-AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
+AlertManager routes these alerts to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alerts are visible here but silently dropped.
 
 ### 4. Restore Redis
 
-Stop the loop from step 1, then delete the pod so KubeDB recreates it cleanly.
+Let the loop from step 1 finish (or stop it early) — the container's own restart policy brings `redis` back up on its own; no manual pod deletion is needed.
 
 ```bash
-$ kubectl delete pod -n alert-redis rd-alert-demo-0
+$ kubectl get pod -n alert-redis rd-alert-demo-0
+NAME              READY   STATUS    RESTARTS   AGE
+rd-alert-demo-0   2/2     Running   17          2d16h
 ```
 
-Once `redis_up` returns to `1` continuously, Prometheus marks the alert **INACTIVE** again and AlertManager sends a **resolved** notification to all receivers.
+If it's still cycling through `CrashLoopBackOff` a while after the loop has stopped, Kubernetes' exponential backoff is just catching up — wait a bit longer before concluding something's wrong. Once `redis_up` returns to `1` continuously, Prometheus marks the alert **INACTIVE** again and AlertManager sends a **resolved** notification to all receivers.
 
 ---
 

@@ -154,12 +154,8 @@ The Prometheus `ruleSelector` only loads `PrometheusRule` resources that carry `
 
 ```bash
 $ helm upgrade -i postgres-alerts oci://ghcr.io/appscode-charts/postgres-alerts \
-    -n demo \
-    --create-namespace \
-    --version=v2026.2.24 \
-    --set metadata.release.name=pg-grafana-demo \
-    --set metadata.release.namespace=demo \
-    --set form.alert.labels.release=prometheus
+    -n demo --create-namespace --version=v2026.2.24 \
+     --set form.alert.labels.release=prometheus
 ```
 
 | Flag | Value | Purpose |
