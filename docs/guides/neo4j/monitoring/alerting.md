@@ -191,14 +191,14 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i neo4j-alert-demo appscode/neo4j-alerts \
-    -n alert-neo4j \
-    --create-namespace \
-    --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus \
-    --set grafana.enabled=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<grafana-token-from-step-1>"
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+$ helm search repo appscode/neo4j-alerts --version=v2026.7.14
+$ helm upgrade -i neo4j-alerts appscode/neo4j-alerts -n alert-neo4j \
+   --create-namespace \
+   --version=v2026.7.14 \
+   --set form.alert.labels.release=prometheus \
+   --set grafana.enabled=false
 ```
 
 | Flag | Value | Purpose |
