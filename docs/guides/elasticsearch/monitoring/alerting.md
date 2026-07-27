@@ -43,6 +43,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/elasticsearch/monitoring/overview.md).
 
+* You will also need a Grafana API key / token with **Admin** permission so the `kubedb-grafana-dashboards` chart's `grafana-operator` integration can push dashboards into Grafana. See [Step 2](#step-2--install-kubedb-grafana-dashboards) below.
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/elasticsearch](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/elasticsearch) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
@@ -56,9 +58,9 @@ The diagram below shows the full alerting architecture — from Elasticsearch me
 - **KubeDB** deploys Elasticsearch with a built-in [elasticsearch_exporter](https://github.com/prometheus-community/elasticsearch_exporter) sidecar that exposes metrics on port `56790`.
 - **ServiceMonitor** (named `{elasticsearch-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `elasticsearch-alerts` chart and contains all Elasticsearch alert definitions grouped by concern: database health, provisioner, ops-manager, Stash backup/restore, and KubeStash backup/restore.
+- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
 
 Unlike some KubeDB databases, Elasticsearch's exporter does not publish a single boolean "is the database up" gauge. Instead, the chart watches the health signals a real Elasticsearch cluster actually exposes — JVM heap usage, filesystem usage on the data path, cluster health color (`green`/`yellow`/`red`), node/data-node counts, and shard state — and fires alerts when any of those cross a threshold.
 
@@ -255,8 +257,6 @@ Open `http://localhost:9090/rules?search=elasticsearch`.
 </p>
 
 The `elasticsearch.database.alert-elasticsearch.es-alert.rules` group is visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Elasticsearch alert definitions every 30 seconds.
-
----
 
 ## Step 2 — Install kubedb-grafana-dashboards
 

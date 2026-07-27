@@ -87,7 +87,10 @@ spec:
         interval: 10s
 ```
 
-Here, `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator, and `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` matches the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+Here,
+
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` matches the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/clickhouse-alert-demo.yaml

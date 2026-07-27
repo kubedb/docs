@@ -54,9 +54,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys PgBouncer with a dedicated `pgbouncer_exporter` sidecar (container name `exporter`) that exposes metrics on port `56790` — PgBouncer itself has no built-in Prometheus endpoint, so every pod runs **two containers**: `pgbouncer` and `exporter`.
 - **ServiceMonitor** (named `{pgbouncer-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `pgbouncer-alerts` chart and contains PgBouncer alert definitions grouped by concern: database health and provisioner.
+- **Grafana** dashboards for PgBouncer are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for PgBouncer are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -308,7 +308,7 @@ Open `http://localhost:9093`.
 
 No alerts are firing for the `alert-pgbouncer` namespace.
 
-### 5. Grafana dashboard
+### 5. Explore the Grafana dashboard
 
 Grafana dashboards for PgBouncer are documented separately rather than duplicated in this alerting guide — see [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the PgBouncer dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.PgBouncer=true`).
 

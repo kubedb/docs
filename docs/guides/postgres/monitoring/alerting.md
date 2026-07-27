@@ -15,6 +15,7 @@ section_menu_id: guides
 # PostgreSQL Alerting with Prometheus
 
 This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed PostgreSQL instance using the `postgres-alerts` Helm chart, and how to visualise live metrics using the `kubedb-grafana-dashboards` chart.
+
 ## Before You Begin
 
 * Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).

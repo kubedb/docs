@@ -209,7 +209,7 @@ Both the `qdrant.database.demo.qd-alert-demo.rules` and `qdrant.provisioner.demo
 
 ## Verify End-to-End
 
-### 1. Check the metrics endpoint is reachable
+### 1. Check the metrics endpoint
 
 Qdrant serves its own metrics; there is no separate exporter sidecar to check. Because the endpoint requires a Bearer token, fetch the API key from the auth Secret first.
 

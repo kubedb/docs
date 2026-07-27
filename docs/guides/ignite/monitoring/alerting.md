@@ -52,13 +52,15 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys Ignite with a metrics-exporter sidecar (container `exporter`) that exposes Ignite's own JMX-derived metrics (`sys_*`, `io_*`, `cluster_*`, `ignite_*`).
 - **ServiceMonitor** (named `{ignite-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `ignite-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `IgniteDown`/`IgnitePhaseCritical` alerts) and provisioner.
+- **Grafana** dashboards for Ignite are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for Ignite are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
 ## Deploy Ignite with Monitoring Enabled
+
+At first, let's deploy an Ignite instance with monitoring enabled. Below is the Ignite object we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -86,12 +88,18 @@ spec:
         interval: 10s
 ```
 
+Here,
+
+- `spec.replicas: 1` deploys a single-node Ignite instance.
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/monitoring/ignite-alert-demo.yaml
 ignite.kubedb.com/ignite-alert-demo created
 ```
 
-Wait for the database to go into `Ready` state.
+Now, wait for the database to go into `Ready` state.
 
 ```bash
 $ kubectl get ignite -n alert-ignite ignite-alert-demo
@@ -115,7 +123,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-ignite
 NAME                       AGE
 ignite-alert-demo-stats    3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-ignite ignite-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -203,7 +215,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/ignite/monitoring/ignite-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Ignite dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Ignite=true`).
 
@@ -263,6 +275,8 @@ All alerts are scoped to the `ignite-alert-demo` instance in the `alert-ignite` 
 
 ### Database Group
 
+Fired based on live metrics from the Ignite exporter sidecar and node/kubelet metrics, plus two KubeDB-operator-sourced phase alerts (`IgniteDown`, `IgnitePhaseCritical`).
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `IgniteDown` | critical | 30s | KubeDB operator view: resource not `Ready`. Fastest down-signal available. |
@@ -277,6 +291,8 @@ All alerts are scoped to the `ignite-alert-demo` instance in the `alert-ignite` 
 | `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. |
 
 ### Provisioner Group
+
+Monitors the KubeDB operator's view of the Ignite resource phase.
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|

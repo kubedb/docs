@@ -55,9 +55,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
-<figure align="center">
-  <img alt="Monitoring process of Memcached using Prometheus Operator" src="/docs/images/memcached/monitoring/memcached-prometheus-operator.png">
-</figure>
+<p align="center">
+  <img alt="Monitoring process of Memcached using Prometheus Operator" src="/docs/images/memcached/monitoring/memcached-prometheus-operator.png" style="padding:10px">
+</p>
 
 ---
 

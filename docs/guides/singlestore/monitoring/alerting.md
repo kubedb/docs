@@ -61,9 +61,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys SingleStore without a separate exporter image — metrics are obtained via the `memsql-admin` binary built into the SingleStore container itself, which KubeDB's operator configures automatically when `spec.monitor` is set.
 - **ServiceMonitor** (named `{singlestore-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape metrics every 10 seconds.
 - **PrometheusRule** is created by the `singlestore-alerts` chart and contains alert definitions grouped by concern: database health, provisioner, and KubeStash backup/restore.
+- **Grafana** dashboards for SingleStore are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for SingleStore are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -111,6 +111,15 @@ spec:
         interval: 10s
 ```
 
+Here,
+
+- `spec.topology.aggregator` / `spec.topology.leaf` define the aggregator and leaf node groups that make up the SingleStore cluster.
+- `spec.licenseSecret.name` references the license secret created in [Before You Begin](#before-you-begin).
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the SingleStore resource.
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/singlestore/monitoring/singlestore-alert-demo.yaml
 singlestore.kubedb.com/singlestore-alert-demo created
@@ -140,7 +149,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-singlestore
 NAME                          AGE
 singlestore-alert-demo-stats  5m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-singlestore singlestore-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -149,6 +162,8 @@ prometheus
 ---
 
 ## Step 1 — Install singlestore-alerts
+
+The `singlestore-alerts` chart creates a `PrometheusRule` resource containing all SingleStore alert definitions.
 
 ### Why the Helm release name matters
 
@@ -228,7 +243,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/singlestore/monitoring/singlestore-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the SingleStore dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Singlestore=true`).
 

@@ -52,9 +52,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys Kafka with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter) running as a **Java agent inside the `kafka` container itself** — not a separate sidecar container. KubeDB uses the JMX agent because the officially recognized Kafka exporter image does not yet expose metrics for the KRaft-mode versions KubeDB supports.
 - **ServiceMonitor** (named `{kafka-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the JMX agent's HTTP endpoint every 10 seconds.
 - **PrometheusRule** is created by the `kafka-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `KafkaDown`/`KafkaPhaseCritical` alerts) and provisioner.
+- **Grafana** dashboards for Kafka are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for Kafka are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -89,6 +89,14 @@ spec:
         interval: 10s
 ```
 
+Here,
+
+- `spec.replicas: 1` deploys a single-broker Kafka instance for this tutorial.
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the Kafka resource.
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/monitoring/kafka-alert-demo.yaml
 kafka.kubedb.com/kafka-alert-demo created
@@ -118,7 +126,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-kafka
 NAME                     AGE
 kafka-alert-demo-stats   3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-kafka kafka-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -148,7 +160,11 @@ $ helm upgrade -i kafka-alert-demo oci://ghcr.io/appscode-charts/kafka-alerts \
 $ kubectl get prometheusrule -n alert-kafka
 NAME                 AGE
 kafka-alert-demo     30s
+```
 
+Confirm the `release: prometheus` label is present.
+
+```bash
 $ kubectl get prometheusrule -n alert-kafka kafka-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -183,7 +199,7 @@ Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-kafka%22%7D&
   <img alt="Prometheus up query — kafka-alert-demo-0 UP" src="/docs/images/kafka/monitoring/kafka-alerting-prom-target.png" style="padding:10px">
 </p>
 
-### 2. Confirm the Kafka alerts are inactive
+### 2. Confirm all Kafka alerts are inactive
 
 Open `http://localhost:9090/alerts`.
 
@@ -206,7 +222,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/kafka/monitoring/kafka-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Kafka dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Kafka=true`).
 

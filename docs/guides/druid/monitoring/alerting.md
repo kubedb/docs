@@ -268,8 +268,6 @@ Open `http://localhost:9090/rules?search=druid`.
 
 The `druid.database.alert-druid.druid-alert-demo.rules` and `druid.provisioner.alert-druid.druid-alert-demo.rules` groups are visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the Druid alert definitions every 30 seconds.
 
----
-
 ## Step 2 — Install kubedb-grafana-dashboards
 
 The `kubedb-grafana-dashboards` chart creates `GrafanaDashboard` CRDs containing pre-built Druid dashboard JSON. A separate controller, `grafana-operator`, watches these CRDs and pushes the dashboards into Grafana over its HTTP API — both pieces are required. If you've already set these up for another database on this cluster (see the [Elasticsearch alerting guide](/docs/guides/elasticsearch/monitoring/alerting.md) for the full walkthrough), skip straight to [Install the dashboards](#install-the-dashboards) below.

@@ -231,8 +231,6 @@ The `mysql.database.alert-mysql.mysql-alert.rules` group (and the accompanying `
 
 > **Chart note:** unlike some other `*-alerts` charts, every alert group declared in `mysql-alerts`' `values.yaml` (`database`, `group`, `provisioner`, `opsManager`, `stash`, `kubeStash`, `schemaManager`) is actually rendered into the `PrometheusRule` at v2026.7.14 — there is no group silently missing from the template.
 
----
-
 ## Step 2 — Install kubedb-grafana-dashboards
 
 The `kubedb-grafana-dashboards` chart creates `GrafanaDashboard` CRDs containing pre-built MySQL dashboard JSON. A separate controller, `grafana-operator`, watches these CRDs and pushes the dashboards into Grafana over its HTTP API — both pieces are required. If you've already set these up for another database on this cluster (see the [Elasticsearch alerting guide](/docs/guides/elasticsearch/monitoring/alerting.md) for the full walkthrough), skip straight to [Install the dashboards](#install-the-dashboards) below.

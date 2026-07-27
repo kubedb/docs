@@ -60,6 +60,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Deploy MongoDB with Monitoring Enabled
 
+At first, let's deploy a 3-member MongoDB replica set with monitoring enabled. Below is the MongoDB object we are going to create.
+
 ```yaml
 apiVersion: kubedb.com/v1
 kind: MongoDB
@@ -88,6 +90,14 @@ spec:
           release: prometheus
         interval: 10s
 ```
+
+Here,
+
+- `spec.replicaSet.name: "rs1"` and `spec.replicas: 3` create a 3-member MongoDB replica set.
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the MongoDB resource.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/monitoring/mongodb-alert-demo.yaml
@@ -118,7 +128,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-mongodb
 NAME                     AGE
 mongodb-alert-demo-stats 3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-mongodb mongodb-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -140,7 +154,7 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alerts \
     -n alert-mongodb \
     --create-namespace \
-    --version=v2026.7.14 \
+    --version=v2026.7.14 
 ```
 
 ### Verify the PrometheusRule is created
@@ -149,7 +163,11 @@ $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alert
 $ kubectl get prometheusrule -n alert-mongodb
 NAME                 AGE
 mongodb-alert-demo   30s
+```
 
+Confirm the `release: prometheus` label is present.
+
+```bash
 $ kubectl get prometheusrule -n alert-mongodb mongodb-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus

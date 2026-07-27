@@ -22,7 +22,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * Install the KubeDB operator by following the steps [here](/docs/setup/README.md).
 
-* Create a dedicated namespace to deploy the database:
+* Deploy the database in the `alert-rabbitmq` namespace:
 
   ```bash
   $ kubectl create ns alert-rabbitmq
@@ -201,7 +201,7 @@ The `rabbitmq.database.alert-rabbitmq.rmq-alert-demo.rules` group is visible wit
 
 ## Verify End-to-End
 
-### 1. Check the metrics endpoint is reachable
+### 1. Check the metrics endpoint
 
 Because RabbitMQ's Prometheus plugin runs inside the `rabbitmq` container itself, there is no separate `exporter` container to check — query the plugin's own endpoint directly.
 
@@ -221,7 +221,7 @@ Open `http://localhost:9090/targets?search=rmq-alert-demo`.
 
 The target `serviceMonitor/alert-rabbitmq/rmq-alert-demo-stats/0` shows **UP**, confirming metrics are being scraped from `rmq-alert-demo-0` in the `alert-rabbitmq` namespace.
 
-### 3. Confirm the RabbitMQ alerts
+### 3. Confirm the RabbitMQ alerts are inactive
 
 Open `http://localhost:9090/alerts?search=rabbitmq` to see the RabbitMQ alert groups.
 
@@ -248,7 +248,7 @@ Open `http://localhost:9093`. **PENDING** rules have not yet fired — only aler
 
 The previous section confirmed that the RabbitMQ alerts are healthy. This section walks through deliberately triggering the `RabbitMQDown` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-### 1. Crash the RabbitMQ process
+### 1. Crash the RabbitMQ process repeatedly
 
 Kill the RabbitMQ process inside the pod. Unlike Memcached, a RabbitMQ pod has only a single `rabbitmq` container — the Prometheus plugin runs inside the same process being killed, so a lone `kill 1` restarts fast enough that the container becomes `Ready` again before KubeDB's health check can even observe the outage. Repeat the kill a few times over ~30–45 seconds to hold the pod in a crash loop long enough for the KubeDB operator to mark the RabbitMQ resource `NotReady` for the full evaluation window.
 

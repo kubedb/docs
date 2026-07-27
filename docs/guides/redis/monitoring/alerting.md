@@ -203,7 +203,6 @@ The `exporter` sidecar inside the Redis pod serves metrics at `:56790/metrics`. 
 
 ```bash
 $ kubectl exec -n alert-redis rd-alert-demo-0 -c exporter -- \
-
                                           wget -qO- localhost:56790/metrics | grep redis_up
 # HELP redis_up Information about the Redis instance
 # TYPE redis_up gauge

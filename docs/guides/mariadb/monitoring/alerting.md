@@ -58,9 +58,9 @@ The diagram below shows the full alerting architecture — from MariaDB metric e
 - **KubeDB** deploys MariaDB with a `mysqld_exporter`-compatible sidecar (container `exporter`) that exposes metrics used by both MySQL and MariaDB alert charts (`mysql_*` metric names).
 - **ServiceMonitor** (named `{mariadb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `mariadb-alerts` chart and contains MariaDB alert definitions grouped by concern: database health, Galera cluster, provisioner, ops-manager, Stash backup/restore, KubeStash backup/restore, and schema manager.
+- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** visualises metrics through pre-built dashboards provisioned by the `kubedb-grafana-dashboards` chart.
 
 ---
 
@@ -288,7 +288,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     --set featureGates.MariaDB=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<api-key-from-above>" \
-  | kubectl apply -n kubeops -f -
 ```
 
 > **Note:** `featureGates.<DB>` defaults to `true` for almost every database in this chart, so one `helm template | kubectl apply` installs dashboards for many databases at once, not just MariaDB — this is expected. See the render-vs-Secret-size caveat in the [Elasticsearch alerting guide](/docs/guides/elasticsearch/monitoring/alerting.md#install-the-dashboards) for why `helm template | kubectl apply` is used instead of `helm install`.
@@ -453,6 +452,8 @@ All alerts are scoped to the `mariadb-alert-demo` instance in the `alert-mariadb
 
 ### Database Group
 
+Fired from metrics exposed by the `mysqld_exporter`-compatible sidecar and node/kubelet metrics.
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `MariaDBInstanceDown` | critical | instant | `mysql_up == 0` on this instance. |
@@ -479,12 +480,16 @@ Only produces data when `spec.topology` (Galera) is configured — this tutorial
 
 ### Provisioner Group
 
+Monitors the KubeDB operator's view of the MariaDB resource phase (sourced from Panopticon, not the exporter's metrics).
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `KubeDBMariaDBPhaseNotReady` | critical | 1m | KubeDB marked the MariaDB resource `NotReady`. |
 | `KubeDBMariaDBPhaseCritical` | warning | 15m | MariaDB is degraded but not fully unavailable. |
 
 ### OpsManager Group
+
+Monitors the lifecycle of ops requests (upgrades, scaling, reconfiguration, etc.) issued against this MariaDB instance.
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|

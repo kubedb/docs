@@ -54,9 +54,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys Pgpool with a dedicated `pgpool2_exporter` sidecar (container name `exporter`) that exposes metrics on port `9719` — Pgpool itself has no built-in Prometheus endpoint, so every pod runs **two containers**: `pgpool` and `exporter`.
 - **ServiceMonitor** (named `{pgpool-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `pgpool-alerts` chart and contains Pgpool alert definitions grouped by concern: database health and provisioner.
+- **Grafana** dashboards for Pgpool are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for Pgpool are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -318,7 +318,7 @@ Open `http://localhost:9093`.
 
 Matches the previous step — `PgpoolLowCacheMemory` (and, depending on scrape timing, `PgpoolTooManyConnections`) is visible here for the reasons explained above, not because anything is actually broken.
 
-### 5. Grafana dashboard
+### 5. Explore the Grafana dashboard(s)
 
 Grafana dashboards for Pgpool are documented separately rather than duplicated in this alerting guide — see [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Pgpool dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Pgpool=true`).
 

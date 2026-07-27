@@ -152,7 +152,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-solr
 NAME                    AGE
 solr-alert-demo-stats   3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-solr solr-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -238,7 +242,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/solr/monitoring/solr-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Solr dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Solr=true`).
 
@@ -298,6 +302,8 @@ All alerts are scoped to the `solr-alert-demo` instance in the `alert-solr` name
 
 ### Database Group
 
+Fired based on live metrics from the Solr exporter sidecar and node/kubelet metrics.
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `SolrDownShards` | critical | 30s | One or more collection shards have no active replica. |
@@ -312,6 +318,8 @@ All alerts are scoped to the `solr-alert-demo` instance in the `alert-solr` name
 
 ### Provisioner Group
 
+Monitors the KubeDB operator's view of the Solr resource phase (sourced from Panopticon, not the Solr metrics endpoint).
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `KubeDBSolrPhaseNotReady` | critical | 1m | KubeDB marked the Solr resource `NotReady`. |
@@ -320,6 +328,8 @@ All alerts are scoped to the `solr-alert-demo` instance in the `alert-solr` name
 ---
 
 ## Customising Alerts
+
+To override thresholds or disable specific alert groups, create a custom values file and upgrade the chart.
 
 ```yaml
 # custom-alerts.yaml
@@ -347,6 +357,8 @@ $ helm upgrade solr-alert-demo oci://ghcr.io/appscode-charts/solr-alerts \
 ---
 
 ## Cleaning up
+
+To remove all resources created in this tutorial, run the following commands.
 
 ```bash
 $ helm uninstall solr-alert-demo -n alert-solr

@@ -52,9 +52,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys PerconaXtraDB with a `mysqld_exporter`-compatible sidecar (container `exporter`) that exposes metrics (`mysql_*`), the same exporter family used by MySQL/MariaDB.
 - **ServiceMonitor** (named `{perconaxtradb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `perconaxtradb-alerts` chart and contains alert definitions grouped by concern: database health, Galera cluster, provisioner, ops-manager, Stash backup/restore, and schema manager.
+- **Grafana** dashboards for PerconaXtraDB are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for PerconaXtraDB are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -88,12 +88,19 @@ spec:
         interval: 10s
 ```
 
+Here,
+
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the PerconaXtraDB resource.
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/percona-xtradb/monitoring/perconaxtradb-alert-demo.yaml
 perconaxtradb.kubedb.com/perconaxtradb-alert-demo created
 ```
 
-Wait for the database to go into `Ready` state.
+Now, wait for the database to go into `Ready` state.
 
 ```bash
 $ kubectl get perconaxtradb -n alert-perconaxtradb perconaxtradb-alert-demo
@@ -117,7 +124,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-perconaxtradb
 NAME                             AGE
 perconaxtradb-alert-demo-stats   3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-perconaxtradb perconaxtradb-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -180,7 +191,7 @@ Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-perconaxtrad
   <img alt="Prometheus up query — perconaxtradb-alert-demo-0 UP" src="/docs/images/percona-xtradb/monitoring/perconaxtradb-alerting-prom-target.png" style="padding:10px">
 </p>
 
-### 2. Confirm the PerconaXtraDB alerts are inactive
+### 2. Confirm all PerconaXtraDB alerts are inactive
 
 Open `http://localhost:9090/alerts`.
 
@@ -203,7 +214,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/percona-xtradb/monitoring/perconaxtradb-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the PerconaXtraDB dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.PerconaXtraDB=true`).
 

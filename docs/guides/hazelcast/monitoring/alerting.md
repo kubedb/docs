@@ -60,13 +60,15 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys Hazelcast with a metrics-exporter sidecar (container `exporter`) that exposes Hazelcast's own JMX-derived metrics (`com_hazelcast_Metrics_*`).
 - **ServiceMonitor** (named `{hazelcast-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `hazelcast-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `hazelcastDown`/`hazelcastPhaseCritical` alerts) and provisioner.
+- **Grafana** dashboards for Hazelcast are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for Hazelcast are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
 ## Deploy Hazelcast with Monitoring Enabled
+
+At first, let's deploy a single-node Hazelcast instance with monitoring enabled. Below is the Hazelcast object we are going to create.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -95,6 +97,15 @@ spec:
           release: prometheus
         interval: 10s
 ```
+
+Here,
+
+- `spec.replicas: 1` creates a single-node Hazelcast instance.
+- `spec.licenseSecret.name: hz-license-key` points to the Enterprise license secret created in [Before You Begin](#before-you-begin).
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the Hazelcast resource.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/monitoring/hazelcast-alert-demo.yaml
@@ -125,7 +136,11 @@ KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 $ kubectl get servicemonitor -n alert-hazelcast
 NAME                           AGE
 hazelcast-alert-demo-stats     3m
+```
 
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
 $ kubectl get servicemonitor -n alert-hazelcast hazelcast-alert-demo-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
@@ -213,7 +228,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/hazelcast/monitoring/hazelcast-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Hazelcast dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Hazelcast=true`).
 
@@ -273,6 +288,8 @@ All alerts are scoped to the `hazelcast-alert-demo` instance in the `alert-hazel
 
 ### Database Group
 
+Fired based on live metrics from the Hazelcast exporter sidecar (JMX-derived) and, for the `hazelcastDown`/`hazelcastPhaseCritical` pair, the KubeDB operator's own view of the resource phase.
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `hazelcastPartitionCountExceed` | warning | 30s | Active partition count is unusually high. |
@@ -288,6 +305,8 @@ All alerts are scoped to the `hazelcast-alert-demo` instance in the `alert-hazel
 
 ### Provisioner Group
 
+Monitors the KubeDB operator's view of the Hazelcast resource phase (sourced from Panopticon, not the Hazelcast metrics endpoint).
+
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
 | `KubeDBhazelcastPhaseNotReady` | critical | 1m | KubeDB marked the Hazelcast resource `NotReady`. |
@@ -296,6 +315,8 @@ All alerts are scoped to the `hazelcast-alert-demo` instance in the `alert-hazel
 ---
 
 ## Customising Alerts
+
+To override thresholds or disable specific alert groups, create a custom values file and upgrade the chart.
 
 ```yaml
 # custom-alerts.yaml
@@ -323,6 +344,8 @@ $ helm upgrade hazelcast-alert-demo oci://ghcr.io/appscode-charts/hazelcast-aler
 ---
 
 ## Cleaning up
+
+To remove all resources created in this tutorial, run the following commands.
 
 ```bash
 $ helm uninstall hazelcast-alert-demo -n alert-hazelcast

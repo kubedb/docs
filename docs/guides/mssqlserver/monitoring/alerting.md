@@ -74,6 +74,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Deploy MSSQLServer with Monitoring Enabled
 
+At first, let's deploy an MSSQLServer instance with monitoring enabled. Below is the MSSQLServer object we are going to create.
+
 ```yaml
 apiVersion: kubedb.com/v1alpha2
 kind: MSSQLServer
@@ -116,7 +118,14 @@ spec:
         interval: 10s
 ```
 
-`ACCEPT_EULA=Y` and `MSSQL_PID` are required by the upstream SQL Server image itself, not KubeDB — see [Microsoft's environment variable reference](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables) for valid `MSSQL_PID` values.
+Here,
+
+- `spec.tls.issuerRef` points at the `mssqlserver-ca-issuer` Issuer created above, so the SQL Server endpoint is served over TLS.
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+- `ACCEPT_EULA=Y` and `MSSQL_PID` are required by the upstream SQL Server image itself, not KubeDB — see [Microsoft's environment variable reference](https://learn.microsoft.com/en-us/sql/linux/sql-server-linux-configure-environment-variables) for valid `MSSQL_PID` values.
+
+Let's create the MSSQLServer resource.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/monitoring/mssqlserver-alert-demo.yaml
@@ -238,7 +247,7 @@ Open `http://localhost:9093`.
   <img alt="AlertManager" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 4. Grafana dashboard
+### 4. Explore the Grafana dashboard
 
 See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the MSSQLServer dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.MSSQLServer=true`).
 
