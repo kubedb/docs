@@ -83,7 +83,7 @@ metadata:
   name: mssqlserver-alert-demo
   namespace: alert-mssqlserver
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   storageType: Durable
   tls:
@@ -136,9 +136,11 @@ Wait for the database to go into `Ready` state.
 
 ```bash
 $ kubectl get mssqlserver -n alert-mssqlserver mssqlserver-alert-demo
-NAME                       VERSION      STATUS   AGE
-mssqlserver-alert-demo     2022-cu12    Ready    5m
+NAME                     VERSION    STATUS   AGE
+mssqlserver-alert-demo   2025-cu0   Ready    5m
 ```
+
+> First boot takes several minutes — SQL Server doesn't write to its error log or create system databases (`master.mdf`, `msdbdata.mdf`, ...) until it's actually ready to initialize, so `kubectl get pods` showing `2/2 Running` doesn't by itself mean the instance is `Ready` yet. Give it 3-5 minutes on a cold node before assuming something's stuck.
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
 
@@ -170,6 +172,8 @@ prometheus
 
 The chart derives the `PrometheusRule` name and scopes every PromQL expression (via `job="{release-name}-stats"` / `app="{release-name}"`) from the **Helm release name** — so the release name must match the MSSQLServer object's name (`mssqlserver-alert-demo`).
 
+The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector` — installing without `--set form.alert.labels.release=prometheus` produces a `PrometheusRule` that Prometheus silently never loads (confirmed: the rules exist in the cluster but never appear under `/rules` or `/alerts` until the label is corrected with a `helm upgrade`).
+
 ### Chart bug: the `kubeStash` group fails to render
 
 > **Chart bug found (v2026.7.14):** `helm template`/`helm install` for `mssqlserver-alerts` fails outright with `error converting YAML to JSON: yaml: line 149: mapping values are not allowed in this context` if the `kubeStash` alert group is left at its default `enabled: warning`. The group's rule template has a real indentation bug — the `labels:`/`annotations:` block for each `kubeStash` rule is emitted one level shallower than required, so keys like `k8s_group`, `k8s_kind`, `app` end up as siblings of `labels:` instead of nested under it, breaking YAML parsing entirely. **Workaround:** disable the group at install time with `--set form.alert.groups.kubeStash.enabled=none` — the rest of the chart (`database`, `provisioner`, `opsManager`) renders correctly once this group is disabled.
@@ -177,7 +181,7 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 ### Install
 
 ```bash
-$ helm upgrade -i mssqlserver-alert-demo oci://ghcr.io/appscode-charts/mssqlserver-alerts \
+$ helm upgrade -i mssqlserver-alert-demo appscode/mssqlserver-alerts \
     -n alert-mssqlserver \
     --create-namespace \
     --version=v2026.7.14 \
@@ -224,6 +228,8 @@ Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-mssqlserver%
   <img alt="Prometheus up query — mssqlserver-alert-demo-0 UP" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-prom-target.png" style="padding:10px">
 </p>
 
+Both series report `up == 1` — the exporter's own target and its `target="mssql_database"` sub-target — confirming Prometheus is scraping `mssqlserver-alert-demo-0` successfully.
+
 ### 2. Confirm the MSSQLServer alerts are inactive
 
 Open `http://localhost:9090/alerts`.
@@ -246,6 +252,8 @@ Open `http://localhost:9093`.
 <p align="center">
   <img alt="AlertManager" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-alertmanager.png" style="padding:10px">
 </p>
+
+This view isn't filtered to a namespace, so alerts from other databases on a shared cluster may also appear here — use the filter box (`app_namespace="alert-mssqlserver"`) to confirm none are specific to this instance.
 
 ### 4. Explore the Grafana dashboard
 
@@ -287,14 +295,24 @@ Open `http://localhost:9093`.
   <img alt="AlertManager — MSSQLServerInstanceDown Firing" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
+AlertManager shows the `MSSQLServerInstanceDown` alert. The alert card displays labels including:
+
+- **alertname**: `MSSQLServerInstanceDown`
+- **severity**: `critical`
+- **app**: `mssqlserver-alert-demo`, **app_namespace**: `alert-mssqlserver`
+- **k8s_kind**: `MSSQLServer`
+- **job**: `mssqlserver-alert-demo-stats`
+
+> Note: this chart's alert labels use `app_namespace` rather than a plain `namespace` label — filter or group on `app_namespace` when searching for these alerts in AlertManager.
+
 ### 4. Restore MSSQLServer
 
 Stop the loop from step 1.
 
 ```bash
 $ kubectl get mssqlserver -n alert-mssqlserver mssqlserver-alert-demo -w
-NAME                     VERSION     STATUS   AGE
-mssqlserver-alert-demo   2022-cu12   Ready    24m
+NAME                     VERSION    STATUS   AGE
+mssqlserver-alert-demo   2025-cu0   Ready    24m
 ```
 
 If MSSQLServer does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-mssqlserver mssqlserver-alert-demo-0`.
@@ -363,7 +381,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade mssqlserver-alert-demo oci://ghcr.io/appscode-charts/mssqlserver-alerts \
+$ helm upgrade mssqlserver-alert-demo appscode/mssqlserver-alerts \
     -n alert-mssqlserver \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
