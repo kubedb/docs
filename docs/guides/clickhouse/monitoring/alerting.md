@@ -16,8 +16,6 @@ section_menu_id: guides
 
 This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed ClickHouse instance using the `clickhouse-alerts` Helm chart.
 
-> **No Grafana dashboard is available for ClickHouse yet.** Unlike `neo4j-alerts`/`cassandra-alerts` (which bundle a dashboard-import `Job`) or the separate `kubedb-grafana-dashboards` chart (which covers most other KubeDB databases), neither mechanism currently ships a ClickHouse dashboard. Confirmed two ways while writing this tutorial: `clickhouse-alerts` v2026.7.14 exposes the same `grafana.enabled`/`grafana.jobName`/`grafana.url`/`grafana.apikey` values as `neo4j-alerts`/`cassandra-alerts`, but rendering the chart with `grafana.enabled=true` produces **only** a `PrometheusRule` — no `Job`/`ConfigMap` is rendered, so these values are currently dead/vestigial. Separately, `helm template kubedb-grafana-dashboards --set featureGates.ClickHouse=true` produces zero ClickHouse-named resources, even though `ClickHouse` is a valid key in that chart's `featureGates` map. This tutorial therefore covers alerting only; revisit if/when either chart adds real ClickHouse dashboard support.
-
 ## Before You Begin
 
 * Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
@@ -149,8 +147,7 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 $ helm upgrade -i clickhouse-alert-demo appscode/clickhouse-alerts \
     -n alert-clickhouse \
     --create-namespace \
-    --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --version=v2026.7.14 
 ```
 
 | Flag | Value | Purpose |
@@ -248,12 +245,11 @@ The `clickhouse` container's `PID 1` is the `clickhouse-server` process itself, 
 ### 1. Crash the ClickHouse process repeatedly
 
 ```bash
-$ end=$(( $(date +%s) + 45 ))
+$ end=$(( $(date +%s) + 150 ))
 while [ $(date +%s) -lt $end ]; do
-  kubectl exec -n alert-clickhouse clickhouse-alert-demo-rack-r0-0 -c exporter -- kill 1 >/dev/null 2>&1
+  kubectl exec -n alert-clickhouse clickhouse-alert-demo-0 -c clickhouse -- kill 1
   sleep 1
 done
-
 ```
 
 Retrieve the password first if you don't have it: `kubectl get secret -n alert-clickhouse clickhouse-alert-demo-auth -o jsonpath='{.data.password}' | base64 -d`. Run the loop in the background (or a separate terminal) — each iteration either succeeds (shutting the instance down again) or fails harmlessly while a previous shutdown is still restarting, so 90 seconds comfortably holds the instance in a crash loop.
