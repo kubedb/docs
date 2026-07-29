@@ -41,6 +41,26 @@ For a `Neo4jOpsRequest` with `spec.type: VerticalScaling`, KubeDB Ops-manager:
 5. Waits for pods to become healthy with new resources.
 6. Marks the request `Successful` after reconciliation.
 
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `Neo4jOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
+
 ## Next Step
 
 Follow the detailed guide: [Scale Neo4j Vertically](/docs/guides/neo4j/scaling/vertical-scaling/scale-vertically/index.md).

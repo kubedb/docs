@@ -1,0 +1,28 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: vertical-scaling
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: milvus-cluster
+  verticalScaling:
+    mixcoord:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+    proxy:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady

@@ -45,7 +45,7 @@ Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/cl
 
 ### Prepare PgBouncer
 
-Now, we are going to deploy a `PgBouncer` with version `1.18.0`.
+Now, we are going to deploy a `PgBouncer` with version `1.24.0`.
 
 ### Deploy PgBouncer 
 
@@ -59,7 +59,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.18.0"
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"
@@ -147,6 +147,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `pb-vertical` pgbouncer.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.pgbouncer` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/pgbouncer/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 - Have a look [here](/docs/guides/pgbouncer/concepts/opsrequest.md) on the respective sections to understand the `timeout` & `apply` fields.
 
 Let's create the `PgBouncerOpsRequest` CR we have shown above,
@@ -293,6 +294,45 @@ $ kubectl get pod -n demo pb-vertical-0 -o json | jq '.spec.containers[].resourc
 ```
 
 The above output verifies that we have successfully scaled up the resources of the PgBouncer.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`PgBouncerOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pgbouncer-scale-vertical-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pb-vertical
+  verticalScaling:
+    mode: InPlace
+    pgbouncer:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady
+```
+
+Let's create the `PgBouncerOpsRequest` CR we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/pgbouncer/scaling/pb-vertical-ops-inplace.yaml
+pgbounceropsrequest.ops.kubedb.com/pgbouncer-scale-vertical-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

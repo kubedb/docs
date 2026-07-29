@@ -28,30 +28,30 @@ As with all other Kubernetes objects, a IgniteVersion needs `apiVersion`, `kind`
 
 ```yaml
 apiVersion: catalog.kubedb.com/v1alpha1
-  kind: IgniteVersion
-  metadata:
-    annotations:
-      meta.helm.sh/release-name: kubedb-catalog
-      meta.helm.sh/release-namespace: kubedb
-    creationTimestamp: "2025-05-20T08:57:56Z"
-    generation: 1
-    labels:
-      app.kubernetes.io/instance: kubedb-catalog
-      app.kubernetes.io/managed-by: Helm
-      app.kubernetes.io/name: kubedb-catalog
-      app.kubernetes.io/version: v2025.4.30
-      helm.sh/chart: kubedb-catalog-v2025.4.30
-    name: 2.17.0
-    resourceVersion: "847947"
-    uid: be60213c-5aba-43ac-9dbf-a352005cbb0c
-  spec:
-    db:
-      image: ghcr.io/appscode-images/ignite:2.17.0
-    initContainer:
-      image: ghcr.io/kubedb/ignite-init:2.17.0-v1
-    securityContext:
-      runAsUser: 70
-    version: 2.17.0
+kind: IgniteVersion
+metadata:
+  annotations:
+    meta.helm.sh/release-name: kubedb-catalog
+    meta.helm.sh/release-namespace: kubedb
+  creationTimestamp: "2025-05-20T08:57:56Z"
+  generation: 1
+  labels:
+    app.kubernetes.io/instance: kubedb-catalog
+    app.kubernetes.io/managed-by: Helm
+    app.kubernetes.io/name: kubedb-catalog
+    app.kubernetes.io/version: v2025.4.30
+    helm.sh/chart: kubedb-catalog-v2025.4.30
+  name: 2.18.0
+  resourceVersion: "847947"
+  uid: be60213c-5aba-43ac-9dbf-a352005cbb0c
+spec:
+  db:
+    image: ghcr.io/appscode-images/ignite:2.18.0
+  initContainer:
+    image: ghcr.io/kubedb/ignite-init:2.18.0-v1
+  securityContext:
+    runAsUser: 70
+  version: 2.18.0
 ```
 
 ### metadata.name

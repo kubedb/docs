@@ -48,7 +48,7 @@ Here, we are going to deploy a `PgBouncer` standalone using a supported version 
 
 #### Deploy PgBouncer
 
-In this section, we are going to deploy a PgBouncer with version `1.18.0`  Then, in the next section we will set up autoscaling for this pgbouncer using `PgBouncerAutoscaler` CRD. Below is the YAML of the `PgBouncer` CR that we are going to create,
+In this section, we are going to deploy a PgBouncer with version `1.24.0`  Then, in the next section we will set up autoscaling for this pgbouncer using `PgBouncerAutoscaler` CRD. Below is the YAML of the `PgBouncer` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -58,7 +58,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.18.0"
+  version: "1.24.0"
   database:
     syncUsers: true
     databaseName: "postgres"

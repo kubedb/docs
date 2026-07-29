@@ -42,7 +42,7 @@ Here, we are going to deploy a  `MongoDB` standalone using a supported version b
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` standalone database with version `8.0.17`.
 
 ### Deploy MongoDB standalone 
 
@@ -55,7 +55,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -140,6 +140,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `mops-vscale-standalone` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.standalone` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/mongodb/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,

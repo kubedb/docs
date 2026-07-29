@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Weaviate
+metadata:
+  name: weaviate-sample
+  namespace: demo
+spec:
+  version: 1.33.1
+  replicas: 2
+  storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 3Gi
+  deletionPolicy: WipeOut

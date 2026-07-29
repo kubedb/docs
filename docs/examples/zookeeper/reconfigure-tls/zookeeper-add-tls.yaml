@@ -9,7 +9,7 @@ spec:
     name: zk-quickstart
   tls:
     issuerRef:
-      name: zookeeper-ca-issuer
+      name: zk-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     certificates:

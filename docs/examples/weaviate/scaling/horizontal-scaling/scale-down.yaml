@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: weaviate-scale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: weaviate-sample
+  horizontalScaling:
+    node: 2

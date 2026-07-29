@@ -62,7 +62,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -145,7 +145,7 @@ metadata:
   name: mysql-proxy
   namespace: demo
 spec:
-  version: "2.7.3-debian"
+  version: "3.0.1-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -154,18 +154,18 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/sample-proxysql.yaml
 proxysql.kubedb.com/mysql-proxy created
 ```
 
-Here in the `.spec.version` field we are saying that we want a ProxySQL-2.6.3 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
+Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
 $ kubectl get prx -n demo
 NAME          VERSION        STATUS   AGE
-mysql-proxy   2.7.3-debian   Ready    109s
+mysql-proxy   3.0.1-debian   Ready    109s
 ```
 
 Let's check the pods and associated kubernetes objects
@@ -276,7 +276,7 @@ spec:
 Let's apply the yaml. 
 
 ```yaml
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysql/examples/ubuntu.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/mysqlgrp/examples/ubuntu.yaml
 deployment.apps/ubuntu created
 ```
 

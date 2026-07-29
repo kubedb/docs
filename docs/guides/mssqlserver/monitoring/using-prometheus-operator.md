@@ -214,7 +214,7 @@ metadata:
   name: mssql-monitoring
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   tls:
     issuerRef:

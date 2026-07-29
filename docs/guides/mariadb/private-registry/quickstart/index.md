@@ -24,13 +24,26 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
 
 - You will also need a docker private [registry](https://docs.docker.com/registry/) or [private repository](https://docs.docker.com/docker-hub/repos/#private-repositories).  In this tutorial we will use private repository of [docker hub](https://hub.docker.com/).
 
-- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For mysql, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following MariaDBVersions, where `deprecated` is not true, to your private registry.
+- You have to push the required images from KubeDB's [Docker hub account](https://hub.docker.com/u/kubedb) into your private registry. For mariadb, push `DB_IMAGE`, `EXPORTER_IMAGE`, `INITCONTAINER_IMAGE` of following MariaDBVersions, where `deprecated` is not true, to your private registry.
 
 ```bash
 $ kubectl get mariadbversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,INITCONTAINER_IMAGE:.spec.initContainer.image,DEPRECATED:.spec.deprecated
-NAME      VERSION   DB_IMAGE                 EXPORTER_IMAGE                   INITCONTAINER_IMAGE   DEPRECATED
-10.4.32   10.4.32   kubedb/mariadb:10.4.32   kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
-10.5.23    10.5.23    kubedb/mariadb:10.5.23    kubedb/mysqld-exporter:v0.11.0   kubedb/busybox        <none>
+NAME      VERSION   DB_IMAGE                                        DEPRECATED   AGE
+10.10.7   10.10.7   ghcr.io/appscode-images/mariadb:10.10.7-jammy                10d
+10.11.6   10.11.6   ghcr.io/appscode-images/mariadb:10.11.6-jammy                10d
+10.4.32   10.4.32   ghcr.io/appscode-images/mariadb:10.4.32-focal                10d
+10.5.23   10.5.23   ghcr.io/appscode-images/mariadb:10.5.23-focal                10d
+10.6.16   10.6.16   ghcr.io/appscode-images/mariadb:10.6.16-focal                10d
+11.0.4    11.0.4    ghcr.io/appscode-images/mariadb:11.0.4-jammy                 10d
+11.1.3    11.1.3    ghcr.io/appscode-images/mariadb:11.1.3-jammy                 10d
+11.2.2    11.2.2    ghcr.io/appscode-images/mariadb:11.2.2-jammy                 10d
+11.3.2    11.3.2    ghcr.io/appscode-images/mariadb:11.3.2-jammy                 10d
+11.4.3    11.4.3    ghcr.io/appscode-images/mariadb:11.4.3-noble                 10d
+11.5.2    11.5.2    ghcr.io/appscode-images/mariadb:11.5.2-noble                 10d
+11.6.2    11.6.2    ghcr.io/appscode-images/mariadb:11.6.2-noble                 10d
+11.8.5    11.8.5    ghcr.io/appscode-images/mariadb:11.8.5-noble                 10d
+12.1.2    12.1.2    ghcr.io/appscode-images/mariadb:12.1.2-noble                 10d
+12.3.2    12.3.2    ghcr.io/appscode-images/mariadb:12.3.2-noble                 2d1h
 ```
 
 Docker hub repositories:
@@ -45,12 +58,12 @@ Docker hub repositories:
     apiVersion: catalog.kubedb.com/v1alpha1
     kind: MariaDBVersion
     metadata:
-      name: 10.5.23
+      name: 12.3.2
     spec:
       coordinator:
         image: PRIVATE_REGISTRY/mariadb-coordinator:v0.40.0
       db:
-        image: PRIVATE_REGISTRY/mysql:10.5.23
+        image: PRIVATE_REGISTRY/mariadb:12.3.2
       exporter:
         image: PRIVATE_REGISTRY/mysqld-exporter:v0.11.0
       initContainer:
@@ -61,7 +74,7 @@ Docker hub repositories:
           runAsUser: 995
       podSecurityPolicies:
         databasePolicyName: maria-db
-      version: 10.5.23
+      version: 12.3.2
     ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -106,7 +119,7 @@ metadata:
   name: md-pvt-reg
   namespace: demo
 spec:
-  version: "10.5.23"
+  version: "12.3.2"
   storage:
     storageClassName: "standard"
     accessModes:

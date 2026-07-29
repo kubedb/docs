@@ -67,7 +67,7 @@ spec:
   secret:
     name: solr-dev-admin-cred
   type: kubedb.com/solr
-  version: 9.4.1
+  version: 9.8.0
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

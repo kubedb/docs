@@ -11,7 +11,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/targetName: sample-singlestore-2
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2

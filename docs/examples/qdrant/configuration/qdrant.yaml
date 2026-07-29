@@ -9,7 +9,7 @@ spec:
   configuration:
     secretName: qdrant-configuration
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:

@@ -94,10 +94,10 @@ Below is the YAML for ZooKeeper with TLS enabled:
 apiVersion: kubedb.com/v1alpha2
 kind: ZooKeeper
 metadata:
-  name: zk-tls
+  name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   enableSSL: true
   tls:
     issuerRef:
@@ -124,15 +124,15 @@ Here,
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/tls/zookeeper-tls.yaml
-zookeeper.kubedb.com/zk-tls created
+zookeeper.kubedb.com/zk-quickstart created
 ```
 
-Now, wait until `zookeeper-tls created` has status `Ready`. i.e,
+Now, wait until `zk-quickstart` has status `Ready`. i.e,
 
 ```bash
 $ watch kubectl get zookeeper -n demo
-NAME        TYPE                    VERSION   STATUS    AGE
-zk-tls      kubedb.com/v1alpha2     3.8.3     Ready     60s
+NAME            TYPE                    VERSION   STATUS    AGE
+zk-quickstart   kubedb.com/v1alpha2     3.9.1     Ready     60s
 ```
 
 ### Verify TLS/SSL in ZooKeeper Ensemble
@@ -173,7 +173,7 @@ Now, Let's exec into a ZooKeeper pod and verify the configuration that the TLS i
 ```bash
 $ kubectl exec -it -n demo zk-quickstart-0 -- bash
 Defaulted container "zookeeper" out of: zookeeper, zookeeper-init (init)
-zookeeper@zk-quickstart-0:/apache-zookeeper-3.8.3-bin$ cd ../var/private/ssl
+zookeeper@zk-quickstart-0:/apache-zookeeper-3.9.1-bin$ cd ../var/private/ssl
 zookeeper@zk-quickstart-0:/var/private/ssl$ openssl s_client -connect localhost:2182 -CAfile ca.crt -cert tls.crt -key tls.key
 CONNECTED(00000003)
 depth=1 CN = zookeeper, O = kubedb
@@ -257,7 +257,7 @@ From the above output, we can see that we are able to connect to the ZooKeeper E
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete zookeeper -n demo zk-tls
+kubectl delete zookeeper -n demo zk-quickstart
 kubectl delete issuer -n demo zookeeper-ca-issuer
 kubectl delete ns demo
 ```

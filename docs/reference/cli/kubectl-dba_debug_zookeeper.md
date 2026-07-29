@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug zookeeper
 
-Debug helper for Zookeeper database
+Debug helper for ZooKeeper database
 
 ```
 kubectl-dba debug zookeeper [flags]

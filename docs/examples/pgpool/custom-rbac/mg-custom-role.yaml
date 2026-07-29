@@ -7,7 +7,7 @@ rules:
   - apiGroups:
       - policy
     resourceNames:
-      - mongodb-db
+      - pgpool
     resources:
       - podsecuritypolicies
     verbs:

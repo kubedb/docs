@@ -4,7 +4,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   deletionPolicy: DoNotTerminate
   replicas: 1
   enableSSL: true

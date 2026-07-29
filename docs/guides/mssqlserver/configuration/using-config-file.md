@@ -143,7 +143,7 @@ metadata:
   name: mssql-custom-config
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   configuration:
     secretName: ms-custom-config
   replicas: 1
@@ -208,7 +208,7 @@ tlsprotocols = 1.2
 forceencryption = 1
 [memory]
 memorylimitmb = 2304
-mssql@mssql-custom-config-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P AqRe6WIuqwKXLaWc
+mssql@mssql-custom-config-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P AqRe6WIuqwKXLaWc -No
 1> SELECT encrypt_option FROM sys.dm_exec_connections WHERE session_id = @@SPID;
 2> go
 encrypt_option                          

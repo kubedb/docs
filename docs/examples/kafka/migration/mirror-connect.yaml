@@ -7,7 +7,7 @@ spec:
   authSecret:
     kind: Secret
     name: mirror-connect-auth
-  version: 3.9.0
+  version: 4.2.0
   replicas: 3
   kafkaRef:
     name: target-kafka

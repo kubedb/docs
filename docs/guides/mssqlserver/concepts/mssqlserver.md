@@ -179,7 +179,7 @@ spec:
         labels:
           release: prometheus
         interval: 10s
-  version: 2022-cu12
+  version: 2025-cu0
   deletionPolicy: Halt
 ```
 

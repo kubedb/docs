@@ -90,32 +90,32 @@ metadata:
 spec:
   authPlugin: SearchGuard
   db:
-    image: PRIVATE_REGISTRY/elasticsearch:7.9.3-searchguard
+    image: PRIVATE_REGISTRY/elasticsearch:8.19.9-searchguard
   distribution: SearchGuard
   exporter:
     image: PRIVATE_REGISTRY/elasticsearch_exporter:1.1.0
   initContainer:
     image: PRIVATE_REGISTRY/toybox:0.8.4
-    yqImage: PRIVATE_REGISTRY/elasticsearch-init:7.9.3-searchguard
+    yqImage: PRIVATE_REGISTRY/elasticsearch-init:8.19.9-searchguard
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2
+        name: elasticsearch-backup-8.2.0
         params:
         - name: args
           value: --match=^(?![.])(?!searchguard).+
       restoreTask:
-        name: elasticsearch-restore-7.3.2
-  version: 7.9.3
+        name: elasticsearch-restore-8.2.0
+  version: 8.19.9
 ```
 
 Now, create the ElasticsearchVersion crd,
 
 ```bash
 $ kubectl apply -f pvt-elasticsearchversion.yaml
-elasticsearchversion.kubedb.com/pvt-7.3.2 created
+elasticsearchversion.kubedb.com/xpack-8.19.9 created
 ```
 
 ## Install KubeDB operator
@@ -135,7 +135,7 @@ metadata:
   name: pvt-reg-elasticsearch
   namespace: demo
 spec:
-  version: "xpack-8.19.9"
+  version: "xpack-9.2.3"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -161,7 +161,7 @@ To check if the images pulled successfully from the repository, see if the Elast
 ```bash
 $ kubectl get es -n demo pvt-reg-elasticsearch -o wide
 NAME                    VERSION     STATUS       AGE
-pvt-reg-elasticsearch   pvt-7.3.2   Running      33m
+pvt-reg-elasticsearch   xpack-9.2.3   Running      33m
 ```
 
 ## Snapshot

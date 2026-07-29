@@ -53,7 +53,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.7.1"
   storageType: Durable
   storage:
     storageClassName: "standard"

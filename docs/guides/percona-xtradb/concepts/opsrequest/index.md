@@ -37,7 +37,7 @@ spec:
   databaseRef:
     name: sample-pxc
   updateVersion:
-    targetVersion: 8.0.40
+    targetVersion: 8.4.3
 status:
   conditions:
     - lastTransitionTime: "2020-08-25T18:22:38Z"
@@ -255,6 +255,7 @@ If you want to scale-up or scale-down your PerconaXtraDB cluster or different co
 - `spec.verticalScaling.perconaxtradb` indicates the desired resources for PerconaXtraDB standalone or cluster after scaling.
 - `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
 - `spec.verticalScaling.coordinator` indicates the desired resources for the `coordinator` container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 
 All of them has the below structure:

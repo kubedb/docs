@@ -41,12 +41,12 @@ demo    Active  5s
 
 To deploy with X-Pack, you need to use an `ElasticsearchVersion` where `X-Pack` is used as `authPlugin`.
 
-Here, we are going to use ElasticsearchVersion `7.3.2`.
+Here, we are going to use ElasticsearchVersion `xpack-8.19.9`.
 
 > To change authPlugin, it is recommended to create another `ElasticsearchVersion` CRD. Then, use that `ElasticsearchVersion` to install an Elasticsearch without authentication, or with other authPlugin.
 
 ```bash
-$ kubectl get elasticsearchversions 7.3.2 -o yaml
+$ kubectl get elasticsearchversions xpack-8.19.9 -o yaml
 ```
 
 ```yaml
@@ -57,25 +57,25 @@ metadata:
 spec:
   authPlugin: SearchGuard
   db:
-    image: kubedb/elasticsearch:7.9.3-searchguard
+    image: kubedb/elasticsearch:8.19.9-searchguard
   distribution: SearchGuard
   exporter:
     image: kubedb/elasticsearch_exporter:1.1.0
   initContainer:
     image: kubedb/toybox:0.8.4
-    yqImage: kubedb/elasticsearch-init:7.9.3-searchguard
+    yqImage: kubedb/elasticsearch-init:8.19.9-searchguard
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2
+        name: elasticsearch-backup-8.2.0
         params:
         - name: args
           value: --match=^(?![.])(?!searchguard).+
       restoreTask:
-        name: elasticsearch-restore-7.3.2
-  version: 7.9.3
+        name: elasticsearch-restore-8.2.0
+  version: 8.19.9
 ```
 
 ## Create Elasticsearch
@@ -91,7 +91,7 @@ metadata:
   name: es-xpack-disabled
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   disableSecurity: true
   storage:
     storageClassName: "standard"
@@ -114,7 +114,7 @@ Wait for Elasticsearch to be ready,
 ```bash
 $ kubectl get es -n demo es-xpack-disabled
 NAME                VERSION   STATUS    AGE
-es-xpack-disabled   7.3.2     Running   6m14s
+es-xpack-disabled   xpack-9.2.3     Running   6m14s
 ```
 
 ## Connect to Elasticsearch Database
@@ -174,7 +174,7 @@ $ curl "localhost:9200/_nodes/_all/settings?pretty"
       "transport_address" : "10.244.1.7:9300",
       "host" : "10.244.1.7",
       "ip" : "10.244.1.7",
-      "version" : "7.3.2",
+      "version" : "xpack-9.2.3",
       "build_flavor" : "default",
       "build_type" : "docker",
       "build_hash" : "1c1faf1",

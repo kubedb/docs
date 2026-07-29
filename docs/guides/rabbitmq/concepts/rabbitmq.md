@@ -29,7 +29,7 @@ metadata:
   name: rabbitmq
   namespace: rabbit
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   authSecret:
     kind: Secret
     name: rabbit-auth
@@ -102,7 +102,7 @@ AutoOps is an optional field to control the generation of versionUpdate & TLS-re
 
 `spec.version` is a required field specifying the name of the [RabbitMQVersion](/docs/guides/rabbitmq/concepts/catalog.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `RabbitMQVersion` resources,
 
-- `3.12.12`, `3.13.2`
+- `3.12.12`, `3.13.2`, `4.0.4`, `4.2.4`
 
 ### spec.replicas
 

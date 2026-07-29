@@ -168,6 +168,8 @@ Here, when you specify the resource request for `MySQL` container, the scheduler
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.mysql` and you can scale the resource the same way as `mysql` container.
 
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
+
 >You can increase/decrease resources for both `mysql` container and `exporter` container on a single `MySQLOpsRequest` CR.
 
 ### MySQLOpsRequest `Status`

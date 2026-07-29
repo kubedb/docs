@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: hanadb-cluster
+  timeout: 30m
+  apply: Always

@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: hanadb-configuration
+  namespace: demo
+stringData:
+  global.ini: |
+    [memorymanager]
+    global_allocation_limit = 8589934592

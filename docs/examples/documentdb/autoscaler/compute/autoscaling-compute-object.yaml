@@ -1,0 +1,33 @@
+# Base DocumentDB for COMPUTE autoscaling tests.
+# Resources are deliberately LOW (cpu 500m / memory 1Gi) so a compute autoscaler
+# with minAllowed above these values deterministically recommends a scale-UP to
+# minAllowed (the recommendation floor), which creates a VerticalScaling ops request.
+# local-path is fine for compute tests (no volume expansion involved).
+apiVersion: kubedb.com/v1alpha2
+kind: DocumentDB
+metadata:
+  name: dcdb
+  namespace: demo
+spec:
+  version: 'pg17-0.109.0'
+  storageType: Durable
+  deletionPolicy: Delete
+  replicas: 3
+  podTemplate:
+    spec:
+      containers:
+        - name: documentdb
+          resources:
+            requests:
+              cpu: 500m
+              memory: 1Gi
+            limits:
+              cpu: 500m
+              memory: 1Gi
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi

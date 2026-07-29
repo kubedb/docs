@@ -157,7 +157,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"  
+  version: "3.0.1-debian"  
   replicas: 3
   backend:
     name: mysql-server

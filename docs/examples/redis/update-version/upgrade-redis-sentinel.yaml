@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: rd-sample
   updateVersion:
-    targetVersion: 7.0.4
+    targetVersion: 8.2.2

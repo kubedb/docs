@@ -103,7 +103,7 @@ metadata:
   name: sdb-tls
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -186,7 +186,7 @@ Now, wait for `SingleStore` going on `Running` state and also wait for `PetSet` 
 ```bash
 $ kubectl get sdb,petset -n demo
 NAME                             TYPE                  VERSION   STATUS   AGE
-singlestore.kubedb.com/sdb-tls   kubedb.com/v1alpha2   8.7.10    Ready    3m57s
+singlestore.kubedb.com/sdb-tls   kubedb.com/v1alpha2   8.9.3    Ready    3m57s
 
 NAME                                              AGE
 petset.apps.k8s.appscode.com/sdb-tls-aggregator   3m53s
@@ -204,7 +204,7 @@ Let's check the tls-secrets have created,
 ```bash
 $ kubectl get secret -n demo | grep sdb-tls
 sdb-tls-client-cert   kubernetes.io/tls          3      5m41s
-sdb-tls-root-cred     kubernetes.io/basic-auth   2      5m41s
+sdb-tls-auth     kubernetes.io/basic-auth   2      5m41s
 sdb-tls-server-cert   kubernetes.io/tls 
 ```
 

@@ -45,7 +45,7 @@ Here, we are going to deploy an `Solr` in combined cluster mode using a supporte
 
 ### Deploy Solr Combined
 
-In this section, we are going to deploy an Solr combined cluster with SolrVersion `9.6.1`.  Then, in the next section, we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to deploy an Solr combined cluster with SolrVersion `9.8.0`.  Then, in the next section, we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -54,7 +54,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   replicas: 2
   zookeeperRef:
     name: zoo

@@ -4,7 +4,7 @@ metadata:
   name: ch
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 25.12.3
   replicas: 1
   storage:
     accessModes:

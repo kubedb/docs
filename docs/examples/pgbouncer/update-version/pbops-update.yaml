@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: pb-update
   updateVersion:
-    targetVersion: 1.23.1
+    targetVersion: 1.24.0

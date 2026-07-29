@@ -31,7 +31,7 @@ KubeDB supports providing TLS/SSL encryption for `Memcached`. This tutorial will
   namespace/demo created
   ```
 
-> Note: YAML files used in this tutorial are stored in [docs/examples/Memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/Memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: YAML files used in this tutorial are stored in [docs/examples/memcached](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/memcached) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
 
@@ -89,7 +89,7 @@ spec:
 Apply the `YAML` file:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/tls/memcached-ca-issuer.yaml
 issuer.cert-manager.io/memcached-ca-issuer created
 ```
 
@@ -105,7 +105,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -129,10 +129,10 @@ memcached.kubedb.com/memcd-quickstart created
 Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 
 ```bash
-$ watch kubectl get rd -n demo
+$ watch kubectl get memcached -n demo
 Every 2.0s: kubectl get memcached -n demo
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    19m
+memcd-quickstart   1.6.40    Ready    19m
 ```
 
 ### Verify TLS/SSL in Memcached

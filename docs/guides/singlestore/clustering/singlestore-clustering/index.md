@@ -57,7 +57,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 1
@@ -112,7 +112,7 @@ singlestore.kubedb.com/sample-sdb created
 ```
 Here,
 
-- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.7.10` database is going to be created.
+- `spec.version` is the name of the SinglestoreVersion CRD where the docker images are specified. In this tutorial, a SingleStore `8.9.3` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
 - `spec.topology.aggregator.replicas` or `spec.topology.leaf.replicas` specifies that the number replicas that will be used for aggregator or leaf.
 - `spec.storageType` specifies the type of storage that will be used for SingleStore database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create SingleStore database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -154,7 +154,7 @@ kind: Singlestore
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sample-sdb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}}}}},"version":"8.7.10"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sample-sdb","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":1,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"0.6","memory":"2Gi"},"requests":{"cpu":"0.6","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}}}}},"version":"8.9.3"}}
   creationTimestamp: "2024-10-01T09:39:36Z"
   finalizers:
   - kubedb.com
@@ -165,7 +165,7 @@ metadata:
   uid: 22b254e0-d185-413c-888f-ca4c2524e909
 spec:
   authSecret:
-    name: sample-sdb-root-cred
+    name: sample-sdb-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
@@ -316,7 +316,7 @@ spec:
         resources:
           requests:
             storage: 10Gi
-  version: 8.7.10
+  version: 8.9.3
 status:
   conditions:
   - lastTransitionTime: "2024-10-01T09:39:36Z"
@@ -355,28 +355,28 @@ status:
 
 ## Connect with SingleStore database
 
-KubeDB operator has created a new Secret called `sample-sdb-root-cred` *(format: {singlestore-object-name}-root-cred)* for storing the password for `singlestore` superuser. This secret contains a `username` key which contains the *username* for SingleStore superuser and a `password` key which contains the *password* for SingleStore superuser.
+KubeDB operator has created a new Secret called `sample-sdb-auth` *(format: {singlestore-object-name}-auth)* for storing the password for `singlestore` superuser. This secret contains a `username` key which contains the *username* for SingleStore superuser and a `password` key which contains the *password* for SingleStore superuser.
 
-If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [here](/docs/guides/mysql/concepts/database/index.md#specdatabasesecret).
+If you want to use an existing secret please specify that when creating the SingleStore object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `root` as value of `username`. For more details see [the SingleStore database secret reference](/docs/guides/mysql/concepts/database/index.md#specauthsecret).
 
-Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sample-sdb-root-cred` secret holds username and password
+Now, we need `username` and `password` to connect to this database from `kubectl exec` command. In this example  `sample-sdb-auth` secret holds username and password
 
 ```bash
-$ kubectl get pod -n demo sample-sdb-master-aggregator-0 -oyaml | grep podIP
+$ kubectl get pod -n demo sample-sdb-aggregator-0 -oyaml | grep podIP
   podIP: 10.244.0.14
-$ kubectl get secrets -n demo sample-sdb-root-cred -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.username}' | base64 -d
   root
-$ kubectl get secrets -n demo sample-sdb-root-cred -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo sample-sdb-auth -o jsonpath='{.data.password}' | base64 -d
   J0h_BUdJB8mDO31u
 ```
-we will exec into the pod `sample-sdb-master-aggregator-0` and connect to the database using username and password
+we will exec into the pod `sample-sdb-aggregator-0` and connect to the database using username and password
 
 ```bash
 $ kubectl exec -it -n demo sample-sdb-aggregator-0 -- bash
 Defaulting container name to singlestore.
 Use 'kubectl describe pod/sample-sdb-aggregator-0 -n demo' to see all of the containers in this pod.
 
-[memsql@sample-sdb-master-aggregator-0 /]$ memsql -uroot -p"J0h_BUdJB8mDO31u"
+[memsql@sample-sdb-aggregator-0 /]$ memsql -uroot -p"J0h_BUdJB8mDO31u"
 singlestore-client: [Warning] Using a password on the command line interface can be insecure.
 Welcome to the MySQL monitor.  Commands end with ; or \g.
 Your MySQL connection id is 1114

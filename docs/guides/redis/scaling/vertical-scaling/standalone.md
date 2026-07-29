@@ -42,7 +42,7 @@ Here, we are going to deploy a  `Redis` standalone using a supported version by 
 
 ### Prepare Redis Standalone Database
 
-Now, we are going to deploy a `Redis` standalone database with version `6.2.14`.
+Now, we are going to deploy a `Redis` standalone database with version `8.2.2`.
 
 ### Deploy Redis standalone 
 
@@ -55,7 +55,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -142,6 +142,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `redis-quickstart` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.verticalScaling.redis` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/redis/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

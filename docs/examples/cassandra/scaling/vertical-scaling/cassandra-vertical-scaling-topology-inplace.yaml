@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: cassandra-vertical-scale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: cassandra-prod
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "2"
+        limits:
+          memory: "4Gi"
+          cpu: "3"
+  timeout: 5m
+  apply: IfReady

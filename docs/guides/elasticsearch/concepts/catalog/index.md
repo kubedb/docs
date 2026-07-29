@@ -90,7 +90,7 @@ We follow this convention for naming ElasticsearchVersion CRD:
 
 - Name format: `{Security Plugin Name}-{Application Version}-{Modification Tag}`
 
-- Samples: `xpack-8.19.9`, `xpack-8.19.9`, `opensearch-2.19.2`, etc.
+- Samples: `xpack-8.19.9`, `searchguard-7.9.3`, `opensearch-2.19.2`, etc.
 
 We use the original Elasticsearch docker image provided by the distributors. Then we bundle the image with the necessary sidecar and init container images which facilitate features like sysctl kernel settings, custom configuration, monitoring matrices, etc.  An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features.
 

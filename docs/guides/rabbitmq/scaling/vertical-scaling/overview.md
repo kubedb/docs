@@ -46,4 +46,24 @@ The vertical scaling process consists of the following steps:
 
 9. After the successful update  of the `RabbitMQ` resources, the `KubeDB` Ops-manager operator resumes the `RabbitMQ` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
 
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `RabbitMQOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
+
 In the next docs, we are going to show a step by step guide on updating resources of RabbitMQ database using `RabbitMQOpsRequest` CRD.

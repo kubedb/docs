@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ZooKeeperOpsRequest
+metadata:
+  name: vscale-inplace
+  namespace: demo
+spec:
+  databaseRef:
+    name: zk-quickstart
+  type: VerticalScaling
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2Gi
+        requests:
+          cpu: 1
+          memory: 2Gi
+  timeout: 5m
+  apply: IfReady

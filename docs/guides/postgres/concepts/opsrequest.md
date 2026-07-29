@@ -37,7 +37,7 @@ spec:
     name: pg-group
   type: UpdateVersion
   updateVersion:
-    targetVersion: "17.5"
+    targetVersion: "18.3"
 status:
   conditions:
   - lastTransitionTime: "2020-06-11T09:59:05Z"
@@ -167,6 +167,8 @@ limits:
 Here, when you specify the resource request for `Postgres` container, the scheduler uses this information to decide which node to place the container of the Pod on and when you specify a resource limit for `Postgres` container, the `kubelet` enforces those limits so that the running container is not allowed to use more of that resource than the limit you set. you can found more details from [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/)
 
 - `spec.verticalScaling.exporter` indicates the `exporter` container resources. It has the same structure as `spec.verticalScaling.postgres` and you can scale the resource the same way as `postgres` container.
+
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`. For a distributed deployment, in-place resize is not possible, so `InPlace` degrades to `Restart`.
 
 >You can increase/decrease resources for both `postgres` container and `exporter` container on a single `PostgresOpsRequest` CR.
 

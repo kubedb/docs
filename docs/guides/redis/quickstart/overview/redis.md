@@ -86,7 +86,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -110,7 +110,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -298,7 +298,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Delete
-  version: 6.2.14
+  version: 8.2.2
 status:
   conditions:
     - lastTransitionTime: "2022-05-31T04:31:38Z"

@@ -70,7 +70,7 @@ Wait for Elasticsearch to be ready,
 ```bash
 $ kubectl get es -n demo es-sg-disabled
 NAME             VERSION   STATUS    AGE
-es-sg-disabled   6.3-v1    Running   27m
+es-sg-disabled   searchguard-7.9.3    Running   27m
 ```
 
 ## Connect to Elasticsearch Database

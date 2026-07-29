@@ -42,7 +42,7 @@ Here, we are going to deploy a `Hazelcast` database using a supported version by
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.6`.
 
 ### Deploy Hazelcast
 
@@ -56,7 +56,23 @@ secret/hz-license-key created
 In this section, we are going to deploy a Hazelcast database. Then, in the next section we will update the resources using `HazelcastOpsRequest` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
-
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hz-prod
+  namespace: demo
+spec:
+  deletionPolicy: WipeOut
+  licenseSecret:
+    name: hz-license-key
+  replicas: 3
+  version: 5.5.6
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
 ```
 
 Let's create the `Hazelcast` CR we have shown above,
@@ -128,6 +144,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `hz-prod` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.verticalScaling.hazelcast` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/hazelcast/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `HazelcastOpsRequest` CR we have shown above,
 
@@ -223,7 +240,7 @@ Status:
     Status:                True
     Type:                  EvictPod--hz-prod-1
     Last Transition Time:  2025-08-19T11:12:50Z
-    Message:               Successfully completed the vertical scaling for RabbitMQ
+    Message:               Successfully completed the vertical scaling for Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -265,6 +282,41 @@ $ kubectl get pod -n demo hz-prod-0 -o json | jq '.spec.containers[].resources'
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Hazelcast database.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`HazelcastOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HazelcastOpsRequest
+metadata:
+  name: hz-vscale-up-inplace
+  namespace: demo
+spec:
+  databaseRef:
+    name: hz-prod
+  type: VerticalScaling
+  verticalScaling:
+    mode: InPlace
+    hazelcast:
+      resources:
+        limits:
+          cpu: 1
+          memory: 2.5Gi
+        requests:
+          cpu: 1
+          memory: 2.5Gi
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/scaling/vertical-scaling/hz-vscale-up-inplace.yaml
+hazelcastopsrequest.ops.kubedb.com/hz-vscale-up-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning up
 

@@ -60,7 +60,7 @@ metadata:
   name: mgo-init-script
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -75,7 +75,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/Initialization/replicaset.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mongodb/initialization/demo-1.yaml
 mongodb.kubedb.com/mgo-init-script created
 ```
 
@@ -311,7 +311,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: Delete
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
     - lastTransitionTime: "2021-02-10T04:38:53Z"
@@ -354,7 +354,7 @@ $ kubectl get secrets -n demo mgo-init-script-auth -o yaml
 apiVersion: v1
 data:
   password: eGtBaTRmRVpmSVFrNmczVw==
-  user: cm9vdA==
+  username: cm9vdA==
 kind: Secret
 metadata:
   creationTimestamp: "2019-02-06T09:43:54Z"
@@ -372,15 +372,15 @@ type: Opaque
 Now, you can connect to this database through [mongo-shell](https://docs.mongodb.com/v3.4/mongo/). In this tutorial, we are connecting to the MongoDB server from inside the pod.
 
 ```bash
-$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mgo-init-script-auth -o jsonpath='{.data.password}' | base64 -d
 oEwk7IGxCPM5OWo5
 
 $ kubectl exec -it mgo-init-script-0 -n demo sh
 
-> mongo admin
+> mongosh admin
 MongoDB shell version v3.4.10
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 3.4.10

@@ -27,4 +27,4 @@ spec:
             cpu: "200m"
             memory: "1Gi"
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore

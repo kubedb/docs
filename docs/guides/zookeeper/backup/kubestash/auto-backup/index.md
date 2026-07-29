@@ -50,7 +50,7 @@ We are going to store our backed up data into a `s3` bucket. We have to create a
 
 **Create Secret:**
 
-Let's create a secret called `s3-secret` with access credentials to our desired GCS bucket,
+Let's create a secret called `s3-secret` with access credentials to our desired s3 bucket,
 
 ```bash
 $ echo -n '<your-aws-access-key-id-here>' > AWS_ACCESS_KEY_ID
@@ -219,7 +219,7 @@ metadata:
     blueprint.kubestash.com/name: zookeeper-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -412,7 +412,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 3.8.3
+    kubedb.com/db-version: 3.9.1
     kubestash.com/app-ref-kind: ZooKeeper
     kubestash.com/app-ref-name: sample-zookeeper
     kubestash.com/app-ref-namespace: demo
@@ -450,10 +450,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-interim/data
-          id: 280cbe5908773859259f0921d89e677f4c0ab40c3e4bedee6b95ab2c9ef474e9
-          size: 718 B
-          uploaded: 1.075 KiB
+        - summary:
+            hostPath: /kubestash-interim/data
+            id: 280cbe5908773859259f0921d89e677f4c0ab40c3e4bedee6b95ab2c9ef474e9
+            size: 718 B
+            uploaded: 1.075 KiB
       size: 1.835 KiB
   conditions:
     - lastTransitionTime: "2024-09-19T08:55:01Z"
@@ -571,7 +572,7 @@ metadata:
     variables.kubestash.com/targetName: sample-zookeeper-2
     variables.kubestash.com/targetedDatabase: zookeeper
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -714,7 +715,7 @@ KubeStash triggers an instant backup as soon as the `BackupConfiguration` is rea
 ```bash
 $ kubectl get backupsession -n demo -w
 NAME                                                        INVOKER-TYPE          INVOKER-NAME                   PHASE       DURATION   AGE
-appbinding-sample-zookeeper-2-frequent-backup-1726742400    BackupConfiguration   appbinding-sample-zookeeper     Succeeded   58s        112s
+appbinding-sample-zookeeper-2-frequent-backup-1726742400    BackupConfiguration   appbinding-sample-zookeeper-2   Succeeded   58s        112s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -761,7 +762,7 @@ metadata:
     - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 3.8.3
+    kubedb.com/db-version: 3.9.1
     kubestash.com/app-ref-kind: ZooKeeper
     kubestash.com/app-ref-name: sample-zookeeper-2
     kubestash.com/app-ref-namespace: demo
@@ -799,10 +800,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: /kubestash-interim/data
-          id: 5356f92f84ad9b1ce170a99796eee91983e6df62e224d592d85fb0811a2fbb38
-          size: 719 B
-          uploaded: 1.075 KiB
+        - summary:
+            hostPath: /kubestash-interim/data
+            id: 5356f92f84ad9b1ce170a99796eee91983e6df62e224d592d85fb0811a2fbb38
+            size: 719 B
+            uploaded: 1.075 KiB
       size: 1.839 KiB
   conditions:
     - lastTransitionTime: "2024-09-19T10:40:01Z"

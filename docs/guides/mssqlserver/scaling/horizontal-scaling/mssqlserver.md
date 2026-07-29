@@ -57,7 +57,7 @@ NAME        VERSION   DB_IMAGE                                                DE
 2022-cu14   2022      mcr.microsoft.com/mssql/server:2022-CU14-ubuntu-22.04                176m
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a MSSQLServer Cluster using `MSSQLServer` `2022-cu12`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MSSQLServer`. You can use any non-deprecated version. Here, we are going to create a MSSQLServer Cluster using `MSSQLServer` `2025-cu0`.
 
 **Deploy MSSQLServer Cluster:**
 
@@ -105,7 +105,7 @@ metadata:
   name: mssql-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 2
   topology:
     mode: AvailabilityGroup
@@ -186,7 +186,7 @@ $ kubectl get secrets -n demo mssql-ag-cluster-auth -o jsonpath='{.data.\passwor
 Now, connect to the database using username and password, check the name of the created availability group, replicas of the availability group and see if databases are added to the availability group.
 ```bash
 $ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
-mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206"
+mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> select name from sys.databases
 2> go
 name                                                  
@@ -450,7 +450,7 @@ I1024 15:10:24.650632       1 health.go:51] 1:1A (4294967322)
 Now, connect to the database, check updated configurations of the availability group cluster. 
 ```bash
 $ kubectl exec -it -n demo mssql-ag-cluster-2 -c mssql -- bash
-mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206"
+mssql@mssql-ag-cluster-2:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> SELECT name FROM sys.availability_groups
 2> go
 name                                                                                                                            
@@ -680,7 +680,7 @@ pod/mssql-ag-cluster-1   2/2     Running   0          38m
 Now, connect to the database, check updated configurations of the availability group cluster.
 ```bash
 $ kubectl exec -it -n demo mssql-ag-cluster-0 -c mssql -- bash
-mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206"
+mssql@mssql-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P "123KKxgOXuOkP206" -No
 1> SELECT name FROM sys.availability_groups
 2> go
 name                                                                                                                            

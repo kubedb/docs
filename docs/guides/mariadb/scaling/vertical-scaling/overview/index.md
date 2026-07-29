@@ -22,7 +22,7 @@ This guide will give an overview on how KubeDB Ops Manager vertically scales up 
   - [MariaDB](/docs/guides/mariadb/concepts/mariadb/)
   - [MariaDBOpsRequest](/docs/guides/mariadb/concepts/opsrequest/)
 
-## How Horizontal Scaling Process Works
+## How Vertical Scaling Process Works
 
 The following diagram shows how KubeDB Ops Manager scales up or down `MariaDB` database components. Open the image in a new tab to see the enlarged version.
 
@@ -50,5 +50,26 @@ The vertical scaling process consists of the following steps:
 8. After the successful update of the resources of the PetSet's replica, the `KubeDB` Enterprise operator updates the `MariaDB` object to reflect the updated state.
 
 9. After the successful update  of the `MariaDB` resources, the `KubeDB` Enterprise operator resumes the `MariaDB` object so that the `KubeDB` Community operator resumes its usual operations.
+
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `MariaDBOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod. For a **distributed** `MariaDB`
+  deployment, in-place resize is not possible, so `InPlace` automatically degrades to `Restart`.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
 
 In the next docs, we are going to show a step by step guide on updating resources of MariaDB database using `MariaDBOpsRequest` CRD.

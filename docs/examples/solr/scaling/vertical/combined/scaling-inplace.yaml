@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SolrOpsRequest
+metadata:
+  name: slops-vscale-combined-inplace
+  namespace: demo
+spec:
+  databaseRef:
+    name: solr-cluster
+  type: VerticalScaling
+  verticalScaling:
+     mode: InPlace
+     node:
+       resources:
+         limits:
+           cpu: 1
+           memory: 2.5Gi
+         requests:
+           cpu: 1
+           memory: 2.5Gi

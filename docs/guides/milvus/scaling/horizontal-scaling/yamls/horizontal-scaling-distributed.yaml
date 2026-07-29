@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: milvus-hscale-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: milvus-cluster
+  horizontalScaling:
+    topology:
+      proxy: 1
+      streamingnode: 1

@@ -42,7 +42,7 @@ metadata:
   name: solr-cluster
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   zookeeperRef:
     name: zoo
     namespace: demo

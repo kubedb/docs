@@ -60,7 +60,7 @@ Now, we are going to deploy a `Solr` topology cluster using a supported version 
 
 #### Deploy Solr Topology
 
-In this section, we are going to deploy a Solr topology cluster with version `9.6.1`.  Then, in the next section we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to deploy a Solr topology cluster with version `9.8.0`.  Then, in the next section we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -69,7 +69,7 @@ metadata:
   name: solr-cluster
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   zookeeperRef:
     name: zoo
     namespace: demo

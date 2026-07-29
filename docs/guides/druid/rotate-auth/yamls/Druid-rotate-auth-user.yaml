@@ -10,6 +10,6 @@ spec:
   authentication:
     secretRef:
       kind: Secret
-      name: sample-druid-auth-user
+      name: druid-quickstart-auth-user
   timeout: 5m
   apply: IfReady

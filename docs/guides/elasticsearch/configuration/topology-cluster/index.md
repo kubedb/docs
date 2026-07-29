@@ -140,7 +140,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   configuration:
     secretName: es-custom-config # mentioned here!
   storageType: Durable
@@ -187,9 +187,9 @@ Now, wait for the Elasticsearch to become ready:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION          STATUS         AGE
-es-topology   xpack-8.19.9   Provisioning   12s
-es-topology   xpack-8.19.9   Provisioning   2m2s
-es-topology   xpack-8.19.9   Ready          2m2s
+es-topology   xpack-9.2.3   Provisioning   12s
+es-topology   xpack-9.2.3   Provisioning   2m2s
+es-topology   xpack-9.2.3   Ready          2m2s
 ```
 
 ## Verify Configuration
@@ -213,14 +213,14 @@ Now, our Elasticsearch cluster is accessible at `localhost:9200`.
 - Username:
 
   ```bash
-  $ kubectl get secret -n demo es-topology-elastic-cred -o jsonpath='{.data.username}' | base64 -d
+  $ kubectl get secret -n demo es-topology-auth -o jsonpath='{.data.username}' | base64 -d
   elastic
   ```
 
 - Password:
 
   ```bash
-  $ kubectl get secret -n demo es-topology-elastic-cred -o jsonpath='{.data.password}' | base64 -d
+  $ kubectl get secret -n demo es-topology-auth -o jsonpath='{.data.password}' | base64 -d
   F2sIde1TbZqOR_gF
   ```
 

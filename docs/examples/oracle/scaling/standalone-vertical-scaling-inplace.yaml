@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: standalone-vertical-scaling-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: oracle-sa-sample
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        limits:
+          memory: "10Gi"
+          cpu: "5"
+        requests:
+          memory: "10Gi"
+          cpu: "3"

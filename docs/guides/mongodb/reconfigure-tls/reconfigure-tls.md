@@ -48,7 +48,7 @@ metadata:
   name: mg-rs
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicas: 3
   replicaSet:
     name: rs0
@@ -196,13 +196,13 @@ Now, we can connect to this database through [mongo-shell](https://docs.mongodb.
 
 
 ```bash
-$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-rs-auth -o jsonpath='{.data.password}' | base64 -d
 U6(h_pYrekLZ2OOd
 
-$ kubectl exec -it mg-rs-0 -n demo -- mongo admin -u root -p 'U6(h_pYrekLZ2OOd'
+$ kubectl exec -it mg-rs-0 -n demo -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
 rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 {
 	"sslMode" : "disabled",
@@ -444,7 +444,7 @@ subject=CN=root,OU=client,O=mongo
 Now, we can connect using `CN=root,OU=client,O=mongo` as root to connect to the mongo shell of the master pod,
 
 ```bash
-root@mgo-rs-tls-2:/$ mongo --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,OU=client,O=mongo" --quiet
+root@mgo-rs-tls-2:/$ mongosh --tls --tlsCAFile /var/run/mongodb/tls/ca.crt --tlsCertificateKeyFile /var/run/mongodb/tls/client.pem admin --host localhost --authenticationMechanism MONGODB-X509 --authenticationDatabase='$external' -u "CN=root,OU=client,O=mongo" --quiet
 rs0:PRIMARY>
 ```
 
@@ -965,7 +965,7 @@ Events:
 Now, Let's exec into the database primary node and find out that TLS is disabled or not.
 
 ```bash
-$ kubectl exec -it -n demo mg-rs-1 -- mongo admin -u root -p 'U6(h_pYrekLZ2OOd'
+$ kubectl exec -it -n demo mg-rs-1 -- mongosh admin -u root -p 'U6(h_pYrekLZ2OOd'
 rs0:PRIMARY> db.adminCommand({ getParameter:1, sslMode:1 })
 {
 	"sslMode" : "disabled",

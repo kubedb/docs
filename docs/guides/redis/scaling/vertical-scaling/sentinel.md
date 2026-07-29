@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
+Now, we are going to deploy a `RedisSentinel` instance with version `8.2.2` and a `Redis` database with version `8.2.2`. Then, in the next section we are going to apply vertical scaling on the sentinel and the database using `RedisOpsRequest` CRD
 
 ### Deploy RedisSentinel :
 
@@ -52,7 +52,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:
@@ -113,7 +113,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sen-sample
@@ -202,6 +202,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `sen-sample` RedisSentinel instance.
 - `spec.type` specifies that we are going to perform `VerticalScaling` on our database.
 - `spec.verticalScaling.redissentinel` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/redis/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
@@ -276,6 +277,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `rd-sample` Redis database.
 - `spec.type` specifies that we are going to perform `VerticalScaling` on our database.
 - `spec.VerticalScaling.redis` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/redis/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

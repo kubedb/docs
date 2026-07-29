@@ -42,7 +42,7 @@ Here, we are going to deploy a `RabbitMQ` using a supported version by `KubeDB` 
 
 ### Deploy RabbitMQ 
 
-In this section, we are going to deploy a RabbitMQ. We are going to deploy a `RabbitMQ` with version `3.13.2`. Then, in the next section we will scale the rabbitmq using `RabbitMQOpsRequest` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to deploy a RabbitMQ. We are going to deploy a `RabbitMQ` with version `4.2.4`. Then, in the next section we will scale the rabbitmq using `RabbitMQOpsRequest` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -51,7 +51,7 @@ metadata:
   name: rabbitmq
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -75,7 +75,7 @@ Now, wait until `rabbitmq` has status `Ready`. i.e,
 ```bash
 $ kubectl get rm -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-rabbitmq        kubedb.com/v1alpha2   3.13.2     Ready    2m
+rabbitmq        kubedb.com/v1alpha2   4.2.4     Ready    2m
 ```
 
 Let's check the number of replicas this rabbitmq has from the RabbitMQ object, number of pods the PetSet have,

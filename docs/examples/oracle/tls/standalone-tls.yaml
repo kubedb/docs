@@ -1,0 +1,31 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: standalone-tls
+  namespace: demo
+spec:
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  version: "21.3.0"
+  edition: enterprise
+  mode: Standalone
+  storageType: Durable
+  tcpsConfig:
+    tls:
+      issuerRef:
+        apiGroup: cert-manager.io
+        name: oracle-ca-issuer
+        kind: Issuer
+    tcpsListener:
+      port: 2484
+  replicas: 1
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut

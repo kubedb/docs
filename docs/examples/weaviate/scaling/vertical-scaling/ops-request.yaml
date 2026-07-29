@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: wvops-vertical-scale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: weaviate-sample
+  verticalScaling:
+    node:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady

@@ -60,7 +60,7 @@ Now, we are going to deploy a `MongoDB` sharded database using a supported versi
 
 #### Deploy MongoDB Sharded Database
 
-In this section, we are going to deploy a MongoDB sharded database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB sharded database with version `8.0.17`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -69,7 +69,7 @@ metadata:
   name: mg-sh
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   shardTopology:
     configServer:
@@ -110,7 +110,7 @@ mg-sh     4.4.26      Ready     3m51s
 Let's check volume size from one of the shard petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -385,7 +385,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the shard nodes of the database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-sh-shard0 -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                            STORAGECLASS          REASON   AGE

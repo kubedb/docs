@@ -1,5 +1,5 @@
 ---
-title: Backup & Restore PostgreSQL | KubeStash
+title: Backup & Restore ZooKeeper | KubeStash
 menu:
   docs_{{ .version }}:
     identifier: guides-zk-backup-stashv2

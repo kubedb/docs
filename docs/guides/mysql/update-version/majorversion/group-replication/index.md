@@ -65,6 +65,7 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 ```
 
 The version above that does not show `DEPRECATED` true is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` group replication that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -134,9 +135,9 @@ spec:
   updateConstraints:
     allowlist:
       groupReplication:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
       standalone:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
     denylist:
       groupReplication:
       - < 8.4.8
@@ -145,7 +146,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints.denylist` of `8.4.8` is showing that updating below version of `8.4.8` is not possible for both group replication and standalone. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `8.4.8`.
+The above `spec.updateConstraints` of `8.4.8` is showing that for both group replication and standalone, updating below version of `8.4.8` is not possible (denylist) and updating is allowed within the range `>= 8.4.8, <= 9.7.1` (allowlist). Here, we are going to create a `MySQL` Group Replication using MySQL  `8.4.8`. Then we are going to update this version to `9.7.1`.
 
 **Deploy MySQL Group Replication:**
 
@@ -191,7 +192,7 @@ $ watch -n 3 kubectl get my -n demo my-group
 NAME       VERSION      STATUS    AGE
 my-group   8.4.8    Running   5m52s
 
-$ watch -n 3 kubectl get sts -n demo my-group
+$ watch -n 3 kubectl get petset -n demo my-group
 
 NAME       READY   AGE
 my-group   3/3     7m12s
@@ -210,7 +211,7 @@ Let's verify the `MySQL`, the `PetSet` and its `Pod` image version,
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
 8.4.8
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
 "kubedb/mysql:8.4.8"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
@@ -222,10 +223,10 @@ $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubern
 Let's also verify that the PetSet’s pods have joined into a group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 7gUARa&Jkg.ypJE8
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -244,7 +245,7 @@ We are ready to apply updating on this `MySQL` group replication.
 
 #### UpdateVesion
 
-Here, we are going to update the `MySQL` group replication from `8.4.8` to `8.4.8`.
+Here, we are going to update the `MySQL` group replication from `8.4.8` to `9.7.1`.
 
 **Create MySQLOpsRequest:**
 
@@ -261,19 +262,19 @@ spec:
   databaseRef:
     name: my-group
   updateVersion:
-    targetVersion: "8.0.36"
+    targetVersion: "9.7.1"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `8.4.8` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.7.1` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/update_major_version_group.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/update-version/majorversion/group-replication/yamls/upgrade_major_version_group.yaml
 mysqlopsrequest.ops.kubedb.com/my-update-major-group created
 ```
 
@@ -318,7 +319,7 @@ Spec:
     Name:  my-group
   Type:    UpdateVersion
   UpdateVersion:
-    Target Version:  8.0.36
+    Target Version:  9.7.1
 Status:
   Conditions:
     Last Transition Time:  2022-06-30T07:55:16Z
@@ -367,24 +368,24 @@ Now, we are going to verify whether the `MySQL` and `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get my -n demo my-group -o=jsonpath='{.spec.version}{"\n"}'
-8.0.36
+9.7.1
 
-$ kubectl get sts -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
-"kubedb/mysql:8.0.36"
+$ kubectl get petset -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.template.spec.containers[1].image'
+"kubedb/mysql:9.7.1"
 
 $ kubectl get pod -n demo -l app.kubernetes.io/name=mysqls.kubedb.com,app.kubernetes.io/instance=my-group -o json | jq '.items[].spec.containers[1].image'
-"kubedb/mysql:8.0.36"
-"kubedb/mysql:8.0.36"
-"kubedb/mysql:8.0.36"
+"kubedb/mysql:9.7.1"
+"kubedb/mysql:9.7.1"
+"kubedb/mysql:9.7.1"
 ```
 
 Let's also check the PetSet pods have joined the `MySQL` group replication,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 7gUARa&Jkg.ypJE8
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password='7gUARa&Jkg.ypJE8' --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -392,9 +393,9 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 | CHANNEL_NAME              | MEMBER_ID                            | MEMBER_HOST                       | MEMBER_PORT | MEMBER_STATE | MEMBER_ROLE | MEMBER_VERSION | MEMBER_COMMUNICATION_STACK |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
-| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 8.0.36         | XCom                       |
-| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
-| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 8.0.36         | XCom                       |
+| group_replication_applier | b0e71e0c-f849-11ec-a315-46392c50e39c | my-group-1.my-group-pods.demo.svc |        3306 | ONLINE       | PRIMARY     | 9.7.1          | XCom                       |
+| group_replication_applier | b34b16d7-f849-11ec-9362-a2f432876ee4 | my-group-2.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.7.1          | XCom                       |
+| group_replication_applier | b5542a4a-f849-11ec-9a75-3e8abd17fee6 | my-group-0.my-group-pods.demo.svc |        3306 | ONLINE       | SECONDARY   | 9.7.1          | XCom                       |
 +---------------------------+--------------------------------------+-----------------------------------+-------------+--------------+-------------+----------------+----------------------------+
 
 ```

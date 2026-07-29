@@ -144,7 +144,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "15.5"
+  version: "18.3"
 ```
 
 ```bash
@@ -156,7 +156,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get pg -n demo
 NAME              VERSION   STATUS   AGE
-pg-singapore      15.3      Ready    22h
+pg-singapore      18.3      Ready    22h
 ```
 
 # Exposing to outside world
@@ -191,7 +191,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingress.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/yamls/pg-ingres.yaml
 ingress.networking.k8s.io/pg-singapore created
 $ kubectl get ingress -n demo
 NAME              CLASS   HOSTS                           ADDRESS          PORTS   AGE
@@ -268,7 +268,7 @@ spec:
     storageClassName: linode-block-storage
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "15.5"
+  version: "18.3"
 ```
 
 ```bash
@@ -282,7 +282,7 @@ KubeDB operator sets the `status.phase` to `Ready` once the database is successf
 ```bash
 $ kubectl get pg -n demo 
 NAME           VERSION   STATUS   AGE
-pg-london      15.3      Ready    7m17s
+pg-london      18.3      Ready    7m17s
 ```
 
 ##  Validate Remote Replica
@@ -360,7 +360,7 @@ kubectl delete -n demo pg/pg-singapore
 kubectl delete -n demo pg/pg-london
 kubectl delete secret -n demo pg-singapore-auth
 kubectl delete secret -n demo pg-london-auth
-kubectl delete ingres -n demo pg-singapore
+kubectl delete ingress -n demo pg-singapore
 kubectl delete ns demo
 ```
 

@@ -56,6 +56,7 @@ metadata:
   namespace: demo
 spec:
   version: "1.17.0"
+  mode: Distributed
   replicas: 3
   storage:
     storageClassName: "standard"

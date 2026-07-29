@@ -266,7 +266,7 @@ metadata:
     blueprint.kubestash.com/name: druid-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -438,7 +438,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: default-blueprint
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   name: default-blueprint-appbinding-samruid-frequent-backup-1726741846
   namespace: demo
   ownerReferences:
@@ -472,10 +472,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 8f2b5f5d8a7a18304917e2d4c5a3636f8927085b15c652c35d5fca4a9988515d
-          size: 3.750 MiB
-          uploaded: 3.751 MiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: 8f2b5f5d8a7a18304917e2d4c5a3636f8927085b15c652c35d5fca4a9988515d
+            size: 3.750 MiB
+            uploaded: 3.751 MiB
       size: 674.017 KiB
 ```
 
@@ -550,7 +551,7 @@ Here,
   - `.repositories[*].directory` defines two variables, `${namespace}` and `${targetName}`, which are used to determine the path where the backup will be stored. 
   - `.addon.tasks[*]databases` defines `${targetedDatabases}` variable, which identifies list of databases to backup.
 
-> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-restore`
+> **Note**: To create `BackupBlueprint` for druid with `PostgreSQL` as metadata storage just update `spec.sessions[*].addon.tasks.name` to `postgres-metadata-storage-backup`
 
 Let's create the `BackupBlueprint` we have shown above,
 
@@ -586,7 +587,7 @@ metadata:
     variables.kubestash.com/targetName: sample-druid-2
     variables.kubestash.com/targetedDatabases: druid
 spec:
-  version: 30.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -754,7 +755,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: customize-blueprint
   annotations:
-    kubedb.com/db-version: 30.0.1
+    kubedb.com/db-version: 36.0.0
   name: customize-blueprint-appbinding-sid-2-frequent-backup-1726743656
   namespace: demo
   ownerReferences:
@@ -788,10 +789,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: a1061e74f1ad398a9fe85bcbae34f540f2437a97061fd26c5b3e6bde3b5b7642
-          size: 10.859 KiB
-          uploaded: 11.152 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: a1061e74f1ad398a9fe85bcbae34f540f2437a97061fd26c5b3e6bde3b5b7642
+            size: 10.859 KiB
+            uploaded: 11.152 KiB
       size: 2.127 KiB
 ```
 

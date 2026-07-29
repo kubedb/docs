@@ -31,7 +31,7 @@ metadata:
 spec:
   autoOps:
     disabled: true
-  version: 6.2.14
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3

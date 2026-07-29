@@ -78,7 +78,7 @@ spec:
   secret:
     name: sample-mgo-rs-auth
   type: kubedb.com/mongodb
-  version: 4.4.26
+  version: "8.0.17"
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

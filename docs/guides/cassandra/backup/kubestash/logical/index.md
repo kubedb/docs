@@ -70,7 +70,7 @@ metadata:
   name: cas-sample
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -98,7 +98,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the CassandraVersion CRD where the docker images are specified. In this tutorial, a Cassandra `5.0.3` database is going to be created.
+- `spec.version` is the name of the CassandraVersion CRD where the docker images are specified. In this tutorial, a Cassandra `5.0.7` database is going to be created.
 - `spec.topology` specifies that it will be used as cluster mode. If this field is nil it will be work as standalone mode.
 - `spec.storageType` specifies the type of storage that will be used for Cassandra database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create Cassandra database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Cassandra` crd or which resources KubeDB should keep or delete when you delete `Cassandra` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/cassandra/concepts/cassandra.md#specdeletionpolicy)
@@ -190,7 +190,7 @@ spec:
   secret:
     name: cas-sample-auth
   type: kubedb.com/cassandra
-  version: 5.0.3
+  version: 5.0.7
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -475,7 +475,7 @@ apiVersion: storage.kubestash.com/v1alpha1
 kind: Snapshot
 metadata:
   annotations:
-    kubedb.com/db-version: 5.0.3
+    kubedb.com/db-version: 5.0.7
   creationTimestamp: "2025-07-28T06:03:08Z"
   finalizers:
     - kubestash.com/cleanup
@@ -664,5 +664,5 @@ kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-cassand
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo s3-storage
 kubectl delete secret -n demo medusa-cred
-kubectl delete my -n demo cas-sample
+kubectl delete cas -n demo cas-sample
 ```

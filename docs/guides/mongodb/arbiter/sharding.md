@@ -48,7 +48,7 @@ metadata:
   name: mongo-sh-arb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -270,7 +270,7 @@ spec:
   storageEngine: wiredTiger
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 4.4.26
+  version: "8.0.17"
 status:
   conditions:
   - lastTransitionTime: "2022-04-21T09:29:07Z"
@@ -319,14 +319,14 @@ If you want to use custom or existing secret please specify that when creating t
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-arb-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-arb-auth -o jsonpath='{.data.username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo mongo-sh-arb-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo mongo-sh-arb-auth -o jsonpath='{.data.password}' | base64 -d
   6&UiN5;qq)Tnai=7
   ```
 
@@ -344,7 +344,7 @@ mongo-sh-arb-mongos-1   1/1     Running   0          6m20s
 
 $ kubectl exec -it mongo-sh-arb-mongos-0 -n demo bash
 
-mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
+mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("bf87addd-4245-45b1-a470-fabb3dcc19ab") }
@@ -450,7 +450,7 @@ As `sh.status()` command only shows the data bearing members, if we want to assu
 ```bash
 kubectl exec -it pod/mongo-sh-arb-shard0-1 -n demo bash
 
-root@mongo-sh-arb-shard0-1:/ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
+root@mongo-sh-arb-shard0-1:/ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin
 MongoDB server version: 4.4.26
@@ -724,7 +724,7 @@ After that, kubedb will delete the petsets and services and you can see the data
 Now, you can run the following command to get all mongodb resources in demo namespaces,
 
 ```bash
-$ kubectl get mg,sts,svc,secret,pvc -n demo
+$ kubectl get mg,petset,svc,secret,pvc -n demo
 NAME                              VERSION   STATUS   AGE
 mongodb.kubedb.com/mongo-sh-arb   4.4.26     Halted   26m
 
@@ -775,7 +775,7 @@ mongo-sh-arb-mongos-1   1/1     Running   0          29s
 
 $ kubectl exec -it mongo-sh-arb-mongos-0 -n demo bash
 
-mongodb@mongo-sh-mongos-0:/$ mongo admin -u root -p '6&UiN5;qq)Tnai=7'
+mongodb@mongo-sh-mongos-0:/$ mongosh admin -u root -p '6&UiN5;qq)Tnai=7'
 
 mongos> use songs
 switched to db songs

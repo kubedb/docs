@@ -29,7 +29,7 @@ metadata:
   name: ch
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   authSecret:
     kind: Secret
     name: clickhouse-auth
@@ -98,6 +98,8 @@ spec:
 
 - `24.4.1`
 - `25.7.1`
+- `25.12.3`
+- `26.2.6`
 
 ### spec.replicas
 

@@ -209,6 +209,38 @@ neo4j-vertical-scale   VerticalScaling   Successful   101s
 
 ---
 
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`Neo4jOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: Neo4jOpsRequest
+metadata:
+  name: neo4j-vertical-scale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: neo4j-test
+  verticalScaling:
+    mode: InPlace
+    server:
+      resources:
+        requests:
+          cpu: "700m"
+          memory: "4Gi"
+        limits:
+          cpu: "1500m"
+          memory: "4Gi"
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
+
+---
+
 ## Understanding the OpsRequest Fields
 
 | Field | Description |
@@ -217,6 +249,7 @@ neo4j-vertical-scale   VerticalScaling   Successful   101s
 | `spec.databaseRef.name` | Name of the target `Neo4j` resource |
 | `spec.verticalScaling.server.resources.requests` | Minimum CPU/memory guaranteed to the pod |
 | `spec.verticalScaling.server.resources.limits` | Maximum CPU/memory the pod is allowed to use |
+| `spec.verticalScaling.mode` | How the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview.md#vertical-scaling-modes). |
 
 > **Tip:** Always set `requests` equal to `limits` for Neo4j in production. This gives the pod a [Guaranteed QoS class](https://kubernetes.io/docs/concepts/workloads/pods/pod-qos/), preventing it from being evicted under memory pressure.
 

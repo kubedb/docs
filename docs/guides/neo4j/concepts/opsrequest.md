@@ -305,6 +305,7 @@ spec:
 - Set the operation-specific section that matches `spec.type`, such as `spec.updateVersion`, `spec.verticalScaling`, `spec.volumeExpansion`, `spec.horizontalScaling`, `spec.migration`, `spec.authentication`, `spec.configuration`, or `spec.tls`.
 - `spec.updateVersion.targetVersion` selects the target `Neo4jVersion` for an `UpdateVersion` request.
 - `spec.verticalScaling.server.resources` defines the new CPU and memory requests and limits for Neo4j server Pods.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 - `spec.volumeExpansion.mode` chooses whether storage expansion runs in `Online` or `Offline` mode, and `spec.volumeExpansion.server` sets the new PVC size for the server volume.
 - `spec.migration.storageClassName` selects the destination StorageClass for `StorageMigration`, and `spec.migration.oldPVReclaimPolicy` controls old PV reclaim behavior (`Delete` or `Retain`).
 - `spec.horizontalScaling.server` sets the desired number of Neo4j servers. `spec.horizontalScaling.reallocate.strategy` controls post-scaling reallocation, and `spec.horizontalScaling.reallocate.batchSize` is used with the `incremental` strategy.

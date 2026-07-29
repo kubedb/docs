@@ -34,14 +34,14 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/pgpool](/docs/examples/pgpool) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ### Prepare Postgres
 Prepare a KubeDB Postgres cluster using this [tutorial](/docs/guides/postgres/clustering/streaming_replication.md), or you can use any externally managed postgres but in that case you need to create an [appbinding](/docs/guides/pgpool/concepts/appbinding.md) yourself. In this tutorial we will use 3 node Postgres cluster named `ha-postgres`.
 
 ### Prepare Pgpool
 
-Now, we are going to deploy a `Pgpool` =with version `4.4.5`.
+Now, we are going to deploy a `Pgpool` with version `4.5.3`.
 
 ### Deploy Pgpool:
 
@@ -54,7 +54,7 @@ metadata:
   name: pp-update
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.5.3"
   replicas: 1
   postgresRef:
     name: ha-postgres
@@ -81,7 +81,7 @@ We are now ready to apply the `PgpoolOpsRequest` CR to update this Pgpool.
 
 ### update Pgpool Version
 
-Here, we are going to update `Pgpool` from `4.4.5` to `4.5.0`.
+Here, we are going to update `Pgpool` from `4.5.3` to `4.6.0`.
 
 #### Create PgpoolOpsRequest:
 
@@ -98,14 +98,14 @@ spec:
   databaseRef:
     name: pp-update
   updateVersion:
-    targetVersion: 4.5.0
+    targetVersion: 4.6.0
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `pp-update` Pgpool.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our Pgpool.
-- `spec.updateVersion.targetVersion` specifies the expected version of the Pgpool `4.5.0`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the Pgpool `4.6.0`.
 
 
 Let's create the `PgpoolOpsRequest` CR we have shown above,

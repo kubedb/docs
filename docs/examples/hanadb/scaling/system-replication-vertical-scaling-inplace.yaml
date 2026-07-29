@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: hanadb-cluster
+  verticalScaling:
+    mode: InPlace
+    hanadb:
+      resources:
+        requests:
+          cpu: "2100m"
+          memory: "8448Mi"
+        limits:
+          cpu: "4"
+          memory: "14Gi"
+  timeout: 30m
+  apply: IfReady

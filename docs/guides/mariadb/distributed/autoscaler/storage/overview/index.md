@@ -29,7 +29,7 @@ This guide will give an overview on how KubeDB Autoscaler operator autoscales th
 The following diagram shows how KubeDB Autoscaler operator autoscales the resources of `MariaDB` database components. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="Storage Autoscaling process of MariaDB" src="/docs/guides/mariadb/autoscaler/storage/overview/images/mdas-storage.jpeg">
+  <img alt="Storage Autoscaling process of MariaDB" src="/docs/guides/mariadb/distributed/autoscaler/storage/overview/images/mdas-storage.jpeg">
 <figcaption align="center">Fig: Storage Autoscaling process of MariaDB</figcaption>
 </figure>
 

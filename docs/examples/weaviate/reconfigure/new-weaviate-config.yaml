@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: new-weaviate-config
+  namespace: demo
+type: Opaque
+stringData:
+  conf.yaml: |-
+    authorization:
+      admin_list:
+        enabled: false
+      rbac:
+        enabled: false
+    cluster:
+      hostname: $(POD_NAME)
+    debug: false
+    persistence:
+      data_path: /var/lib/weaviate
+    query_defaults:
+      limit: 200

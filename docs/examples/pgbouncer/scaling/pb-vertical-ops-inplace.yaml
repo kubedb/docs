@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PgBouncerOpsRequest
+metadata:
+  name: pgbouncer-scale-vertical-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pb-vertical
+  verticalScaling:
+    mode: InPlace
+    pgbouncer:
+      resources:
+        requests:
+          memory: "2Gi"
+          cpu: "1"
+        limits:
+          memory: "2Gi"
+          cpu: "1"
+  timeout: 5m
+  apply: IfReady

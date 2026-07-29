@@ -127,7 +127,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/builtin-prometheus/example/mysql.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/monitoring/prometheus-operator/examples/mysql.yaml
 mysql.kubedb.com/mysql-grp created 
 ```
 
@@ -144,7 +144,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.4.4-debian"
+  version: "3.0.1-debian"
   replicas: 3
   backend:
     name: mysql-grp
@@ -182,7 +182,7 @@ Now, wait for the server to go into `Ready` state.
 ```bash
 $ kubectl get proxysql -n demo proxy-server
 NAME             VERSION       STATUS   AGE
-proxy-server   2.4.4-debian    Ready    59s
+proxy-server   3.0.1-debian    Ready    59s
 ```
 
 KubeDB will create a separate stats service with name `{ProxySQL crd name}-stats` for monitoring purpose.

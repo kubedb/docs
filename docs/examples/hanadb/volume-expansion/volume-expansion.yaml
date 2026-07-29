@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: hanadb-cluster
+  volumeExpansion:
+    mode: Online
+    hanadb: 65Gi
+  timeout: 30m
+  apply: IfReady

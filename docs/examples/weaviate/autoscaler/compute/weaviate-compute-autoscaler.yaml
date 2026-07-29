@@ -1,0 +1,21 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: WeaviateAutoscaler
+metadata:
+  name: weaviate-sample-autoscale
+  namespace: demo
+spec:
+  databaseRef:
+    name: weaviate-sample
+  compute:
+    weaviate:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 600m
+        memory: 1.2Gi
+      maxAllowed:
+        cpu: 1
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: hanadb-cluster
+  migration:
+    storageClassName: longhorn-single-migrated
+  timeout: 30m
+  apply: IfReady

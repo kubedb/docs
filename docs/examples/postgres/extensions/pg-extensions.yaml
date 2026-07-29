@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-extensions
+  namespace: demo
+spec:
+  version: "18.3-ext" # an extension-enabled PostgresVersion
+  replicas: 1
+  configSecret:
+    name: pg-extensions-config # omit this if you only need pgvector / PostGIS / pg_repack
+  storage:
+    storageClassName: "standard" # change to your cluster's StorageClass
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

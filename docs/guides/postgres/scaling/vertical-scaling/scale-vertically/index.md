@@ -79,7 +79,7 @@ timescaledb-2.1.0-pg13     13.2      TimescaleDB    timescale/timescaledb:2.1.0-
 timescaledb-2.5.0-pg14.1   14.1      TimescaleDB    timescale/timescaledb:2.5.0-pg14-oss                63s
 ```
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a postgres using non-deprecated `Postgres` version `13.2`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `Postgres`. You can use any non-deprecated version. Here, we are going to create a postgres using non-deprecated `Postgres` version `18.3`.
 
 **Deploy Postgres:**
 
@@ -92,7 +92,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -123,10 +123,10 @@ $ watch -n 3 kubectl get postgres -n demo pg
 Every 3.0s: kubectl get postgres -n demo pg                         emon-r7: Thu Dec  2 10:53:54 2021
 
 NAME   VERSION   STATUS   AGE
-pg     13.2      Ready    3m16s
+pg     18.3      Ready    3m16s
 
-$ watch -n 3 kubectl get sts -n demo pg
-Every 3.0s: kubectl get sts -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021
+$ watch -n 3 kubectl get petset -n demo pg
+Every 3.0s: kubectl get petset -n demo pg                              emon-r7: Thu Dec  2 10:54:31 2021
 
 NAME   READY   AGE
 pg     3/3     3m54s
@@ -193,6 +193,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing operation on `pg` `Postgres` database.
 - `spec.type` specifies that we are performing `VerticalScaling` on our database.
 - `spec.VerticalScaling.postgres` specifies the expected postgres container resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/index.md#vertical-scaling-modes).
 
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
@@ -342,6 +343,43 @@ $ kubectl get pod -n demo pg-0 -o json | jq '.spec.containers[0].resources'
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Postgres.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`PostgresOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources. For a
+**distributed** `Postgres` deployment, in-place resize is not possible, so `InPlace` automatically
+degrades to `Restart`.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-scale-vertical-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: pg
+  verticalScaling:
+    mode: InPlace
+    postgres:
+      resources:
+        requests:
+          memory: "1200Mi"
+          cpu: "0.7"
+        limits:
+          memory: "1200Mi"
+          cpu: "0.7"
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/scaling/vertical-scaling/scale-vertically/yamls/pg-vertical-scaling-inplace.yaml
+postgresopsrequest.ops.kubedb.com/pg-scale-vertical-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

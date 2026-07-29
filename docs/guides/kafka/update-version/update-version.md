@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Kafka
 
-Now, we are going to deploy a `Kafka` replicaset database with version `3.6.8`.
+Now, we are going to deploy a `Kafka` replicaset database with version `4.0.0`.
 
 ### Deploy Kafka
 
@@ -116,7 +116,7 @@ We are now ready to apply the `KafkaOpsRequest` CR to update.
 
 ### update Kafka Version
 
-Here, we are going to update `Kafka` from `3.8.1` to `3.9.0`.
+Here, we are going to update `Kafka` from `4.0.0` to `4.2.0`.
 
 #### Create KafkaOpsRequest:
 
@@ -133,7 +133,7 @@ spec:
   databaseRef:
     name: kafka-prod
   updateVersion:
-    targetVersion: 3.9.0
+    targetVersion: 4.2.0
   timeout: 5m
   apply: IfReady
 ```
@@ -142,14 +142,14 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `kafka-prod` Kafka.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `3.9.0`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `4.2.0`.
 
 > **Note:** If you want to update combined Kafka, you just refer to the `Kafka` combined object name in `spec.databaseRef.name`. To create a combined Kafka, you can refer to the [Kafka Combined](/docs/guides/kafka/clustering/combined-cluster/index.md) guide.
 
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/update-version/update-version-ops.yaml
 kafkaopsrequest.ops.kubedb.com/kafka-update-version created
 ```
 

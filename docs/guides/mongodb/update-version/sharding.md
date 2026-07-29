@@ -39,7 +39,7 @@ namespace/demo created
 
 ## Prepare MongoDB Sharded Database Database
 
-Now, we are going to deploy a `MongoDB` sharded database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` sharded database with version `7.0.28`.
 
 ### Deploy MongoDB Sharded Database 
 
@@ -52,7 +52,7 @@ metadata:
   name: mg-sharding
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "7.0.28"
   shardTopology:
     configServer:
       replicas: 2
@@ -85,14 +85,14 @@ Now, wait until `mg-sharding` created has status `Ready`. i.e,
 ```bash
 $ k get mongodb -n demo                                                                                                                                             
 NAME          VERSION    STATUS    AGE
-mg-sharding   4.4.26   Ready     2m9s
+mg-sharding   7.0.28   Ready     2m9s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
 
 ### Update MongoDB Version
 
-Here, we are going to update `MongoDB` sharded database from `3.6.8` to `4.0.5`.
+Here, we are going to update `MongoDB` sharded database from `7.0.28` to `8.0.17`.
 
 #### Create MongoDBOpsRequest
 
@@ -109,7 +109,7 @@ spec:
   databaseRef:
     name: mg-sharding
   updateVersion:
-    targetVersion: 4.4.26
+    targetVersion: 8.0.17
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -121,7 +121,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mg-sharding` MongoDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `4.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.0.17`.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 Let's create the `MongoDBOpsRequest` CR we have shown above,
@@ -284,25 +284,25 @@ Now, we are going to verify whether the `MongoDB` and the related `PetSets` of `
 
 ```bash
 $ kubectl get mg -n demo mg-sharding -o=jsonpath='{.spec.version}{"\n"}'
-4.4.26
+8.0.17
 
-$ kubectl get sts -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+$ kubectl get petset -n demo mg-sharding-configsvr -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mongo:8.0.17
 
-$ kubectl get sts -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+$ kubectl get petset -n demo mg-sharding-shard0 -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mongo:8.0.17
 
-$ kubectl get sts -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+$ kubectl get petset -n demo mg-sharding-mongos -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+mongo:8.0.17
 
 $ kubectl get pods -n demo mg-sharding-configsvr-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+mongo:8.0.17
 
 $ kubectl get pods -n demo mg-sharding-shard0-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+mongo:8.0.17
 
 $ kubectl get pods -n demo mg-sharding-mongos-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-mongo:4.0.5
+mongo:8.0.17
 ```
 
 You can see from above, our `MongoDB` sharded database has been updated with the new version. So, the update process is successfully completed.

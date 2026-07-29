@@ -48,7 +48,7 @@ Here, we are going to deploy a `Pgpool` standalone using a supported version by 
 
 #### Deploy Pgpool
 
-In this section, we are going to deploy a Pgpool with version `4.5.0`  Then, in the next section we will set up autoscaling for this pgpool using `PgpoolAutoscaler` CRD. Below is the YAML of the `Pgpool` CR that we are going to create,
+In this section, we are going to deploy a Pgpool with version `4.6.0`  Then, in the next section we will set up autoscaling for this pgpool using `PgpoolAutoscaler` CRD. Below is the YAML of the `Pgpool` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -57,7 +57,7 @@ metadata:
   name: pgpool-autoscale
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: ha-postgres

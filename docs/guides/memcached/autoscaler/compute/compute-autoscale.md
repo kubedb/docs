@@ -45,7 +45,7 @@ Here, we are going to deploy a `Memcached` database using a supported version by
 
 #### Deploy Memcached Database
 
-In this section, we are going to deploy a Memcached database with version `1.6.22`.  Then, in the next section we will set up autoscaling for this database using `MemcachedAutoscaler` CRD. Below is the YAML of the `Memcached` CR that we are going to create:
+In this section, we are going to deploy a Memcached database with version `1.6.40`.  Then, in the next section we will set up autoscaling for this database using `MemcachedAutoscaler` CRD. Below is the YAML of the `Memcached` CR that we are going to create:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -73,16 +73,16 @@ spec:
 Let's create the `Memcached` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/autoscaler/compute/mc-compute-autoscaler.yaml
-Memcached.kubedb.com/mc-compute-autoscaler created
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached.yaml
+Memcached.kubedb.com/mc-autoscaler-compute created
 ```
 
-Now, wait until `mc-compute-autoscaler` has status `Ready`. i.e,
+Now, wait until `mc-autoscaler-compute` has status `Ready`. i.e,
 
 ```bash
 $ kubectl get mc -n demo
 NAME                    VERSION     STATUS    AGE
-mc-autoscaler-compute   1.6.22      Ready     2m
+mc-autoscaler-compute   1.6.40      Ready     2m
 ```
 
 Let's check the Pod containers resources,
@@ -157,7 +157,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `mc-compute-autoscaler` database.
+- `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `mc-autoscaler-compute` database.
 - `spec.compute.memcached.trigger` specifies that compute resource autoscaling is enabled for this database.
 - `spec.compute.memcached.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
 - `spec.compute.memcached.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
@@ -171,8 +171,8 @@ Here,
 Let's create the `MemcachedAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/autoscaling/compute/mc-compute-autoscaler.yaml
-Memcachedautoscaler.autoscaling.kubedb.com/rd-as created
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/auto-scaler/memcached-autoscaler-compute.yaml
+Memcachedautoscaler.autoscaling.kubedb.com/mc-autoscaler created
 ```
 
 #### Verify Autoscaling is set up successfully

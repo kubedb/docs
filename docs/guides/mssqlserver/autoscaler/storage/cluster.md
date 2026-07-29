@@ -95,7 +95,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/mssqlserver-ca-issuer created
 ```
 
-Now, we are going to deploy a MSSQLServer cluster database with version `2022-cu12`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+Now, we are going to deploy a MSSQLServer cluster database with version `2025-cu0`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 > If you want to autoscale MSSQLServer `Standalone`, Just deploy a [standalone](/docs/guides/mssqlserver/clustering/standalone.md) sql server instance using KubeDB.
 
@@ -106,7 +106,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

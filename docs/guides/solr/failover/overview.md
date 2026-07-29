@@ -123,7 +123,7 @@ metadata:
   name: solr-ha
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   deletionPolicy: WipeOut
   replicas: 3
   zookeeperRef:

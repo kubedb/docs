@@ -52,7 +52,7 @@ metadata:
   name: builtin-prom-pp
   namespace: demo
 spec:
-  version: "4.5.0"
+  version: "4.6.0"
   deletionPolicy: WipeOut
   postgresRef:
     name: ha-postgres

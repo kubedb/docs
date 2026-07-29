@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: volume-expansion-offline
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: milvus-cluster
+  volumeExpansion:
+    streamingnode: 3Gi
+    mode: Offline

@@ -47,7 +47,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: 4.0.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -116,7 +116,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 4.0.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce

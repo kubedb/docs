@@ -203,6 +203,8 @@ limits:
 
 Here, when you specify the resource request for Hazelcast member, KubeDB will create a new [PetSet](https://github.com/kubeops/petset) and [StatefulSet](https://kubernetes.io/docs/concepts/workloads/controllers/statefulset/) with the new resource requirements and drop the old PetSet and StatefulSet.
 
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
+
 ### spec.volumeExpansion
 
 To expand the storage of the Hazelcast cluster, you have to specify `spec.volumeExpansion` section. This field consists of the following sub-field:

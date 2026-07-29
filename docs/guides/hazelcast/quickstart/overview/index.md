@@ -65,9 +65,9 @@ NAME    VERSION   DB_IMAGE                               DEPRECATED   AGE
 
 Notice the `DEPRECATED` column. Here, `true` means that this HazelcastVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated HazelcastVersion.
 
-In this tutorial, we will use `5.5.2` HazelcastVersion CR to create a Hazelcast cluster.
+In this tutorial, we will use `5.5.6` HazelcastVersion CR to create a Hazelcast cluster.
 
-> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use HazelcastVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `5.5.2`.
+> Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use HazelcastVersion CRD with the highest modification tag to take advantage of the latest features. For example, use `5.5.6`.
 
 ## Create a Hazelcast Cluster
 
@@ -95,7 +95,7 @@ spec:
   licenseSecret:
     name: hz-license-key
   replicas: 3
-  version: 5.5.2
+  version: 5.5.6
   storage:
     accessModes:
       - ReadWriteOnce
@@ -108,7 +108,7 @@ spec:
 
 Here,
 
-- `spec.version` - is the name of the HazelcastVersion CR. Here, a Hazelcast of version `5.5.2` will be created.
+- `spec.version` - is the name of the HazelcastVersion CR. Here, a Hazelcast of version `5.5.6` will be created.
 - `spec.replicas` - specifies the number of Hazelcast nodes.
 - `spec.licenseSecret` - specifies the license created for hazelcast enterprise version.
 - `spec.storageType` - specifies the type of storage that will be used for Hazelcast database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the Hazelcast database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.

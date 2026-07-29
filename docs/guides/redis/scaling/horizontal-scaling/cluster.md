@@ -43,7 +43,7 @@ Here, we are going to deploy a `Redis` cluster using a supported version by `Kub
 
 ### Prepare Redis Cluster Database
 
-Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
+Now, we are going to deploy a `Redis` cluster database with version `8.2.2`.
 
 ### Deploy Redis Cluster 
 
@@ -56,7 +56,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   mode: Cluster
   cluster:
     shards: 3

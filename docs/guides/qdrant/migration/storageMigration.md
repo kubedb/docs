@@ -90,12 +90,16 @@ persistentvolumeclaim/data-sample-qdrant-2   Bound    pvc-a75bd538-8a71-4f62-8d3
 The database is `Ready` and all the `PersistentVolumeClaim` uses `standard` StorageClass. Let's create a collection and insert some data.
 
 ```bash
+# get the API key from the auth secret
+$ export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+
 # port-forward the Qdrant service
 $ kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
 Forwarding from 127.0.0.1:6333 -> 6333
 
 # create a collection
 $ curl -X PUT 'http://localhost:6333/collections/demo_vectors' \
+  -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
     "vectors": { "size": 4, "distance": "Cosine" }
@@ -104,6 +108,7 @@ $ curl -X PUT 'http://localhost:6333/collections/demo_vectors' \
 
 # insert points
 $ curl -X PUT 'http://localhost:6333/collections/demo_vectors/points' \
+  -H "api-key: $API_KEY" \
   -H 'Content-Type: application/json' \
   -d '{
     "points": [
@@ -114,7 +119,8 @@ $ curl -X PUT 'http://localhost:6333/collections/demo_vectors/points' \
 {"result":null,"status":"ok","time":0.045}
 
 # verify points count
-$ curl 'http://localhost:6333/collections/demo_vectors'
+$ curl 'http://localhost:6333/collections/demo_vectors' \
+  -H "api-key: $API_KEY"
 {"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 ```
 
@@ -180,12 +186,16 @@ data-sample-qdrant-2   Bound    pvc-a75bd538-8a71-4f62-8d38-3f4e42ffb225   2Gi  
 The `PersistentVolumeClaim` StorageClass has changed to `longhorn-custom`. Now, we will verify that the data remains intact after the `StorageMigration` operation.
 
 ```bash
+# get the API key from the auth secret
+$ export API_KEY=$(kubectl get secret -n demo sample-qdrant-auth -o jsonpath='{.data.api-key}' | base64 -d)
+
 # port-forward the Qdrant service
 $ kubectl port-forward -n demo svc/sample-qdrant 6333:6333 &
 Forwarding from 127.0.0.1:6333 -> 6333
 
 # check the collection exists and data is intact
-$ curl 'http://localhost:6333/collections/demo_vectors'
+$ curl 'http://localhost:6333/collections/demo_vectors' \
+  -H "api-key: $API_KEY"
 {"result":{"status":"green","vectors_count":2,"segments_count":4,...},"status":"ok","time":0.001}
 ```
 

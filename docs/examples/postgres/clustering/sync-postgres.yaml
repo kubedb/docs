@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: sync-postgres
+  namespace: demo
+spec:
+  version: "17.4"
+  replicas: 3
+  standbyMode: Hot
+  streamingMode: Synchronous
+  synchronousReplicationConfig:
+    mode: Any            # Any (quorum) | First (priority-ordered)
+    numSyncReplicas: 2   # wait for this many standbys before a commit returns
+    commitLevel: RemoteWrite  # On | RemoteApply | RemoteWrite | Local | Off
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

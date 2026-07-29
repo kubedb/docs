@@ -1,10 +1,10 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Pgpool
 metadata:
-  name: pgpool-demo
+  name: pgpool
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.6.0"
   replicas: 1
   postgresRef:
     name: postgres

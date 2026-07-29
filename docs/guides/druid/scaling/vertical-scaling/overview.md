@@ -19,8 +19,8 @@ This guide will give an overview on how KubeDB Ops-manager operator updates the 
 ## Before You Begin
 
 - You should be familiar with the following `KubeDB` concepts:
-    - [Druid](/docs/guides/kafka/concepts/kafka.md)
-    - [DruidOpsRequest](/docs/guides/kafka/concepts/kafkaopsrequest.md)
+    - [Druid](/docs/guides/druid/concepts/druid.md)
+    - [DruidOpsRequest](/docs/guides/druid/concepts/druidopsrequest.md)
 
 ## How Vertical Scaling Process Works
 
@@ -50,5 +50,25 @@ The vertical scaling process consists of the following steps:
 8. After the successful update of the resources of the PetSet's replica, the `KubeDB` Ops-manager operator updates the `Druid` object to reflect the updated state.
 
 9. After the successful update  of the `Druid` resources, the `KubeDB` Ops-manager operator resumes the `Druid` object so that the `KubeDB` Provisioner  operator resumes its usual operations.
+
+## Vertical Scaling Modes
+
+KubeDB actuates vertical scaling in one of two modes, selected through the `spec.verticalScaling.mode`
+field of the `DruidOpsRequest`:
+
+- **`Restart`** (default): The operator patches the `PetSet` with the new resources and restarts the
+  Pods (one at a time, honoring the database's failover rules) so they come back with the updated CPU
+  and Memory. This works on every Kubernetes cluster.
+- **`InPlace`**: The operator resizes the running containers in place using the Kubernetes
+  [in-place Pod resize](https://kubernetes.io/docs/tasks/configure-pod-container/resize-container-resources/)
+  (`pods/resize` subresource) — no Pod restart, so scaling happens without downtime or failover. If a
+  Node cannot accommodate the new resources (the resize is reported `Infeasible`), the operator
+  automatically falls back to the `Restart` behavior for that Pod.
+
+If `spec.verticalScaling.mode` is omitted, it defaults to `Restart`.
+
+> **Note:** `InPlace` mode relies on the Kubernetes `InPlacePodVerticalScaling` feature gate, which is
+> enabled by default from Kubernetes v1.33. On older clusters, or when the feature gate is disabled,
+> use `Restart` mode.
 
 In the next docs, we are going to show a step by step guide on updating resources of Druid database using `DruidOpsRequest` CRD.

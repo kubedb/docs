@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: oracle-init-script
+  namespace: demo
+data:
+  setup.sql: |
+    CREATE TABLE emp (
+                         id   INT,
+                         name CHAR(10)
+    );
+    
+    INSERT INTO emp VALUES (1, 'John');
+    
+    SELECT * FROM emp;

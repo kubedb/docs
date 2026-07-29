@@ -4,7 +4,7 @@ metadata:
   name: cassandra-prod-tls
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"

@@ -1,0 +1,22 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: weaviate-sample
+  timeout: 3m
+  apply: Always
+
+  configuration:
+    applyConfig:
+      conf.yaml: |-
+        query_defaults:
+          limit: 155
+    configSecret:
+      name: new-weaviate-config
+    backupConfigSecret:
+      name: minio-secret
+      

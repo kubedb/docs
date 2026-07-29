@@ -57,7 +57,7 @@ metadata:
   name: sample-mgo-sh
   namespace: demo
 spec:
-  version: 4.4.26
+  version: "8.0.17"
   shardTopology:
     configServer:
       replicas: 3
@@ -184,7 +184,7 @@ spec:
   secret:
     name: sample-mgo-sh-auth
   type: kubedb.com/mongodb
-  version: 4.4.26
+  version: "8.0.17"
 ```
 
 Stash uses the `AppBinding` crd to connect with the target database. It requires the following two fields to set in AppBinding's `Spec` section.
@@ -212,11 +212,11 @@ sample-mgo-sh-mongos-9459cfc44-6d2st   1/1     Running   0          60m
 Now, let's exec into the pod and create a table,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mgo-sh-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin   0.000GB
@@ -424,7 +424,7 @@ Notice the `PAUSED` column. Value `true` for this field means that the BackupCon
 
 Now, let’s simulate an accidental deletion scenario. Here, we are going to exec into the database pod and delete the `newdb` database we had created earlier.
 ```bash
-$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> use newdb
 switched to db newdb
@@ -499,7 +499,7 @@ Lets, exec into the database pod and list available tables,
 
 ```bash
 
-$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mgo-sh-mongos-9459cfc44-4jthd -- mongosh admin -u $USER -p $PASSWORD
 
 mongos> show dbs
 admin   0.000GB
@@ -625,7 +625,7 @@ metadata:
   name: restored-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -680,11 +680,11 @@ restored-mongodb   4.4.26         Ready   56s
 Now, exec into the database pod and list available tables,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo restored-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo restored-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo restored-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
 > show dbs
 admin   0.000GB

@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: mvops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: milvus-standalone
+  tls:
+    issuerRef:
+      name: milvus-issuer
+      kind: Issuer
+      apiGroup: "cert-manager.io"
+    external:
+      mode: mTLS
+    internal:
+      mode: TLS

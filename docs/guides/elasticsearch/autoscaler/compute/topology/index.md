@@ -45,7 +45,7 @@ Here, we are going to deploy an `Elasticsearch` topology cluster using a support
 
 #### Deploy Elasticsearch Topology Cluster
 
-In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-2.19.2`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy an Elasticsearch topology with ElasticsearchVersion `opensearch-3.4.0`. Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -55,7 +55,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   storageType: Durable
   topology:
     master:
@@ -94,7 +94,7 @@ spec:
 Let's create the `Elasticsearch` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology.yaml
 elasticsearch.kubedb.com/es-topology created
 ```
 
@@ -103,8 +103,8 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   opensearch-2.19.2   Provisioning   113s
-es-topology   opensearch-2.19.2   Ready          115s
+es-topology   opensearch-3.4.0   Provisioning   113s
+es-topology   opensearch-3.4.0   Ready          115s
 ```
 
 Let's check an ingest node containers resources,
@@ -187,7 +187,7 @@ Here,
 Let's create the `ElasticsearchAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/computetopology/yamls/es-topology-auto-scaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/autoscaler/compute/topology/yamls/es-topology-auto-scaler.yaml
 elasticsearchautoscaler.autoscaling.kubedb.com/es-topology-as created
 ```
 

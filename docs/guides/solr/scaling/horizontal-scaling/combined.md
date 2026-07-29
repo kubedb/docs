@@ -43,7 +43,7 @@ Here, we are going to deploy a  `Solr` combined cluster using a supported versio
 
 ### Prepare Solr Combined cluster
 
-Now, we are going to deploy a `Solr` combined cluster with version `9.4.1`.
+Now, we are going to deploy a `Solr` combined cluster with version `9.8.0`.
 
 ### Deploy Solr combined cluster
 
@@ -56,7 +56,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   replicas: 2
   zookeeperRef:
     name: zoo

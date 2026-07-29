@@ -48,7 +48,7 @@ metadata:
   name: demo-pg
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   streamingMode: Synchronous
@@ -63,21 +63,21 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
-By default, KubeDB create a Synchronous Replication where one Replica Postgres server out of all the replicas will be in `sync` with Current `primary`. 
-And others are `potential` candidate to be in sync with primary if the `synchronous` replica failed in any case. 
+By default, KubeDB creates a quorum-based Synchronous Replication (`synchronous_standby_names = ANY 1 (...)`) where any one of the replica Postgres servers must confirm each commit with the current `primary`. 
+All participating replicas therefore report `sync_state` as `quorum`. 
 
 Let's check in the postgres cluster that we have deployed. Now, exec into the current primary, in our case it is Pod `demo-pg-0`.
 ```bash
 $ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
 bash-5.1$ psql
-psql (14.2)
+psql (18.3)
 Type "help" for help.
 
 postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn, sync_state from pg_stat_replication;
  application_name | client_addr |   state   | sent_lsn  | write_lsn | flush_lsn | replay_lsn | sync_state 
 ------------------+-------------+-----------+-----------+-----------+-----------+------------+------------
- demo-pg-1        | 10.244.0.22 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | sync
- demo-pg-2        | 10.244.0.24 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | potential
+ demo-pg-1        | 10.244.0.22 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | quorum
+ demo-pg-2        | 10.244.0.24 | streaming | 0/5000060 | 0/5000060 | 0/5000060 | 0/5000060  | quorum
 
 ```
 But Users can also configure a Synchronous replication cluster where all the replica are in `sync` with current primary. 
@@ -90,7 +90,7 @@ That`s all, Then you can see that all the replicas are configured as synchronous
 ```bash
 $ kubectl exec -it -n demo demo-pg-0 -c postgres  -- bash
 bash-5.1$ psql
-psql (14.2)
+psql (18.3)
 Type "help" for help.
 
 postgres=# select application_name, client_addr, state, sent_lsn, write_lsn, flush_lsn, replay_lsn, sync_state from pg_stat_replication;

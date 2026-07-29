@@ -68,7 +68,7 @@ The backup process consists of the following steps:
 
 ## How Restore Process Works
 
-The following diagram shows how KubeStash restores backed up data into a `PostgreSQL` database. Open the image in a new tab to see the enlarged version.
+The following diagram shows how KubeStash restores backed up data into a `ZooKeeper` database. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
   <img alt="Database Restore Overview" src="/docs/guides/zookeeper/backup/kubestash/overview/images/restore_overview.svg">

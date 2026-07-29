@@ -44,7 +44,7 @@ The `spec.authPlugin` is an required field in ElasticsearchVersion CRD, which sp
 To see, which authPlugin is used in the target ElasticsearchVersion, run the following command:
 
 ```bash
-kubectl get elasticsearchversions 7.3.2 -o yaml
+kubectl get elasticsearchversions xpack-8.19.9 -o yaml
 ```
 
 ```yaml
@@ -55,22 +55,22 @@ metadata:
 spec:
   authPlugin: X-Pack
   db:
-    image: kubedb/elasticsearch:7.9.1-xpack
+    image: kubedb/elasticsearch:8.19.9-xpack
   distribution: ElasticStack
   exporter:
     image: kubedb/elasticsearch_exporter:1.1.0
   initContainer:
     image: kubedb/toybox:0.8.4
-    yqImage: kubedb/elasticsearch-init:7.9.1-xpack-v1
+    yqImage: kubedb/elasticsearch-init:8.19.9-xpack-v1
   podSecurityPolicies:
     databasePolicyName: elasticsearch-db
   stash:
     addon:
       backupTask:
-        name: elasticsearch-backup-7.3.2
+        name: elasticsearch-backup-8.2.0
       restoreTask:
-        name: elasticsearch-restore-7.3.2
-  version: 7.9.1
+        name: elasticsearch-restore-8.2.0
+  version: 8.19.9
 ```
 
 ## Changing authPlugin
@@ -81,7 +81,7 @@ To change authPlugin, it is recommended to create a new ElasticsearchVersion CRD
 
 To deploy with X-Pack, you need to use an `ElasticsearchVersion` where `X-Pack` is set to `authPlugin`.
 
-Here, we are going to use ElasticsearchVersion `7.3.2`, which is mentioned earlier in this guide.
+Here, we are going to use ElasticsearchVersion `xpack-8.19.9`, which is mentioned earlier in this guide.
 
 Now, let's create an Elasticsearch server using the following yaml.
 
@@ -92,7 +92,7 @@ metadata:
   name: config-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storage:
     storageClassName: "standard"
     accessModes:
@@ -143,7 +143,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: xpack-8.19.9
+  version: xpack-9.2.3
 status:
   observedGeneration: 1$4210395375389091791
   phase: Running
@@ -172,7 +172,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $ kubectl get es -n demo config-elasticsearch -o wide
 NAME                   VERSION   STATUS    AGE
-config-elasticsearch   7.3.2     Running   2m8s
+config-elasticsearch   xpack-9.2.3     Running   2m8s
 ```
 
 To connect to the elasticsearch node, we are going to use port forward to the elasticsearch pod. Run following command on a separate terminal,
@@ -268,7 +268,7 @@ $ curl --user "elastic:ruobj2eo" "localhost:9200/_nodes/_all/settings?pretty"
       "transport_address": "10.8.0.112:9300",
       "host": "10.8.0.112",
       "ip": "10.8.0.112",
-      "version": "7.3.2",
+      "version": "xpack-9.2.3",
       "build_flavor": "default",
       "build_type": "docker",
       "build_hash": "508c38a",

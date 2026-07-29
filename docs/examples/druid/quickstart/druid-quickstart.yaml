@@ -4,11 +4,11 @@ metadata:
   name: druid-quickstart
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
-  configuration:
-    secretName: deep-storage-config
+    configSecret:
+      name: deep-storage-config
   topology:
     routers:
       replicas: 1

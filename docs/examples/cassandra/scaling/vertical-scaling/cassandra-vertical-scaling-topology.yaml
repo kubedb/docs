@@ -2,7 +2,7 @@ apiVersion: ops.kubedb.com/v1alpha1
 kind: CassandraOpsRequest
 metadata:
   name: cassandra-vertical-scale
-  namespace: default
+  namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:

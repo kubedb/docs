@@ -34,7 +34,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid-quickstart","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"topology":{"routers":{"replicas":1}},"version":"28.0.1"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Druid","metadata":{"annotations":{},"name":"druid-quickstart","namespace":"demo"},"spec":{"deepStorage":{"configSecret":{"name":"deep-storage-config"},"type":"s3"},"topology":{"routers":{"replicas":1}},"version":"36.0.0"}}
   creationTimestamp: "2024-10-16T13:28:40Z"
   generation: 1
   labels:
@@ -67,11 +67,11 @@ spec:
       scheme: http
     url: http://druid-quickstart-coordinators-0.druid-quickstart-pods.demo.svc.cluster.local:8081,http://druid-quickstart-overlords-0.druid-quickstart-pods.demo.svc.cluster.local:8090,http://druid-quickstart-middlemanagers-0.druid-quickstart-pods.demo.svc.cluster.local:8091,http://druid-quickstart-historicals-0.druid-quickstart-pods.demo.svc.cluster.local:8083,http://druid-quickstart-brokers-0.druid-quickstart-pods.demo.svc.cluster.local:8082,http://druid-quickstart-routers-0.druid-quickstart-pods.demo.svc.cluster.local:8888
   secret:
-    name: druid-quickstart-admin-cred
+    name: druid-quickstart-auth
   tlsSecret:
     name: druid-client-cert
   type: kubedb.com/druid
-  version: 28.0.1
+  version: 36.0.0
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 

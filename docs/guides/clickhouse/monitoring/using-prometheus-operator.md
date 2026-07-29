@@ -195,7 +195,7 @@ metadata:
   name: clickhouse-prod
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   clusterTopology:
     clickHouseKeeper:
       externallyManaged: false
@@ -254,7 +254,7 @@ Here,
 Let's create the clickhouse object that we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/cas-with-monirtoring.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/coreos-prom-clickhouse.yaml
 clickhouses.kubedb.com/clickhouse-prod created
 ```
 

@@ -52,7 +52,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  version: "13.13"
+  version: "18.3"
 ```
 
 Let's create the `Postgres` CR we have shown above,

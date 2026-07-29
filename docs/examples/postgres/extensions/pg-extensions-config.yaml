@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: pg-extensions-config
+  namespace: demo
+stringData:
+  # KubeDB preloads pg_stat_statements by default. Keep it and append only the
+  # extensions you actually want that REQUIRE preloading (pg_cron, pgaudit).
+  # pgvector, PostGIS and pg_repack do NOT need to be listed here.
+  user.conf: |-
+    shared_preload_libraries='pg_stat_statements,pg_cron,pgaudit'
+    cron.database_name='postgres'

@@ -30,7 +30,7 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   $ kubectl get memcachedversions -n kube-system  -o=custom-columns=NAME:.metadata.name,VERSION:.spec.version,DB_IMAGE:.spec.db.image,EXPORTER_IMAGE:.spec.exporter.image,DEPRECATED:.spec.deprecated
   NAME     VERSION   DB_IMAGE                                          EXPORTER_IMAGE                                          DEPRECATED
   1.5.22   1.5.22    ghcr.io/appscode-images/memcached:1.5.22-alpine   prom/memcached-exporter:v0.14.2                         <none>
-  1.6.22   1.6.22    ghcr.io/appscode-images/memcached:1.6.22-alpine   ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac   <none>
+  1.6.40   1.6.40    ghcr.io/appscode-images/memcached:1.6.40-alpine   ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac   <none>
   1.6.29   1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine   ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac   <none>
   ```
 
@@ -46,17 +46,17 @@ KubeDB operator supports using private Docker registry. This tutorial will show 
   apiVersion: catalog.kubedb.com/v1alpha1
   kind: MemcachedVersion
   metadata:
-    name: 1.6.22
+    name: 1.6.40
   spec:
     db:
-      image: PRIVATE_REGISTRY/memcached:1.6.22-alpine
+      image: PRIVATE_REGISTRY/memcached:1.6.40-alpine
     exporter:
       image: PRIVATE_REGISTRY/memcached_exporter:v0.14.3
     podSecurityPolicies:
       databasePolicyName: memcached-db
     securityContext:
       runAsUser: 999
-    version: 1.6.22
+    version: 1.6.40
   ```
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
@@ -102,7 +102,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -139,7 +139,7 @@ memcd-pvt-reg-694d4d44df-tkqc4   1/1       Running             0          27s
 
 $ kubectl get mc -n demo
 NAME            VERSION    STATUS    AGE
-memcd-pvt-reg   1.6.22     Running   59s
+memcd-pvt-reg   1.6.40     Running   59s
 ```
 
 ## Cleaning up

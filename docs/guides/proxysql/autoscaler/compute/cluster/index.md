@@ -63,7 +63,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/cluster/examples/sample-mysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/autoscaler/compute/cluster/examples/sample-mysql.yaml
 mysql.kubedb.com/mysql-server created
 ```
 
@@ -81,7 +81,7 @@ Here, we are going to deploy a `ProxySQL` Cluster using a supported version by `
 
 ### Deploy ProxySQL Cluster
 
-In this section, we are going to deploy a ProxySQL Cluster with version `2.3.2-debian`. Then, in the next section we will set up autoscaling for this database using `ProxySQLAutoscaler` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
+In this section, we are going to deploy a ProxySQL Cluster with version `3.0.1-debian`. Then, in the next section we will set up autoscaling for this database using `ProxySQLAutoscaler` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -90,7 +90,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "3.0.1-debian"
   replicas: 3
   backend:
     name: mysql-server
@@ -121,7 +121,7 @@ Now, wait until `proxy-server` has status `Ready`. i.e,
 ```bash
 $ kubectl get proxysql -n demo
 NAME             VERSION       STATUS   AGE
-proxy-server   2.3.2-debian    Ready    4m
+proxy-server   3.0.1-debian    Ready    4m
 ```
 
 Let's check the Pod containers resources,

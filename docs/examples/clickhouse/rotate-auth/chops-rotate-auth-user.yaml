@@ -6,7 +6,7 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: clickhouse-prod
+    name: clickhouse
   authentication:
     secretRef:
       kind: Secret

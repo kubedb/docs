@@ -50,7 +50,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   deletionPolicy: WipeOut
 ```
 
@@ -67,7 +67,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 $ watch kubectl get mc -n demo
 Every 2.0s: kubectl get mc -n demo
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    26s
+memcd-quickstart   1.6.40    Ready    26s
 ```
 
 Now, we can connect to this database through `telnet` to verify that the `TLS` is disabled.
@@ -790,7 +790,7 @@ Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure-tls/mc-ops-tls-remove.yaml
-Memcachedopsrequest.ops.kubedb.com/mc-ops-remove created
+memcachedopsrequest.ops.kubedb.com/mc-ops-tls-remove created
 ```
 
 #### Verify TLS Removed Successfully
@@ -913,9 +913,9 @@ $ kubectl delete issuer -n demo memcached-ca-issuer mc-new-issuer
 issuer.cert-manager.io "memcached-ca-issuer" deleted
 issuer.cert-manager.io "mc-new-issuer" deleted
 
-$ kubectl delete memcachedopsrequest -n demo mc-add-tls mc-ops-remove mc-ops-rotate mc-change-issuer
+$ kubectl delete memcachedopsrequest -n demo mc-add-tls mc-ops-tls-remove mc-ops-rotate mc-change-issuer
 memcachedopsrequest.ops.kubedb.com "mc-add-tls" deleted
-memcachedopsrequest.ops.kubedb.com "mc-ops-remove" deleted
+memcachedopsrequest.ops.kubedb.com "mc-ops-tls-remove" deleted
 memcachedopsrequest.ops.kubedb.com "mc-ops-rotate" deleted
 memcachedopsrequest.ops.kubedb.com "mc-change-issuer" deleted
 ```

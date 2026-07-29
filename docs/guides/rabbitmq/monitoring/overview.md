@@ -53,7 +53,7 @@ metadata:
   name: sample-rabbitmq
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   deletionPolicy: WipeOut
   configuration:
     secretName: config

@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: target-mysql
+  namespace: demo
+spec:
+  version: "8.4.8"
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 30Gi
+  deletionPolicy: Delete

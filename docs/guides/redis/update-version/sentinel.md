@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Sentinel Database
 
-Now, we are going to deploy a `RedisSentinel` instance with version `6.2.14` and a `Redis` database with version `6.2.14`. Then, in the next section we will update the version of the sentinel and the database using `RedisOpsRequest` CRD
+Now, we are going to deploy a `RedisSentinel` instance with version `7.4.6` and a `Redis` database with version `7.4.6`. Then, in the next section we will update the version of the sentinel and the database using `RedisOpsRequest` CRD
 
 ### Deploy RedisSentinel :
 
@@ -52,7 +52,7 @@ metadata:
   name: sen-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 7.4.6
   replicas: 3
   storageType: Durable
   storage:
@@ -91,7 +91,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 7.4.6
   replicas: 3
   sentinelRef:
     name: sen-sample
@@ -127,7 +127,7 @@ We are now ready to apply the `RedisSentinelOpsRequest` CR to update the sentine
 
 ### Update RedisSentinel Version
 
-Here, we are going to update `RedisSentinel` standalone from `6.2.14` to `7.0.14`.
+Here, we are going to update `RedisSentinel` standalone from `7.4.6` to `8.2.2`.
 
 #### Create RedisSentinelOpsRequest:
 
@@ -144,14 +144,14 @@ spec:
   databaseRef:
     name: sen-sample
   updateVersion:
-    targetVersion: 7.0.14
+    targetVersion: 8.2.2
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sen-sample` RedisSentinel instance.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.2.2`.
 
 Let's create the `RedisSentinelOpsRequest` CR we have shown above,
 
@@ -191,7 +191,7 @@ redis:7.0.14@sha256:dfeb5451fce377ab47c5bb6b6826592eea534279354bbfc3890c0b5e9b57
 You can see from above, our `RedisSentinel` sen-demo has been updated with the new version. So, the UpdateVersion process is successfully completed.
 ### Update Redis Version
 
-Here, we are going to update `Redis` standalone from `6.2.14` to `7.0.4`.
+Here, we are going to update `Redis` standalone from `7.4.6` to `8.2.2`.
 
 #### Create RedispsRequest:
 
@@ -208,14 +208,14 @@ spec:
   databaseRef:
     name: rd-sample
   updateVersion:
-    targetVersion: 7.0.4
+    targetVersion: 8.2.2
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `rd-sample` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.2.2`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

@@ -41,12 +41,12 @@ demo      Active    1s
 
 ## Find Available IgniteVersion
 
-When you have installed KubeDB, it has created `IgniteVersion` crd for all supported Ignite versions. Check 0
+When you have installed KubeDB, it has created `IgniteVersion` crd for all supported Ignite versions. Check it out.
 
 ```bash
 $ kubectl get igniteversions
 NAME        VERSION    DB_IMAGE                                            DEPRECATED   AGE
-2.17.0      2.17.0     ghcr.io/appscode-images/ignite:2.17.0                            2h
+2.18.0      2.18.0     ghcr.io/appscode-images/ignite:2.18.0                            2h
 ```
 
 ## Create a Ignite server
@@ -61,7 +61,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 2.17.0
+  version: 2.18.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -79,7 +79,7 @@ ignite.kubedb.com/ignite-quickstart created
 Here,
 
 - `spec.replicas` is an optional field that specifies the number of desired Instances/Replicas of Ignite server. It defaults to 1.
-- `spec.version` is the version of Ignite server. In this tutorial, a Ignite 2.17.0 database is going to be created.
+- `spec.version` is the version of Ignite server. In this tutorial, a Ignite 2.18.0 database is going to be created.
 - `.spec.podTemplate.spec.containers[].resources` is an optional field that specifies how much CPU and memory (RAM) each Container needs. To learn details about Managing Compute Resources for Containers, please visit [here](https://kubernetes.io/docs/concepts/configuration/manage-compute-resources-container/).
 - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `Ignite` crd or which resources KubeDB should keep or delete when you delete `Ignite` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite.md#specdeletionpolicy)
 
@@ -87,7 +87,7 @@ KubeDB operator watches for `Ignite` objects using Kubernetes api. When a `Ignit
 ```bash
 $ kubectl get ig -n demo
 NAME                TYPE                  VERSION   STATUS   AGE
-ignite-quickstart   kubedb.com/v1alpha2   2.17.0    Ready    2m
+ignite-quickstart   kubedb.com/v1alpha2   2.18.0    Ready    2m
 
 $ kubectl describe ig -n demo ignite-quickstart
 Name:         ignite-quickstart
@@ -154,7 +154,7 @@ Spec:
       Requests:
         Storage:  1Gi
   Storage Type:   Durable
-  Version:        2.17.0
+  Version:        2.18.0
 Status:
   Conditions:
     Last Transition Time:  2025-05-30T08:52:28Z
@@ -221,7 +221,7 @@ kind: Ignite
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Ignite","metadata":{"annotations":{},"name":"ignite-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"version":"2.17.0"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Ignite","metadata":{"annotations":{},"name":"ignite-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}}},"version":"2.18.0"}}
   creationTimestamp: "2025-05-30T08:52:28Z"
   finalizers:
   - kubedb.com/ignite
@@ -281,7 +281,7 @@ spec:
       requests:
         storage: 1Gi
   storageType: Durable
-  version: 2.17.0
+  version: 2.18.0
 status:
   conditions:
   - lastTransitionTime: "2025-05-30T08:52:28Z"
@@ -366,7 +366,7 @@ When `deletionPolicy` is set to `DoNotTerminate`, KubeDB takes advantage of `Val
 
 ```bash
 $ kubectl delete ig ignite-quickstart -n demo
-Error from server (Forbidden): admission webhook "ignitewebhook.validators.kubedb.com" denied the request: ignite demo/ignite-quickstart is can't terminated. To delete, change spec.deletionPolicy
+The Ignite "ignite-quickstart" is invalid: spec.deletionPolicy: Invalid value: "ignite-quickstart": Can not delete as terminationPolicy is set to "DoNotTerminate"
 ```
 Learn details of all `DeletionPolicy` [here](/docs/guides/ignite/concepts/ignite.md#specdeletionpolicy).
 
@@ -389,7 +389,6 @@ Now, run the following command to get all ignite resources in `demo` namespaces,
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
 secret/ignite-quickstart-auth     kubernetes.io/basic-auth   2      27m
-secret/ignite-quickstart-config   Opaque                     1      27m
 ```
 
 From the above output, you can see that all ignite resources(`PetSet`, `Service` etc.) are deleted except `Secret`.
