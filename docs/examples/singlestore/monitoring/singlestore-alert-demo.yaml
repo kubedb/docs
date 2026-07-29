@@ -4,7 +4,7 @@ metadata:
   name: singlestore-alert-demo
   namespace: alert-singlestore
 spec:
-  version: "8.5.7"
+  version: "8.9.3"
   storageType: Durable
   topology:
     aggregator:
@@ -15,16 +15,16 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 1Gi
+            storage: 5Gi
     leaf:
-      replicas: 1
+      replicas: 2
       storage:
         storageClassName: "local-path"
         accessModes:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 1Gi
+            storage: 10Gi
   licenseSecret:
     name: license-secret
   deletionPolicy: WipeOut

@@ -69,7 +69,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Deploy SingleStore with Monitoring Enabled
 
-SingleStore is always deployed as a cluster of `aggregator` and `leaf` nodes. Below is the smallest viable topology for this tutorial — one aggregator, one leaf.
+SingleStore is always deployed as a cluster of `aggregator` and `leaf` nodes. Below is the topology used in this tutorial — one aggregator, two leaves.
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -78,7 +78,7 @@ metadata:
   name: singlestore-alert-demo
   namespace: alert-singlestore
 spec:
-  version: "8.5.7"
+  version: "8.9.3"
   storageType: Durable
   topology:
     aggregator:
@@ -89,16 +89,16 @@ spec:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 1Gi
+            storage: 5Gi
     leaf:
-      replicas: 1
+      replicas: 2
       storage:
         storageClassName: "local-path"
         accessModes:
           - ReadWriteOnce
         resources:
           requests:
-            storage: 1Gi
+            storage: 10Gi
   licenseSecret:
     name: license-secret
   deletionPolicy: WipeOut
@@ -113,7 +113,7 @@ spec:
 
 Here,
 
-- `spec.topology.aggregator` / `spec.topology.leaf` define the aggregator and leaf node groups that make up the SingleStore cluster.
+- `spec.topology.aggregator` / `spec.topology.leaf` define the aggregator and leaf node groups that make up the SingleStore cluster. The aggregator is a single point of coordination for the cluster — crashing it takes the whole cluster `NotReady`, while a single leaf going down only degrades the cluster (more leaves survive).
 - `spec.licenseSecret.name` references the license secret created in [Before You Begin](#before-you-begin).
 - `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
 - `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
@@ -130,7 +130,17 @@ Wait for the cluster to go into `Ready` state.
 ```bash
 $ kubectl get singlestore -n alert-singlestore singlestore-alert-demo
 NAME                      VERSION   STATUS   AGE
-singlestore-alert-demo    8.5.7     Ready    5m
+singlestore-alert-demo    8.9.3     Ready    5m
+```
+
+KubeDB brings up one aggregator pod and two leaf pods:
+
+```bash
+$ kubectl get pods -n alert-singlestore
+NAME                                  READY   STATUS    RESTARTS   AGE
+singlestore-alert-demo-aggregator-0   2/2     Running   0          5m
+singlestore-alert-demo-leaf-0         2/2     Running   0          5m
+singlestore-alert-demo-leaf-1         2/2     Running   0          4m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
@@ -172,7 +182,7 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 ### Install
 
 ```bash
-$ helm upgrade -i singlestore-alert-demo oci://ghcr.io/appscode-charts/singlestore-alerts \
+$ helm upgrade -i singlestore-alert-demo appscode/singlestore-alerts \
     -n alert-singlestore \
     --create-namespace \
     --version=v2026.7.14 \
@@ -218,7 +228,7 @@ Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-singlestore%
   <img alt="Prometheus up query — singlestore-alert-demo nodes UP" src="/docs/images/singlestore/monitoring/singlestore-alerting-prom-target.png" style="padding:10px">
 </p>
 
-Both the aggregator and leaf pods should report `up == 1`.
+Only **one** series is returned, scoped to `pod="singlestore-alert-demo-aggregator-0"`. This is not a query mistake — the `singlestore-alert-demo-stats` Service selects all three pods, but its Endpoints only ever resolve to the aggregator (`kubectl get endpoints -n alert-singlestore singlestore-alert-demo-stats` shows a single address). In this chart, **only the aggregator node exposes the Prometheus metrics endpoint** — the leaf pods don't. Every database-group alert (`SinglestoreInstanceDown`, `SinglestoreHighQPS`, etc.) is therefore effectively scoped to the aggregator only, not the leaves, regardless of how many leaf replicas you run.
 
 ### 2. Confirm the SingleStore alerts are inactive
 
@@ -228,7 +238,7 @@ Open `http://localhost:9090/alerts`.
   <img alt="Prometheus Alerts — SingleStore groups inactive" src="/docs/images/singlestore/monitoring/singlestore-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-All rules should show **INACTIVE**. `singlestore.kubeStash` rules stay INACTIVE with no data unless KubeStash backups are configured.
+All 10 rules in the `singlestore.database` group and all 7 rules in the `singlestore.kubeStash` group show **INACTIVE**. `singlestore.kubeStash` rules stay INACTIVE with no data unless KubeStash backups are configured.
 
 ### 3. Check AlertManager
 
@@ -251,38 +261,54 @@ See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore t
 
 ## Simulating a Firing Alert
 
-This section deliberately triggers `SinglestoreInstanceDown` (instant, `for: 0m`) by crashing the main process on a leaf node.
+This section deliberately triggers `KubeDBSinglestorePhaseNotReady` by crashing the **aggregator** node. With `spec.topology.aggregator.replicas: 1`, the aggregator is a single point of coordination for the whole cluster — crashing it repeatedly holds the CR's `status.phase` at `NotReady` long enough for the provisioner-group alert to fire, unlike crashing a single leaf (which only degrades the cluster, since a second leaf survives).
 
-### 1. Crash a SingleStore leaf process
+### 1. Crash the aggregator process repeatedly
 
 ```bash
-$ kubectl get pods -n alert-singlestore -l singlestore.com/node-type=leaf
-$ kubectl exec -n alert-singlestore <leaf-pod-name> -c singlestore -- sh -c '
-    end=$(( $(date +%s) + 30 ));
-    while [ $(date +%s) -lt $end ]; do
-      pid=$(pgrep -x memsqld | head -1);
-      [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null;
-      sleep 1;
-    done'
+$ end=$(( $(date +%s) + 120 ))
+  while [ $(date +%s) -lt $end ]; do
+    kubectl exec -n alert-singlestore singlestore-alert-demo-aggregator-0 -c singlestore -- sh -c 'pid=$(pgrep -x memsqld | head -1); [ -n "$pid" ] && kill -9 "$pid"' >/dev/null 2>&1
+    sleep 5
+  done
 ```
+
+Watch the CR phase move to `NotReady`:
+
+```bash
+$ kubectl get singlestore -n alert-singlestore singlestore-alert-demo -o jsonpath='{.status.phase}'
+NotReady
+```
+
+`KubeDBSinglestorePhaseNotReady` keys off `kubedb_com_singlestore_status_phase` (a metric emitted by the KubeDB operator itself, via panopticon), so what matters is the CR's `status.phase` staying at `NotReady` for the full `for: 1m` window, not the aggregator's own scrape health.
 
 ### 2. Watch the alert fire in Prometheus
 
 Open `http://localhost:9090/alerts`.
 
 <p align="center">
-  <img alt="Prometheus Alerts — SinglestoreInstanceDown Firing" src="/docs/images/singlestore/monitoring/singlestore-alerting-prom-alerts-firing.png" style="padding:10px">
+  <img alt="Prometheus Alerts — KubeDBSinglestorePhaseNotReady Firing" src="/docs/images/singlestore/monitoring/singlestore-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-`SinglestoreInstanceDown` (`memsql_up == 0`) should transition straight to **FIRING** for the affected pod.
+`KubeDBSinglestorePhaseNotReady` (in the `singlestore.provisioner` group) transitions from **INACTIVE** to **FIRING**, while `singlestore.database` and `singlestore.kubeStash` stay **INACTIVE** — crashing the aggregator's `memsqld` process doesn't take the metrics scrape target down (the pod's `singlestore` container restarts quickly), so `SinglestoreInstanceDown` never fires here; it's specifically the operator's own phase tracking that reacts.
 
 ### 3. Check the AlertManager dashboard
 
 Open `http://localhost:9093`.
 
 <p align="center">
-  <img alt="AlertManager — SinglestoreInstanceDown Firing" src="/docs/images/singlestore/monitoring/singlestore-alerting-alertmanager-firing.png" style="padding:10px">
+  <img alt="AlertManager — KubeDBSinglestorePhaseNotReady Firing" src="/docs/images/singlestore/monitoring/singlestore-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
+
+AlertManager shows the `KubeDBSinglestorePhaseNotReady` alert. The alert card displays labels including:
+
+- **alertname**: `KubeDBSinglestorePhaseNotReady`
+- **severity**: `critical`
+- **app**: `singlestore-alert-demo`, **app_namespace**: `alert-singlestore`
+- **phase**: `NotReady`
+- **k8s_kind**: `Singlestore`
+
+Note that the `instance`/`pod`/`job` labels point at the KubeDB operator's **panopticon** component (`job="panopticon"`), not at the SingleStore pod itself — because this alert is derived from the operator's own status metric.
 
 ### 4. Restore SingleStore
 
@@ -291,10 +317,10 @@ Stop the loop from step 1.
 ```bash
 $ kubectl get singlestore -n alert-singlestore singlestore-alert-demo -w
 NAME                      VERSION   STATUS   AGE
-singlestore-alert-demo    8.5.7     Ready    24m
+singlestore-alert-demo    8.9.3     Ready    24m
 ```
 
-If the node does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-singlestore <leaf-pod-name>`.
+If the aggregator does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-singlestore singlestore-alert-demo-aggregator-0`.
 
 ---
 
@@ -361,7 +387,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade singlestore-alert-demo oci://ghcr.io/appscode-charts/singlestore-alerts \
+$ helm upgrade singlestore-alert-demo appscode/singlestore-alerts \
     -n alert-singlestore \
     --version=v2026.7.14 \
     -f custom-alerts.yaml

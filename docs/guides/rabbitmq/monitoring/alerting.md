@@ -69,14 +69,13 @@ metadata:
   name: rmq-alert-demo
   namespace: alert-rabbitmq
 spec:
-  version: "4.0.4"
-  replicas: 1
+  version: "4.2.4"
+  replicas: 3
   deletionPolicy: WipeOut
-  storageType: Durable
   storage:
-    storageClassName: "standard"
+    storageClassName: "local-path"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
@@ -84,9 +83,9 @@ spec:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
-        interval: 10s
         labels:
           release: prometheus
+        interval: 10s
 ```
 
 Here,
@@ -106,7 +105,17 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get rabbitmq -n alert-rabbitmq rmq-alert-demo
 NAME             VERSION   STATUS   AGE
-rmq-alert-demo   4.0.4     Ready    49s
+rmq-alert-demo   4.2.4     Ready    5m
+```
+
+KubeDB brings up 3 pods, one per RabbitMQ node:
+
+```bash
+$ kubectl get pods -n alert-rabbitmq
+NAME               READY   STATUS    RESTARTS   AGE
+rmq-alert-demo-0   1/1     Running   0          5m
+rmq-alert-demo-1   1/1     Running   0          4m
+rmq-alert-demo-2   1/1     Running   0          4m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
@@ -151,7 +160,7 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i rmq-alert-demo oci://ghcr.io/appscode-charts/rabbitmq-alerts \
+$ helm upgrade -i rmq-alert-demo appscode/rabbitmq-alerts \
     -n alert-rabbitmq \
     --create-namespace \
     --version=v2026.7.14 \
@@ -207,19 +216,22 @@ Because RabbitMQ's Prometheus plugin runs inside the `rabbitmq` container itself
 
 ```bash
 $ kubectl exec -n alert-rabbitmq rmq-alert-demo-0 -c rabbitmq -- \
-    wget -qO- http://127.0.0.1:15692/metrics | grep rabbitmq_identity_info
-rabbitmq_identity_info{rabbitmq_node="rabbit@rmq-alert-demo-0.rmq-alert-demo-pods.alert-rabbitmq",rabbitmq_cluster="rmq-alert-demo",rabbitmq_cluster_permanent_id="rabbitmq-cluster-id-HcbvDHSZhF_lBd8K4iWRkQ"} 1
+
+                                      wget -qO- http://127.0.0.1:15692/metrics | grep rabbitmq_identity_info
+# TYPE rabbitmq_identity_info untyped
+# HELP rabbitmq_identity_info RabbitMQ node & cluster identity info
+rabbitmq_identity_info{rabbitmq_node="rabbit@rmq-alert-demo-0.rmq-alert-demo-pods.alert-rabbitmq",rabbitmq_cluster="rmq-alert-demo",rabbitmq_cluster_permanent_id="rabbitmq-cluster-id-lcFtUYEzj3-MLTpL-uEbcg",rabbitmq_endpoint="aggregated"} 1
 ```
 
 ### 2. Check the Prometheus target is UP
 
-Open `http://localhost:9090/targets?search=rmq-alert-demo`.
+Open `http://localhost:9090/targets`.
 
 <p align="center">
   <img alt="Prometheus Target UP" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-target.png" style="padding:10px">
 </p>
 
-The target `serviceMonitor/alert-rabbitmq/rmq-alert-demo-stats/0` shows **UP**, confirming metrics are being scraped from `rmq-alert-demo-0` in the `alert-rabbitmq` namespace.
+The target `serviceMonitor/alert-rabbitmq/rmq-alert-demo-stats/0` shows **3 / 3 up**, confirming metrics are being scraped from all three pods — `rmq-alert-demo-0`, `rmq-alert-demo-1`, and `rmq-alert-demo-2` — in the `alert-rabbitmq` namespace.
 
 ### 3. Confirm the RabbitMQ alerts are inactive
 
@@ -229,7 +241,9 @@ Open `http://localhost:9090/alerts?search=rabbitmq` to see the RabbitMQ alert gr
   <img alt="Prometheus Alerts" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-9 of the 11 rules in the `rabbitmq.database` group show **INACTIVE**, meaning the cluster is healthy and no thresholds are breached. `DiskUsageHigh` and `DiskAlmostFull` show **PENDING** here — this demo cluster uses the `local-path` storage class, whose PVCs are just directories on the node's root filesystem, so `kubelet_volume_stats_used_bytes` reflects the **node's actual disk usage** rather than a small, isolated volume. On a node with real dedicated storage for the PVC, these two rules will normally sit **INACTIVE** just like the rest.
+All 11 rules in the `rabbitmq.database` group and both rules in the `rabbitmq.provisioner` group show **INACTIVE**, meaning the 3-node cluster is healthy and no thresholds are breached.
+
+> Note: this cluster uses the `local-path` storage class, whose PVCs are just directories on the node's root filesystem rather than isolated volumes — so `DiskUsageHigh`/`DiskAlmostFull` (`kubelet_volume_stats_used_bytes`) can occasionally read the **node's actual disk usage** instead of the small demo volume's own usage, showing PENDING/FIRING even though the RabbitMQ data volume itself is nearly empty. Not observed in this run, but worth knowing if your own result differs from the screenshot above.
 
 ### 4. Check AlertManager
 
@@ -246,54 +260,58 @@ Open `http://localhost:9093`. **PENDING** rules have not yet fired — only aler
 
 ## Simulating a Firing Alert
 
-The previous section confirmed that the RabbitMQ alerts are healthy. This section walks through deliberately triggering the `RabbitMQDown` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+The previous section confirmed that the RabbitMQ alerts are healthy. This section walks through deliberately triggering the `RabbitMQPhaseCritical` alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-### 1. Crash the RabbitMQ process repeatedly
+On a 3-node cluster, crashing a single pod degrades the cluster rather than taking it fully down — the KubeDB operator moves the resource's `status.phase` to `Critical` (one or more nodes unhealthy, but the remaining nodes keep serving) rather than `NotReady` (which needs a majority/all of the nodes down). `RabbitMQPhaseCritical` is therefore the realistic alert to demonstrate here; `RabbitMQDown`/`KubeDBRabbitMQPhaseNotReady` would need all 3 nodes crashed simultaneously and held down.
 
-Kill the RabbitMQ process inside the pod. Unlike Memcached, a RabbitMQ pod has only a single `rabbitmq` container — the Prometheus plugin runs inside the same process being killed, so a lone `kill 1` restarts fast enough that the container becomes `Ready` again before KubeDB's health check can even observe the outage. Repeat the kill a few times over ~30–45 seconds to hold the pod in a crash loop long enough for the KubeDB operator to mark the RabbitMQ resource `NotReady` for the full evaluation window.
+### 1. Crash one RabbitMQ node repeatedly
+
+Kill the RabbitMQ process inside `rmq-alert-demo-0`. A lone `kill 1` restarts fast enough that the container becomes `Ready` again before KubeDB's health check can even observe the outage, and `RabbitMQPhaseCritical` needs the phase held at `Critical` for a full `for: 3m` — so keep the pod crash-looping for several minutes, not just a handful of kills.
 
 ```bash
-$ for i in $(seq 1 8); do
-    kubectl exec -n alert-rabbitmq rmq-alert-demo-0 -c rabbitmq -- kill 1
-    sleep 6
+$ end=$(( $(date +%s) + 240 ))
+  while [ $(date +%s) -lt $end ]; do
+    kubectl exec -n alert-rabbitmq rmq-alert-demo-0 -c rabbitmq -- kill 1 >/dev/null 2>&1
+    sleep 5
   done
 ```
 
-Watch the CR phase move from `Ready` → `Critical` → `NotReady`:
+Watch the CR phase move from `Ready` to `Critical`:
 
 ```bash
 $ kubectl get rabbitmq -n alert-rabbitmq rmq-alert-demo -o jsonpath='{.status.phase}'
-NotReady
+Critical
 ```
 
-`RabbitMQDown` and `RabbitMQPhaseCritical` key off `kubedb_com_rabbitmq_status_phase` (a metric emitted by the KubeDB operator itself), so what matters is the CR's `status.phase`, not the exporter's own scrape health. Wait 30–60 seconds for the next rule-evaluation cycle (30 s) to register the failure once the phase settles on `NotReady`.
+`RabbitMQPhaseCritical` keys off `kubedb_com_rabbitmq_status_phase` (a metric emitted by the KubeDB operator itself), so what matters is the CR's `status.phase` staying at `Critical` continuously, not the exporter's own scrape health — if the pod recovers even briefly between kills, the `for: 3m` timer resets and you'll see the rule flip back to **PENDING**. Let the loop run for the full 4 minutes above before checking.
 
 ### 2. Watch the alert fire in Prometheus
 
 Open `http://localhost:9090/alerts?search=rabbitmq`.
 
 <p align="center">
-  <img alt="Prometheus Alerts — RabbitMQDown Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-alerts-firing.png" style="padding:10px">
+  <img alt="Prometheus Alerts — RabbitMQPhaseCritical Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-`RabbitMQDown` moves from **INACTIVE** to **FIRING** once its `for: 30s` window elapses with the phase held at `NotReady`. The provisioner-group `KubeDBRabbitMQPhaseNotReady` alert (`for: 1m`) fires for the same reason shortly after.
+`RabbitMQPhaseCritical` moves from **INACTIVE** to **FIRING** once its `for: 3m` window elapses with the phase held at `Critical`, while the rest of the `rabbitmq.database` group stays **INACTIVE**. The provisioner-group `KubeDBRabbitMQPhaseNotReady` alert only reaches **PENDING** in this scenario — it needs the operator to view the resource as fully `NotReady`, which a single crashed node in a 3-node cluster doesn't trigger.
 
 ### 3. Check the AlertManager dashboard
 
 Open `http://localhost:9093/#/alerts?filter=%7Bnamespace%3D%22alert-rabbitmq%22%7D`.
 
 <p align="center">
-  <img alt="AlertManager — RabbitMQDown Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-alertmanager-firing.png" style="padding:10px">
+  <img alt="AlertManager — RabbitMQPhaseCritical Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
-AlertManager shows both `RabbitMQDown` and `KubeDBRabbitMQPhaseNotReady`. The alert cards display:
+AlertManager shows the `RabbitMQPhaseCritical` alert. The alert card displays labels including:
 
-- **Severity**: `critical`
-- **rabbitmq**: `rmq-alert-demo` in the `alert-rabbitmq` namespace
-- **phase**: `NotReady`
-- **Started**: timestamp when the alert first fired
+- **alertname**: `RabbitMQPhaseCritical`
+- **severity**: `warning`
+- **app**: `rmq-alert-demo`, **app_namespace**: `alert-rabbitmq`
+- **phase**: `Critical`
+- **k8s_kind**: `RabbitMQ`
 
-Note that the `instance`/`pod`/`job` labels on these two alerts point at the KubeDB operator's **panopticon** component (e.g. `job="panopticon"`), not at the RabbitMQ pod itself — because these alerts are derived from the operator's own status metric rather than from the database's stats endpoint.
+Note that the `instance`/`pod`/`job` labels on this alert point at the KubeDB operator's **panopticon** component (`job="panopticon"`), not at the RabbitMQ pod itself — because this alert is derived from the operator's own status metric rather than from the database's stats endpoint.
 
 AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
 
@@ -383,7 +401,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade rmq-alert-demo oci://ghcr.io/appscode-charts/rabbitmq-alerts \
+$ helm upgrade rmq-alert-demo appscode/rabbitmq-alerts \
     -n alert-rabbitmq \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
