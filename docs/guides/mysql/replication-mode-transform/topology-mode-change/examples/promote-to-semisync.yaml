@@ -8,6 +8,6 @@ spec:
   databaseRef:
     name: my-standalone
   replicationModeTransformation:
-    targetMode: SemiSync
+    targetTopologyMode: SemiSync
   timeout: 15m
   apply: Always

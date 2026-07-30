@@ -18,7 +18,7 @@ This guide shows how to change the **mode (topology)** of an existing MySQL data
 `ReplicationModeTransformation` `MySQLOpsRequest` — promoting a **standalone** MySQL into a cluster,
 and switching an existing cluster between clustered topologies.
 
-The target topology is selected with `spec.replicationModeTransformation.targetMode`:
+The target topology is selected with `spec.replicationModeTransformation.targetTopologyMode`:
 `GroupReplication`, `InnoDBCluster` or `SemiSync`.
 
 > Transforming a **Remote Replica** is covered separately in
@@ -106,7 +106,7 @@ spec:
   databaseRef:
     name: my-standalone
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Single-Primary
   timeout: 15m
   apply: Always
@@ -141,7 +141,7 @@ Set `mode: Multi-Primary` to get a multi-master group where **every member accep
 
 ```yaml
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Multi-Primary
 ```
 
@@ -167,7 +167,7 @@ accepted and replicated to the rest.
 
 ```yaml
   replicationModeTransformation:
-    targetMode: InnoDBCluster
+    targetTopologyMode: InnoDBCluster
     mode: Single-Primary
 ```
 
@@ -190,7 +190,7 @@ my-standalone-router-0   1/1     Running   0   4m
 
 ```yaml
   replicationModeTransformation:
-    targetMode: SemiSync
+    targetTopologyMode: SemiSync
 ```
 
 ```bash
@@ -256,7 +256,7 @@ spec:
   databaseRef:
     name: my-cluster
   replicationModeTransformation:
-    targetMode: InnoDBCluster
+    targetTopologyMode: InnoDBCluster
     mode: Single-Primary
   timeout: 20m
   apply: Always
@@ -281,7 +281,7 @@ Group Replication.
 
 ```yaml
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Single-Primary
 ```
 
@@ -298,7 +298,7 @@ mysqlopsrequest.ops.kubedb.com/innodb-to-gr created
 
 ```yaml
   replicationModeTransformation:
-    targetMode: SemiSync
+    targetTopologyMode: SemiSync
 ```
 
 ```bash

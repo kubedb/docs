@@ -8,7 +8,7 @@ spec:
   databaseRef:
     name: my-standalone
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Multi-Primary
   timeout: 15m
   apply: Always

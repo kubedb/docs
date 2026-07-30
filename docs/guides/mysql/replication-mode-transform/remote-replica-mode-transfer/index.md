@@ -21,7 +21,7 @@ you want to promote the remote replica into a self-standing cluster.
 > Looking to change the mode of an existing database (standalone → cluster, or between clustered
 > topologies)? See [MySQL Topology Mode Change](/docs/guides/mysql/replication-mode-transform/topology-mode-change/index.md).
 
-The target topology is chosen with `spec.replicationModeTransformation.targetMode`. See the
+The target topology is chosen with `spec.replicationModeTransformation.targetTopologyMode`. See the
 [overview](/docs/guides/mysql/replication-mode-transform/overview/index.md) for the full support
 matrix.
 
@@ -406,7 +406,7 @@ spec:
   databaseRef:
     name: mysql-london
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Single-Primary
     requireSSL: true
     issuerRef:
@@ -430,12 +430,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing Replication Mode Transformation operation on `mysql-london` database.
 - `spec.type` specifies that we are performing `ReplicationModeTransformation` on our database.
-- `spec.replicationModeTransformation.targetMode` specifies the topology to transform into —
+- `spec.replicationModeTransformation.targetTopologyMode` specifies the topology to transform into —
   `GroupReplication` (default), `InnoDBCluster` or `SemiSync`.
 - `spec.replicationModeTransformation.requireSSL` or `issuerRef` specifies tls or ssl enable group replication which is a optional field.
 - `spec.replicationModeTransformation.mode` specifies the desired Group Replication Primary Mode —
   **`Single-Primary`** (default; one writable primary) or **`Multi-Primary`** (multi-master; every
-  member accepts writes). This field is ignored when `targetMode` is `SemiSync`.
+  member accepts writes). This field is ignored when `targetTopologyMode` is `SemiSync`.
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 

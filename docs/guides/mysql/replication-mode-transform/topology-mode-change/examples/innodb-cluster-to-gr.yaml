@@ -8,7 +8,7 @@ spec:
   databaseRef:
     name: my-cluster
   replicationModeTransformation:
-    targetMode: GroupReplication
+    targetTopologyMode: GroupReplication
     mode: Single-Primary
   timeout: 20m
   apply: Always

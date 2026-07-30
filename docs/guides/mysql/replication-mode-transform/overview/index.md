@@ -26,7 +26,7 @@ Two step-by-step guides build on this overview:
 
 ## Supported Transformations
 
-The target topology is selected with `spec.replicationModeTransformation.targetMode`, which accepts
+The target topology is selected with `spec.replicationModeTransformation.targetTopologyMode`, which accepts
 `GroupReplication` (default), `InnoDBCluster` or `SemiSync`.
 
 | From (source) | To `GroupReplication` | To `InnoDBCluster` | To `SemiSync` |
