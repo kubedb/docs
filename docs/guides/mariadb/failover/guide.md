@@ -71,7 +71,7 @@ metadata:
   name: ha-mariadb
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "11.8.5"
   replicas: 3
   topology:
     mode: MariaDBReplication

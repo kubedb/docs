@@ -68,7 +68,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 12.1.2
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:
@@ -181,7 +181,7 @@ spec:
   secret:
     name: sample-mariadb-auth
   type: kubedb.com/mariadb
-  version: 12.1.2
+  version: 12.3.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -569,7 +569,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 12.1.2
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:

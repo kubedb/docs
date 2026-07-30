@@ -16,6 +16,10 @@ section_menu_id: setup
 
 KubeDB can be installed via [Helm](https://helm.sh/) using the [chart](https://github.com/kubedb/installer/tree/{{< param "info.installer" >}}/charts/kubedb) from [AppsCode Charts Repository](https://github.com/appscode/charts). To install, follow the steps below:
 
+## Get a Free License
+
+Download a FREE license from [AppsCode License Server](https://appscode.com/issue-license?p=kubedb) before you begin. You can also automate this from your CI/CD pipeline using the [offline license server](https://github.com/appscode/offline-license-server#offline-license-server).
+
 ```bash
 $ helm install kubedb oci://ghcr.io/appscode-charts/kubedb \
   --version {{< param "info.version" >}} \

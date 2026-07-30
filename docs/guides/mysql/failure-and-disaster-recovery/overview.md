@@ -70,7 +70,7 @@ metadata:
   name: ha-mysql
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication

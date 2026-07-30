@@ -4,7 +4,7 @@ metadata:
   name: md-standalone-tls
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   storageType: Durable
   storage:
     storageClassName: "standard"

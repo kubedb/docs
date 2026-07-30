@@ -59,7 +59,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   storage:
     storageClassName: "standard"
     accessModes:
@@ -113,7 +113,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: WipeOut
-  version: 12.1.2
+  version: 12.3.2
 status:
   ...
   phase: Ready
@@ -129,7 +129,7 @@ $ kubectl exec -it -n demo sample-mariadb-0 -- bash
 root@sample-mariadb-0:/ mariadb -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
 Welcome to the MariaDB monitor.  Commands end with ; or \g.
 Your MariaDB connection id is 40
-Server version: 11.8.5-MariaDB-1:11.8.5+maria~focal mariadb.org binary distribution
+Server version: 12.3.2-MariaDB-1:12.3.2+maria~focal mariadb.org binary distribution
 
 Copyright (c) 2000, 2018, Oracle, MariaDB Corporation Ab and others.
 

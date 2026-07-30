@@ -109,7 +109,7 @@ metadata:
   name: coreos-prom-md
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

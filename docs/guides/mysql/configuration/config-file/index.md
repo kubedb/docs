@@ -104,7 +104,7 @@ metadata:
   name: custom-mysql
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   configuration:
     secretName: my-configuration
   storage:

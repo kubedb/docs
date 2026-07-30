@@ -65,7 +65,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 12.1.2
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:
@@ -184,7 +184,7 @@ items:
         
         
       type: kubedb.com/mariadb
-      version: 12.1.2
+      version: 12.3.2
 kind: List
 metadata:
   resourceVersion: ""

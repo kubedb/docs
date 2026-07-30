@@ -46,7 +46,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "11.8.5"
   replicas: 3
   topology:
     mode: MariaDBReplication
@@ -220,7 +220,7 @@ spec:
             storage: 50Mi
       storageType: Durable
     mode: MariaDBReplication
-  version: 12.1.2
+  version: 11.8.5
 status:
   conditions:
   ...
