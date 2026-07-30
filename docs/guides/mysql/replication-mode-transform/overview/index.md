@@ -29,12 +29,15 @@ Two step-by-step guides build on this overview:
 The target topology is selected with `spec.replicationModeTransformation.targetTopologyMode`, which accepts
 `GroupReplication` (default), `InnoDBCluster` or `SemiSync`.
 
+Transformation is supported **from a `Standalone` or a `RemoteReplica` source**. Transforming one
+clustered topology into another is not supported yet.
+
 | From (source) | To `GroupReplication` | To `InnoDBCluster` | To `SemiSync` |
 |---------------|:---------------------:|:------------------:|:-------------:|
 | **Standalone** (no `spec.topology`) | ✅ | ✅ | ✅ |
 | **RemoteReplica** | ✅ | ✅ | ✅ |
-| **GroupReplication** | — | ✅ | ✅ |
-| **InnoDBCluster** | ✅ | — | ❌ not supported yet |
+| **GroupReplication** | — | ❌ not supported yet | ❌ not supported yet |
+| **InnoDBCluster** | ❌ not supported yet | — | ❌ not supported yet |
 | **SemiSync** | ❌ not supported yet | ❌ not supported yet | — |
 
 Notes:
@@ -42,9 +45,9 @@ Notes:
 - **Your data is preserved.** Promotions and transformations never delete a volume. When a new
   replica has to be seeded, it is seeded in place with MySQL's `CLONE INSTANCE`, which overwrites
   the data directory while the `PersistentVolumeClaim` is retained.
-- **Transformations between clustered topologies happen in place.** `GroupReplication` ⇄
-  `InnoDBCluster` keeps the running group and simply hands over management (adopting the group into
-  an InnoDB Cluster, or releasing it back to plain Group Replication) — no teardown and no re-clone.
+- **Cluster-to-cluster transformation is not supported.** A database that already runs a clustered
+  topology (`GroupReplication`, `InnoDBCluster` or `SemiSync`) cannot be transformed into a
+  different one. Apply the transformation only to a `Standalone` or `RemoteReplica` database.
 - A standalone database is scaled up to at least 3 members when it is promoted, since a clustered
   topology needs a quorum.
 - `spec.replicationModeTransformation.mode` selects the Group Replication primary mode —

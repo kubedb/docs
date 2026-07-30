@@ -15,8 +15,8 @@ section_menu_id: guides
 ## MySQL Topology Mode Change
 
 This guide shows how to change the **mode (topology)** of an existing MySQL database with a
-`ReplicationModeTransformation` `MySQLOpsRequest` — promoting a **standalone** MySQL into a cluster,
-and switching an existing cluster between clustered topologies.
+`ReplicationModeTransformation` `MySQLOpsRequest` — promoting a **standalone** MySQL into a
+clustered topology.
 
 The target topology is selected with `spec.replicationModeTransformation.targetTopologyMode`:
 `GroupReplication`, `InnoDBCluster` or `SemiSync`.
@@ -26,11 +26,15 @@ The target topology is selected with `spec.replicationModeTransformation.targetT
 
 ### Supported Mode Changes
 
+The source database must be **`Standalone`** (no `spec.topology`) or a **`RemoteReplica`**.
+Changing one clustered topology into another is not supported yet.
+
 | From (source) | → `GroupReplication` | → `InnoDBCluster` | → `SemiSync` |
 |---------------|:--------------------:|:-----------------:|:------------:|
 | **Standalone** (no `spec.topology`) | ✅ | ✅ | ✅ |
-| **GroupReplication** | — | ✅ | ✅ |
-| **InnoDBCluster** | ✅ | — | ❌ not supported yet |
+| **RemoteReplica** | ✅ | ✅ | ✅ |
+| **GroupReplication** | — | ❌ not supported yet | ❌ not supported yet |
+| **InnoDBCluster** | ❌ not supported yet | — | ❌ not supported yet |
 | **SemiSync** | ❌ not supported yet | ❌ not supported yet | — |
 
 Key guarantees:
@@ -38,8 +42,6 @@ Key guarantees:
 - **Your data is preserved.** A mode change never deletes a volume. When a new member has to be
   seeded it is seeded in place with MySQL's `CLONE INSTANCE`, which overwrites the data directory
   while the `PersistentVolumeClaim` is retained.
-- **Cluster → cluster happens in place.** `GroupReplication` ⇄ `InnoDBCluster` keeps the running
-  group and only hands over management — no teardown, no re-clone.
 - A standalone database is scaled up to at least **3 members**, since a clustered topology needs a
   quorum.
 - Requires MySQL **8.4.2 or newer**.
@@ -208,109 +210,14 @@ my-standalone-1   2/2   Running   0   3m   standby
 my-standalone-2   2/2   Running   0   3m   standby
 ```
 
-## Change the Mode of an Existing Cluster
+## Changing the Mode of an Existing Cluster
 
-Cluster-to-cluster changes are performed **in place**: the running group is kept and only its
-management changes, so there is no teardown, no re-clone and no data movement.
+**Not supported yet.** A database that already runs a clustered topology
+(`GroupReplication`, `InnoDBCluster` or `SemiSync`) cannot be transformed into a different one.
+`ReplicationModeTransformation` applies to a **`Standalone`** or **`RemoteReplica`** source only.
 
-Deploy a 3-member Group Replication cluster to work with:
-
-```yaml
-apiVersion: kubedb.com/v1
-kind: MySQL
-metadata:
-  name: my-cluster
-  namespace: demo
-spec:
-  version: "8.4.8"
-  replicas: 3
-  topology:
-    mode: GroupReplication
-  storageType: Durable
-  storage:
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
-  deletionPolicy: WipeOut
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/topology-mode-change/examples/my-cluster.yaml
-mysql.kubedb.com/my-cluster created
-```
-
-### GroupReplication → InnoDBCluster
-
-The live Group Replication group is **adopted** into an InnoDB Cluster and a MySQL Router is added.
-
-```yaml
-apiVersion: ops.kubedb.com/v1alpha1
-kind: MySQLOpsRequest
-metadata:
-  name: gr-to-innodb
-  namespace: demo
-spec:
-  type: ReplicationModeTransformation
-  databaseRef:
-    name: my-cluster
-  replicationModeTransformation:
-    targetTopologyMode: InnoDBCluster
-    mode: Single-Primary
-  timeout: 20m
-  apply: Always
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/topology-mode-change/examples/gr-to-innodb-cluster.yaml
-mysqlopsrequest.ops.kubedb.com/gr-to-innodb created
-
-$ kubectl get mysqlopsrequest -n demo gr-to-innodb
-NAME           TYPE                            STATUS       AGE
-gr-to-innodb   ReplicationModeTransformation   Successful   1m
-```
-
-Because the group is adopted rather than rebuilt, the members never restart and the change completes
-in well under a minute.
-
-### InnoDBCluster → GroupReplication
-
-The InnoDB Cluster management and its Router are removed, and the same group continues as plain
-Group Replication.
-
-```yaml
-  replicationModeTransformation:
-    targetTopologyMode: GroupReplication
-    mode: Single-Primary
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/topology-mode-change/examples/innodb-cluster-to-gr.yaml
-mysqlopsrequest.ops.kubedb.com/innodb-to-gr created
-```
-
-> **Note:** removing the Router requires the KubeDB ops-manager ServiceAccount to be able to delete
-> `apps/deployments`. If that permission is missing the mode change still succeeds and the Router is
-> simply left behind, to be removed manually.
-
-### GroupReplication → SemiSync
-
-```yaml
-  replicationModeTransformation:
-    targetTopologyMode: SemiSync
-```
-
-```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/replication-mode-transform/topology-mode-change/examples/gr-to-semisync.yaml
-mysqlopsrequest.ops.kubedb.com/gr-to-semisync created
-```
-
-### Not supported yet
-
-`SemiSync` → `GroupReplication`/`InnoDBCluster` and `InnoDBCluster` → `SemiSync` are not supported
-yet. SemiSync is asynchronous replication rather than a group, so those directions require forming
-or tearing down a real group and are still being worked on.
+To move an existing cluster to another topology, take a backup and restore it into a new database
+provisioned with the topology you want.
 
 ## Verify
 
@@ -332,10 +239,9 @@ $ for i in 0 1 2; do
 ## Cleaning up
 
 ```bash
-kubectl delete -n demo my/my-standalone my/my-cluster
+kubectl delete -n demo my/my-standalone
 kubectl delete -n demo myops/promote-to-gr myops/promote-to-multi-primary
 kubectl delete -n demo myops/promote-to-innodb myops/promote-to-semisync
-kubectl delete -n demo myops/gr-to-innodb myops/innodb-to-gr myops/gr-to-semisync
 kubectl delete ns demo
 ```
 
