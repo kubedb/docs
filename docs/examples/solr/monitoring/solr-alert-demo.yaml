@@ -1,22 +1,11 @@
 apiVersion: kubedb.com/v1alpha2
 kind: Solr
 metadata:
-  name: solr-alert-demo
+  name: solr-alert
   namespace: alert-solr
 spec:
-  version: "9.4.1"
-  replicas: 1
-  deletionPolicy: WipeOut
-  zookeeperRef:
-    name: zoo-alert-demo
-    namespace: alert-solr
-  storage:
-    storageClassName: "local-path"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  version: "9.8.0"
+  replicas: 3
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -24,3 +13,18 @@ spec:
         labels:
           release: prometheus
         interval: 10s
+  solrModules:
+  - s3-repository
+  - gcs-repository
+  - prometheus-exporter
+  zookeeperRef:
+    name: zoo
+    namespace: alert-solr
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+    storageClassName: local-path
+  deletionPolicy: WipeOut

@@ -139,7 +139,9 @@ The `clickhouse-alerts` chart creates a `PrometheusRule` resource containing all
 
 The chart derives the `PrometheusRule` name and scopes every PromQL expression (via `job="{release-name}-stats"` / `app="{release-name}"`) from the **Helm release name** — so the release name must match the ClickHouse object's name (`clickhouse-alert-demo`) for the rules to be correctly scoped to this instance.
 
-The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector`.
+The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time tkubectl patch petset -n alert-solr solr-alert \
+  --type=merge \
+  -p '{"spec":{"replicas":0}}'o match the Prometheus `ruleSelector`.
 
 ### Install
 

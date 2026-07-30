@@ -68,28 +68,29 @@ Solr coordinates via a KubeDB `ZooKeeper` cluster, so deploy that first.
 apiVersion: kubedb.com/v1alpha2
 kind: ZooKeeper
 metadata:
-  name: zoo-alert-demo
+  name: zoo
   namespace: alert-solr
 spec:
-  version: "3.8.3"
+  version: 3.8.3
   replicas: 3
   deletionPolicy: WipeOut
+  adminServerPort: 8080
   storage:
-    storageClassName: "local-path"
-    accessModes:
-      - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: "100Mi"
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
 ```
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/monitoring/zookeeper-alert-demo.yaml
-zookeeper.kubedb.com/zoo-alert-demo created
+zookeeper.kubedb.com/zoo created
 
-$ kubectl get zookeeper -n alert-solr zoo-alert-demo
-NAME              VERSION   STATUS   AGE
-zoo-alert-demo    3.8.3     Ready    3m
+$ kubectl get zookeeper -n alert-solr zoo
+NAME   VERSION   STATUS   AGE
+zoo    3.8.3     Ready    3m
 ```
 
 ## Deploy Solr with Monitoring Enabled
@@ -98,22 +99,11 @@ zoo-alert-demo    3.8.3     Ready    3m
 apiVersion: kubedb.com/v1alpha2
 kind: Solr
 metadata:
-  name: solr-alert-demo
+  name: solr-alert
   namespace: alert-solr
 spec:
-  version: "9.4.1"
-  replicas: 1
-  deletionPolicy: WipeOut
-  zookeeperRef:
-    name: zoo-alert-demo
-    namespace: alert-solr
-  storage:
-    storageClassName: "local-path"
-    accessModes:
-      - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
+  version: 9.8.0
+  replicas: 3
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -121,43 +111,68 @@ spec:
         labels:
           release: prometheus
         interval: 10s
+  solrModules:
+  - s3-repository
+  - gcs-repository
+  - prometheus-exporter
+  zookeeperRef:
+    name: zoo
+    namespace: alert-solr
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: local-path
+  deletionPolicy: WipeOut
 ```
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/solr/monitoring/solr-alert-demo.yaml
-solr.kubedb.com/solr-alert-demo created
+solr.kubedb.com/solr-alert created
 ```
 
 Wait for the database to go into `Ready` state.
 
 ```bash
-$ kubectl get solr -n alert-solr solr-alert-demo
-NAME              VERSION   STATUS   AGE
-solr-alert-demo   9.4.1     Ready    3m
+$ kubectl get solr -n alert-solr solr-alert
+NAME         VERSION   STATUS   AGE
+solr-alert   9.8.0     Ready    5m
+```
+
+KubeDB brings up 3 pods, one per Solr node:
+
+```bash
+$ kubectl get pods -n alert-solr
+NAME           READY   STATUS    RESTARTS   AGE
+solr-alert-0   1/1     Running   0          5m
+solr-alert-1   1/1     Running   0          5m
+solr-alert-2   1/1     Running   0          5m
 ```
 
 KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
 
 ```bash
-$ kubectl get svc -n alert-solr --selector="app.kubernetes.io/instance=solr-alert-demo"
-NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
-solr-alert-demo             ClusterIP   10.43.10.20    <none>        8983/TCP    3m
-solr-alert-demo-pods        ClusterIP   None           <none>        8983/TCP    3m
-solr-alert-demo-stats       ClusterIP   10.43.10.21    <none>        8080/TCP    3m
+$ kubectl get svc -n alert-solr --selector="app.kubernetes.io/instance=solr-alert"
+NAME               TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)    AGE
+solr-alert         ClusterIP   10.43.219.25    <none>        8983/TCP   5m
+solr-alert-pods    ClusterIP   None            <none>        8983/TCP   5m
+solr-alert-stats   ClusterIP   10.43.163.252   <none>        9854/TCP   5m
 ```
 
 KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
 
 ```bash
 $ kubectl get servicemonitor -n alert-solr
-NAME                    AGE
-solr-alert-demo-stats   3m
+NAME               AGE
+solr-alert-stats   5m
 ```
 
 Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
 
 ```bash
-$ kubectl get servicemonitor -n alert-solr solr-alert-demo-stats \
+$ kubectl get servicemonitor -n alert-solr solr-alert-stats \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
@@ -168,12 +183,12 @@ prometheus
 
 ### Why the Helm release name matters
 
-The chart derives the `PrometheusRule` name and scopes every PromQL expression from the **Helm release name** — so the release name must match the Solr object's name (`solr-alert-demo`).
+The chart derives the `PrometheusRule` name and scopes every PromQL expression from the **Helm release name** — so the release name must match the Solr object's name (`solr-alert`).
 
 ### Install
 
 ```bash
-$ helm upgrade -i solr-alert-demo oci://ghcr.io/appscode-charts/solr-alerts \
+$ helm upgrade -i solr-alert appscode/solr-alerts \
     -n alert-solr \
     --create-namespace \
     --version=v2026.7.14 \
@@ -185,9 +200,9 @@ $ helm upgrade -i solr-alert-demo oci://ghcr.io/appscode-charts/solr-alerts \
 ```bash
 $ kubectl get prometheusrule -n alert-solr
 NAME                AGE
-solr-alert-demo     30s
+solr-alert     30s
 
-$ kubectl get prometheusrule -n alert-solr solr-alert-demo \
+$ kubectl get prometheusrule -n alert-solr solr-alert \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
@@ -216,8 +231,10 @@ Both groups should show **OK**. `solr-alerts` v2026.7.14 has no `opsManager`/`st
 Open `http://localhost:9090/query?g0.expr=up%7Bnamespace%3D%22alert-solr%22%7D&g0.tab=1`.
 
 <p align="center">
-  <img alt="Prometheus up query — solr-alert-demo-0 UP" src="/docs/images/solr/monitoring/solr-alerting-prom-target.png" style="padding:10px">
+  <img alt="Prometheus up query — solr-alert-0 UP" src="/docs/images/solr/monitoring/solr-alerting-prom-target.png" style="padding:10px">
 </p>
+
+All three pods — `solr-alert-0`, `solr-alert-1`, `solr-alert-2` — report `up == 1`, confirming Prometheus is scraping every Solr node in the `alert-solr` namespace.
 
 ### 2. Confirm the Solr alerts are inactive
 
@@ -227,7 +244,7 @@ Open `http://localhost:9090/alerts`.
   <img alt="Prometheus Alerts — Solr groups inactive" src="/docs/images/solr/monitoring/solr-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-All rules should show **INACTIVE**.
+All 9 rules in the `solr.database` group and both rules in the `solr.provisioner` group show **INACTIVE**, confirming the cluster is healthy and no thresholds are breached.
 
 ### 3. Check AlertManager
 
@@ -250,18 +267,23 @@ See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore t
 
 ## Simulating a Firing Alert
 
-This section deliberately triggers `KubeDBSolrPhaseNotReady` by crashing the main Solr JVM process.
+This section deliberately triggers `KubeDBSolrPhaseNotReady` by repeatedly crashing the main Solr JVM process on one node. A single `kill` restarts fast enough that the container becomes `Ready` again before KubeDB's health check can observe the outage, so the crash needs to be sustained over a longer window than the `for` duration of the alert.
 
-### 1. Crash the Solr process
+### 1. Crash the Solr process repeatedly
 
 ```bash
-$ kubectl exec -n alert-solr solr-alert-demo-0 -c solr -- sh -c '
-    end=$(( $(date +%s) + 90 ));
-    while [ $(date +%s) -lt $end ]; do
-      pid=$(pgrep -f "org.apache.solr" | head -1);
-      [ -n "$pid" ] && kill -9 "$pid" 2>/dev/null;
-      sleep 1;
-    done'
+$ end=$(( $(date +%s) + 150 ))
+  while [ $(date +%s) -lt $end ]; do
+    kubectl exec -n alert-solr solr-alert-0 -c solr -- sh -c 'pid=$(pgrep -f "org.apache.solr" | head -1); [ -n "$pid" ] && kill -9 "$pid"' >/dev/null 2>&1
+    sleep 5
+  done
+```
+
+Watch the CR phase move to `NotReady`:
+
+```bash
+$ kubectl get solr -n alert-solr solr-alert -o jsonpath='{.status.phase}'
+NotReady
 ```
 
 ### 2. Watch the alert fire in Prometheus
@@ -269,10 +291,10 @@ $ kubectl exec -n alert-solr solr-alert-demo-0 -c solr -- sh -c '
 Open `http://localhost:9090/alerts`.
 
 <p align="center">
-  <img alt="Prometheus Alerts — KubeDBSolrPhaseNotReady Firing" src="/docs/images/solr/monitoring/solr-alerting-prom-alerts-firing.png" style="padding:10px">
+  <img alt="Prometheus Alerts — SolrDownShards Firing, KubeDBSolrPhaseNotReady Pending" src="/docs/images/solr/monitoring/solr-alerting-prom-alerts-firing.png" style="padding:10px">
 </p>
 
-`KubeDBSolrPhaseNotReady` (`for: 1m`) should transition to **FIRING** once the KubeDB operator marks the resource `NotReady` and holds it there past the one-minute window. `SolrDownShards`/`SolrRecoveryFailedShards` may also fire if the crash leaves shard replicas in a bad state.
+`SolrDownShards` (database group, `for: 30s`) reaches **FIRING** first, since the crashed node's shard replica goes unreachable almost immediately. The provisioner-group `KubeDBSolrPhaseNotReady` (`for: 1m`) takes longer — in this screenshot it's still **PENDING**, and transitions to **FIRING** once the KubeDB operator holds the resource at `NotReady` past the full one-minute window (confirmed via `kubectl get solr ... -o jsonpath='{.status.phase}'` above, and in the AlertManager screenshot next).
 
 ### 3. Check the AlertManager dashboard
 
@@ -282,23 +304,35 @@ Open `http://localhost:9093`.
   <img alt="AlertManager — KubeDBSolrPhaseNotReady Firing" src="/docs/images/solr/monitoring/solr-alerting-alertmanager-firing.png" style="padding:10px">
 </p>
 
+AlertManager shows the `KubeDBSolrPhaseNotReady` alert, confirming it did reach **FIRING** shortly after the previous screenshot. The alert card displays labels including:
+
+- **alertname**: `KubeDBSolrPhaseNotReady`
+- **severity**: `critical`
+- **app**: `solr-alert`, **app_namespace**: `alert-solr`
+- **phase**: `NotReady`
+- **k8s_kind**: `Solr`
+
+Note that the `instance`/`pod`/`job` labels point at the KubeDB operator's **panopticon** component (`job="panopticon"`), not at the Solr pod itself — because this alert is derived from the operator's own status metric rather than from the Solr exporter.
+
+AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
+
 ### 4. Restore Solr
 
 Stop the loop from step 1.
 
 ```bash
-$ kubectl get solr -n alert-solr solr-alert-demo -w
-NAME              VERSION   STATUS   AGE
-solr-alert-demo   9.4.1     Ready    24m
+$ kubectl get solr -n alert-solr solr-alert -w
+NAME         VERSION   STATUS   AGE
+solr-alert   9.8.0     Ready    24m
 ```
 
-If Solr does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-solr solr-alert-demo-0`.
+If Solr does not recover on its own within a minute or two, force a clean restart: `kubectl delete pod -n alert-solr solr-alert-0`.
 
 ---
 
 ## Alert Reference
 
-All alerts are scoped to the `solr-alert-demo` instance in the `alert-solr` namespace via `job="solr-alert-demo-stats"` / `namespace="alert-solr"` (database group), or `app="solr-alert-demo"` / `namespace="alert-solr"` (provisioner group).
+All alerts are scoped to the `solr-alert` instance in the `alert-solr` namespace via `job="solr-alert-stats"` / `namespace="alert-solr"` (database group), or `app="solr-alert"` / `namespace="alert-solr"` (provisioner group).
 
 ### Database Group
 
@@ -348,7 +382,7 @@ form:
 ```
 
 ```bash
-$ helm upgrade solr-alert-demo oci://ghcr.io/appscode-charts/solr-alerts \
+$ helm upgrade solr-alert appscode/solr-alerts \
     -n alert-solr \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
@@ -361,9 +395,9 @@ $ helm upgrade solr-alert-demo oci://ghcr.io/appscode-charts/solr-alerts \
 To remove all resources created in this tutorial, run the following commands.
 
 ```bash
-$ helm uninstall solr-alert-demo -n alert-solr
-$ kubectl delete solr -n alert-solr solr-alert-demo
-$ kubectl delete zookeeper -n alert-solr zoo-alert-demo
+$ helm uninstall solr-alert -n alert-solr
+$ kubectl delete solr -n alert-solr solr-alert
+$ kubectl delete zookeeper -n alert-solr zoo
 $ kubectl delete ns alert-solr
 ```
 
