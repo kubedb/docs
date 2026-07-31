@@ -84,23 +84,21 @@ spec:
 
 ### spec.source.connectionInfo / spec.target.connectionInfo
 
-`connectionInfo` tells the migration how to connect to the MSSQL Server instance. There are two ways to provide the connection details — set **either** `appBinding` **or** direct connection parameters:
+`connectionInfo` tells the migration how to connect to the MSSQL Server instance.
 
 - `appBinding` — references an `AppBinding` that holds the connection information for this MSSQL
   instance. An `AppBinding` is a KubeDB resource that decouples the connection details (endpoint,
   credentials, TLS) from the consumer; create one with the necessary information and reference it
-  here. This is the recommended approach.
+  here. This is currently the only supported way to provide connection details.
   - `name` — name of the AppBinding.
   - `namespace` — namespace of the AppBinding.
 - `database` — the database used as the initial connection entry point (typically `master`).
 - `maxConnections` — limits the number of concurrent connections the migration opens to this MSSQL
   instance.
-- `tls` — paths to PEM files for a TLS-enabled connection. You can set the following fields:
-  - `caFile` — path to the PEM-encoded CA certificate file.
-  - `certFile` — path to the PEM-encoded client certificate (for mutual TLS).
-  - `keyFile` — path to the PEM-encoded client private key (for mutual TLS).
-  - `insecureSkipVerify` — disables server certificate and hostname verification.
-  - `serverName` — overrides the hostname used for TLS SNI and certificate verification.
+- `encrypt` — encrypts the connection to the MSSQL Server instance.
+- `trustServerCertificate` — when `true`, trusts the server's TLS certificate without validating it
+  against a CA. Use only for testing with self-signed certificates — for production connections,
+  leave this `false` and provide a CA certificate via the AppBinding's `tlsSecret` instead.
 
 > For a `KubeDB`-managed database, an `AppBinding` is created by default, so you usually only need to
 > create one for the source. Learn more about [AppBinding](/docs/guides/mssqlserver/concepts/appbinding.md).
@@ -112,7 +110,10 @@ spec:
 - `enabled` — enables or disables the schema migration phase. Defaults to `true`.
 - `database` — list of database names to include in the schema migration. When empty, all user
   databases are included.
-- `excludeDatabase` — list of database names to exclude from the schema migration.
+- `schema` — list of SQL Server schemas (e.g. `dbo`) to include.
+- `excludeSchema` — list of SQL Server schemas to exclude.
+- `table` — list of schema-qualified tables (e.g. `dbo.Users`) to include.
+- `excludeTable` — list of schema-qualified tables to exclude.
 
 ### spec.source.snapshot
 
@@ -131,8 +132,13 @@ spec:
 `streaming` configures the CDC (change data capture) streaming phase. All fields are optional unless noted.
 
 - `enabled` — enables or disables the streaming phase. Defaults to `true`.
-- `autoEnableCDC` — when `true`, the migration automatically enables CDC on the source database
-  and on every selected table. Set to `false` if CDC is already pre-configured on the source.
+- `pollInterval` — how often CDC changes are polled from the source.
+- `autoEnableCDC` — when `true`, the migration enables CDC on the source database and on every
+  selected table using the standard `sys.sp_cdc_enable_db` / `sys.sp_cdc_enable_table` procedures.
+  These require the `sysadmin` role and are **not** available on AWS RDS for SQL Server — on RDS,
+  pre-enable CDC yourself with `EXEC msdb.dbo.rds_cdc_enable_db '<database>'` and set
+  `autoEnableCDC: false`. When `false`, CDC must already be enabled on the source before the
+  migration starts.
 - `batchSize` — number of CDC change rows to batch together per write to the target. Defaults to `1000`.
 
 ### spec.jobDefaults

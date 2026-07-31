@@ -21,7 +21,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Developer
+              value: Developer # for testing only; use a licensed edition in production
   storage:
     storageClassName: "local-path"
     accessModes:

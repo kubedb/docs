@@ -24,7 +24,7 @@ This guide will show you how to use `KubeDB` Migration to migrate an existing `M
 
 - The source `MSSQL Server` instance must be network-reachable from within your Kubernetes cluster.
 
-- The source `MSSQL Server` database should have the `sa` user or a user with `sysadmin` privileges for the migration.
+- The source `MSSQL Server` database should have a login with `sysadmin` privileges available for the migration. On a self-hosted instance this is typically the built-in `sa` login; on a managed instance (AWS RDS, Azure SQL Managed Instance) it's the master/administrator login you configured at creation time — see the provider-specific notes below.
 
 - You should be familiar with the following `KubeDB` concepts:
     - [AppBinding](/docs/guides/mssqlserver/concepts/appbinding.md)
@@ -51,7 +51,8 @@ We will use an **AWS RDS for SQL Server** instance as the source. Below is how t
 AWS RDS for SQL Server provides a fully managed instance. Refer to the [AWS documentation](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html) for creating an RDS SQL Server instance. For migration, you need:
 
 - The RDS endpoint (e.g., `mydb.xxxx.us-east-1.rds.amazonaws.com`)
-- The `sa` user password (or a user with `sysadmin` privileges)
+- The **master user** name and password you configured when creating the RDS instance — RDS does not create a default `sa` login, and the master user is not a member of `sysadmin` (it has `db_owner`-equivalent privileges instead).
+- CDC enablement is provider-specific on RDS: use the RDS procedure `EXEC msdb.dbo.rds_cdc_enable_db '<database>'` instead of the standard `sys.sp_cdc_enable_db`. Enable it yourself before starting the migration and set `spec.source.streaming.autoEnableCDC: false` on the `MSSQLServerMigration` CR.
 - The source must be accessible from your Kubernetes cluster (configure the VPC security group to allow inbound connections on port `1433` from your cluster's CIDR range)
 
 **Self-hosted SQL Server** <br>
@@ -60,7 +61,7 @@ For a self-hosted SQL Server instance, make sure TCP/IP is enabled on port `1433
 
 **Azure SQL Managed Instance** <br>
 
-Azure SQL Managed Instance works similarly with a public or private endpoint. Use the `sa` user credentials for the migration.
+Azure SQL Managed Instance works similarly with a public or private endpoint. Use the administrator login you selected when the instance was deployed — Managed Instance does not create a default `sa` login. This login is a member of `sysadmin`, so the standard `sys.sp_cdc_enable_db` procedure and `autoEnableCDC: true` both apply.
 
 See the official [AWS RDS SQL Server](https://docs.aws.amazon.com/AmazonRDS/latest/UserGuide/CHAP_SQLServer.html) docs for more details.
 
@@ -71,8 +72,10 @@ See the official [AWS RDS SQL Server](https://docs.aws.amazon.com/AmazonRDS/late
 Connect to the source instance using `sqlcmd` or your preferred SQL client:
 
 ```bash
-$ sqlcmd -S <rds-endpoint> -U sa -P '<password>' -C
+sqlcmd -S <rds-endpoint> -U <source-login> -P '<password>' -C
 ```
+
+> **Note:** `-C` tells `sqlcmd` to trust the server certificate without validating it — convenient for this tutorial. For production connections, validate against your CA instead of bypassing certificate checks.
 
 ```sql
 -- Create a test database
@@ -105,7 +108,7 @@ SELECT * FROM Customers;
 GO
 ```
 
-Expected output:
+Expected output (`CreatedAt` reflects `GETDATE()` at insert time, so actual values will differ per run):
 
 ```text
 CustomerID  Name   Email              City     CreatedAt
@@ -117,12 +120,12 @@ CustomerID  Name   Email              City     CreatedAt
 
 ## Prepare Source Connection Information
 
-First, create an authentication secret using the source `sa` user credentials:
+First, create an authentication secret using the source login's credentials:
 
 ```bash
-$ kubectl create secret generic source-mssql-auth -n demo \
+kubectl create secret generic source-mssql-auth -n demo \
                 --type=kubernetes.io/basic-auth \
-                --from-literal=username=sa \
+                --from-literal=username=<source-login> \
                 --from-literal=password=<password>
 ```
 
@@ -169,12 +172,14 @@ KubeDB-managed MSSQL Servers use TLS certificates by default. If you don't have 
 
 ```bash
 # Create a self-signed CA
-$ openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
+openssl req -x509 -nodes -days 365 -newkey rsa:2048 \
     -keyout ca.key -out ca.crt \
+    -addext "basicConstraints=critical,CA:TRUE" \
+    -addext "keyUsage=critical,keyCertSign,cRLSign" \
     -subj "/CN=mssqlserver-ca"
 
 # Create a TLS secret
-$ kubectl create secret tls mssqlserver-ca \
+kubectl create secret tls mssqlserver-ca \
     --cert=ca.crt --key=ca.key \
     -n demo
 ```
@@ -191,7 +196,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/migration/source-issuer.yaml
+kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/migration/source-issuer.yaml
 ```
 
 > **Note:** This step is only required if you don't already have a cert-manager issuer configured in the namespace. KubeDB uses cert-manager to issue TLS certificates for the MSSQL Server pods.
@@ -224,7 +229,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Developer
+              value: Developer # for testing only; use a licensed edition in production
   storage:
     storageClassName: "local-path"
     accessModes:
@@ -322,7 +327,7 @@ For a full description of every field, see the [MSSQLServerMigration CRD referen
 Let's wait for the Migration to finish the schema and snapshot phases and enter the streaming phase. Run the following command to watch `MSSQLServerMigration` CR:
 
 ```bash
-$ watch kubectl get mssqlservermigrations -n demo
+watch kubectl get mssqlservermigrations -n demo
 ```
 
 During the **Schema** stage:
@@ -351,7 +356,7 @@ mssqlserver-migration   Running   Streaming   0     100.0      2m
 You can also see stage-wise progress and per-database details by checking the migration pod logs:
 
 ```bash
-$ kubectl logs -n demo migrator-<migration-pod-name>
+kubectl logs -n demo migrator-<migration-pod-name>
 ```
 
 Example output during the snapshot stage:
@@ -369,14 +374,20 @@ Example output during streaming — showing per-database CDC lag:
 
 ### Verify initial snapshot on target
 
+Store the target MSSQL Server's `sa` password in a shell variable, so it's never printed to your terminal or shell history:
+
+```bash
+SA_PASSWORD=$(kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.password}' | base64 -d)
+```
+
 Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed documents were copied over:
 
 ```bash
-$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
-    -S localhost -U sa -P '<sa-password>' -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
+kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "$SA_PASSWORD" -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
 
-Expected output:
+Expected output (`CreatedAt` reflects `GETDATE()` at insert time, so actual values will differ per run):
 
 ```text
 CustomerID  Name   Email              City     CreatedAt
@@ -386,14 +397,12 @@ CustomerID  Name   Email              City     CreatedAt
 3           Carol  carol@example.com  Chicago  2026-07-10 12:00:00.000
 ```
 
-> To get the `sa` password for the target MSSQL Server, run: <br> `kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.password}' | base64 -d`
-
 ### Test live CDC streaming
 
 With the migration still running, connect to the **source AWS RDS** instance and run some DML:
 
 ```bash
-$ sqlcmd -S <rds-endpoint> -U sa -P '<password>' -C
+sqlcmd -S <rds-endpoint> -U <source-login> -P '<password>' -C
 ```
 
 ```sql
@@ -414,14 +423,14 @@ DELETE FROM Customers WHERE Name = 'Alice';
 GO
 ```
 
-Wait a few seconds for the CDC events to propagate, then re-query the **target**:
+Wait a few seconds for the CDC events to propagate, then re-query the **target** (reusing the `$SA_PASSWORD` variable set earlier):
 
 ```bash
-$ kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
-    -S localhost -U sa -P '<sa-password>' -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
+kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
+    -S localhost -U sa -P "$SA_PASSWORD" -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
 
-Expected output:
+Expected output (`CreatedAt` reflects `GETDATE()` at insert time, so actual values will differ per run):
 
 ```text
 CustomerID  Name   Email              City     CreatedAt
