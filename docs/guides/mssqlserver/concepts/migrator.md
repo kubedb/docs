@@ -182,6 +182,6 @@ These phases run sequentially: schema first, then snapshot, then streaming.
 
 ## Next Steps
 
-- Migrate an MSSQL Server database step by step with the [MSSQL Server Database Migration](/docs/guides/mssqlserver/migration/databaseMigration.md) guide.
+- Migrate an MSSQL Server database step by step with the [MSSQL Server Database Migration](/docs/guides/mssqlserver/migration/databasemigration.md) guide.
 - Learn about the [AppBinding](/docs/guides/mssqlserver/concepts/appbinding.md) concept.
 - Learn about the MSSQLServer CRD [here](/docs/guides/mssqlserver/concepts/mssqlserver.md).

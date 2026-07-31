@@ -163,6 +163,6 @@ instance. There are two ways to provide the connection details — set **either*
 
 ## Next Steps
 
-- Migrate a MongoDB database step by step with the [MongoDB Database Migration](/docs/guides/mongodb/migration/databaseMigration.md) guide.
+- Migrate a MongoDB database step by step with the [MongoDB Database Migration](/docs/guides/mongodb/migration/databasemigration.md) guide.
 - Learn about the [AppBinding](/docs/guides/mongodb/concepts/appbinding.md) concept.
 - Learn about the MongoDB CRD [here](/docs/guides/mongodb/concepts/mongodb.md).
