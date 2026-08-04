@@ -21,8 +21,8 @@ when one or more nodes fail. In high-availability database systems, failover ens
 uninterrupted even when one or more nodes go down. This capability is critical in modern, cloud-native
 infrastructure where downtime can lead to major disruptions.
 
-Elasticsearch has two independent failover mechanisms working together, both of which KubeDB sets up for
-you automatically in a dedicated **topology cluster**:
+A dedicated **topology cluster** has three node roles — `master`, `data`, and `ingest` — and KubeDB sets up
+recovery for all three automatically, though only two of them involve an actual election/promotion:
 
 - **Cluster-manager (master) election:**
   A subset of nodes are marked `master-eligible`. Exactly one of them is elected as the **active master**,
@@ -35,14 +35,21 @@ you automatically in a dedicated **topology cluster**:
   you below a majority of `2`. The demo cluster in this guide uses `2` master-eligible nodes to keep it
   lightweight, and Case 2 below demonstrates exactly this failure mode.
 
-- **Shard-level (primary/replica) failover:**
+- **Data node (shard) failover:**
   Every index's data is split into shards, and each shard can have one or more replica copies stored on
   different `data` nodes. If a data node holding a primary shard goes down, the elected master promotes an
   in-sync replica of that shard to primary on a surviving node, and schedules a new replica to be built once
   capacity is available. This happens independently, per shard, and doesn't depend on master-node count.
 
+- **Ingest node recovery:**
+  Ingest nodes are stateless — they don't hold shard data and aren't master-eligible, so there's nothing to
+  elect or promote. If an ingest pod goes down, in-flight requests through it fail, but the client
+  (`es-topology`) service simply routes subsequent traffic to the remaining ingest pods. KubeDB restarts the
+  pod, and since it carries no data, it rejoins the pool as soon as it's `Running` — no reconfiguration
+  needed.
+
 In the rest of this guide, we'll deploy a dedicated topology cluster (separate `master`, `data`, and
-`ingest` nodes) and walk through both kinds of failover.
+`ingest` nodes) and walk through master and data-node failover in detail.
 
 ## Before You Begin
 
@@ -254,7 +261,7 @@ $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cluster/health?pretty" 
 
 ## How Failover Works
 
-Elasticsearch runs two independent failover flows:
+Elasticsearch runs two independent election-based failover flows, plus stateless recovery for ingest nodes:
 
 **Master election.** Master-eligible nodes exchange heartbeats. If the active master stops responding
 (crash, network partition, or graceful shutdown), the remaining master-eligible nodes detect the loss and
@@ -265,12 +272,16 @@ minimum), any `2` form a majority, so a single node loss is tolerated. Either wa
 cluster-management operations (index creation, shard allocation, settings changes) stall — this is a
 deliberate safety measure to avoid split-brain, not a bug.
 
-**Shard failover.** The active master continuously tracks which data nodes hold in-sync copies of each
+**Data node failover.** The active master continuously tracks which data nodes hold in-sync copies of each
 shard. If a data node goes down, any primary shards it held are promoted from one of their in-sync replicas
 on a surviving data node — this is near-instantaneous since the replica already has the data. Cluster health
 transitions to `yellow` (some replicas unavailable) while reallocation is worked out, and back to `green`
 once enough replicas are rebuilt. If a node holding the **only** copy of a shard goes down, health goes to
 `red` for that shard until the node returns.
+
+**Ingest node recovery.** No election happens here — ingest nodes hold no data and aren't master-eligible.
+Losing one just means fewer nodes to spread ingest-pipeline/coordinating traffic across until KubeDB
+restarts the pod; existing indices and cluster health are unaffected.
 
 ### Hands-on Failover Testing
 
