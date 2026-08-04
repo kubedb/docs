@@ -1,0 +1,33 @@
+# Hand-crafted AppBinding for a source PostgreSQL that is NOT managed by KubeDB.
+# Edit: service.name (source address), secret credentials, and sslmode.
+apiVersion: v1
+kind: Secret
+metadata:
+  name: source-pg-auth
+  namespace: demo
+stringData:
+  username: migrator          # the replication user the source DBA created for you
+  password: "<migrator-password>"
+type: kubernetes.io/basic-auth
+---
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  name: source-pg
+  namespace: demo
+  labels:
+    app.kubernetes.io/name: postgreses.kubedb.com
+spec:
+  clientConfig:
+    service:
+      name: 10.2.0.30         # source address reachable from THIS cluster; port must be 5432
+      path: /
+      port: 5432
+      query: sslmode=disable  # or verify-ca with a tlsSecret carrying the SOURCE's CA
+      scheme: postgresql
+  secret:
+    apiGroup: ""
+    kind: Secret
+    name: source-pg-auth
+  type: kubedb.com/postgres
+  version: "17.4"
