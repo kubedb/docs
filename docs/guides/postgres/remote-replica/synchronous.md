@@ -509,18 +509,83 @@ replayed after the fact; the data was already durable in the DR cluster at commi
 To turn London into a writable primary, see
 [Cross-Cluster DR with Bidirectional Failover](/docs/guides/postgres/remote-replica/advanced-setup.md).
 
+## Recommended: run the primary with three replicas
+
+The 2-replica layout above has no slack. The primary has exactly two standbys and both must
+confirm every commit, so **losing either one blocks writes** until it comes back.
+
+Going to `replicas: 3` fixes that, and it is close to free:
+
+```yaml
+  replicas: 3
+  synchronousReplicationConfig:
+    mode: First
+    numSyncReplicas: 2
+    commitLevel: "On"
+    standbyNames:
+    - pg-london-0
+    - pg-singapore-0
+    - pg-singapore-1
+    - pg-singapore-2
+```
+
+**It costs no extra pods.** `replicas: 2` is an even number, so KubeDB adds a coordinator-only
+**arbiter** pod to break Raft ties. `replicas: 3` is odd and needs none — so both layouts run
+three pods in the primary cluster, except that with three replicas the third pod holds data and
+can serve reads instead of only voting.
+
+| Layout | Data pods | Arbiter | Total | Tolerates a standby loss |
+|---|---|---|---|---|
+| `replicas: 2` | 2 | 1 | 3 | no — writes block |
+| `replicas: 3` | 3 | 0 | 3 | **yes** |
+
+With four names and `FIRST 2`, the primary keeps a **spare** standby in reserve:
+
+```
+ application_name |   state   | sync_state | sync_priority
+------------------+-----------+------------+---------------
+ pg-london-0      | streaming | sync       |             1
+ pg-singapore-0   | streaming | sync       |             2
+ pg-singapore-2   | streaming | potential  |             4
+(3 rows)
+```
+
+`pg-singapore-2` is `potential` — connected and caught up, but not currently counted. Lose the
+active local standby and PostgreSQL promotes the spare with no operator action:
+
+```
+ application_name |   state   | sync_state | sync_priority
+------------------+-----------+------------+---------------
+ pg-london-0      | streaming | sync       |             1
+ pg-singapore-2   | streaming | sync       |             4
+(2 rows)
+```
+
+Writes are unaffected — measured at 0.09 s with a standby down versus 0.12 s with the full
+quorum — and the row is still on the DR site before the commit returns, so the zero-RPO
+guarantee is intact throughout.
+
+> **What three replicas does *not* buy you.** If **London** is the standby that fails, `FIRST 2`
+> falls back to the two remaining *local* standbys. Writes keep flowing, but they are no longer
+> being confirmed by the DR cluster — the zero-RPO guarantee is silently downgraded to
+> single-cluster durability. This is inherent to `FIRST N` whenever the list is longer than `N`:
+> you cannot both keep accepting writes and guarantee cross-cluster durability while the DR site
+> is unreachable, because those are contradictory requirements. Decide which one you want:
+>
+> - **Durability first** — list only `pg-london-0` plus one local standby, so a London outage
+>   blocks writes rather than weakening the guarantee.
+> - **Availability first** — the four-name list above, plus monitoring on
+>   `pg_stat_replication` so you notice when `pg-london-0` stops being `sync`.
+
 ## Operational notes
 
-- **Availability trade-off.** With `numSyncReplicas: 2`, losing *either* standby leaves only
-  one and writes block until a second standby reconnects. This is the deliberate cost of a zero
-  RPO. If you need writes to survive the loss of the DR link, use `numSyncReplicas: 1` — but
-  then `FIRST 1` selects only `pg-london-0`, and a London outage still blocks writes. To
-  prioritise availability over cross-cluster durability, put a local standby first in
-  `standbyNames`.
 - **Reads on the DR site** are served normally (`standbyMode: Hot`), so London can carry
   read-only traffic.
 - **Adding Singapore replicas** means extending `standbyNames`; names not present in the list
   never become synchronous.
+- **Alert on the sync set, not just on replication.** `sync_state` dropping from `sync` to
+  `potential` for `pg-london-0` is the signal that cross-cluster durability has been lost, and
+  nothing else in the system will complain about it.
 
 ## Cleaning up
 
