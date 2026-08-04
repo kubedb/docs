@@ -214,26 +214,69 @@ Remember the number — it is your post-cutover `REINDEX` workload (Step 7).
 **Extensions:** `SELECT extname FROM pg_extension;` on the source; anything beyond what the
 KubeDB image ships must be resolved before you rely on this method.
 
-## Step 6: cutover
+## Step 6: lossless cutover
+
+A migration is only successful if the migrated database contains **every row the source
+ever acknowledged**. This runbook makes that a verified gate, not an assumption: cutover
+is forbidden until a content fingerprint of the source and the replica are identical.
+
+Two practical notes before the steps:
+
+- Run the replica-side verification queries **over the local unix socket as the source's
+  own application user** (`admin` in this guide). That role exists in the copied catalog
+  and can read its own tables; the replica's `local ... trust` pg_hba line means no
+  password is needed. The replication user typically cannot `SELECT` from the
+  application's tables, and the final `postgres` password does not exist yet.
+- On a libc-mismatched migration every `psql` invocation prints
+  `WARNING: database "postgres" has no actual collation version ...` on stderr. It is
+  harmless here and fixed in Step 7 — but don't let it confuse scripts that merge stderr
+  into stdout.
 
 **1. Stop application writes at the source — and verify they stopped.** Do not trust
-"the app was told to disconnect"; killing a client does not necessarily kill server-side
-sessions. The source's WAL position is the truth — it must be frozen:
+"the app was told to disconnect": killing a client does not kill server-side sessions
+(in our testing, a "killed" writer kept inserting for ten more minutes). The source's
+WAL position and row counts are the truth — both must be frozen across two samples:
 
 ```bash
-# run twice, 2s apart, on the source; proceed only when identical
+# on the source, twice, 2 s apart; proceed only when BOTH are identical
 SELECT pg_current_wal_lsn();
+SELECT count(*) FROM writes;    -- your busiest table(s)
 ```
 
-**2. Wait for the replica to apply everything** (compare against the frozen LSN from step 1;
-`>=`, not equality — the source still emits checkpoint WAL after quiescing):
+**2. Freeze the source fingerprint.** Order-independent, content-sensitive, and constant
+memory, so it works on tables of any size (extend the pattern to every table you care
+about):
+
+```sql
+SELECT (SELECT count(*) FROM payload)
+  ||'|'|| (SELECT coalesce(sum(hashtextextended(id::text||data, 0)), 0) FROM payload)
+  ||'|'|| (SELECT count(*) FROM writes)
+  ||'|'|| (SELECT coalesce(sum(hashtextextended(id::text||origin||ts::text, 0)), 0) FROM writes);
+```
+
+Record the result — this is the value the migrated database must reproduce.
+
+**3. Wait for the replica to apply everything** (compare against the frozen LSN from
+step 1; `>=`, not equality — the source still emits checkpoint WAL after quiescing):
 
 ```bash
-kubectl exec -n demo pg-mig-0 -c postgres -- psql -U migrator -d postgres -tAc \
+kubectl exec -n demo pg-mig-0 -c postgres -- psql -U admin -d postgres -tAc \
   "SELECT pg_wal_lsn_diff(pg_last_wal_replay_lsn(), '<frozen-lsn>') >= 0;"   # wait for: t
 ```
 
-**3. Promote.** Remove `spec.remoteReplica`; for `spec.authSecret`, one rule:
+**4. THE ZERO-LOSS GATE.** Run the *same* fingerprint query on the replica, over the
+socket as the application user:
+
+```bash
+kubectl exec -n demo pg-mig-0 -c postgres -- psql -U admin -d postgres -tAc "<fingerprint SQL>"
+```
+
+- **Identical** → every acknowledged row is on the replica; proceed.
+- **Different** → **do not cut over.** Nothing is lost — the replica is still streaming
+  and the source is intact. Find what is still moving (a second application? a cron?)
+  and return to step 1.
+
+**5. Promote.** Remove `spec.remoteReplica`; for `spec.authSecret`, one rule:
 
 - authSecret's `username` **is** `postgres` → keep it. Its password becomes the superuser
   password at promotion.
@@ -247,19 +290,33 @@ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}
 kubectl delete pod pg-mig-0 -n demo
 ```
 
-**4. Redirect writes and confirm.** The database is migrated when a write is accepted with
-the final credentials:
+**6. Redirect writes, then prove zero loss.** The database is migrated when a write is
+accepted with the final credentials:
 
 ```bash
 PGPASSWORD=$(kubectl get secret pg-mig-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
 kubectl exec -n demo pg-mig-0 -c postgres -- env PGPASSWORD="$PGPASSWORD" \
-  psql -h 127.0.0.1 -U postgres -d postgres -c "SELECT NOT pg_is_in_recovery();"
+  psql -h 127.0.0.1 -U postgres -d postgres -c \
+  "INSERT INTO writes(origin) VALUES ('first-write-after-migration') RETURNING id;"
 ```
 
-**Measured on the runs behind this guide** (single-replica, ~1–2 GB databases, same-LAN
-clusters): write gap from last replicated write to first accepted write **43 s** (bare,
-measured from server-side row timestamps); cutover-initiated to first accepted write with
-the operator-generated password **37 s** (hardened). The time is dominated by the pod
+Then re-run the fingerprint query on the migrated database, scoped to exclude
+post-cutover writes — it must equal the value frozen in step 2. If your write traffic
+carries server-side timestamps, the migration's write gap is computable from the data
+itself, immune to clock skew between clusters:
+
+```sql
+SELECT min(ts) FILTER (WHERE origin = 'first-write-after-migration')
+     - max(ts) FILTER (WHERE origin <> 'first-write-after-migration') FROM writes;
+```
+
+**Measured on the runs behind this guide** (hardened source, single replica, 1.2 GB,
+same-LAN clusters, a writer inserting ~5 rows/s until the verified stop). This runbook
+was executed twice — once while being written, and once again afterwards following the
+published steps verbatim. Both runs: fingerprints identical before and after cutover —
+**zero rows lost** — with a write gap from the last acknowledged source write to the
+first write accepted by the migrated database of **52.22 s** and **48.57 s**
+respectively, measured from server-side row timestamps. The gap is dominated by the pod
 recreate and promotion, not by data size — the data was already there.
 
 ## Step 7: after the cutover
