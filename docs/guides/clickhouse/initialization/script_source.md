@@ -47,10 +47,10 @@ Let's create a ConfigMap with the initialization script:
 
 ```bash
 $ kubectl create configmap -n demo ch-init-script \
---from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/Bonusree/init_script/main/clickhouse_init.sql)"
+--from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/clickhouse-init-script/refs/heads/master/clickhouse_init.sql)"
 configmap/ch-init-script created
 ```
-
+> **Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to ClickHouse, make sure to include the appropriate ClickHouse credentials (such as the password) so the script can authenticate successfully. After deploying ClickHouse with this ConfigMap, the initialization script runs automatically, and any databases, users, tables, or other objects created by the script can be verified after the deployment completes.
 ## Create ClickHouse with Script Source
 
 Following YAML describes the ClickHouse object with `init.script`:
@@ -214,7 +214,7 @@ Now let's connect to our ClickHouse instance to verify that the database has bee
 **Connection Information:**
 
 - Host name/address: you can use any of these
-  - Service: `script-clickhouse.demo`
+  - Service: `script-clickhouse`
   - Pod IP: (`$ kubectl get pods script-clickhouse-0 -n demo -o yaml | grep podIP`)
 - Port: `9000` (native TCP) or `8123` (HTTP)
 
