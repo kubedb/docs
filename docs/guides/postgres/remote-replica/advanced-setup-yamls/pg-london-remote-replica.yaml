@@ -35,5 +35,5 @@ spec:
       requests:
         storage: 3Gi
   storageType: Durable
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   version: "17.4"

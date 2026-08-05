@@ -7,7 +7,7 @@ spec:
   authSecret:
     name: pg-london-auth
   clientAuthMode: md5
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   podTemplate:
     spec:
       containers:

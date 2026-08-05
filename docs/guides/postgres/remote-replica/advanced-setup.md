@@ -132,44 +132,20 @@ pg-issuer   True    0s
 
 > **Critical:** Both clusters must use **the same password**. When the remote replica performs `pg_basebackup` from the primary, it inherits the primary's password hashes. The local `authSecret` must match.
 
-Create these secrets on **both** clusters:
-
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: pg-singapore-auth
-  namespace: demo
-stringData:
-  username: postgres
-  password: <your-strong-password>
-type: kubernetes.io/basic-auth
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: pg-london-auth
-  namespace: demo
-stringData:
-  username: postgres
-  password: <your-strong-password>
-type: kubernetes.io/basic-auth
-```
+Create the secrets from a shell variable so no password is ever written to a file:
 
 ```bash
-$ kubectl apply \
-    -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-singapore-auth.yaml \
-    -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-london-auth.yaml \
-    --kubeconfig $KUBECONFIG_PRIMARY
-secret/pg-singapore-auth created
-secret/pg-london-auth created
+export PG_PASSWORD='<choose-a-strong-password>'
 
-$ kubectl apply \
-    -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-singapore-auth.yaml \
-    -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/remote-replica/advanced-setup-yamls/pg-london-auth.yaml \
-    --kubeconfig $KUBECONFIG_DR
-secret/pg-singapore-auth created
-secret/pg-london-auth created
+for KC in $KUBECONFIG_PRIMARY $KUBECONFIG_DR; do
+  for NAME in pg-singapore-auth pg-london-auth; do
+    kubectl create secret generic $NAME -n demo \
+      --type=kubernetes.io/basic-auth \
+      --from-literal=username=postgres \
+      --from-literal=password="$PG_PASSWORD" \
+      --kubeconfig $KC
+  done
+done
 ```
 
 ## Step 4: Expose PostgreSQL via ingress-nginx
@@ -222,7 +198,7 @@ spec:
   authSecret:
     name: pg-singapore-auth
   clientAuthMode: md5
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   replicas: 3
   sslMode: verify-ca
   standbyMode: Hot
@@ -316,9 +292,13 @@ $ kubectl-dba remote-config postgres -n demo pg-singapore \
     -upostgres -p'<your-password>' \
     -d <PRIMARY_EXTERNAL_IP> \
     --auth-secret pg-london-auth \
-    -y pg-singapore-remote-config.yaml \
+    -y \
     --kubeconfig $KUBECONFIG_PRIMARY
 ```
+
+The output is always written to the **current directory** as `<dbname>-remote-config.yaml`
+(`-y` only skips the confirmation prompt). If the source is reachable on a non-standard
+port, pass it as `-d <ip>:<port>` or with `--port` — it is honored end to end by the replica.
 
 This generates `pg-singapore-remote-config.yaml` containing:
 - A `Secret` (`pg-london-auth`) — credentials the remote replica uses to authenticate
@@ -374,7 +354,7 @@ spec:
       requests:
         storage: 3Gi
   storageType: Durable
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   version: "17.4"
 ```
 
@@ -399,12 +379,12 @@ pg-london   17.4      Ready    83s
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_DR
 NAME                                       READY   STATUS    RESTARTS   AGE
 ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          56m
-pg-london-0                                1/1     Running   0          74s
-pg-london-1                                1/1     Running   0          66s
-pg-london-2                                1/1     Running   0          59s
+pg-london-0                                2/2     Running   0          74s
+pg-london-1                                2/2     Running   0          66s
+pg-london-2                                2/2     Running   0          59s
 ```
 
-Remote replica pods show `1/1` — no coordinator (remote replicas are managed by init scripts directly, without Raft leader election).
+Remote replica pods show `2/2` — the `postgres` container plus a `pg-coordinator` sidecar running in remote-replica mode (no Raft): it monitors streaming against the source, runs `pg_rewind`/re-seed recovery when the source changes timeline, keeps the pod's `standby` role label truthful, and logs replication lag.
 
 ## Step 8: Verify Cross-Cluster Replication
 
@@ -449,6 +429,14 @@ $ kubectl exec -i -n demo pg-london-0 -c postgres \
 ```
 
 Cross-cluster WAL streaming is confirmed.
+
+The coordinator on each replica pod also logs its byte lag behind the source — sampled
+every 5s while catching up, backing off to every 5 minutes once in sync:
+
+```bash
+$ kubectl logs pg-london-0 -n demo -c pg-coordinator --kubeconfig $KUBECONFIG_DR | grep LagMonitor
+[LagMonitor] Pod pg-london-0: lag=0 B (in sync with source); next check in 40s
+```
 
 ## Step 9: Failover — Promote the DR Cluster (London)
 
@@ -552,7 +540,7 @@ $ kubectl-dba remote-config postgres -n demo pg-london \
     -upostgres -p'<your-password>' \
     -d <DR_EXTERNAL_IP> \
     --auth-secret pg-singapore-auth \
-    -y pg-london-remote-config.yaml \
+    -y \
     --kubeconfig $KUBECONFIG_DR
 ```
 
@@ -566,6 +554,17 @@ appbinding.appcatalog.appscode.com/pg-london created
 ```
 
 ### 10.2 Deploy Singapore as Remote Replica of London
+
+With `deletionPolicy: Halt`, Singapore's PVCs survived Step 9.1, so its pods reattach to
+their **existing data**: pods that were standbys follow the timeline history forward, and a
+pod whose data was ahead of the new primary (the former primary) is repaired in place with
+`pg_rewind` — no full re-seed of the data directory in either case. Watch it in the logs:
+
+```
+LOG:  fetching timeline history file for timeline 2 from primary server
+LOG:  new target timeline is 2
+```
+
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -605,7 +604,7 @@ spec:
       requests:
         storage: 3Gi
   storageType: Durable
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   version: "17.4"
 ```
 
@@ -626,9 +625,9 @@ pg-singapore   17.4      Ready    3m5s
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_PRIMARY
 NAME                                       READY   STATUS    RESTARTS   AGE
 ingress-nginx-controller-d4b9877f6-xp6n4   1/1     Running   0          61m
-pg-singapore-0                             1/1     Running   0          3m1s
-pg-singapore-1                             1/1     Running   0          2m26s
-pg-singapore-2                             1/1     Running   0          101s
+pg-singapore-0                             2/2     Running   0          3m1s
+pg-singapore-1                             2/2     Running   0          2m26s
+pg-singapore-2                             2/2     Running   0          101s
 ```
 
 ### 10.3 Verify Recovery and Live Replication
@@ -703,12 +702,6 @@ pod "pg-singapore-1" deleted
 pod "pg-singapore-2" deleted
 ```
 
-> **Note:** In some cases after pod restart, `pg-singapore` may stay `NotReady` because the coordinator's gRPC promote call returns exit code 1 when postgres already auto-promoted itself. If this happens, restart `pg-singapore-0` once:
-> ```bash
-> kubectl delete pod pg-singapore-0 -n demo --kubeconfig $KUBECONFIG_PRIMARY
-> ```
-> This is a known edge case when transitioning from remote-replica mode to HA mode.
-
 ```bash
 $ kubectl wait pg pg-singapore -n demo \
     --for=jsonpath='{.status.phase}'=Ready \
@@ -758,7 +751,7 @@ $ kubectl-dba remote-config postgres -n demo pg-singapore \
     -upostgres -p'<your-password>' \
     -d <PRIMARY_EXTERNAL_IP> \
     --auth-secret pg-london-auth \
-    -y pg-singapore-remote-config.yaml \
+    -y \
     --kubeconfig $KUBECONFIG_PRIMARY
 ```
 
@@ -786,9 +779,9 @@ pg-london   17.4      Ready    117s
 $ kubectl get pods -n demo --kubeconfig $KUBECONFIG_DR
 NAME                                       READY   STATUS    RESTARTS   AGE
 ingress-nginx-controller-d4b9877f6-664gs   1/1     Running   0          66m
-pg-london-0                                1/1     Running   0          114s
-pg-london-1                                1/1     Running   0          107s
-pg-london-2                                1/1     Running   0          100s
+pg-london-0                                2/2     Running   0          114s
+pg-london-1                                2/2     Running   0          107s
+pg-london-2                                2/2     Running   0          100s
 ```
 
 ### 11.3 Verify Final State

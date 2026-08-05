@@ -10,7 +10,7 @@ spec:
       namespace: demo
   authSecret:
     kind: Secret
-    name: pg-london-auth
+    name: pg-singapore-auth
   clientAuthMode: md5
   standbyMode: Hot
   replicas: 3
@@ -36,5 +36,5 @@ spec:
       requests:
         storage: 3Gi
   storageType: Durable
-  deletionPolicy: Delete
+  deletionPolicy: Halt
   version: "17.4"
