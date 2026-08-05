@@ -347,6 +347,21 @@ NAME           VERSION   STATUS   AGE
 pg-london      18.3      Ready    7m17s
 ```
 
+Each remote replica pod runs `2/2` containers: `postgres` plus a `pg-coordinator` sidecar
+in remote-replica mode (no Raft). The coordinator monitors streaming against the source,
+recovers the replica with `pg_rewind` or a fresh basebackup when the source changes
+timeline, keeps the pod's `standby` role label truthful (set only while the source
+confirms the pod is streaming, cleared otherwise), and logs the replication lag:
+
+```bash
+$ kubectl logs pg-london-0 -n demo -c pg-coordinator | grep LagMonitor
+[LagMonitor] Pod pg-london-0: lag=0 B (in sync with source); next check in 40s
+```
+
+A `<name>-standby` Service is created for remote replicas at any replica count and selects
+the pods whose standby label is set — use it (not the primary-selecting `<name>` Service,
+which has no endpoints while the database is a replica) to route read-only traffic.
+
 ##  Validate Remote Replica
 
 At this point we want to validate the replication, we can see `pg-london-0` is connected as asynchronous replica
