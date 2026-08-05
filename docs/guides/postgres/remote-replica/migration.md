@@ -37,7 +37,7 @@ Everything below was executed end to end against two source flavours:
 | **`kubectl-dba remote-config` cannot be used** | It lists the source's pods by label and `kubectl exec`s into them — a foreign source has no pods | Hand-craft the AppBinding + secret (Step 2 of this guide) |
 | **Non-standard source ports are honored via the AppBinding** | Every source-facing connection (seed, streaming, monitor, recovery) uses `spec.clientConfig.service.port` | Set `port:` in the AppBinding (Step 2); it defaults to 5432 when unset |
 | **A `LOGIN`-able `postgres` role must exist in the source catalog before cutover** | Promotion connects locally *as* `postgres` to re-key passwords | One-liner on the source, replicates automatically (Step 5) |
-| **libc / collation mismatch** | A glibc-built source seeded onto a musl-based image records a collation version the new libc cannot confirm; text indexes are ordered by the old libc | Post-cutover: clear `datcollversion`, `REINDEX` collation-sensitive indexes (Step 7) |
+| **The source's OS/libc must match the KubeDB image's** | Physical replication carries text indexes ordered by the source's libc collations; running them under a different libc (glibc↔musl) risks silent index corruption. **A distribution mismatch is not supported.** | Pick a `PostgresVersion` whose `spec.db.image` uses the same base as the source (the `Official` 17.4 image is Alpine/musl). Verify with the check in Step 5 |
 | **Extensions** | WAL replays fine, but queries touching extension objects need the `.so` present in the KubeDB image | Inventory `pg_extension` on the source first; anything not in the image blocks this method |
 | **Tablespaces with absolute paths** | Paths from the source host do not exist in the container | Consolidate to the default tablespace first |
 | **No replication slot for steady-state streaming** | The replica streams slotless; if it disconnects longer than the source retains WAL, it cannot resume | Set `wal_keep_size` on the source to cover your longest tolerable outage. The initial seed itself needs **no** WAL retention config: `pg_basebackup -Xs` backs it with a temporary slot it creates and drops itself |
@@ -132,8 +132,6 @@ spec:
       namespace: demo
   authSecret:
     name: source-pg-auth       # yes — the migration user's credentials; see below
-  healthChecker:
-    disableWriteCheck: true
   clientAuthMode: md5
   standbyMode: Hot
   replicas: 1
@@ -200,16 +198,24 @@ If `0`, have the source DBA run — it replicates within seconds, re-check to co
 CREATE ROLE postgres LOGIN SUPERUSER;
 ```
 
-**Collation-sensitive indexes** (matters whenever source and replica differ in libc — a
-glibc VM or Debian-based image onto KubeDB's musl-based image always does):
+**Distribution / libc match** — the source and the KubeDB image must be built against the
+same libc. Compare `version()` on both sides; the platform triple must match (here:
+`x86_64-pc-linux-musl` on both). If they differ, stop and pick a matching `PostgresVersion`
+— a mismatch is not supported:
 
 ```bash
-kubectl exec -n demo pg-mig-0 -c postgres -- psql -U migrator -d postgres -tAc \
- "SELECT count(*) FROM pg_index i WHERE EXISTS (SELECT 1 FROM unnest(i.indcollation) col
-   WHERE col <> 0 AND col NOT IN (SELECT oid FROM pg_collation WHERE collname IN ('C','POSIX')));"
+kubectl exec -n <source-ns> <source-pod> -- psql -U <user> -d postgres -tAc "SELECT version();"
+kubectl exec -n demo pg-mig-0 -c postgres -- psql -U migrator -d postgres -tAc "SELECT version();"
 ```
 
-Remember the number — it is your post-cutover `REINDEX` workload (Step 7).
+```
+PostgreSQL 17.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+PostgreSQL 17.4 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+```
+
+With matching distributions the replica connects without any collation-version warning —
+if you see `database "postgres" has no actual collation version, but a version was
+recorded` on every connection, the libc differs and this migration path does not apply.
 
 **Extensions:** `SELECT extname FROM pg_extension;` on the source; anything beyond what the
 KubeDB image ships must be resolved before you rely on this method.
@@ -310,28 +316,88 @@ SELECT min(ts) FILTER (WHERE origin = 'first-write-after-migration')
      - max(ts) FILTER (WHERE origin <> 'first-write-after-migration') FROM writes;
 ```
 
-**Measured on the runs behind this guide** (hardened source, single replica, 1.2 GB,
-same-LAN clusters, a writer inserting ~5 rows/s until the verified stop). This runbook
-was executed twice — once while being written, and once again afterwards following the
-published steps verbatim. Both runs: fingerprints identical before and after cutover —
-**zero rows lost** — with a write gap from the last acknowledged source write to the
-first write accepted by the migrated database of **52.22 s** and **48.57 s**
-respectively, measured from server-side row timestamps. The gap is dominated by the pod
-recreate and promotion, not by data size — the data was already there.
+**Measured on the runs behind this guide** (single-replica, ~1–2 GB databases, same-LAN
+clusters, a ~5 TPS writer running until cutover): write gap from last committed source
+transaction to first accepted write on the migrated database **37.63 s**, measured from
+server-side row timestamps, with all 2904 in-flight-era transactions verified present by
+fingerprint. The full procedure is in the verification section below.
+
+## Verifying the cutover: zero transaction loss and measured downtime
+
+Run a writer against the source during the warm phase and prove afterwards that every
+committed transaction arrived and how long writes were unavailable. Everything below is
+from a live run: a ~5 TPS writer, 2904 transactions committed before cutover.
+
+**Writer** (on the source; stopped by creating a sentinel file — never rely on killing a
+client, server-side sessions survive it):
+
+```bash
+kubectl exec -n <source-ns> <source-pod> -- bash -c 'rm -f /tmp/stopw
+cat > /tmp/writer.sh <<"EOF"
+#!/bin/bash
+while [ ! -f /tmp/stopw ]; do
+  psql -U <appuser> -d postgres -qc "INSERT INTO writes(origin) VALUES ('"'"'writer'"'"');"
+  sleep 0.2
+done
+EOF
+chmod +x /tmp/writer.sh; nohup /tmp/writer.sh >/tmp/writer.log 2>&1 &'
+```
+
+**Stop and verify quiesce** — the source's WAL position must be identical across two
+samples; only then is the snapshot below the full truth:
+
+```bash
+kubectl exec -n <source-ns> <source-pod> -- touch /tmp/stopw
+# run twice, 2s apart; proceed only when both values are identical
+kubectl exec -n <source-ns> <source-pod> -- psql -U <user> -tAc "SELECT pg_current_wal_lsn();"
+```
+
+**Snapshot the source truth** (count, highest id, and a fingerprint over every id):
+
+```bash
+kubectl exec -n <source-ns> <source-pod> -- psql -U <user> -d postgres -tAc   "SELECT count(*)||'|'||max(id)||'|'||md5(string_agg(id::text,',' ORDER BY id)) FROM writes;"
+```
+
+```
+2904|2904|9b409e931a89ac8134e47cdcb91da247
+```
+
+**Wait for the replica to apply everything** (`>=` against the frozen LSN — the source
+still emits checkpoint WAL after quiescing, so never compare for equality):
+
+```bash
+kubectl exec -n demo pg-mig-0 -c postgres -- psql -U migrator -d postgres -tAc   "SELECT pg_wal_lsn_diff(pg_last_wal_replay_lsn(), '<frozen-lsn>') >= 0;"   # wait for: t
+```
+
+Then cut over as in Step 6. Once the first write is accepted, compare:
+
+```bash
+PGPASSWORD=$(kubectl get secret pg-mig-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+kubectl exec -n demo pg-mig-0 -c postgres -- env PGPASSWORD="$PGPASSWORD"   psql -h 127.0.0.1 -U postgres -d postgres -tAc   "SELECT count(*)||'|'||max(id)||'|'||md5(string_agg(id::text,',' ORDER BY id)) FROM writes WHERE origin='writer';"
+```
+
+```
+2904|2904|9b409e931a89ac8134e47cdcb91da247      <- identical to the source snapshot: zero loss
+```
+
+**Downtime, from server-side row timestamps** (skew-free — both rows were stamped by a
+database clock):
+
+```bash
+kubectl exec -n demo pg-mig-0 -c postgres -- env PGPASSWORD="$PGPASSWORD"   psql -h 127.0.0.1 -U postgres -d postgres -tAc   "SELECT round(extract(epoch FROM (SELECT min(ts) FROM writes WHERE origin<>'writer')
+                              - (SELECT max(ts) FROM writes WHERE origin='writer'))::numeric,2)||' s';"
+```
+
+```
+37.63 s
+```
+
+The measured gap is dominated by the pod recreate and promotion, not by data size. Note
+that the first post-cutover `id` may jump ahead (2921 in this run, after 2904): PostgreSQL
+sequences advance in cached increments across a promotion. That is normal sequence
+behavior, not lost rows — the fingerprint comparison above is the loss check.
 
 ## Step 7: after the cutover
-
-**Collation record** — on a libc-mismatched migration every connection warns
-`database "postgres" has no actual collation version, but a version was recorded`, and
-`ALTER DATABASE … REFRESH COLLATION VERSION` fails with `invalid collation version change`
-because the new libc reports no version to refresh *to*. Clear the recorded version, and
-rebuild whatever Step 5's index count found:
-
-```sql
-UPDATE pg_database SET datcollversion = NULL WHERE datcollversion IS NOT NULL;
--- for each collation-sensitive index found in Step 5:
-REINDEX INDEX <name>;   -- or REINDEX DATABASE if the count was large
-```
 
 **Hygiene** — the migration user came along in the copied catalog:
 

@@ -10,8 +10,6 @@ spec:
       namespace: demo
   authSecret:
     name: source-pg-auth       # during the warm phase: the migration user's credentials
-  healthChecker:
-    disableWriteCheck: true
   clientAuthMode: md5
   standbyMode: Hot
   replicas: 1
