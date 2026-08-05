@@ -35,7 +35,7 @@ Everything below was executed end to end against two source flavours:
 | **Self-managed sources only** | Managed services (RDS, Cloud SQL, …) do not expose physical replication to external standbys | Logical replication (different machinery, not this guide) |
 | **Major version must match** | Physical standby; WAL format is per-major | Pick the matching `version:` from the KubeDB catalog; upgrade after migration |
 | **`kubectl-dba remote-config` cannot be used** | It lists the source's pods by label and `kubectl exec`s into them — a foreign source has no pods | Hand-craft the AppBinding + secret (Step 2 of this guide) |
-| **The source must be reachable at port 5432** | The generated connection strings and `primary_conninfo` do not carry a port | Expose the source at `:5432` on the address you put in the AppBinding |
+| **Non-standard source ports are honored via the AppBinding** | Every source-facing connection (seed, streaming, monitor, recovery) uses `spec.clientConfig.service.port` | Set `port:` in the AppBinding (Step 2); it defaults to 5432 when unset |
 | **A `LOGIN`-able `postgres` role must exist in the source catalog before cutover** | Promotion connects locally *as* `postgres` to re-key passwords | One-liner on the source, replicates automatically (Step 5) |
 | **libc / collation mismatch** | A glibc-built source seeded onto a musl-based image records a collation version the new libc cannot confirm; text indexes are ordered by the old libc | Post-cutover: clear `datcollversion`, `REINDEX` collation-sensitive indexes (Step 7) |
 | **Extensions** | WAL replays fine, but queries touching extension objects need the `.so` present in the KubeDB image | Inventory `pg_extension` on the source first; anything not in the image blocks this method |
@@ -100,9 +100,9 @@ metadata:
 spec:
   clientConfig:
     service:
-      name: 10.2.0.30          # source address; must serve PostgreSQL on 5432
+      name: 10.2.0.30          # source address
       path: /
-      port: 5432
+      port: 5432               # honored: set to the source's actual port
       query: sslmode=disable   # TLS source: verify-ca + a tlsSecret carrying the SOURCE's CA
       scheme: postgresql
   secret:

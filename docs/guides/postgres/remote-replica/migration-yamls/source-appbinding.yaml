@@ -20,9 +20,9 @@ metadata:
 spec:
   clientConfig:
     service:
-      name: 10.2.0.30         # source address reachable from THIS cluster; port must be 5432
+      name: 10.2.0.30         # source address reachable from THIS cluster
       path: /
-      port: 5432
+      port: 5432               # honored: set to the source's actual port
       query: sslmode=disable  # or verify-ca with a tlsSecret carrying the SOURCE's CA
       scheme: postgresql
   secret:
