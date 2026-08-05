@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="ZooKeeper Alerting Architecture" src="/docs/images/zookeeper/monitoring/zk-alerting-overview.svg">
+</p>
+
 - **ZooKeeper** (3.6+) ships with a built-in Prometheus `MetricsProvider` that exposes metrics natively on an admin/metrics port — KubeDB does not need to inject a separate exporter sidecar for ZooKeeper, unlike some other databases.
 - **ServiceMonitor** (named `{zookeeper-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape each ZooKeeper pod's metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `zookeeper-alerts` chart and contains all ZooKeeper alert definitions grouped by concern: database health and provisioner.

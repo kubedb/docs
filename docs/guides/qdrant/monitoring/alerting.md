@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Qdrant Alerting Architecture" src="/docs/images/qdrant/monitoring/qd-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Qdrant with metrics served natively by Qdrant itself on its API port (`6333`) — no separate exporter sidecar is required.
 - **ServiceMonitor** (named `{qdrant-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds. It is pre-configured to send a Bearer token (read from the `{qdrant-name}-auth` Secret's `api-key` key) with every scrape request, since Qdrant's `/metrics` endpoint requires authentication.
 - **PrometheusRule** is created by the `qdrant-alerts` chart and contains all Qdrant alert definitions grouped by concern: database health and provisioner.

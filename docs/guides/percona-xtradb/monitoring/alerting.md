@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="PerconaXtraDB Alerting Architecture" src="/docs/images/percona-xtradb/monitoring/perconaxtradb-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys PerconaXtraDB with a `mysqld_exporter`-compatible sidecar (container `exporter`) that exposes metrics (`mysql_*`), the same exporter family used by MySQL/MariaDB.
 - **ServiceMonitor** (named `{perconaxtradb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `perconaxtradb-alerts` chart and contains alert definitions grouped by concern: database health, Galera cluster, provisioner, ops-manager, Stash backup/restore, and schema manager.

@@ -63,6 +63,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="MSSQLServer Alerting Architecture" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys MSSQLServer with a metrics-exporter sidecar (container `exporter`) that exposes metrics on the `{mssqlserver-name}-stats` service.
 - **ServiceMonitor** (named `{mssqlserver-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `mssqlserver-alerts` chart and contains MSSQLServer alert definitions grouped by concern: database health, provisioner, and ops-manager. A fourth group (`kubeStash`) is declared in the chart but currently fails to render — see the chart-bug callout below.

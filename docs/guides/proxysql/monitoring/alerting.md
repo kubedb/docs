@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="ProxySQL Alerting Architecture" src="/docs/images/proxysql/monitoring/proxysql-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys ProxySQL with metrics exposed directly by the `proxysql` container itself on port `6070` (an embedded `proxysql_exporter`-style endpoint) — there is no separate exporter sidecar.
 - **ServiceMonitor** (named `{proxysql-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `proxysql-alerts` chart and contains ProxySQL alert definitions grouped by concern: database health, cluster sync, provisioner, and ops-manager.

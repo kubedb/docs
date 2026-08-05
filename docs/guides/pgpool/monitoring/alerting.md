@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Pgpool Alerting Architecture" src="/docs/images/pgpool/monitoring/pgpool-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Pgpool with a dedicated `pgpool2_exporter` sidecar (container name `exporter`) that exposes metrics on port `9719` — Pgpool itself has no built-in Prometheus endpoint, so every pod runs **two containers**: `pgpool` and `exporter`.
 - **ServiceMonitor** (named `{pgpool-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `pgpool-alerts` chart and contains Pgpool alert definitions grouped by concern: database health and provisioner.

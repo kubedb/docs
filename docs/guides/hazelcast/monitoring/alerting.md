@@ -57,6 +57,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Hazelcast Alerting Architecture" src="/docs/images/hazelcast/monitoring/hazelcast-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Hazelcast with a metrics-exporter sidecar (container `exporter`) that exposes Hazelcast's own JMX-derived metrics (`com_hazelcast_Metrics_*`).
 - **ServiceMonitor** (named `{hazelcast-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `hazelcast-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `hazelcastDown`/`hazelcastPhaseCritical` alerts) and provisioner.

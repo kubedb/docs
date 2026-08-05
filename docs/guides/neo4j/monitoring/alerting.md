@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Neo4j Alerting Architecture" src="/docs/images/neo4j/monitoring/neo4j-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Neo4j with metrics exposed directly by the `neo4j` container itself on port `2004` (Neo4j's built-in Prometheus metrics endpoint) — there is no separate exporter sidecar.
 - **ServiceMonitor** (named `{neo4j-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `neo4j-alerts` chart and contains all Neo4j alert definitions grouped by concern: database health/resource usage and provisioner.

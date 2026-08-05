@@ -47,6 +47,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="ClickHouse Alerting Architecture" src="/docs/images/clickhouse/monitoring/clickhouse-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys ClickHouse with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter)-style Java agent running **inside the `clickhouse` container itself** on port `9363` — there is no separate exporter sidecar container, and only one container runs in the pod.
 - **ServiceMonitor** (named `{clickhouse-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `clickhouse-alerts` chart and contains ClickHouse alert definitions grouped by concern: database health, provisioner, ops-manager, and KubeStash backup/restore.

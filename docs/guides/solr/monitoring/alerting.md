@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Solr Alerting Architecture" src="/docs/images/solr/monitoring/solr-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Solr with a metrics-exporter sidecar (container `exporter`) that exposes Solr's own metrics (`solr_metrics_*`, `solr_collections_*`).
 - **ServiceMonitor** (named `{solr-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `solr-alerts` chart and contains alert definitions grouped by concern: database health and provisioner.

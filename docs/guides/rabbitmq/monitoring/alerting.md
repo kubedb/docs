@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="RabbitMQ Alerting Architecture" src="/docs/images/rabbitmq/monitoring/rmq-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys RabbitMQ with the built-in `rabbitmq_prometheus` plugin enabled, which serves metrics directly from the `rabbitmq` container on port `15692` — unlike some other databases, RabbitMQ needs no separate exporter sidecar.
 - **ServiceMonitor** (named `{rabbitmq-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **KubeDB operator (panopticon)** also exposes the CR's own status as a metric, `kubedb_com_rabbitmq_status_phase`. The `RabbitMQDown` and provisioner-group alerts key off this metric instead of the database's own stats endpoint, so they fire purely based on what KubeDB itself observes about the resource — even if the metrics scrape target is otherwise healthy.

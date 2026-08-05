@@ -58,6 +58,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="SingleStore Alerting Architecture" src="/docs/images/singlestore/monitoring/singlestore-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys SingleStore without a separate exporter image — metrics are obtained via the `memsql-admin` binary built into the SingleStore container itself, which KubeDB's operator configures automatically when `spec.monitor` is set.
 - **ServiceMonitor** (named `{singlestore-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape metrics every 10 seconds.
 - **PrometheusRule** is created by the `singlestore-alerts` chart and contains alert definitions grouped by concern: database health, provisioner, and KubeStash backup/restore.

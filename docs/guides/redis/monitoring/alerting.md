@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Redis Alerting Architecture" src="/docs/images/redis/monitoring/rd-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Redis with a built-in `redis_exporter` sidecar that exposes metrics on port `56790`.
 - **ServiceMonitor** (named `{redis-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `redis-alerts` chart and contains all Redis alert definitions grouped by concern: database health, provisioner, ops-manager, and backups (Stash and KubeStash).

@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="MongoDB Alerting Architecture" src="/docs/images/mongodb/monitoring/mongodb-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys MongoDB with a `mongodb_exporter` sidecar (container `exporter`) that exposes metrics (`mongodb_*`).
 - **ServiceMonitor** (named `{mongodb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `mongodb-alerts` chart and contains MongoDB alert definitions grouped by concern: database health (which also embeds the KubeDB-operator-sourced `MongoDBDown`/`MongoDBPhaseCritical` pair), provisioner, ops-manager, Stash backup/restore, KubeStash backup/restore, and schema manager.

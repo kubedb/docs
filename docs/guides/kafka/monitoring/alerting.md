@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Kafka Alerting Architecture" src="/docs/images/kafka/monitoring/kafka-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Kafka with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter) running as a **Java agent inside the `kafka` container itself** — not a separate sidecar container. KubeDB uses the JMX agent because the officially recognized Kafka exporter image does not yet expose metrics for the KRaft-mode versions KubeDB supports.
 - **ServiceMonitor** (named `{kafka-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the JMX agent's HTTP endpoint every 10 seconds.
 - **PrometheusRule** is created by the `kafka-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `KafkaDown`/`KafkaPhaseCritical` alerts) and provisioner.

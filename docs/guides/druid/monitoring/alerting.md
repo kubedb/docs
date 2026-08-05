@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Druid Alerting Architecture" src="/docs/images/druid/monitoring/druid-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Druid nodes (router, broker, coordinator, historical, middleManager, overlord) with a **JMX Exporter** Java agent running inside each Druid container, exposing Prometheus metrics on port `9104` — unlike most other KubeDB databases which use a separate sidecar exporter container.
 - **ServiceMonitor** (named `{druid-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape every Druid node's exporter every 10 seconds.
 - **PrometheusRule** is created by the `druid-alerts` chart and contains all Druid alert definitions grouped by concern: database health and provisioner.

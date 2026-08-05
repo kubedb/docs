@@ -51,6 +51,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Cassandra Alerting Architecture" src="/docs/images/cassandra/monitoring/cas-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Cassandra with the [JMX Exporter](https://github.com/prometheus/jmx_exporter)-based `exporter` sidecar container, which scrapes the Cassandra JVM's JMX metrics and exposes them as Prometheus metrics on port `8080`.
 - **Stats Service** (named `{cassandra-name}-stats`) is created automatically by KubeDB and fronts the exporter's metrics endpoint on port `56790`, which is proxied to the exporter's actual listening port `8080` inside the pod.
 - **ServiceMonitor** (named `{cassandra-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.

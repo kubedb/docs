@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Ignite Alerting Architecture" src="/docs/images/ignite/monitoring/ignite-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Ignite with a metrics-exporter sidecar (container `exporter`) that exposes Ignite's own JMX-derived metrics (`sys_*`, `io_*`, `cluster_*`, `ignite_*`).
 - **ServiceMonitor** (named `{ignite-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `ignite-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `IgniteDown`/`IgnitePhaseCritical` alerts) and provisioner.

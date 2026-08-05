@@ -49,6 +49,10 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 ## Overview
 
+<p align="center">
+  <img alt="Memcached Alerting Architecture" src="/docs/images/memcached/monitoring/mc-alerting-overview.svg">
+</p>
+
 - **KubeDB** deploys Memcached with a built-in exporter sidecar that exposes metrics on port `56790`.
 - **ServiceMonitor** (named `{memcached-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `memcached-alerts` chart and contains all Memcached alert definitions grouped by concern: database health, provisioner, and ops-manager.
