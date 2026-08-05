@@ -143,6 +143,7 @@ for KC in $KUBECONFIG_PRIMARY $KUBECONFIG_DR; do
       --type=kubernetes.io/basic-auth \
       --from-literal=username=postgres \
       --from-literal=password="$PG_PASSWORD" \
+      --save-config \
       --kubeconfig $KC
   done
 done
@@ -253,6 +254,13 @@ pg-singapore-2                             2/2     Running   0          104s
 ```
 
 Each pod shows `2/2` — the `postgres` container and `pg-coordinator` (Raft HA manager).
+
+> Raft elects the primary, so it is not always `pg-singapore-0`. The examples below assume
+> pod 0 holds the role; confirm (and substitute if needed) with:
+>
+> ```bash
+> kubectl get pods -n demo -L kubedb.com/role --kubeconfig $KUBECONFIG_PRIMARY
+> ```
 
 ### Seed test data
 
