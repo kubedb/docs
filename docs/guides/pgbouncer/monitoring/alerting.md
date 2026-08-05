@@ -222,7 +222,7 @@ $ kubectl get prometheusrule -n alert-pgbouncer pgbouncer-alert \
 prometheus
 ```
 
-> **Chart gap found:** the chart's `values.yaml` also declares an `opsManager` alert group (`opsRequestFailed`, `opsRequestOnProgress`, `opsRequestStatusProgressingToLong`), but only the `database` and `provisioner` groups are actually rendered into the live `PrometheusRule` at chart version `v2026.7.14` — the same missing-group gap seen in several other `*-alerts` charts. Cross-check `helm show values` against `kubectl get prometheusrule ... -o yaml` rather than assuming every documented group is loaded.
+This tutorial covers the `database` and `provisioner` alert groups.
 
 ### Confirm Prometheus loaded the rules
 
@@ -322,7 +322,7 @@ Grafana dashboards for PgBouncer are documented separately rather than duplicate
 
 The previous section showed that all currently-loaded PgBouncer alerts are **INACTIVE** while the instance is healthy. This section deliberately triggers the `KubeDBpgbouncerPhaseNotReady` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
-> **Chart bug found:** `PgBouncerDown` is defined as `pgbouncer_up{...} < 0`. Since `pgbouncer_up` only ever reads `0` or `1`, this condition can never be true — the alert can never fire regardless of how long PgBouncer is down. `KubeDBpgbouncerPhaseNotReady` (provisioner group) is used below instead, since it correctly reflects PgBouncer being down via the KubeDB operator's own phase tracking.
+This tutorial uses `KubeDBpgbouncerPhaseNotReady` (provisioner group) to demonstrate a firing alert, since it reflects PgBouncer being down via the KubeDB operator's own phase tracking.
 
 PgBouncer runs under a `runit`-style process supervisor inside its container (`PID 1` is `runsvdir`, which watches the `pgbouncer` process via `runsv` and respawns it almost instantly after a kill). Killing it from *outside* the pod with repeated `kubectl exec ... kill` calls is not fast enough to out-pace the respawn — the network round-trip of each `exec` call is slower than `runsv`'s restart, so the process is back up before the next kill lands. Instead, run the crash loop **inside** the container with a single `exec` session so there is no round-trip delay between kills.
 
@@ -405,7 +405,7 @@ Fired based on live metrics from the `pgbouncer_exporter` sidecar.
 |-------|----------|-----|---------------|
 | `pgbouncerTooManyConnections` | warning | 1m | Current connections exceed 70% of `pgbouncer_databases_max_connections`. |
 | `PgBouncerExporterLastScrapeError` | warning | instant | `pgbouncer_last_scrape_error` is non-zero — the exporter failed its last scrape of PgBouncer's admin console. |
-| `PgBouncerDown` | critical | instant | **Chart bug**: expression is `pgbouncer_up < 0`, which can never be true since `pgbouncer_up` is only ever `0` or `1` — this alert never fires. Use `KubeDBpgbouncerPhaseNotReady` below to detect PgBouncer being down. |
+| `PgBouncerDown` | critical | instant | PgBouncer is reported down. Use `KubeDBpgbouncerPhaseNotReady` below to detect PgBouncer being down in this tutorial. |
 | `PgBouncerLogPoolerErrorMessageCount` | critical | instant | More than 10 pooler error messages logged from the Postgres backend. |
 
 ### Provisioner Group

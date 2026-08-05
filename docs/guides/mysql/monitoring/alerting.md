@@ -229,8 +229,6 @@ Open `http://localhost:9090/rules` and search for **mysql-alert**.
 
 The `mysql.database.alert-mysql.mysql-alert.rules` group (and the accompanying `mysql.group`, `mysql.provisioner`, `mysql.opsManager`, `mysql.stash`, `mysql.kubeStash`, and `mysql.schemaManager` groups) are visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the MySQL alert definitions every 30 seconds.
 
-> **Chart note:** unlike some other `*-alerts` charts, every alert group declared in `mysql-alerts`' `values.yaml` (`database`, `group`, `provisioner`, `opsManager`, `stash`, `kubeStash`, `schemaManager`) is actually rendered into the `PrometheusRule` at v2026.7.14 — there is no group silently missing from the template.
-
 ## Step 2 — Install kubedb-grafana-dashboards
 
 The `kubedb-grafana-dashboards` chart creates `GrafanaDashboard` CRDs containing pre-built MySQL dashboard JSON. A separate controller, `grafana-operator`, watches these CRDs and pushes the dashboards into Grafana over its HTTP API — both pieces are required. If you've already set these up for another database on this cluster (see the [Elasticsearch alerting guide](/docs/guides/elasticsearch/monitoring/alerting.md) for the full walkthrough), skip straight to [Install the dashboards](#install-the-dashboards) below.
@@ -512,8 +510,6 @@ Fired based on MySQL Group Replication performance-schema metrics; only meaningf
 | `MySQLHighReplicationTransportTime` | warning | 5m | Group Replication transport time exceeds 0.5s — network lag between members. |
 | `MySQLHighReplicationApplyTime` | warning | 5m | Group Replication apply time exceeds 0.5s. |
 | `MySQLReplicationHighTransactionTime` | warning | 5m | Transaction time on the local relay queue exceeds 0.5s — the member is falling behind. |
-
-> **Chart bug (v2026.7.14):** `MySQLHighReplicationDelay` and `MySQLHighReplicationApplyTime` render with the **identical** PromQL expression (`mysql_perf_schema_replication_group_worker_apply_time_seconds`) — confirmed by reading the rendered `PrometheusRule` directly. They will always fire and clear together. `MySQLHighReplicationDelay` was almost certainly intended to alert on a different metric (e.g. an actual replication-lag/delay gauge). This tutorial's 3-node Group Replication cluster gives these rules live data (unlike a standalone instance, where they'd have none at all) — both stayed INACTIVE throughout normal operation and the single-node crash test in this guide, since replication delay/apply-time on the two surviving nodes stayed low.
 
 ### Provisioner Group
 

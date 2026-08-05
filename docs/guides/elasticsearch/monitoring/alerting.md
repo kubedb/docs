@@ -191,11 +191,11 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 
 ### A note on chart defaults
 
-The chart's default `database` group rules assume a specific minimum topology: `elasticsearchHealthyNodes` and `elasticsearchHealthyDataNodes` both default to `val: 3` — i.e. "fire if fewer than 3 nodes / fewer than 3 data nodes are healthy." **These defaults do not match every topology, including this tutorial's own `es-alert` (2 master + 2 data + 2 ingest = 6 nodes total, 2 data nodes)** — confirmed live: installing with the chart's plain defaults left `ElasticsearchHealthyDataNodes` firing permanently (`2 < 3` is always true for this topology), even though the cluster was fully healthy. Always override both `val`s to match your actual node counts at install time — don't assume the defaults fit just because you're running a multi-node cluster instead of a single node.
+The chart's default `database` group rules assume a specific minimum topology: `elasticsearchHealthyNodes` and `elasticsearchHealthyDataNodes` both default to `val: 3` — i.e. "fire if fewer than 3 nodes / fewer than 3 data nodes are healthy." Always override both `val`s at install time to match your actual node counts, as this tutorial does for its own `es-alert` topology (2 master + 2 data + 2 ingest = 6 nodes total, 2 data nodes).
 
 One rule pair needs overriding regardless of topology:
 
-- `diskUsageHigh` / `diskAlmostFull` compute PVC usage as `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)`. The `..._info` series is a constant label metric (always `1`), not a byte count, so this expression evaluates to ~100% regardless of actual usage — a chart-level expression defect, confirmed live (real PVC usage was 69.6% while both alerts read ~100% and fired). We disable both and rely instead on `elasticsearchDiskOutOfSpace` / `elasticsearchDiskSpaceLow`, which are computed from the exporter's own accurate `elasticsearch_filesystem_data_available_bytes` / `elasticsearch_filesystem_data_size_bytes` metrics.
+- `diskUsageHigh` / `diskAlmostFull` are disabled in this tutorial. Disk-space monitoring is instead handled by `elasticsearchDiskOutOfSpace` / `elasticsearchDiskSpaceLow`, which are computed from the exporter's own `elasticsearch_filesystem_data_available_bytes` / `elasticsearch_filesystem_data_size_bytes` metrics.
 
 ### Install
 
@@ -219,7 +219,7 @@ $ helm upgrade -i es-alert appscode/elasticsearch-alerts -n alert-elasticsearch 
 | `es-alert` (release name) | — | Scopes every PromQL expression to this instance (`job="es-alert-stats"`). **This must exactly match the Elasticsearch object's name** — see [above](#why-the-helm-release-name-matters). A mismatched release name is the most common cause of alerts silently never firing (and Grafana/Prometheus showing nothing for a healthy instance): the chart's rules end up scoped to a `job` label that no target ever carries. |
 | `-n alert-elasticsearch` | `alert-elasticsearch` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
-| `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Works around the PVC-usage expression defect described above |
+| `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Disk-usage alerts are disabled for this tutorial — see [above](#a-note-on-chart-defaults) |
 | `...elasticsearchHealthyNodes.val` | `6` | Matches this tutorial's real total node count (2 master + 2 data + 2 ingest) |
 | `...elasticsearchHealthyDataNodes.val` | `2` | Matches this tutorial's real data-node count |
 
@@ -544,8 +544,8 @@ Fired based on live metrics from the Elasticsearch exporter.
 | `ElasticsearchUnassignedShards` | critical | instant | Elasticsearch has unassigned shards. |
 | `ElasticsearchPendingTasks` | warning | 15m | Elasticsearch has pending tasks — the cluster is working slowly. |
 | `ElasticsearchNoNewDocuments10m` | info | instant | No new documents were indexed in the last 10 minutes (disabled by default). |
-| `DiskUsageHigh` | warning | 1m | **Disabled by the install command above** — broken denominator always reads ~100% usage regardless of real usage (confirmed: real usage 69.6% while this alert read ~100%). |
-| `DiskAlmostFull` | critical | 1m | **Disabled by the install command above** — same broken-denominator bug as `DiskUsageHigh`. |
+| `DiskUsageHigh` | warning | 1m | **Disabled in this tutorial** — see [above](#a-note-on-chart-defaults). |
+| `DiskAlmostFull` | critical | 1m | **Disabled in this tutorial** — same as `DiskUsageHigh`. |
 
 ### Provisioner Group
 

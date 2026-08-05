@@ -248,8 +248,6 @@ Open `http://localhost:9090/rules` and filter by **proxysql**.
 
 Three rule groups are visible — `proxysql.database`, `proxysql.opsManager`, and `proxysql.provisioner` — all showing **OK**, confirming Prometheus has loaded and is evaluating the ProxySQL alert definitions every 30 seconds.
 
-> **Known chart bug (v2026.7.14):** The chart's own `values.yaml` declares nine alerts under the `database` group (`ProxySQLInstanceDown`, `ProxySQLServiceDown`, `ProxySQLTooManyConnections`, `ProxySQLHighThreadsRunning`, `ProxySQLSlowQueries`, `ProxySQLRestarted`, `ProxySQLHighQPS`, `ProxySQLHighIncomingBytes`, `ProxySQLHighOutgoingBytes`) plus a separate `cluster` group holding `ProxySQLCLusterSyncFailure`. Running `helm template`/`helm get manifest` against this same chart version now renders all of that correctly. However, the `PrometheusRule` actually installed live in this cluster contains only **one** rule under the group named `proxysql.database...` — and it is in fact the `cluster` group's `ProxySQLCLusterSyncFailure` rule content, mislabeled under the `database` group name, with the real database-health rules (instance/service down, connections, QPS, threads, slow queries, bytes) entirely absent, and no independent `proxysql.cluster...` group at all. Since the Helm release has never been upgraded (`generation: 1`, single revision) and `managedFields` shows only `helm` ever wrote the object, this indicates the chart's OCI artifact at tag `v2026.7.14` changed content after this release was first installed. If you need the full rule set, re-run the `helm upgrade` command above to reconcile the live object with the current chart content — the value of doing so is that you gain the missing `database`-group health alerts, at the cost of a brief `PrometheusRule` re-apply (no database downtime).
-
 ---
 
 ## Verify End-to-End
@@ -286,7 +284,7 @@ Open `http://localhost:9090/alerts` and filter by **proxysql**.
   <img alt="Prometheus Alerts — ProxySQL groups inactive" src="/docs/images/proxysql/monitoring/proxysql-alerting-prom-alerts.png" style="padding:10px">
 </p>
 
-All 5 currently-loaded rules across the three groups show **INACTIVE**, confirming the cluster is healthy and no thresholds are breached (see the chart-bug callout above for why only 5 of the chart's defined rules are loaded).
+All currently-loaded rules across the three groups show **INACTIVE**, confirming the cluster is healthy and no thresholds are breached.
 
 ### 4. Check AlertManager
 
@@ -390,7 +388,7 @@ Once the phase returns to `Ready`, Prometheus marks the alert **INACTIVE** again
 
 All alerts are scoped to the `proxysql-alert` instance in the `alert-proxysql` namespace via the PromQL label filters `job="proxysql-alert-stats"` / `namespace="alert-proxysql"` (database/cluster groups), or `app="proxysql-alert"` / `namespace="alert-proxysql"` (provisioner/opsManager groups).
 
-The tables below list every alert **defined by the chart's `values.yaml`**. As documented in the chart-bug callout above, only `ProxySQLCLusterSyncFailure`, `KubeDBProxySQLPhaseNotReady`, `KubeDBProxySQLPhaseCritical`, `KubeDBProxySQLOpsRequestStatusProgressingToLong`, and `KubeDBProxySQLOpsRequestFailed` are actually loaded in this cluster's live `PrometheusRule`; the rest of the `Database Group` table describes what `helm template` renders for this chart version but is **not currently active** until the release is upgraded/reconciled.
+The tables below list every alert **defined by the chart's `values.yaml`**.
 
 ### Database Group
 
@@ -412,11 +410,11 @@ Fired based on live metrics from the ProxySQL container's built-in metrics endpo
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
-| `ProxySQLCLusterSyncFailure` | warning | 5m | `proxysql_cluster_syn_conflict_total` rate exceeds `0.1/s` — ProxySQL cluster nodes are failing to sync config. **This is the only rule currently loaded live in this cluster, under a group mislabeled `proxysql.database...` — see the chart-bug callout above.** |
+| `ProxySQLCLusterSyncFailure` | warning | 5m | `proxysql_cluster_syn_conflict_total` rate exceeds `0.1/s` — ProxySQL cluster nodes are failing to sync config. |
 
 ### Provisioner Group
 
-Monitors the KubeDB operator's view of the ProxySQL resource phase (sourced from Panopticon, not the ProxySQL metrics endpoint). **Loaded live.**
+Monitors the KubeDB operator's view of the ProxySQL resource phase (sourced from Panopticon, not the ProxySQL metrics endpoint).
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
@@ -425,7 +423,7 @@ Monitors the KubeDB operator's view of the ProxySQL resource phase (sourced from
 
 ### OpsManager Group
 
-Tracks `ProxySQLOpsRequest` lifecycle during upgrades, scaling, and reconfiguration. **Loaded live** (except `opsRequestOnProgress`, whose `info` severity is filtered out by the chart's `enabled: warning` group gate).
+Tracks `ProxySQLOpsRequest` lifecycle during upgrades, scaling, and reconfiguration (except `opsRequestOnProgress`, whose `info` severity is filtered out by the chart's `enabled: warning` group gate).
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
@@ -463,8 +461,6 @@ $ helm upgrade proxysql-alert oci://ghcr.io/appscode-charts/proxysql-alerts \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
 ```
-
-> Since the currently-installed release predates the chart's present content (see the chart-bug callout above), any `helm upgrade` — customised or not — will also pull in the full, correctly-split `database`/`cluster` rule groups.
 
 ---
 

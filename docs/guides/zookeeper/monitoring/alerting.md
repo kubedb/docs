@@ -368,25 +368,6 @@ Monitors the KubeDB operator's view of the ZooKeeper resource phase.
 | `KubeDBZooKeeperPhaseNotReady` | critical | 1m | KubeDB marked the ZooKeeper resource `NotReady` — operator cannot reach the ensemble. |
 | `KubeDBZooKeeperPhaseCritical` | warning | 15m | The instance is in a degraded/critical phase. |
 
-### OpsManager Group
-
-The chart's `values.yaml` declares an `opsManager` group, intended to track `ZooKeeperOpsRequest` lifecycle during upgrades, scaling, and reconfiguration — the same pattern used by other `*-alerts` charts:
-
-| Alert | Severity | For | What It Means |
-|-------|----------|-----|---------------|
-| `opsRequestOnProgress` | info | instant | An ops request is currently in progress. |
-| `opsRequestStatusProgressingToLong` | critical | 30m | An ops request has been running for 30+ minutes — likely stuck. |
-| `opsRequestFailed` | critical | instant | An ops request failed — check the `OpsRequest` object for the error. |
-
-> Verified against chart `v2026.7.14`: unlike the `database` and `provisioner` groups, this `opsManager` group is **not** currently rendered into the `PrometheusRule` template (`kubectl get prometheusrule -n demo zk-alert-demo -o jsonpath='{.spec.groups[*].name}'` only returns `zookeeper.database...` and `zookeeper.provisioner...`). The values above document the intended configuration surface; confirm with `helm template` against the chart version you install whether opsManager rules are actually emitted before relying on them for `ZooKeeperOpsRequest` alerting:
->
-> ```bash
-> $ helm template zk-alert-demo oci://ghcr.io/appscode-charts/zookeeper-alerts \
->     --version=v2026.7.14 \
->     --set form.alert.labels.release=prometheus \
->     | grep "alert: "
-> ```
-
 ---
 
 ## Customising Alerts

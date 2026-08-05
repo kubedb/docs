@@ -195,7 +195,7 @@ Open `http://localhost:9090/rules` and locate the `hazelcast.database` and `haze
 
 Both groups should show **OK**. `hazelcast-alerts` v2026.7.14 has no `opsManager`/`stash`/`kubeStash` groups at all — only `database` and `provisioner`.
 
-> **Note the overlap:** the `database` group's `hazelcastDown` (`for: 30s`) and `hazelcastPhaseCritical` (`for: 3m`) key off the exact same `kubedb_com_hazelcast_status_phase` metric as the `provisioner` group's `KubeDBhazelcastPhaseNotReady`/`KubeDBhazelcastPhaseCritical` (`for: 1m`/`15m`) — a real outage fires **both** pairs of alerts (at different times, since the `for` windows differ), not a bug exactly, but worth knowing so you don't mistake it for two independent problems.
+> **Note the overlap:** the `database` group's `hazelcastDown` (`for: 30s`) and `hazelcastPhaseCritical` (`for: 3m`) key off the exact same `kubedb_com_hazelcast_status_phase` metric as the `provisioner` group's `KubeDBhazelcastPhaseNotReady`/`KubeDBhazelcastPhaseCritical` (`for: 1m`/`15m`) — a real outage fires **both** pairs of alerts (at different times, since the `for` windows differ). Worth knowing so you don't mistake it for two independent problems.
 
 ---
 

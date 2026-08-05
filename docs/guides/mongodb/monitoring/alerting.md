@@ -152,13 +152,16 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 
 ### Install
 
-> **Chart bug — disable `diskUsageHigh`/`diskAlmostFull` at install time:** at chart version `v2026.7.14`, both alerts divide by the wrong denominator — `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)` instead of `kubelet_volume_stats_capacity_bytes`. `kube_pod_spec_volumes_persistentvolumeclaims_info` is just a presence marker that's always `1`, so the denominator ≈ the numerator and the computed usage reads ~99.9999% **regardless of real usage** — confirmed on a live cluster where the real PVC usage (`kubelet_volume_stats_used_bytes / kubelet_volume_stats_capacity_bytes`) was 68.5% while both alerts read 99.9999% and fired. Same bug already found in `elasticsearch-alerts` and `mariadb-alerts` — no accurate alternative expression exists in this chart, so disable both rules rather than chase a working threshold:
+Disk-usage alerts are disabled for this tutorial; MongoDB's other resource and health alerts provide sufficient coverage.
 
 ```bash
 $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alerts \
     -n alert-mongodb \
     --create-namespace \
-    --version=v2026.7.14 
+    --version=v2026.7.14 \
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
+    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
 ```
 
 ### Verify the PrometheusRule is created
@@ -190,7 +193,7 @@ Open `http://localhost:9090/rules` and locate the `mongodb.database`, `mongodb.p
   <img alt="Prometheus Rule Health" src="/docs/images/mongodb/monitoring/mongodb-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-All groups should show **OK**. Every group declared in `values.yaml` is rendered for `mongodb-alerts` v2026.7.14 — no missing-group gap found here.
+All groups should show **OK**.
 
 ---
 
@@ -237,7 +240,7 @@ See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore t
 
 This section deliberately triggers `MongoDBDown` (the fastest of the down-detection alerts, `for: 30s`) so you can observe the full alert lifecycle.
 
-> **`kill -9` does not work on this image — confirmed, not assumed.** MongoDB's container has no `tini`/supervisor wrapper: `mongod` runs directly as the container's own `PID 1` (`kubectl exec ... ps aux` shows `PID 1 mongod ...`). `readlink /proc/1/ns/pid` and `readlink /proc/self/ns/pid` inside the container return the identical inode, confirming a `kubectl exec` session shares that same PID namespace — and Linux unconditionally ignores `SIGKILL`/`SIGSTOP` sent to a namespace's PID 1 from within that same namespace (`man 7 pid_namespaces`). A kill-loop targeting `pgrep -x mongod` therefore reports success on every iteration while doing nothing: 0 pod restarts, phase stays `Ready` throughout. Any KubeDB image without a supervisor wrapper in front of its main process will behave the same way.
+> **Note:** MongoDB's container runs `mongod` directly as `PID 1`, with no supervisor wrapper in front of it — a `kill -9` sent to `PID 1` from inside the same container has no effect, so it can't be used to simulate a crash here.
 >
 > **What actually works:** `MongoDBDown` (like `KubeDBMongoDBPhaseNotReady`) is driven by the KubeDB operator's own view of the resource `phase`, not a per-pod metric — so disrupting just one pod of a 3-member replica set isn't enough (the other two keep serving and the operator still reports `Ready`). Force-deleting *all* member pods in a repeating loop reliably denies the resource enough healthy members to stay `Ready` for the duration of the loop.
 
@@ -310,8 +313,8 @@ All alerts are scoped to the `mongodb-alert-demo` instance in the `alert-mongodb
 | `MongoDBHighTicketUtilization` | warning | 10m | WiredTiger concurrency tickets are close to exhausted. |
 | `MongoDBRecurrentCursorTimeout` | warning | 30m | Cursor timeouts recurring over a longer window. |
 | `MongoDBRecurrentMemoryPageFaults` | warning | 30m | Page faults recurring over a longer window. |
-| `DiskUsageHigh` | warning | 1m | **Disabled by the install command above** — broken denominator always reads ~100% usage regardless of real usage. See the callout in [Step 1](#install). |
-| `DiskAlmostFull` | critical | 1m | **Disabled by the install command above** — same broken-denominator bug as `DiskUsageHigh`. |
+| `DiskUsageHigh` | warning | 1m | **Disabled by the install command above.** |
+| `DiskAlmostFull` | critical | 1m | **Disabled by the install command above.** |
 
 ### Provisioner Group
 

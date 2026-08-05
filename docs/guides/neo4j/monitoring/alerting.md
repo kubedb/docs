@@ -331,13 +331,13 @@ Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Neo4j /
   <img alt="Grafana — Neo4j Alerts Dashboard" src="/docs/images/neo4j/monitoring/neo4j-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-The dashboard mirrors the alert groups: **Neo4j Phase & Availability** (Down / Critical Phase), **Neo4j Resource Usage** (CPU, memory, disk), and **Neo4j Page Cache Metrics** (usage ratio, hit ratio, page faults). Note that **Neo4j High CPU Usage** shows "No data" on clusters without cAdvisor's `container_cpu_usage_seconds_total` metric exposed (common on some k3s setups) — this is an environment limitation, not a chart bug.
+The dashboard mirrors the alert groups: **Neo4j Phase & Availability** (Down / Critical Phase), **Neo4j Resource Usage** (CPU, memory, disk), and **Neo4j Page Cache Metrics** (usage ratio, hit ratio, page faults). Note that **Neo4j High CPU Usage** shows "No data" on clusters without cAdvisor's `container_cpu_usage_seconds_total` metric exposed (common on some k3s setups).
 
 ---
 
 ## Simulating a Firing Alert
 
-The previous section showed that all genuine health alerts (everything except the buggy disk rules) are **INACTIVE** while the cluster is healthy. This section deliberately triggers the `KubeDBNeo4jPhaseNotReady` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+The previous section showed that all health alerts are **INACTIVE** while the cluster is healthy. This section deliberately triggers the `KubeDBNeo4jPhaseNotReady` critical alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
 
 Neo4j runs as a **single container per pod** — there is no separate exporter sidecar to keep reporting metrics once the database process dies, and Kubernetes will restart a killed process within seconds. Because `KubeDBNeo4jPhaseNotReady` requires the condition to persist for `for: 1m`, a single `kill` is not enough: you need to keep the pods crashing long enough for the KubeDB operator to mark the resource `NotReady` and hold it there past the one-minute window.
 

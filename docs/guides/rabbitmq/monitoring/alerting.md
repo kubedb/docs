@@ -363,18 +363,6 @@ Monitors the KubeDB operator's view of the RabbitMQ resource phase.
 | `KubeDBRabbitMQPhaseNotReady` | critical | 1m | KubeDB marked the RabbitMQ resource `NotReady` — operator cannot reach the database. |
 | `KubeDBRabbitMQPhaseCritical` | warning | 15m | The instance is in a degraded/critical phase. |
 
-### OpsManager Group
-
-The chart's `values.yaml` also ships an `opsManager` group (`opsRequestOnProgress`, `opsRequestStatusProgressingToLong`, `opsRequestFailed`), intended to track `RabbitMQOpsRequest` lifecycle during upgrades, scaling, and reconfiguration — the same pattern used by other `*-alerts` charts.
-
-| Alert | Severity | For | What It Means |
-|-------|----------|-----|---------------|
-| `opsRequestOnProgress` | info | instant | An ops request is currently in progress. |
-| `opsRequestStatusProgressingToLong` | critical | 30m | An ops request has been running for 30+ minutes — likely stuck. |
-| `opsRequestFailed` | critical | instant | An ops request failed — check the `RabbitMQOpsRequest` object for the error. |
-
-> **Verified note:** in chart version `v2026.7.14`, `templates/alert.yaml` only renders the `database` and `provisioner` groups into the `PrometheusRule` — `kubectl get prometheusrule -n alert-rabbitmq rmq-alert-demo -o yaml` shows no `opsManager` rules, even though `opsManager.enabled` is `warning` by default in `values.yaml`. If you rely on ops-request alerting, verify with `kubectl get prometheusrule -n <namespace> <release> -o yaml` after installing, and check for a newer chart version if you need these rules.
-
 ---
 
 ## Customising Alerts

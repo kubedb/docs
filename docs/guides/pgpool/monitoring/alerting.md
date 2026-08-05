@@ -229,7 +229,7 @@ $ kubectl get prometheusrule -n alert-pgpool pgpool-alert \
 prometheus
 ```
 
-> **Chart gap found:** like several other `*-alerts` charts, `values.yaml` also declares an `opsManager` alert group (`opsRequestFailed`, `opsRequestOnProgress`, `opsRequestStatusProgressingToLong`), but only the `database` and `provisioner` groups are actually rendered into the live `PrometheusRule` at chart version `v2026.7.14`. Cross-check `helm show values` against `kubectl get prometheusrule ... -o yaml` rather than assuming every documented group is loaded.
+This tutorial covers the `database` and `provisioner` alert groups.
 
 ### Confirm Prometheus loaded the rules
 

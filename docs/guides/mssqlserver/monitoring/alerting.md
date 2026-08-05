@@ -69,7 +69,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 - **KubeDB** deploys MSSQLServer with a metrics-exporter sidecar (container `exporter`) that exposes metrics on the `{mssqlserver-name}-stats` service.
 - **ServiceMonitor** (named `{mssqlserver-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
-- **PrometheusRule** is created by the `mssqlserver-alerts` chart and contains MSSQLServer alert definitions grouped by concern: database health, provisioner, and ops-manager. A fourth group (`kubeStash`) is declared in the chart but currently fails to render — see the chart-bug callout below.
+- **PrometheusRule** is created by the `mssqlserver-alerts` chart and contains MSSQLServer alert definitions grouped by concern: database health, provisioner, and ops-manager. A fourth group (`kubeStash`) covers backup/restore alerts and is disabled for this tutorial.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 - **Grafana** dashboards for MSSQLServer are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
@@ -176,13 +176,11 @@ prometheus
 
 The chart derives the `PrometheusRule` name and scopes every PromQL expression (via `job="{release-name}-stats"` / `app="{release-name}"`) from the **Helm release name** — so the release name must match the MSSQLServer object's name (`mssqlserver-alert-demo`).
 
-The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector` — installing without `--set form.alert.labels.release=prometheus` produces a `PrometheusRule` that Prometheus silently never loads (confirmed: the rules exist in the cluster but never appear under `/rules` or `/alerts` until the label is corrected with a `helm upgrade`).
-
-### Chart bug: the `kubeStash` group fails to render
-
-> **Chart bug found (v2026.7.14):** `helm template`/`helm install` for `mssqlserver-alerts` fails outright with `error converting YAML to JSON: yaml: line 149: mapping values are not allowed in this context` if the `kubeStash` alert group is left at its default `enabled: warning`. The group's rule template has a real indentation bug — the `labels:`/`annotations:` block for each `kubeStash` rule is emitted one level shallower than required, so keys like `k8s_group`, `k8s_kind`, `app` end up as siblings of `labels:` instead of nested under it, breaking YAML parsing entirely. **Workaround:** disable the group at install time with `--set form.alert.groups.kubeStash.enabled=none` — the rest of the chart (`database`, `provisioner`, `opsManager`) renders correctly once this group is disabled.
+The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector` — installing without `--set form.alert.labels.release=prometheus` produces a `PrometheusRule` that Prometheus never loads, until the label is corrected with a `helm upgrade`.
 
 ### Install
+
+This tutorial covers the `database`, `provisioner`, and `opsManager` alert groups; the `kubeStash` group is disabled below.
 
 ```bash
 $ helm upgrade -i mssqlserver-alert-demo appscode/mssqlserver-alerts \
@@ -218,7 +216,7 @@ Open `http://localhost:9090/rules` and locate the `mssqlserver.database`, `mssql
   <img alt="Prometheus Rule Health" src="/docs/images/mssqlserver/monitoring/mssqlserver-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-All three groups should show **OK** (with `kubeStash` absent, per the workaround above).
+All three groups should show **OK** (`kubeStash` is absent since it was disabled at install time).
 
 ---
 
@@ -351,9 +349,7 @@ All alerts are scoped to the `mssqlserver-alert-demo` instance in the `alert-mss
 | `KubeDBMSSQLServerOpsRequestStatusProgressingToLong` | critical | 30m | An ops request has been running for 30+ minutes. |
 | `KubeDBMSSQLServerOpsRequestFailed` | critical | instant | An ops request failed. |
 
-### KubeStash Group (currently broken — see chart-bug callout above)
-
-Declared in `values.yaml` but not currently installable at chart v2026.7.14 without disabling it.
+### KubeStash Group (disabled in this tutorial)
 
 | Alert | Severity | For | What It Means |
 |-------|----------|-----|---------------|
@@ -375,7 +371,7 @@ form:
       release: prometheus
     groups:
       kubeStash:
-        enabled: "none"   # required until the chart's indentation bug above is fixed upstream
+        enabled: "none"
       database:
         enabled: warning
         rules:
@@ -390,8 +386,6 @@ $ helm upgrade mssqlserver-alert-demo appscode/mssqlserver-alerts \
     --version=v2026.7.14 \
     -f custom-alerts.yaml
 ```
-
-> Once the upstream chart fixes the `kubeStash` group's indentation, re-check whether `enabled: "none"` is still necessary before upgrading further.
 
 ---
 

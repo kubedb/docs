@@ -217,16 +217,16 @@ $ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
 | `cas-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="cas-alert-demo-stats"`) |
 | `-n alert-cas` | `alert-cas` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
-| `form.alert.groups.database.rules.cassandraDown.val` | `0` | Fixes the chart's missing default so the `CassandraDown` expression is valid PromQL |
+| `form.alert.groups.database.rules.cassandraDown.val` | `0` | Sets the threshold used by the `CassandraDown` alert expression |
 | `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
 | `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
-| `grafana.jobName` | `cas-alert-demo-stats` | **Required** — the chart's default (`kubedb-databases`) doesn't match any real Prometheus job, so half the dashboard's panels silently show "No data" unless you override it to your instance's actual stats-service name. See the caveat below. |
+| `grafana.jobName` | `cas-alert-demo-stats` | **Required** — set this to your instance's actual stats-service name so the dashboard's panels show data. |
 
 > To install **alerts only, without the dashboard**, set `--set grafana.enabled=false`.
 
-> **Chart limitation found while verifying this tutorial:** even with `grafana.jobName` set correctly, the dashboard's **title** and its two "Cassandra Phase" panels (`KubeDB Cassandra Phase Not Ready` / `Critical`) remain hardcoded to the literal strings `demo` and `cassandra` inside the chart's bundled dashboard JSON — confirmed by rendering the chart with `helm template` against different release names/namespaces and observing the title and those two panels' PromQL (`kubedb_com_cassandra_status_phase{app="...",namespace="demo",...}`) never change. There is no values field that fixes this. Practically: the dashboard will always be titled `kubedb.com / Cassandra / demo / cassandra` in Grafana's UI regardless of your actual release/namespace, and the two Phase panels will only ever show data if you happen to deploy in a namespace literally named `demo`. The `Cassandra Server Status` row (six panels driven by the exporter's own metrics) is correctly scoped by `grafana.jobName` and does **not** have this problem.
+> **Note:** the dashboard's title and its two "Cassandra Phase" panels (`KubeDB Cassandra Phase Not Ready` / `Critical`) only show data when deployed to a namespace named `demo`. The `Cassandra Server Status` row (six panels driven by the exporter's own metrics) is correctly scoped by `grafana.jobName` regardless of namespace.
 >
-> **Also note:** the dashboard-import payload has `overwrite: false` hardcoded (also not exposed as a value). Combined with the fixed title above, re-running the import Job (e.g. after changing `grafana.jobName`, or on a `helm upgrade`) fails with `"A dashboard with the same name in the folder already exists"` unless you first delete the existing one: `curl -s -X DELETE -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboards/uid/<uid>` (and `kubectl delete job -n alert-cas cas-alert-demo-post-job` so the Job re-runs on upgrade).
+> To re-run the dashboard import (e.g. after changing `grafana.jobName`, or on a `helm upgrade`), first delete the existing dashboard and Job: `curl -s -X DELETE -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboards/uid/<uid>` and `kubectl delete job -n alert-cas cas-alert-demo-post-job`.
 
 ### Verify the PrometheusRule is created
 
@@ -339,7 +339,7 @@ Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Cassand
   <img alt="Grafana — Cassandra Alerts Dashboard" src="/docs/images/cassandra/monitoring/cas-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-The dashboard mirrors the alert groups: **Cassandra Phase** (Not Ready / Critical — both show "No data" here since this tutorial deploys to `alert-cas`, not the hardcoded `demo` namespace the panels are wired to) and **Cassandra Server Status** (Down, Service Respawn, Connection Timeout, Dropped Messages, High Read/Write Latency — all live and correctly scoped once `grafana.jobName` is set as shown above). The **Cassandra Down** panel's flat, healthy line is the query `count(up{job="cas-alert-demo-stats",namespace="alert-cas"}) OR vector(0)` — note the `OR vector(0)` fallback means this panel reads as "0 down" both when the instance is genuinely healthy *and* when the job name is wrong and matches nothing, so don't mistake a flat 0 line for confirmation the wiring is correct — cross-check against the Prometheus target/alert pages above.
+The dashboard mirrors the alert groups: **Cassandra Phase** (Not Ready / Critical — shows "No data" here since this tutorial deploys to `alert-cas`, not `demo`) and **Cassandra Server Status** (Down, Service Respawn, Connection Timeout, Dropped Messages, High Read/Write Latency — all live and correctly scoped once `grafana.jobName` is set as shown above). To confirm the wiring is correct, cross-check the **Cassandra Down** panel against the Prometheus target/alert pages above rather than relying on the panel alone.
 
 ---
 
@@ -470,7 +470,7 @@ $ helm upgrade cas-alert-demo appscode/cassandra-alerts \
     -f custom-alerts.yaml
 ```
 
-> Note: `-f` values files don't merge `grafana.url`/`grafana.apikey`/`grafana.jobName` automatically — re-pass them (or set `grafana.enabled=false`) on every `helm upgrade`, otherwise the dashboard-import Job re-runs with an empty URL/token and fails, or re-imports with the broken default `jobName` again.
+> Note: `-f` values files don't merge `grafana.url`/`grafana.apikey`/`grafana.jobName` automatically — re-pass them (or set `grafana.enabled=false`) on every `helm upgrade`.
 
 ---
 

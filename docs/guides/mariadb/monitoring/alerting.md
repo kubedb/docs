@@ -166,10 +166,6 @@ The chart derives the `PrometheusRule` name and scopes every PromQL expression (
 
 The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector`.
 
-### A note on chart defaults
-
-`mariadb-alerts` has one chart-level bug worth knowing about before you install: `diskUsageHigh` / `diskAlmostFull` compute PVC usage as `kubelet_volume_stats_used_bytes / (kubelet_volume_stats_used_bytes + kube_pod_spec_volumes_persistentvolumeclaims_info)`. The `..._info` series is a constant label metric (always `1`), not a byte count, so this expression evaluates to ~100% regardless of actual usage — a chart-level expression defect (the same one documented for several other `*-alerts` charts in this project). Confirmed on this instance: `df -h /var/lib/mysql` showed real usage at **31%**, but both alerts were firing permanently because the broken expression read them as ~100%. Unlike Elasticsearch's `elasticsearch-alerts` chart, `mariadb-alerts` has **no accurate alternative** disk-space rule to fall back on — so the fix here is simply to disable both.
-
 ### Install
 
 ```bash
@@ -177,14 +173,16 @@ $ helm upgrade -i mariadb-alert-demo oci://ghcr.io/appscode-charts/mariadb-alert
     -n alert-mariadb \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus 
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
+    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
 ```
 
 | Flag | Value | Purpose |
 |------|-------|---------|
 | `mariadb-alert-demo` (release name) | — | Scopes every PromQL expression to this instance. **This must exactly match the MariaDB object's name** — see [above](#why-the-helm-release-name-matters). |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
-| `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Works around the PVC-usage expression defect described above |
+| `...diskUsageHigh.enabled` / `...diskAlmostFull.enabled` | `false` | Disk-usage alerts are disabled for this tutorial |
 
 ### Verify the PrometheusRule is created
 
@@ -213,7 +211,7 @@ Open `http://localhost:9090/rules?search=mariadb` and locate the `mariadb.databa
   <img alt="Prometheus Rule Health" src="/docs/images/mariadb/monitoring/mariadb-alerting-prom-rules.png" style="padding:10px">
 </p>
 
-All groups show **OK**, confirming that Prometheus has loaded and is evaluating the MariaDB alert definitions every 30 seconds. Unlike several other `*-alerts` charts in this project, `mariadb-alerts` v2026.7.14 renders every group declared in its `values.yaml` — no missing-group gap found here. Note `mariadb.database` now has 11 rules, not 13 — `diskUsageHigh`/`diskAlmostFull` are gone entirely rather than merely disabled-and-hidden, since a disabled rule isn't rendered into the `PrometheusRule` at all.
+All groups show **OK**, confirming that Prometheus has loaded and is evaluating the MariaDB alert definitions every 30 seconds. Note `mariadb.database` has 11 rules, not 13 — `diskUsageHigh`/`diskAlmostFull` were disabled at install time.
 
 ---
 
@@ -467,8 +465,8 @@ Fired from metrics exposed by the `mysqld_exporter`-compatible sidecar and node/
 | `MariaDBHighIncomingBytes` | critical | instant | Inbound network traffic is unusually high. |
 | `MariaDBHighOutgoingBytes` | critical | instant | Outbound network traffic is unusually high. |
 | `MariaDBTooManyOpenFiles` | warning | 2m | Open file count is high relative to the limit. |
-| `DiskUsageHigh` | warning | 1m | Persistent volume usage exceeds 80%. **Disabled in this tutorial** — see [above](#a-note-on-chart-defaults): the expression is a chart-level defect that always reads ~100% regardless of real usage, with no accurate alternative in this chart. |
-| `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. **Disabled in this tutorial** — same defect as `DiskUsageHigh` above. |
+| `DiskUsageHigh` | warning | 1m | Persistent volume usage exceeds 80%. **Disabled in this tutorial.** |
+| `DiskAlmostFull` | critical | 1m | Persistent volume usage exceeds 95%. **Disabled in this tutorial.** |
 
 ### Cluster Group
 
