@@ -233,10 +233,9 @@ Two practical notes before the steps:
   and can read its own tables; the replica's `local ... trust` pg_hba line means no
   password is needed. The replication user typically cannot `SELECT` from the
   application's tables, and the final `postgres` password does not exist yet.
-- On a libc-mismatched migration every `psql` invocation prints
-  `WARNING: database "postgres" has no actual collation version ...` on stderr. It is
-  harmless here and fixed in Step 7 — but don't let it confuse scripts that merge stderr
-  into stdout.
+- With matching distributions (Step 5) `psql` connects cleanly. If you ever see
+  `WARNING: database "postgres" has no actual collation version ...` the libc differs —
+  stop and revisit the distribution check; this path does not support a mismatch.
 
 **1. Stop application writes at the source — and verify they stopped.** Do not trust
 "the app was told to disconnect": killing a client does not kill server-side sessions
