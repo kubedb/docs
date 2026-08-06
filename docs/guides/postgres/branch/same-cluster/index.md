@@ -38,9 +38,12 @@ If you have not read [PostgreSQL Branching Overview](/docs/guides/postgres/branc
   Then check that the CRD your cluster ended up with is the one this guide describes:
 
   ```bash
-  $ kubectl explain branch.spec.postActions | head -2
+  $ kubectl explain branch.spec.postActions
   GROUP:      courier.kubedb.com
   KIND:       Branch
+  VERSION:    v1alpha1
+
+  FIELD: postActions <[]Object>
   ```
 
   If that command reports the field does not exist, your `Branch` CRD predates the current schema and the [customization guide](/docs/guides/postgres/branch/customization/index.md) will not apply cleanly — re-apply the CRD above.
@@ -464,8 +467,12 @@ What happens to the branched database when you delete the `Branch` is controlled
 `dev-branch` was created with the default policy, so deleting it takes the branched database with it:
 
 ```bash
-$ kubectl delete branch -n demo dev-branch
+$ kubectl delete branch -n demo dev-branch --wait=false
 branch.courier.kubedb.com "dev-branch" deleted from demo namespace
+
+# Courier completes Branch deletion asynchronously. Wait for its finalizer
+# before checking the resources it cleaned up.
+$ kubectl wait --for=delete branch/dev-branch -n demo --timeout=2m
 ```
 
 Teardown removes the target database and everything the branch created:
@@ -507,6 +514,9 @@ Set `spec.deletionPolicy: Orphan` to promote the branch to a standalone database
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/same-cluster/examples/dev-branch-keep.yaml
 branch.courier.kubedb.com/dev-branch-keep created
+
+# Wait until the target exists before recording its UID.
+$ kubectl wait --for=jsonpath='{.status.phase}'=Ready branch/dev-branch-keep -n demo --timeout=5m
 ```
 
 Note the target's UID before deleting the `Branch`, so we can prove it is the same object afterwards and not a re-created one:
@@ -515,8 +525,11 @@ Note the target's UID before deleting the `Branch`, so we can prove it is the sa
 $ kubectl get pg -n demo dev-postgres-keep -o jsonpath='{.metadata.uid}'
 d0a85da7-ced2-4e94-b768-bd5622cdbf06
 
-$ kubectl delete branch -n demo dev-branch-keep
+$ kubectl delete branch -n demo dev-branch-keep --wait=false
 branch.courier.kubedb.com "dev-branch-keep" deleted from demo namespace
+
+# Wait for Courier to finish removing the Branch before checking the promoted target.
+$ kubectl wait --for=delete branch/dev-branch-keep -n demo --timeout=2m
 ```
 
 The database survives, with its branch ownership metadata stripped:
