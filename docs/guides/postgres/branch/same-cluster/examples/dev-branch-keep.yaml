@@ -13,7 +13,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres-keep
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m

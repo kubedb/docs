@@ -17,7 +17,7 @@ section_menu_id: guides
 
 The [same-cluster walkthrough](/docs/guides/postgres/branch/same-cluster/index.md) creates the simplest possible branch: a standalone copy in the source's own namespace, reusing the source credential, taken once. Every section below is one optional field you add to that same `Branch` to change what you get — a separate credential, anonymized data, a branch that refreshes itself, a different namespace, a replicated cluster, or a specific snapshot class.
 
-Each section is independent; apply only the ones you need, or combine them in a single `Branch`.
+Each field is independent — apply only the ones you need, or combine several in a single `Branch`. The sections below are written as one continuous session, though, run in order against the `sample-postgres` source left behind by the walkthrough. That source starts at **1001 rows**, and the scheduled-refresh section adds one more, so the counts you see grow as you go; each section states the number it expects.
 
 ## Before You Begin
 
@@ -58,7 +58,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres-masked
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
@@ -112,12 +112,11 @@ This branch passes through an extra `ActionsRunning` phase while the Job runs. O
 ```bash
 $ kubectl get branch -n demo
 NAME                PHASE   MODE    TARGET                FRESHNESS   AGE
-dev-branch          Ready   Local   dev-postgres          114s        2m34s
-dev-branch-masked   Ready   Local   dev-postgres-masked   20s         70s
+dev-branch-masked   Ready   Local   dev-postgres-masked   2s          52s
 
 $ kubectl get job -n demo
 NAME                              STATUS     COMPLETIONS   DURATION   AGE
-dev-postgres-masked-post-action   Complete   1/1           4s         30s
+dev-postgres-masked-post-action   Complete   1/1           3s         12s
 
 $ kubectl logs -n demo job/dev-postgres-masked-post-action
 UPDATE 1001
@@ -174,7 +173,7 @@ Because we also set `resetRootPassword: true`, the production password does not 
 $ SRC_PW=$(kubectl get secret -n demo sample-postgres-auth -o jsonpath='{.data.password}' | base64 -d)
 $ kubectl exec -n demo sample-postgres-0 -c postgres -- env PGPASSWORD="$SRC_PW" \
     psql -h dev-postgres-masked.demo.svc -U postgres -c "SELECT 1;"
-psql: error: connection to server at "dev-postgres-masked.demo.svc" (10.43.250.112), port 5432 failed: FATAL:  password authentication failed for user "postgres"
+psql: error: connection to server at "dev-postgres-masked.demo.svc" (10.43.250.6), port 5432 failed: FATAL:  password authentication failed for user "postgres"
 command terminated with exit code 2
 
 $ BRANCH_PW=$(kubectl get secret -n demo dev-postgres-masked-auth -o jsonpath='{.data.password}' | base64 -d)
@@ -206,7 +205,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres-refresh
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
@@ -253,11 +252,12 @@ As expected, the branch does not have it. Wait for the next cron tick and watch 
 ```bash
 $ kubectl get branch -n demo dev-branch-refresh -w
 NAME                 PHASE        MODE    TARGET                 FRESHNESS   AGE
-dev-branch-refresh   Ready        Local   dev-postgres-refresh   3m30s       5m48s
-dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   3m30s       5m48s
-dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   3m40s       5m58s
-dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   5m          7m18s
-dev-branch-refresh   Ready        Local   dev-postgres-refresh   0s          7m18s
+dev-branch-refresh   Ready        Local   dev-postgres-refresh   3m30s       10m
+dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   3m30s       10m
+dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   3m40s       10m
+dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   5m          11m
+dev-branch-refresh   Refreshing   Local   dev-postgres-refresh   0s          11m
+dev-branch-refresh   Ready        Local   dev-postgres-refresh   0s          11m
 ```
 
 `FRESHNESS` climbs while the branch sits on its old copy and resets to `0s` the moment the new one is live.
@@ -271,16 +271,16 @@ $ kubectl get branch -n demo dev-branch-refresh -o yaml
 ```yaml
 status:
   history:
-  - at: "2026-08-06T05:59:52Z"
+  - at: "2026-08-06T10:10:22Z"
     result: Succeeded
-  - at: "2026-08-06T06:01:30Z"
+  - at: "2026-08-06T10:16:30Z"
     result: Succeeded
-  - at: "2026-08-06T06:06:30Z"
+  - at: "2026-08-06T10:21:30Z"
     result: Succeeded
-  lastRefreshTime: "2026-08-06T06:06:30Z"
-  lastSuccessfulRefreshTime: "2026-08-06T06:06:30Z"
+  lastRefreshTime: "2026-08-06T10:21:30Z"
+  lastSuccessfulRefreshTime: "2026-08-06T10:21:30Z"
   mode: Local
-  nextRefreshTime: "2026-08-06T06:10:00Z"
+  nextRefreshTime: "2026-08-06T10:25:00Z"
   phase: Ready
   refreshGeneration: 2
   resources:
@@ -290,7 +290,7 @@ status:
   snapshot:
     generation: 2
     members:
-    - creationTime: "2026-08-06T06:05:00Z"
+    - creationTime: "2026-08-06T10:20:00Z"
       name: br-dev-branch-refresh-data-sample-postgres-0-2
       readyToUse: true
       restoreSize: 1Gi
@@ -301,7 +301,7 @@ status:
 
 - `refreshGeneration` increments on every tick, and the snapshot backing the current copy is named after that generation (`…-0-2`). The previous generation's snapshot is released once the new copy is `Ready`.
 - `nextRefreshTime` is the next cron deadline, and `lastSuccessfulRefreshTime` drives the `FRESHNESS` column.
-- `history` is capped at the three successful runs we asked for.
+- `history` holds the three successful runs so far — the first copy plus two refreshes. With `historyLimit.success: 3`, a fourth would evict the oldest entry.
 
 The row we added to the source after the first copy is now on the branch:
 
@@ -348,11 +348,11 @@ branch.courier.kubedb.com/dev-branch-xns created
 
 $ kubectl get branch -n demo dev-branch-xns
 NAME             PHASE   MODE    TARGET             FRESHNESS   AGE
-dev-branch-xns   Ready   Local   dev-postgres-xns   10s         60s
+dev-branch-xns   Ready   Local   dev-postgres-xns   1s          61s
 
 $ kubectl get pg -n dev
 NAME               VERSION   STATUS   AGE
-dev-postgres-xns   16.1      Ready    41s
+dev-postgres-xns   16.1      Ready    31s
 
 $ kubectl exec -n dev dev-postgres-xns-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
 1002
@@ -386,7 +386,7 @@ branch.courier.kubedb.com/dev-branch-ha created
 
 $ kubectl get branch -n demo dev-branch-ha
 NAME            PHASE   MODE    TARGET            FRESHNESS   AGE
-dev-branch-ha   Ready   Local   dev-postgres-ha   18s         88s
+dev-branch-ha   Ready   Local   dev-postgres-ha   1s          81s
 ```
 
 `status.snapshot.members` has one entry per source volume:
@@ -399,21 +399,21 @@ $ kubectl get branch -n demo dev-branch-ha -o jsonpath='{.status.snapshot}'
 {
     "members": [
         {
-            "creationTime": "2026-08-06T06:05:53Z",
+            "creationTime": "2026-08-06T10:17:13Z",
             "name": "br-dev-branch-ha-data-sample-postgres-ha-0-0",
             "readyToUse": true,
             "restoreSize": "1Gi",
             "sourcePVC": "data-sample-postgres-ha-0"
         },
         {
-            "creationTime": "2026-08-06T06:05:53Z",
+            "creationTime": "2026-08-06T10:17:13Z",
             "name": "br-dev-branch-ha-data-sample-postgres-ha-1-0",
             "readyToUse": true,
             "restoreSize": "1Gi",
             "sourcePVC": "data-sample-postgres-ha-1"
         },
         {
-            "creationTime": "2026-08-06T06:05:53Z",
+            "creationTime": "2026-08-06T10:17:13Z",
             "name": "br-dev-branch-ha-data-sample-postgres-ha-2-0",
             "readyToUse": true,
             "restoreSize": "1Gi",
@@ -442,16 +442,16 @@ And the branched cluster comes up as a working replication group:
 ```bash
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=dev-postgres-ha -L kubedb.com/role
 NAME                READY   STATUS    RESTARTS   AGE   ROLE
-dev-postgres-ha-0   2/2     Running   0          70s   primary
-dev-postgres-ha-1   2/2     Running   0          63s   standby
-dev-postgres-ha-2   2/2     Running   0          56s   standby
+dev-postgres-ha-0   2/2     Running   0          45s   primary
+dev-postgres-ha-1   2/2     Running   0          37s   standby
+dev-postgres-ha-2   2/2     Running   0          30s   standby
 
 $ kubectl exec -n demo dev-postgres-ha-0 -c postgres -- psql -U postgres \
     -c "SELECT client_addr, state, sync_state FROM pg_stat_replication;"
  client_addr |   state   | sync_state
 -------------+-----------+------------
- 10.42.0.9   | streaming | async
- 10.42.0.10  | streaming | async
+ 10.42.0.28  | streaming | async
+ 10.42.0.29  | streaming | async
 (2 rows)
 ```
 
@@ -478,7 +478,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres-vsc
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
@@ -491,17 +491,21 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 branch.courier.kubedb.com/dev-branch-vsc created
 ```
 
-The pinned branch's snapshot uses that class, while `dev-branch` — which does not set the field — keeps using the driver's default:
+Only the pinned branch uses that class; every other branch created in this guide left the field unset and took the driver's default, `topolvm-provisioner-thin`:
 
 ```bash
 $ kubectl get volumesnapshot -n demo
-NAME                                         READYTOUSE   SOURCEPVC                RESTORESIZE   SNAPSHOTCLASS              AGE
-br-dev-branch-data-sample-postgres-0-0       true         data-sample-postgres-0   1Gi           topolvm-provisioner-thin   10m
-br-dev-branch-vsc-data-sample-postgres-0-0   true         data-sample-postgres-0   1Gi           topolvm-vsc-explicit       25s
+NAME                                             READYTOUSE   SOURCEPVC                   RESTORESIZE   SNAPSHOTCLASS              AGE
+br-dev-branch-ha-data-sample-postgres-ha-0-0     true         data-sample-postgres-ha-0   1Gi           topolvm-provisioner-thin   6m9s
+br-dev-branch-ha-data-sample-postgres-ha-1-0     true         data-sample-postgres-ha-1   1Gi           topolvm-provisioner-thin   6m9s
+br-dev-branch-ha-data-sample-postgres-ha-2-0     true         data-sample-postgres-ha-2   1Gi           topolvm-provisioner-thin   6m9s
+br-dev-branch-masked-data-sample-postgres-0-0    true         data-sample-postgres-0      1Gi           topolvm-provisioner-thin   15m
+br-dev-branch-refresh-data-sample-postgres-0-2   true         data-sample-postgres-0      1Gi           topolvm-provisioner-thin   3m21s
+br-dev-branch-vsc-data-sample-postgres-0-0       true         data-sample-postgres-0      1Gi           topolvm-vsc-explicit       43s
+br-dev-branch-xns-data-sample-postgres-0-0       true         data-sample-postgres-0      1Gi           topolvm-provisioner-thin   8m14s
 ```
 
 The class must belong to the same CSI driver that provisioned the source volumes.
-
 
 ## Troubleshooting
 
@@ -509,7 +513,7 @@ The class must belong to the same CSI driver that provisioned the source volumes
 |---|---|
 | `Branch` is `Failed` with `reason: PostActionFailed` | A post-action container exited non-zero. Courier suspends the Job so the failed Pod and its logs survive — read them with `kubectl logs -n <ns> job/<target>-post-action`, then fix `spec.postActions` and re-apply. The edit triggers a retry. |
 | A post-action Pod fails to start with an exec error | `jobTemplate.spec` has no `command` field, so `args` are passed to the image's entrypoint. For an entrypoint-less image, `args` must start with the binary, e.g. `["sh", "-c", "…"]`. |
-| A post-action succeeded but the branch still shows raw data after a refresh | Each refresh generation runs its own Job (`<target>-post-action-gen<N>`). Check that the latest generation's Job completed: `kubectl get job -n <ns> -l app.kubernetes.io/instance=<target>`. |
+| A post-action succeeded but the branch still shows raw data after a refresh | Each refresh generation runs its own Job (`<target>-post-action-gen<N>`). Check that the latest generation's Job completed — Courier labels the Jobs it owns with the branch name: `kubectl get job -n <ns> -l courier.kubedb.com/branch=<branch>`. |
 | `FRESHNESS` is not advancing on a scheduled branch | Check `status.history` and `status.nextRefreshTime`, and the Courier logs: `kubectl logs -n <ns> deploy/kubedb-courier`. |
 | A cross-namespace branch's PVC stays `Pending` | The mirrored snapshot in the target namespace is not ready yet, or the target StorageClass uses a different CSI driver than the source. Check `kubectl get volumesnapshot -n <target-ns>`. |
 

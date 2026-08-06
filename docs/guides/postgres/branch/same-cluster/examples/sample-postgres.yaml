@@ -8,7 +8,7 @@ spec:
   replicas: 1
   storageType: Durable
   storage:
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     accessModes:
       - ReadWriteOnce
     resources:

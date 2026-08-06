@@ -27,11 +27,23 @@ If you have not read [PostgreSQL Branching Overview](/docs/guides/postgres/branc
 
 - You need a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with it.
 
-- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md), with the **KubeDB Courier** operator enabled by adding `--set kubedb-courier.enabled=true` to the install command. If you are enabling Courier on an existing install, `helm upgrade` does not apply CRDs, so add the `Branch` CRD manually:
+- Install `KubeDB` in your cluster following the steps [here](/docs/setup/README.md), with the **KubeDB Courier** operator enabled by adding `--set kubedb-courier.enabled=true` to the install command. A fresh install brings the `Branch` CRD with it.
+
+  If instead you are enabling Courier on an **existing** install, note that `helm upgrade` does not apply CRDs, so you have to add the `Branch` CRD yourself:
 
   ```bash
   kubectl apply -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_branches.yaml
   ```
+
+  Then check that the CRD your cluster ended up with is the one this guide describes:
+
+  ```bash
+  $ kubectl explain branch.spec.postActions | head -2
+  GROUP:      courier.kubedb.com
+  KIND:       Branch
+  ```
+
+  If that command reports the field does not exist, your `Branch` CRD predates the current schema and the [customization guide](/docs/guides/postgres/branch/customization/index.md) will not apply cleanly — re-apply the CRD above.
 
 - Branching is built on CSI volume snapshots. Your cluster needs:
     - The [external-snapshotter](https://github.com/kubernetes-csi/external-snapshotter) CRDs and snapshot controller.
@@ -112,16 +124,18 @@ Finally, confirm you have a `VolumeSnapshotClass` whose driver matches the Stora
 ```bash
 $ kubectl get volumesnapshotclass
 NAME                       DRIVER             DELETIONPOLICY   AGE
-ceph-rbd-vsc               rbd.csi.ceph.com   Delete           3d
+ceph-rbd-vsc               rbd.csi.ceph.com   Delete           3d4h
 topolvm-provisioner-thin   topolvm.io         Delete           22d
-topolvm-vsc-explicit       topolvm.io         Delete           6d23h
+topolvm-vsc-explicit       topolvm.io         Delete           7d3h
 
-$ kubectl get sc gp3
-NAME   PROVISIONER   RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
-gp3    topolvm.io    Delete          WaitForFirstConsumer   true                   22d
+$ kubectl get sc topolvm-provisioner-thin
+NAME                       PROVISIONER   RECLAIMPOLICY   VOLUMEBINDINGMODE      ALLOWVOLUMEEXPANSION   AGE
+topolvm-provisioner-thin   topolvm.io    Delete          WaitForFirstConsumer   true                   22d
 ```
 
-This cluster has classes for two drivers. The one that matters is the match: the `gp3` StorageClass is provisioned by `topolvm.io`, and `topolvm-provisioner-thin` snapshots that same driver — so a snapshot taken from a `gp3` volume can be restored into another `gp3` volume. (`topolvm-vsc-explicit` is a second, non-default class for the same driver, used on the [customization page](/docs/guides/postgres/branch/customization/index.md#pin-a-volumesnapshotclass) to demonstrate pinning.) Substitute your own StorageClass and driver throughout this guide.
+This cluster has snapshot classes for two drivers. What matters is that the StorageClass and the `VolumeSnapshotClass` you use are backed by the **same** one: here the `topolvm-provisioner-thin` StorageClass is provisioned by `topolvm.io`, and the `topolvm-provisioner-thin` snapshot class snapshots that same driver, so a snapshot taken from one of its volumes can be restored into another. (`topolvm-vsc-explicit` is a second, non-default class for the same driver, used on the [customization page](/docs/guides/postgres/branch/customization/index.md#pin-a-volumesnapshotclass) to demonstrate pinning.)
+
+This guide uses TopoLVM throughout. Substitute your own StorageClass and its matching snapshot class — on EKS that would be a `gp3` StorageClass with a `VolumeSnapshotClass` for `ebs.csi.aws.com`.
 
 ## Deploy the Source Database
 
@@ -138,7 +152,7 @@ spec:
   replicas: 1
   storageType: Durable
   storage:
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     accessModes:
       - ReadWriteOnce
     resources:
@@ -159,7 +173,7 @@ Wait until it is ready:
 ```bash
 $ kubectl get pg -n demo sample-postgres
 NAME              VERSION   STATUS   AGE
-sample-postgres   16.1      Ready    23s
+sample-postgres   16.1      Ready    24s
 ```
 
 Now insert some data so we have something to branch. We will create a `customers` table with 1000 rows containing e-mail addresses and phone numbers — the kind of data you would not want to hand to a developer unmasked.
@@ -212,7 +226,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
@@ -223,7 +237,7 @@ spec:
 Here,
 
 - `spec.source.databaseRef` points to the KubeDB database to branch. `spec.source.namespace` defaults to the `Branch`'s own namespace when omitted.
-- `spec.target` describes **only what differs** from the source. Everything else — the PostgreSQL version, the replica count, the custom configuration, the pod template — is copied from `sample-postgres`.
+- `spec.target` describes **only what differs** from the source. By default the rest — the PostgreSQL version, the replica count, the custom configuration, the pod template — is inherited from `sample-postgres`. (Two other top-level fields also change the result, both covered on the [customization page](/docs/guides/postgres/branch/customization/index.md): `spec.resetRootPassword` replaces the inherited credential, and `spec.postActions` mutates the cloned data.)
     - `spec.target.name` / `spec.target.namespace`: the `Postgres` object to create.
     - `spec.target.storageClassName`: the StorageClass for the branch's volumes. It must be backed by the same CSI driver as the source.
     - `spec.target.resources`: CPU/memory for the branch — usually smaller than production.
@@ -268,35 +282,35 @@ $ kubectl get branch -n demo dev-branch -o yaml
 ```yaml
 status:
   conditions:
-  - lastTransitionTime: "2026-08-06T05:56:22Z"
+  - lastTransitionTime: "2026-08-06T10:05:33Z"
     message: source snapshot br-dev-branch-data-sample-postgres-0-0 is readyToUse
     observedGeneration: 1
     reason: SnapshotReady
     status: "True"
     type: SnapshotReady
-  - lastTransitionTime: "2026-08-06T05:56:22Z"
+  - lastTransitionTime: "2026-08-06T10:05:33Z"
     message: target Database created and adopted the cloned PVC
     observedGeneration: 1
     reason: TargetCreated
     status: "True"
     type: TargetCreated
-  - lastTransitionTime: "2026-08-06T05:56:52Z"
+  - lastTransitionTime: "2026-08-06T10:06:03Z"
     message: branched Database reached Ready
     observedGeneration: 1
     reason: TargetReady
     status: "True"
     type: TargetReady
-  - lastTransitionTime: "2026-08-06T05:56:52Z"
+  - lastTransitionTime: "2026-08-06T10:06:03Z"
     message: branch is Ready (refresh gen 0)
     observedGeneration: 1
     reason: Ready
     status: "True"
     type: Ready
   history:
-  - at: "2026-08-06T05:56:52Z"
+  - at: "2026-08-06T10:06:03Z"
     result: Succeeded
-  lastRefreshTime: "2026-08-06T05:56:52Z"
-  lastSuccessfulRefreshTime: "2026-08-06T05:56:52Z"
+  lastRefreshTime: "2026-08-06T10:06:03Z"
+  lastSuccessfulRefreshTime: "2026-08-06T10:06:03Z"
   mode: Local
   phase: Ready
   resources:
@@ -305,7 +319,7 @@ status:
     - data-dev-postgres-0
   snapshot:
     members:
-    - creationTime: "2026-08-06T05:56:12Z"
+    - creationTime: "2026-08-06T10:05:23Z"
       name: br-dev-branch-data-sample-postgres-0-0
       readyToUse: true
       restoreSize: 1Gi
@@ -323,23 +337,23 @@ The branched database itself is an ordinary KubeDB `Postgres`:
 ```bash
 $ kubectl get pg -n demo
 NAME              VERSION   STATUS   AGE
-dev-postgres      16.1      Ready    47s
-sample-postgres   16.1      Ready    12m
+dev-postgres      16.1      Ready    46s
+sample-postgres   16.1      Ready    104s
 ```
 
 It has its own Services, auth Secret, and `AppBinding`:
 
 ```bash
 $ kubectl get svc,secret,appbinding -n demo -l app.kubernetes.io/instance=dev-postgres
-NAME                        TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                               AGE
-service/dev-postgres        ClusterIP   10.43.116.161   <none>        5432/TCP,2379/TCP                     48s
-service/dev-postgres-pods   ClusterIP   None            <none>        5432/TCP,2380/TCP,2379/TCP,2384/TCP   48s
+NAME                        TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)                               AGE
+service/dev-postgres        ClusterIP   10.43.54.140   <none>        5432/TCP,2379/TCP                     46s
+service/dev-postgres-pods   ClusterIP   None           <none>        5432/TCP,2380/TCP,2379/TCP,2384/TCP   46s
 
 NAME                       TYPE                       DATA   AGE
-secret/dev-postgres-auth   kubernetes.io/basic-auth   2      48s
+secret/dev-postgres-auth   kubernetes.io/basic-auth   2      46s
 
 NAME                                              TYPE                  VERSION   AGE
-appbinding.appcatalog.appscode.com/dev-postgres   kubedb.com/postgres   16.1      44s
+appbinding.appcatalog.appscode.com/dev-postgres   kubedb.com/postgres   16.1      43s
 ```
 
 And it is annotated with where it came from:
@@ -356,7 +370,7 @@ The branch's volume was cloned from the snapshot rather than provisioned empty �
 ```bash
 $ kubectl get volumesnapshot -n demo
 NAME                                     READYTOUSE   SOURCEPVC                RESTORESIZE   SNAPSHOTCLASS              CREATIONTIME   AGE
-br-dev-branch-data-sample-postgres-0-0   true         data-sample-postgres-0   1Gi           topolvm-provisioner-thin   58s            58s
+br-dev-branch-data-sample-postgres-0-0   true         data-sample-postgres-0   1Gi           topolvm-provisioner-thin   56s            56s
 
 $ kubectl get pvc -n demo data-dev-postgres-0 -o jsonpath='{.spec.dataSource}'
 {"apiGroup":"snapshot.storage.k8s.io","kind":"VolumeSnapshot","name":"br-dev-branch-data-sample-postgres-0-0"}
@@ -430,6 +444,15 @@ $ kubectl exec -it -n demo sample-postgres-0 -c postgres -- psql -U postgres \
 (1 row)
 ```
 
+Both sides now hold 1001 rows — the same 1000 they started from, plus the one row each side added for itself:
+
+```bash
+$ kubectl exec -n demo sample-postgres-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
+1001
+$ kubectl exec -n demo dev-postgres-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
+1001
+```
+
 The branch is a real, separate database. You can drop tables, run a destructive migration, or corrupt it entirely — the source is unaffected.
 
 ## Delete a Branch
@@ -438,26 +461,25 @@ What happens to the branched database when you delete the `Branch` is controlled
 
 ### `Delete` — remove everything (default)
 
+`dev-branch` was created with the default policy, so deleting it takes the branched database with it:
+
 ```bash
-$ kubectl delete branch -n demo dev-branch-masked
-branch.courier.kubedb.com "dev-branch-masked" deleted from demo namespace
+$ kubectl delete branch -n demo dev-branch
+branch.courier.kubedb.com "dev-branch" deleted from demo namespace
 ```
 
 Teardown removes the target database and everything the branch created:
 
 ```bash
-$ kubectl get pg -n demo dev-postgres-masked
-Error from server (NotFound): postgreses.kubedb.com "dev-postgres-masked" not found
+$ kubectl get pg -n demo dev-postgres
+Error from server (NotFound): postgreses.kubedb.com "dev-postgres" not found
 
-$ kubectl get secret -n demo dev-postgres-masked-auth
-Error from server (NotFound): secrets "dev-postgres-masked-auth" not found
+$ kubectl get secret -n demo dev-postgres-auth
+Error from server (NotFound): secrets "dev-postgres-auth" not found
 
-$ kubectl get job -n demo dev-postgres-masked-post-action
-Error from server (NotFound): jobs.batch "dev-postgres-masked-post-action" not found
-
-$ kubectl get pvc -n demo data-dev-postgres-masked-0
-NAME                         STATUS        VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
-data-dev-postgres-masked-0   Terminating   pvc-6018c5c2-1020-4f4c-9c5a-6ce5d16315d5   1Gi        RWO            gp3            <unset>                 11m
+$ kubectl get pvc -n demo data-dev-postgres-0
+NAME                  STATUS        VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS               VOLUMEATTRIBUTESCLASS   AGE
+data-dev-postgres-0   Terminating   pvc-355e402e-c8e7-4b4d-a9de-acb84c7a74e3   1Gi        RWO            topolvm-provisioner-thin   <unset>                 90s
 ```
 
 The cloned volume finishes deleting asynchronously once the Pod releases it.
@@ -465,16 +487,18 @@ The cloned volume finishes deleting asynchronously once the Pod releases it.
 The branch's `VolumeSnapshot` is gone too:
 
 ```bash
-$ kubectl get volumesnapshot -n demo | grep masked
-# (no output)
+$ kubectl get volumesnapshot -n demo
+No resources found in demo namespace.
 ```
 
-The source is untouched:
+The source is untouched — still the 1001 rows we left it at:
 
 ```bash
 $ kubectl exec -n demo sample-postgres-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
-1002
+1001
 ```
+
+If the branch had post-actions configured, its `<target>-post-action` Job would be removed here too — see the [customization page](/docs/guides/postgres/branch/customization/index.md#mask-sensitive-data-before-handing-the-branch-out).
 
 ### `Orphan` — keep the branched database
 
@@ -489,7 +513,7 @@ Note the target's UID before deleting the `Branch`, so we can prove it is the sa
 
 ```bash
 $ kubectl get pg -n demo dev-postgres-keep -o jsonpath='{.metadata.uid}'
-18151dd3-a7bf-4443-b99e-9f129e955998
+d0a85da7-ced2-4e94-b768-bd5622cdbf06
 
 $ kubectl delete branch -n demo dev-branch-keep
 branch.courier.kubedb.com "dev-branch-keep" deleted from demo namespace
@@ -500,11 +524,11 @@ The database survives, with its branch ownership metadata stripped:
 ```bash
 $ kubectl get pg -n demo dev-postgres-keep
 NAME                VERSION   STATUS   AGE
-dev-postgres-keep   16.1      Ready    39s
+dev-postgres-keep   16.1      Ready    41s
 
 $ kubectl get pg -n demo dev-postgres-keep \
     -o jsonpath='uid={.metadata.uid}{"\n"}branched-from={.metadata.annotations.kubedb\.com/branched-from}{"\n"}ownerRefs={.metadata.ownerReferences}{"\n"}'
-uid=18151dd3-a7bf-4443-b99e-9f129e955998
+uid=d0a85da7-ced2-4e94-b768-bd5622cdbf06
 branched-from=
 ownerRefs=
 ```
@@ -514,10 +538,10 @@ Same UID — it was promoted in place, not re-created — with no `branched-from
 ```bash
 $ kubectl get secret -n demo dev-postgres-keep-auth
 NAME                     TYPE                       DATA   AGE
-dev-postgres-keep-auth   kubernetes.io/basic-auth   2      39s
+dev-postgres-keep-auth   kubernetes.io/basic-auth   2      41s
 
 $ kubectl exec -n demo dev-postgres-keep-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
-1002
+1001
 ```
 
 From here it is an ordinary KubeDB `Postgres` — delete it with `kubectl delete pg` when you are done.

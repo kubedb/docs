@@ -59,7 +59,7 @@ The branching process consists of the following steps:
 
 4. Once every snapshot reports `readyToUse`, Courier **clones the target PVCs** from them, setting each new PVC's `dataSource` to its snapshot. The CSI driver serves the clone from the snapshot; on a copy-on-write driver no data is physically copied.
 
-5. Courier then creates the **target `Postgres` custom resource**. Its spec is copied from the source — version, replica count, config, TLS settings, pod template — with only the fields you set under `spec.target` overridden.
+5. Courier then creates the **target `Postgres` custom resource**. By default its spec is inherited from the source — version, replica count, TLS settings, pod template — and a custom `spec.configSecret` is copied into the target namespace. Three things change that default: the fields you set under `spec.target` (name, namespace, StorageClass, resources, TLS issuer), `spec.resetRootPassword`, which gives the branch a generated credential instead of the source's, and `spec.postActions`, which mutates the cloned data before the branch is `Ready`.
 
 6. The KubeDB provisioner reconciles that `Postgres` object in *branched* mode: instead of provisioning empty volumes, it **adopts the PVCs Courier already cloned**, and PostgreSQL starts on top of the cloned data directory. For an HA source, each cloned volume is matched to its ordinal (`0 → 0`, `1 → 1`, `2 → 2`) and the cluster re-forms as a primary with streaming standbys.
 

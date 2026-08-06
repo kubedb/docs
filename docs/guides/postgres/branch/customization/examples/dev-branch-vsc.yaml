@@ -14,7 +14,7 @@ spec:
   target:
     namespace: demo
     name: dev-postgres-vsc
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
