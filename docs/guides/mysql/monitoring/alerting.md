@@ -377,37 +377,13 @@ Port-forward Grafana and log in.
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 ```
 
-Open `http://localhost:3000` (username: `admin`). Search for **mysql** in the Dashboards section.
+Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / MySQL** dashboard.
 
 <p align="center">
-  <img alt="Grafana — MySQL Dashboard List" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-dashboards.png" style="padding:10px">
+  <img alt="Grafana — MySQL Dashboard" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-Four pre-built dashboards are available. The `Namespace` and `mysql` drop-downs at the top of each dashboard let you switch between instances.
-
-**KubeDB / MySQL / Summary** — database status, version, node count, CPU/memory/storage requests vs. usage.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MySQL Summary" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / MySQL / Group-Replication-Summary** — per-node ONLINE status, the current Primary, and replication delay/transport-time/apply-time/transaction-queue metrics per member.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MySQL Group-Replication-Summary" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-group-replication.png" style="padding:10px">
-</p>
-
-**KubeDB / MySQL / Database** — per-pod service status/uptime, QPS, connections, disk I/O, network, and top command counters.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MySQL Database" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-database.png" style="padding:10px">
-</p>
-
-**KubeDB / MySQL / Pod** — per-pod CPU/memory/file descriptors, connections, thread activity, temporary objects, slow queries, table locks, and network traffic.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MySQL Pod" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-pod.png" style="padding:10px">
-</p>
+The dashboard covers MySQL health and performance in one view: database status, version, node count, CPU/memory/storage requests vs. usage; per-node ONLINE status, the current Primary, and replication delay/transport-time/apply-time/transaction-queue metrics per member; per-pod service status/uptime, QPS, connections, disk I/O, network, and top command counters; and per-pod CPU/memory/file descriptors, connections, thread activity, temporary objects, slow queries, table locks, and network traffic. The `Namespace` and `mysql` drop-downs at the top let you switch between instances.
 
 ---
 

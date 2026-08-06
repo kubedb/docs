@@ -255,8 +255,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
   | kubectl apply -n kubeops -f -
 ```
 
-> **Note:** Because `helm template | kubectl apply` does not create a Helm release object, `helm uninstall` will not work for cleanup. Use `kubectl delete` directly (see [Cleaning up](#cleaning-up)).
-
 ### Verify dashboards are created
 
 ```bash
@@ -335,31 +333,13 @@ Port-forward Grafana and log in.
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 ```
 
-Open `http://localhost:3000` (username: `admin`). Search for **postgres** in the Dashboards section.
+Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / Postgres** dashboard.
 
 <p align="center">
-  <img alt="Grafana — PostgreSQL Dashboard List" src="/docs/images/postgres/monitoring/pg-alerting-grafana-dashboards.png" style="padding:10px">
+  <img alt="Grafana — PostgreSQL Dashboard" src="/docs/images/postgres/monitoring/pg-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-Three pre-built dashboards are available. The `Namespace` and `postgres` drop-downs at the top of each dashboard let you switch between instances.
-
-**KubeDB / Postgres / Summary** — high-level health: version, uptime, replica count, database phase, connection count, and replication lag.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Postgres Summary" src="/docs/images/postgres/monitoring/pg-alerting-grafana-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / Postgres / Database** — query rates (QPS), transactions (commits vs rollbacks), active sessions, lock tables, and fetch/insert data throughput.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Postgres Database" src="/docs/images/postgres/monitoring/pg-alerting-grafana-database.png" style="padding:10px">
-</p>
-
-**KubeDB / Postgres / Pod** — pod-level CPU usage, memory usage (resident vs virtual), open file descriptors, and PostgreSQL runtime settings (shared buffers, work_mem, max_connections).
-
-<p align="center">
-  <img alt="Grafana — KubeDB Postgres Pod" src="/docs/images/postgres/monitoring/pg-alerting-grafana-pod.png" style="padding:10px">
-</p>
+The dashboard covers PostgreSQL health and performance in one view: version, uptime, replica count, database phase, connection count, and replication lag; query rates (QPS), transactions (commits vs rollbacks), active sessions, lock tables, and fetch/insert data throughput; and pod-level CPU usage, memory usage (resident vs virtual), open file descriptors, and PostgreSQL runtime settings (shared buffers, work_mem, max_connections). The `Namespace` and `postgres` drop-downs at the top let you switch between instances.
 
 ---
 

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Kafka Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Kafka cluster using the `kafka-alerts` Helm chart.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Kafka cluster using the `kafka-alerts` Helm chart. Like `neo4j-alerts`, this chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -45,6 +45,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/kafka/monitoring/overview.md).
 
+* You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/kafka](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/kafka) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
@@ -56,7 +58,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys Kafka with metrics exposed by a [JMX Exporter](https://github.com/prometheus/jmx_exporter) running as a **Java agent inside the `kafka` container itself** — not a separate sidecar container. KubeDB uses the JMX agent because the officially recognized Kafka exporter image does not yet expose metrics for the KRaft-mode versions KubeDB supports.
 - **ServiceMonitor** (named `{kafka-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the JMX agent's HTTP endpoint every 10 seconds.
 - **PrometheusRule** is created by the `kafka-alerts` chart and contains alert definitions grouped by concern: database health (which also embeds KubeDB-operator-sourced `KafkaDown`/`KafkaPhaseCritical` alerts) and provisioner.
-- **Grafana** dashboards for Kafka are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
+- **Dashboard-import Job** — when `grafana.enabled` is `true`, the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
@@ -142,7 +144,35 @@ prometheus
 
 ---
 
-## Step 1 — Install kafka-alerts
+## Step 1 — Create a Grafana API Key
+
+The chart's dashboard-import Job authenticates to Grafana with a bearer token, so create one first.
+
+* **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
+* **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5): use the legacy **API Keys** endpoint instead:
+
+  ```bash
+  # Port-forward Grafana
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+  # Retrieve the admin password
+  $ kubectl get secret -n monitoring prometheus-grafana \
+      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+
+  # Create an API key with Editor role
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/auth/keys \
+      -d '{"name":"kafka-alerts-demo","role":"Editor"}'
+  # Note the returned "key"
+
+  # Stop the port-forward
+  $ kill %1
+  ```
+
+Either way, you end up with a bearer token to use as `grafana.apikey` below.
+
+## Step 2 — Install kafka-alerts
 
 ### Why the Helm release name matters
 
@@ -155,8 +185,20 @@ $ helm upgrade -i kafka-alert-demo oci://ghcr.io/appscode-charts/kafka-alerts \
     -n alert-kafka \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set grafana.enabled=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-from-above>"
 ```
+
+| Flag | Value | Purpose |
+|------|-------|---------|
+| `kafka-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="kafka-alert-demo-stats"`). **This must exactly match the Kafka object's name.** |
+| `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
+| `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
+| `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
+
+> To install **alerts only, without the dashboard**, omit the `grafana.*` flags (or set `--set grafana.enabled=false`).
 
 ### Verify the PrometheusRule is created
 
@@ -173,6 +215,19 @@ $ kubectl get prometheusrule -n alert-kafka kafka-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
+
+### Verify the dashboard-import Job
+
+```bash
+$ kubectl get job -n alert-kafka
+NAME                        STATUS     COMPLETIONS   AGE
+kafka-alert-demo-post-job   Complete   1/1           17s
+
+$ kubectl logs -n alert-kafka job/kafka-alert-demo-post-job
+{"pluginId":"","title":"kubedb.com / Kafka / alert-kafka / kafka-alert-demo","imported":true, ...}
+```
+
+A `"imported":true` response confirms the dashboard `kubedb.com / Kafka / alert-kafka / kafka-alert-demo` now exists in Grafana.
 
 ### Confirm Prometheus loaded the rules
 
@@ -228,7 +283,17 @@ Open `http://localhost:9093`.
 
 ### 4. Explore the Grafana dashboard
 
-See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the Kafka dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.Kafka=true`).
+Port-forward Grafana and log in.
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+```
+
+Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Kafka / alert-kafka / kafka-alert-demo` that the Job imported in Step 2.
+
+<p align="center">
+  <img alt="Grafana — Kafka Alerts Dashboard" src="/docs/images/kafka/monitoring/kafka-alerting-grafana-dashboard.png" style="padding:10px">
+</p>
 
 ---
 
@@ -343,8 +408,16 @@ $ helm upgrade kafka-alert-demo oci://ghcr.io/appscode-charts/kafka-alerts \
 
 ## Cleaning up
 
+To remove all resources created in this tutorial, run the following commands.
+
 ```bash
+# Remove the kafka-alerts release (PrometheusRule + dashboard-import Job)
 $ helm uninstall kafka-alert-demo -n alert-kafka
+
+# Remove the imported Grafana dashboard (it is not removed by helm uninstall)
+$ curl -s -X DELETE -H "Authorization: Bearer <grafana-token>" \
+    http://localhost:3000/api/dashboards/uid/<uid>
+
 $ kubectl delete kafka -n alert-kafka kafka-alert-demo
 $ kubectl delete ns alert-kafka
 ```

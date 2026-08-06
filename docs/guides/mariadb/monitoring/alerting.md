@@ -350,37 +350,13 @@ Port-forward Grafana and log in.
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 ```
 
-Open `http://localhost:3000` (username: `admin`). Search for **mariadb** in the Dashboards section.
+Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / MariaDB** dashboard.
 
 <p align="center">
-  <img alt="Grafana — MariaDB Dashboard List" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-dashboards.png" style="padding:10px">
+  <img alt="Grafana — MariaDB Dashboard" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-Four pre-built dashboards are available. The `Namespace` and `MariaDB` drop-downs at the top of each dashboard let you switch between instances.
-
-**KubeDB / MariaDB / Summary** — database status, version, node count, CPU/memory/storage requests vs. usage.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MariaDB Summary" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / MariaDB / Galera-Cluster** — cluster name, per-node ONLINE/Primary status, and Galera replication latency (average, standard deviation, sample size) per node.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MariaDB Galera-Cluster" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-galera.png" style="padding:10px">
-</p>
-
-**KubeDB / MariaDB / Database** — per-pod service status/uptime, cluster size, primary status, QPS, connections, disk I/O, and top command counters.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MariaDB Database" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-database.png" style="padding:10px">
-</p>
-
-**KubeDB / MariaDB / Pod** — per-pod CPU/memory/file descriptors, connections, thread activity, temporary objects, slow queries, table locks, and network traffic.
-
-<p align="center">
-  <img alt="Grafana — KubeDB MariaDB Pod" src="/docs/images/mariadb/monitoring/mariadb-alerting-grafana-pod.png" style="padding:10px">
-</p>
+The dashboard covers MariaDB health and performance in one view: database status, version, node count, CPU/memory/storage requests vs. usage; cluster name, per-node ONLINE/Primary status, and Galera replication latency (average, standard deviation, sample size) per node; per-pod service status/uptime, cluster size, primary status, QPS, connections, disk I/O, and top command counters; and per-pod CPU/memory/file descriptors, connections, thread activity, temporary objects, slow queries, table locks, and network traffic. The `Namespace` and `MariaDB` drop-downs at the top let you switch between instances.
 
 ---
 

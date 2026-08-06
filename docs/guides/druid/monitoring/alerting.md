@@ -417,31 +417,13 @@ Port-forward Grafana and log in.
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 ```
 
-Open `http://localhost:3000` (username: `admin`). Search for **druid** in the Dashboards section.
+Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / Druid** dashboard.
 
 <p align="center">
-  <img alt="Grafana — Druid Dashboard List" src="/docs/guides/druid/monitoring/images/druid-alerting-grafana-dashboards.png" style="padding:10px">
+  <img alt="Grafana — Druid Dashboard" src="/docs/guides/druid/monitoring/images/druid-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-Three pre-built dashboards are available. The `Namespace` and `Druid` drop-downs at the top of each dashboard let you switch between instances.
-
-**KubeDB / Druid / Summary** — database status, version, node count (aggregated across Druid nodes *and* the auto-provisioned MySQL/ZooKeeper pods), CPU/memory/storage requests vs. usage.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Druid Summary" src="/docs/guides/druid/monitoring/images/druid-alerting-grafana-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / Druid / Pod** — per-node status, ZooKeeper connection ratio, and JVM memory/pool/GC metrics for a single selected pod.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Druid Pod" src="/docs/guides/druid/monitoring/images/druid-alerting-grafana-pod.png" style="padding:10px">
-</p>
-
-**KubeDB / Druid / Database** — cluster-wide status, ZooKeeper connection ratio, datasource/segment counts and sizes, and query time/wait-time histograms across all nodes.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Druid Database" src="/docs/guides/druid/monitoring/images/druid-alerting-grafana-database.png" style="padding:10px">
-</p>
+The dashboard covers Druid health and performance in one view: database status, version, node count (aggregated across Druid nodes *and* the auto-provisioned MySQL/ZooKeeper pods), CPU/memory/storage requests vs. usage; per-node status, ZooKeeper connection ratio, and JVM memory/pool/GC metrics for a single selected pod; and cluster-wide status, ZooKeeper connection ratio, datasource/segment counts and sizes, and query time/wait-time histograms across all nodes. The `Namespace` and `Druid` drop-downs at the top let you switch between instances.
 
 ---
 

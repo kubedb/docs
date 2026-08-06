@@ -332,10 +332,10 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     --set featureGates.Elasticsearch=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<api-key-from-above>" \
-  | kubectl apply -n kubeops -f -
+  | 
 ```
 
-> **Note:** The `kubedb-grafana-dashboards` chart bundles many large Grafana dashboard JSON files. Even with a single `featureGate` enabled, the rendered manifests can exceed Kubernetes' hard 1 MB Secret limit that Helm uses to store release state. To work around this, render the chart locally with `helm template` and apply the output directly with `kubectl apply`, which bypasses Helm's Secret storage entirely. Because this doesn't create a Helm release object, `helm uninstall` will not work for cleanup — use `kubectl delete` directly (see [Cleaning up](#cleaning-up)). Also note that `featureGates.<DB>` defaults to `true` for almost every database in this chart (only `Aerospike` defaults `false`), so one `helm template | kubectl apply` installs dashboards for many databases at once, not just Elasticsearch — this is expected.
+> **Note:** The `kubedb-grafana-dashboards` chart bundles many large Grafana dashboard JSON files. Even with a single `featureGate` enabled, the rendered manifests can exceed Kubernetes' hard 1 MB Secret limit that Helm uses to store release state. To work around this, render the chart locally with `helm template` and apply the output directly with `kubectl apply`, which bypasses Helm's Secret storage entirely. Also note that `featureGates.<DB>` defaults to `true` for almost every database in this chart (only `Aerospike` defaults `false`), so one `helm template | kubectl apply` installs dashboards for many databases at once, not just Elasticsearch — this is expected.
 
 ### Verify dashboards are created
 
@@ -410,31 +410,13 @@ Port-forward Grafana and log in.
 $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
 ```
 
-Open `http://localhost:3000` (username: `admin`). Search for **elasticsearch** in the Dashboards section.
+Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / Elasticsearch** dashboard.
 
 <p align="center">
-  <img alt="Grafana — Elasticsearch Dashboard List" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-dashboards.png" style="padding:10px">
+  <img alt="Grafana — Elasticsearch Dashboard" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
-Three pre-built dashboards are available. The `Namespace` and `app` drop-downs at the top of each dashboard let you switch between instances.
-
-**KubeDB / Elasticsearch / Summary** — cluster-wide health: database status, version, node count, CPU/memory/storage requests vs. usage.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Elasticsearch Summary" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-summary.png" style="padding:10px">
-</p>
-
-**KubeDB / Elasticsearch / Pod** — per-node detail: node status color, open file count, connected/active data nodes, memory and heap usage, GC time, documents indexed.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Elasticsearch Pod" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-pod.png" style="padding:10px">
-</p>
-
-**KubeDB / Elasticsearch / Database** — cluster status, shard counts, documents indexed, index size, indexing/query rate, and ingest-node system metrics.
-
-<p align="center">
-  <img alt="Grafana — KubeDB Elasticsearch Database" src="/docs/images/elasticsearch/monitoring/es-alerting-grafana-database.png" style="padding:10px">
-</p>
+The dashboard covers Elasticsearch health and performance in one view: cluster-wide status, version, node count, CPU/memory/storage requests vs. usage; per-node detail (node status color, open file count, connected/active data nodes, memory and heap usage, GC time, documents indexed); and cluster status, shard counts, documents indexed, index size, indexing/query rate, and ingest-node system metrics. The `Namespace` and `app` drop-downs at the top let you switch between instances.
 
 ---
 

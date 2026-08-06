@@ -201,7 +201,6 @@ The chart derives the PromQL `job`/instance scoping (and the `PrometheusRule` na
 
 The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector`.
 
-> **Note:** The chart's default values leave `form.alert.groups.database.rules.cassandraDown.val` unset, which renders an incomplete PromQL expression (`... > `) that the `PrometheusRule` admission webhook rejects. Explicitly set it to `0` at install time — the `CassandraDown` expression counts down instances and fires whenever that count is greater than `0`.
 
 ### Install
 
@@ -224,9 +223,7 @@ $ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
 
 > To install **alerts only, without the dashboard**, set `--set grafana.enabled=false`.
 
-> **Note:** the dashboard's title and its two "Cassandra Phase" panels (`KubeDB Cassandra Phase Not Ready` / `Critical`) only show data when deployed to a namespace named `demo`. The `Cassandra Server Status` row (six panels driven by the exporter's own metrics) is correctly scoped by `grafana.jobName` regardless of namespace.
->
-> To re-run the dashboard import (e.g. after changing `grafana.jobName`, or on a `helm upgrade`), first delete the existing dashboard and Job: `curl -s -X DELETE -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboards/uid/<uid>` and `kubectl delete job -n alert-cas cas-alert-demo-post-job`.
+> **Note:**  To re-run the dashboard import (e.g. after changing `grafana.jobName`, or on a `helm upgrade`), first delete the existing dashboard and Job: `curl -s -X DELETE -H "Authorization: Bearer <token>" http://localhost:3000/api/dashboards/uid/<uid>` and `kubectl delete job -n alert-cas cas-alert-demo-post-job`.
 
 ### Verify the PrometheusRule is created
 
