@@ -1,0 +1,26 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: dev-branch-refresh
+  namespace: demo
+spec:
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: sample-postgres
+    namespace: demo
+  target:
+    namespace: demo
+    name: dev-postgres-refresh
+    storageClassName: gp3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  schedule:
+    cron: "*/5 * * * *"
+  historyLimit:
+    success: 3
+    failed: 2
+  deletionPolicy: Delete

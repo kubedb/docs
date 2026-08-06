@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: sample-postgres-ha
+  namespace: demo
+spec:
+  version: "16.1"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: gp3
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

@@ -1,0 +1,21 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: dev-branch-xns
+  namespace: demo
+spec:
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: sample-postgres
+    namespace: demo
+  target:
+    namespace: dev          # different namespace from the source
+    name: dev-postgres-xns
+    storageClassName: gp3
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  deletionPolicy: Delete
