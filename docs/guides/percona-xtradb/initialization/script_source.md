@@ -50,7 +50,7 @@ $ kubectl create configmap -n demo pxc-init-script \
 --from-literal=init.sql="$(curl -fsSL https://raw.githubusercontent.com/kubedb/percona-xtradb-init-scripts/master/init.sql)"
 configmap/pxc-init-script created
 ```
-
+>**Note:** The initialization script above is provided only as an example. You can use your own initialization script as long as it performs the required setup for your environment. If your script connects to Percona XtraDB, make sure to include the appropriate MySQL credentials (such as the password) so the script can authenticate successfully. After deploying Percona XtraDB with this ConfigMap, the initialization script runs automatically, and any databases, users, tables, or other objects created by the script can be verified after the deployment completes.
 ## Create PerconaXtraDB with Script Source
 
 Following YAML describes the PerconaXtraDB object with `init.script`:
@@ -88,7 +88,7 @@ VolumeSource provided in `init.script` will be mounted in the Pod and will be ex
 Now, let's create the PerconaXtraDB CRD using the YAML shown above:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/percona-xtradb/initialization/yamls/script-pxc.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/perconaxtradb/script-pxc.yaml
 perconaxtradb.kubedb.com/script-pxc created
 ```
 
@@ -269,7 +269,7 @@ Now let's connect to our PerconaXtraDB cluster to verify that the database has b
 **Connection Information:**
 
 - Host name/address: you can use any of these
-  - Service: `script-pxc.demo`
+  - Service: `script-pxc`
   - Pod IP: (`$ kubectl get pods script-pxc-0 -n demo -o yaml | grep podIP`)
 - Port: `3306`
 
@@ -284,7 +284,7 @@ Now let's connect to our PerconaXtraDB cluster to verify that the database has b
 
   ```bash
   $ kubectl get secret -n demo script-pxc-auth -o jsonpath='{.data.password}' | base64 -d
-    nsTqGdVwR!~DA(t
+    nsTqGdVwR!~DA(ta
   ```
 
 Now, connect to the PerconaXtraDB cluster and run the following query to confirm initialization:
@@ -339,6 +339,20 @@ mysql: [Warning] Using a password on the command line interface can be insecure.
 | wsrep_cluster_members                                |
 | wsrep_streaming_log                                  |
 +------------------------------------------------------+
+
+
+$ kubectl exec -it -n demo script-pxc-0 -- \
+                                  mysql -u root --password='nsTqGdVwR!~DA(ta' \
+                                  -e "SELECT * FROM mysql.kubedb_table;"
+Defaulted container "perconaxtradb" out of: perconaxtradb, px-coordinator, px-init (init)
+mysql: [Warning] Using a password on the command line interface can be insecure.
++----+-------+
+| id | name  |
++----+-------+
+|  1 | name1 |
+|  2 | name2 |
+|  3 | name3 |
++----+-------+
 
 ```
 

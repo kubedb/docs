@@ -182,6 +182,6 @@ to the target.
 
 ## Next Steps
 
-- Migrate a MariaDB database step by step with the [MariaDB Database Migration](/docs/guides/mariadb/migration/databaseMigration.md) guide.
+- Migrate a MariaDB database step by step with the [MariaDB Database Migration](/docs/guides/mariadb/migration/databasemigration.md) guide.
 - Learn about the [AppBinding](/docs/guides/mariadb/concepts/appbinding/) concept.
 - Learn about the MariaDB CRD [here](/docs/guides/mariadb/concepts/mariadb).
