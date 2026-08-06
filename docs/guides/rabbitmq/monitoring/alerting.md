@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # RabbitMQ Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed RabbitMQ instance using the `rabbitmq-alerts` Helm chart.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed RabbitMQ instance using the `rabbitmq-alerts` Helm chart. This chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -43,7 +43,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/rabbitmq/monitoring/overview.md).
 
-* For dashboards and visualisation, see [Grafana Dashboard](grafana-dashboard.md) for RabbitMQ.
+* You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/rabbitmq](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -57,6 +57,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **ServiceMonitor** (named `{rabbitmq-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **KubeDB operator (panopticon)** also exposes the CR's own status as a metric, `kubedb_com_rabbitmq_status_phase`. The `RabbitMQDown` and provisioner-group alerts key off this metric instead of the database's own stats endpoint, so they fire purely based on what KubeDB itself observes about the resource — even if the metrics scrape target is otherwise healthy.
 - **PrometheusRule** is created by the `rabbitmq-alerts` chart and contains RabbitMQ alert definitions grouped by concern: database health and provisioner.
+- **Dashboard-import Job** — when `grafana.enabled` is `true`, the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
@@ -151,7 +152,35 @@ prometheus
 
 ---
 
-## Step 1 — Install rabbitmq-alerts
+## Step 1 — Create a Grafana API Key
+
+The chart's dashboard-import Job authenticates to Grafana with a bearer token, so create one first.
+
+* **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
+* **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5): use the legacy **API Keys** endpoint instead:
+
+  ```bash
+  # Port-forward Grafana
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+  # Retrieve the admin password
+  $ kubectl get secret -n monitoring prometheus-grafana \
+      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+
+  # Create an API key with Editor role
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/auth/keys \
+      -d '{"name":"rabbitmq-alerts-demo","role":"Editor"}'
+  # Note the returned "key"
+
+  # Stop the port-forward
+  $ kill %1
+  ```
+
+Either way, you end up with a bearer token to use as `grafana.apikey` below.
+
+## Step 2 — Install rabbitmq-alerts
 
 The `rabbitmq-alerts` chart creates a `PrometheusRule` resource containing RabbitMQ alert definitions grouped by concern: database health and provisioner.
 
@@ -168,7 +197,11 @@ $ helm upgrade -i rmq-alert-demo appscode/rabbitmq-alerts \
     -n alert-rabbitmq \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set grafana.enabled=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-from-above>" \
+    --set grafana.jobName=rmq-alert-demo-stats
 ```
 
 | Flag | Value | Purpose |
@@ -176,6 +209,11 @@ $ helm upgrade -i rmq-alert-demo appscode/rabbitmq-alerts \
 | `rmq-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="rmq-alert-demo-stats"`, `app="rmq-alert-demo"`) |
 | `-n alert-rabbitmq` | `alert-rabbitmq` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
+| `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
+| `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
+| `grafana.jobName` | `rmq-alert-demo-stats` | **Required** — the chart's default (`kubedb-databases`) doesn't match any real Prometheus job, so most of the dashboard's panels show "No data" unless you override it to your instance's actual stats-service name |
+
+> To install **alerts only, without the dashboard**, omit the `grafana.*` flags (or set `--set grafana.enabled=false`).
 
 ### Verify the PrometheusRule is created
 
@@ -192,6 +230,19 @@ $ kubectl get prometheusrule -n alert-rabbitmq rmq-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
+
+### Verify the dashboard-import Job
+
+```bash
+$ kubectl get job -n alert-rabbitmq
+NAME                     STATUS     COMPLETIONS   AGE
+rmq-alert-demo-post-job  Complete   1/1           17s
+
+$ kubectl logs -n alert-rabbitmq job/rmq-alert-demo-post-job
+{"pluginId":"","title":"kubedb.com / RabbitMQ / alert-rabbitmq / rmq-alert-demo","imported":true, ...}
+```
+
+A `"imported":true` response confirms the dashboard `kubedb.com / RabbitMQ / alert-rabbitmq / rmq-alert-demo` now exists in Grafana.
 
 ### Confirm Prometheus loaded the rules
 
@@ -406,8 +457,12 @@ $ helm upgrade rmq-alert-demo appscode/rabbitmq-alerts \
 To remove all resources created in this tutorial, run the following commands.
 
 ```bash
-# Remove the rabbitmq-alerts release
+# Remove the rabbitmq-alerts release (PrometheusRule + dashboard-import Job)
 $ helm uninstall rmq-alert-demo -n alert-rabbitmq
+
+# Remove the imported Grafana dashboard (it is not removed by helm uninstall)
+$ curl -s -X DELETE -H "Authorization: Bearer <grafana-token>" \
+    http://localhost:3000/api/dashboards/uid/<uid>
 
 # Remove the RabbitMQ instance
 $ kubectl delete rabbitmq -n alert-rabbitmq rmq-alert-demo

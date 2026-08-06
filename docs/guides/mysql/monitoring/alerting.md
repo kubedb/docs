@@ -369,22 +369,6 @@ Open `http://localhost:9093`. With a healthy MySQL instance, no alerts for `mysq
   <img alt="AlertManager" src="/docs/images/mysql/monitoring/mysql-alerting-alertmanager.png" style="padding:10px">
 </p>
 
-### 5. Explore Grafana dashboards
-
-Port-forward Grafana and log in.
-
-```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-```
-
-Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / MySQL** dashboard.
-
-<p align="center">
-  <img alt="Grafana — MySQL Dashboard" src="/docs/images/mysql/monitoring/mysql-alerting-grafana-dashboard.png" style="padding:10px">
-</p>
-
-The dashboard covers MySQL health and performance in one view: database status, version, node count, CPU/memory/storage requests vs. usage; per-node ONLINE status, the current Primary, and replication delay/transport-time/apply-time/transaction-queue metrics per member; per-pod service status/uptime, QPS, connections, disk I/O, network, and top command counters; and per-pod CPU/memory/file descriptors, connections, thread activity, temporary objects, slow queries, table locks, and network traffic. The `Namespace` and `mysql` drop-downs at the top let you switch between instances.
-
 ---
 
 ## Simulating a Firing Alert

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Kafka Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Kafka cluster using the `kafka-alerts` Helm chart. Like `neo4j-alerts`, this chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Kafka cluster using the `kafka-alerts` Helm chart. This chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -279,20 +279,6 @@ Open `http://localhost:9093`.
 
 <p align="center">
   <img alt="AlertManager" src="/docs/images/kafka/monitoring/kafka-alerting-alertmanager.png" style="padding:10px">
-</p>
-
-### 4. Explore the Grafana dashboard
-
-Port-forward Grafana and log in.
-
-```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
-```
-
-Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Kafka / alert-kafka / kafka-alert-demo` that the Job imported in Step 2.
-
-<p align="center">
-  <img alt="Grafana — Kafka Alerts Dashboard" src="/docs/images/kafka/monitoring/kafka-alerting-grafana-dashboard.png" style="padding:10px">
 </p>
 
 ---

@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # Cassandra Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Cassandra cluster using the `cassandra-alerts` Helm chart. Like `neo4j-alerts`, this chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed Cassandra cluster using the `cassandra-alerts` Helm chart. This chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -205,10 +205,13 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
-    -n alert-cas \
-    --create-namespace \
-    --version=v2026.7.14 
+$ helm upgrade -i cas-alert-demo /home/banusree/go/src/alerts/charts/cassandra-alerts \
+  -n alert-cas \
+  --set form.alert.labels.release=prometheus \
+  --set grafana.enabled=true \
+  --set grafana.url=http://prometheus-grafana.<grafana_namespace>.svc.cluster.local \
+  --set grafana.apikey=<grafana_apikey>
+
 ```
 
 | Flag | Value | Purpose |

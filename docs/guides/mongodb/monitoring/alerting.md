@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # MongoDB Alerting with Prometheus
 
-This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed MongoDB instance using the `mongodb-alerts` Helm chart.
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed MongoDB instance using the `mongodb-alerts` Helm chart. This chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
 
 ## Before You Begin
 
@@ -45,6 +45,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/mongodb/monitoring/overview.md).
 
+* You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/mongodb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mongodb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Overview
@@ -56,9 +58,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys MongoDB with a `mongodb_exporter` sidecar (container `exporter`) that exposes metrics (`mongodb_*`).
 - **ServiceMonitor** (named `{mongodb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `mongodb-alerts` chart and contains MongoDB alert definitions grouped by concern: database health (which also embeds the KubeDB-operator-sourced `MongoDBDown`/`MongoDBPhaseCritical` pair), provisioner, ops-manager, Stash backup/restore, KubeStash backup/restore, and schema manager.
+- **Dashboard-import Job** — when `grafana.enabled` is `true`, the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
-- **Grafana** dashboards for MongoDB are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
 
 ---
 
@@ -144,7 +146,35 @@ prometheus
 
 ---
 
-## Step 1 — Install mongodb-alerts
+## Step 1 — Create a Grafana API Key
+
+The chart's dashboard-import Job authenticates to Grafana with a bearer token, so create one first.
+
+* **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
+* **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5): use the legacy **API Keys** endpoint instead:
+
+  ```bash
+  # Port-forward Grafana
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+
+  # Retrieve the admin password
+  $ kubectl get secret -n monitoring prometheus-grafana \
+      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+
+  # Create an API key with Editor role
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/auth/keys \
+      -d '{"name":"mongodb-alerts-demo","role":"Editor"}'
+  # Note the returned "key"
+
+  # Stop the port-forward
+  $ kill %1
+  ```
+
+Either way, you end up with a bearer token to use as `grafana.apikey` below.
+
+## Step 2 — Install mongodb-alerts
 
 ### Why the Helm release name matters
 
@@ -160,9 +190,19 @@ $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alert
     --create-namespace \
     --version=v2026.7.14 \
     --set form.alert.labels.release=prometheus \
-    --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
-    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
+    --set grafana.enabled=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-from-above>" \
+    --set grafana.jobName=mongodb-alert-demo-stats
 ```
+
+| Flag | Value | Purpose |
+|------|-------|---------|
+| `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
+| `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
+| `grafana.jobName` | `mongodb-alert-demo-stats` | **Required** — the chart's default (`kubedb-databases`) doesn't match any real Prometheus job, so most of the dashboard's panels show "No data" unless you override it to your instance's actual stats-service name |
+
+> To install **alerts only, without the dashboard**, omit the `grafana.*` flags (or set `--set grafana.enabled=false`).
 
 ### Verify the PrometheusRule is created
 
@@ -179,6 +219,19 @@ $ kubectl get prometheusrule -n alert-mongodb mongodb-alert-demo \
     -o jsonpath='{.metadata.labels.release}'
 prometheus
 ```
+
+### Verify the dashboard-import Job
+
+```bash
+$ kubectl get job -n alert-mongodb
+NAME                          STATUS     COMPLETIONS   AGE
+mongodb-alert-demo-post-job   Complete   1/1           17s
+
+$ kubectl logs -n alert-mongodb job/mongodb-alert-demo-post-job
+{"pluginId":"","title":"kubedb.com / MongoDB / alert-mongodb / mongodb-alert-demo","imported":true, ...}
+```
+
+A `"imported":true` response confirms the dashboard `kubedb.com / MongoDB / alert-mongodb / mongodb-alert-demo` now exists in Grafana.
 
 ### Confirm Prometheus loaded the rules
 
@@ -229,10 +282,6 @@ Open `http://localhost:9093`.
 <p align="center">
   <img alt="AlertManager" src="/docs/images/mongodb/monitoring/mongodb-alerting-alertmanager.png" style="padding:10px">
 </p>
-
-### 4. Grafana dashboard
-
-See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the MongoDB dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.MongoDB=true`).
 
 ---
 
@@ -383,8 +432,16 @@ $ helm upgrade mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alerts \
 
 ## Cleaning up
 
+To remove all resources created in this tutorial, run the following commands.
+
 ```bash
+# Remove the mongodb-alerts release (PrometheusRule + dashboard-import Job)
 $ helm uninstall mongodb-alert-demo -n alert-mongodb
+
+# Remove the imported Grafana dashboard (it is not removed by helm uninstall)
+$ curl -s -X DELETE -H "Authorization: Bearer <grafana-token>" \
+    http://localhost:3000/api/dashboards/uid/<uid>
+
 $ kubectl delete mongodb -n alert-mongodb mongodb-alert-demo
 $ kubectl delete ns alert-mongodb
 ```
