@@ -20,7 +20,7 @@ This tutorial shows how to use KubeDB to provision a **standalone** [Milvus](htt
 
 - You need a Kubernetes cluster and `kubectl` configured to talk to it.
 - Install KubeDB with `--set global.featureGates.Milvus=true`.
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
 - This quickstart intentionally uses the smallest working manifest. It does **not** require Prometheus Operator or cert-manager.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -55,7 +55,7 @@ spec:
     mode: Standalone
   objectStorage:
     configSecret:
-      name: "my-release-minio"
+      name: "milvus-storage-config"
   storageType: Durable
   storage:
     accessModes:

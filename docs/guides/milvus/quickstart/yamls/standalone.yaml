@@ -9,7 +9,7 @@ spec:
     mode: Standalone
   objectStorage:
     configSecret:
-      name: "my-release-minio"
+      name: "milvus-storage-config"
   storageType: Durable
   storage:
     accessModes:

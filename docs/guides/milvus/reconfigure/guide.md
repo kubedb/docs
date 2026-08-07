@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to reconfi
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Reconfigure Overview](/docs/guides/milvus/reconfigure/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `my-release-minio` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo`:
 
