@@ -1,33 +1,55 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Dc-Dr Handoff
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-dc-dr-handoff
+    name: Kubectl-Dba Dc-Dr Handoff
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba dc-dr handoff
 
-kubectl plugin for KubeDB
+Move the failover authority for a scope by handing off its primary-DC Lease
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
+Writes dr.open-cluster-management.io/handoff-to on the scope's primary-DC Lease. The holding data center's agent releases the Lease once, the target acquires it within a retry tick, and the annotation clears itself.
 
- Find more information at https://kubedb.com
+ This is the scope-local FAILOVER lever, and the correct tool when the active data center's database is down but its data center is alive: no quiesce and no catch-up wait happen, so loss is bounded by the RPO budget rather than zero. For a healthy primary prefer "dc-dr switchover", which is zero-RPO.
+
+ It moves EVERY database sharing the scope. Do NOT stop a DC's agent to force a failover instead: one agent serves every scope its DC holds, so that expires all of them together.
+
+ KUBECONFIG: the hub cluster (to resolve a database's scope and read the coordination kubeconfig Secret). The Lease is written on the coordination plane via the --coord-* flags.
 
 ```
-kubectl-dba [flags]
+kubectl-dba dc-dr handoff (DB_NAME | --lease NAME) --to DC [flags]
+```
+
+### Examples
+
+```
+  # Fail a database's scope over to dc-b
+  kubectl dba dc-dr handoff pg-dcdr -n demo --to dc-b --yes
+  
+  # Move a scope by Lease name (works with no database left)
+  kubectl dba dc-dr handoff --lease primary-dc-orders --to dc-a --yes
 ```
 
 ### Options
+
+```
+      --coord-kubeconfig string             Path to a kubeconfig file for the coordination control plane (overrides the secret/configmap sources)
+      --coord-kubeconfig-configmap string   ConfigMap ([namespace/]name, key "kubeconfig") on the current cluster holding the coordination-plane kubeconfig
+      --coord-kubeconfig-secret string      Secret ([namespace/]name, key "kubeconfig") on the current cluster holding the coordination-plane kubeconfig (default "dc-failover/coord-kubeconfig")
+      --coord-namespace string              Namespace on the coordination plane that holds the primary-DC Leases (default "dc-failover")
+  -h, --help                                help for handoff
+      --lease string                        Act on this Lease directly instead of resolving a database's scope
+      --to string                           Target data center
+      --yes                                 Confirm the handoff (it moves every database in the scope)
+```
+
+### Options inherited from parent commands
 
 ```
       --as string                             Username to impersonate for the operation. User could be a regular user or a service account in a namespace.
@@ -41,7 +63,6 @@ kubectl-dba [flags]
       --context string                        The name of the kubeconfig context to use
       --default-seccomp-profile-type string   Default seccomp profile
       --disable-compression                   If true, opt-out of response compression for all requests to the server
-  -h, --help                                  help for kubectl-dba
       --insecure-skip-tls-verify              If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                     Path to the kubeconfig file to use for CLI requests.
       --match-server-version                  Require server version to match client version
@@ -57,20 +78,5 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
-* [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba dc-dr](/docs/reference/cli/kubectl-dba_dc-dr.md)	 - Cross data center DR operations: switchover, failover, pins, and diagnosis
-* [kubectl-dba debug](/docs/reference/cli/kubectl-dba_debug.md)	 - Debug any Database issue
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
-* [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
-* [kubectl-dba monitor](/docs/reference/cli/kubectl-dba_monitor.md)	 - Monitoring related commands for a database
-* [kubectl-dba mssql](/docs/reference/cli/kubectl-dba_mssql.md)	 - MSSQLServer database commands
-* [kubectl-dba options](/docs/reference/cli/kubectl-dba_options.md)	 - Print the list of flags inherited by all commands
-* [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
-* [kubectl-dba remote-config](/docs/reference/cli/kubectl-dba_remote-config.md)	 - generate appbinding , secrets for remote replica
-* [kubectl-dba restart](/docs/reference/cli/kubectl-dba_restart.md)	 - Smartly restart the pods of the database.
-* [kubectl-dba resume](/docs/reference/cli/kubectl-dba_resume.md)	 - Resume processing of an object.
-* [kubectl-dba show-credentials](/docs/reference/cli/kubectl-dba_show-credentials.md)	 - Prints credentials of the database.
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
 

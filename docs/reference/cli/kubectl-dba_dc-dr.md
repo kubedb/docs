@@ -1,33 +1,32 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Dc-Dr
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-dc-dr
+    name: Kubectl-Dba Dc-Dr
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba dc-dr
 
-kubectl plugin for KubeDB
+Cross data center DR operations: switchover, failover, pins, and diagnosis
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
-
- Find more information at https://kubedb.com
+Operate a KubeDB database that is distributed across data centers: trigger and monitor planned switchovers, accept a held failover's data loss, move the failover authority, pin a data center, and diagnose a failover that is not happening.
 
 ```
-kubectl-dba [flags]
+kubectl-dba dc-dr
 ```
 
 ### Options
+
+```
+  -h, --help   help for dc-dr
+```
+
+### Options inherited from parent commands
 
 ```
       --as string                             Username to impersonate for the operation. User could be a regular user or a service account in a namespace.
@@ -41,7 +40,6 @@ kubectl-dba [flags]
       --context string                        The name of the kubeconfig context to use
       --default-seccomp-profile-type string   Default seccomp profile
       --disable-compression                   If true, opt-out of response compression for all requests to the server
-  -h, --help                                  help for kubectl-dba
       --insecure-skip-tls-verify              If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                     Path to the kubeconfig file to use for CLI requests.
       --match-server-version                  Require server version to match client version
@@ -57,20 +55,14 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
-* [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
-* [kubectl-dba dc-dr](/docs/reference/cli/kubectl-dba_dc-dr.md)	 - Cross data center DR operations: switchover, failover, pins, and diagnosis
-* [kubectl-dba debug](/docs/reference/cli/kubectl-dba_debug.md)	 - Debug any Database issue
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
-* [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
-* [kubectl-dba monitor](/docs/reference/cli/kubectl-dba_monitor.md)	 - Monitoring related commands for a database
-* [kubectl-dba mssql](/docs/reference/cli/kubectl-dba_mssql.md)	 - MSSQLServer database commands
-* [kubectl-dba options](/docs/reference/cli/kubectl-dba_options.md)	 - Print the list of flags inherited by all commands
-* [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
-* [kubectl-dba remote-config](/docs/reference/cli/kubectl-dba_remote-config.md)	 - generate appbinding , secrets for remote replica
-* [kubectl-dba restart](/docs/reference/cli/kubectl-dba_restart.md)	 - Smartly restart the pods of the database.
-* [kubectl-dba resume](/docs/reference/cli/kubectl-dba_resume.md)	 - Resume processing of an object.
-* [kubectl-dba show-credentials](/docs/reference/cli/kubectl-dba_show-credentials.md)	 - Prints credentials of the database.
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
+* [kubectl-dba](/docs/reference/cli/kubectl-dba.md)	 - kubectl plugin for KubeDB
+* [kubectl-dba dc-dr abort](/docs/reference/cli/kubectl-dba_dc-dr_abort.md)	 - Abort an in-flight planned switchover and restore writes to the current active DC
+* [kubectl-dba dc-dr accept-data-loss](/docs/reference/cli/kubectl-dba_dc-dr_accept-data-loss.md)	 - Release a failover held by the RPO budget, explicitly accepting the data loss
+* [kubectl-dba dc-dr active-dc](/docs/reference/cli/kubectl-dba_dc-dr_active-dc.md)	 - Print the data center that currently holds the primary role
+* [kubectl-dba dc-dr debug](/docs/reference/cli/kubectl-dba_dc-dr_debug.md)	 - Diagnose DC-DR symptoms: failover not happening, switchover stuck, fenced database
+* [kubectl-dba dc-dr handoff](/docs/reference/cli/kubectl-dba_dc-dr_handoff.md)	 - Move the failover authority for a scope by handing off its primary-DC Lease
+* [kubectl-dba dc-dr pin-primary](/docs/reference/cli/kubectl-dba_dc-dr_pin-primary.md)	 - Pin this data center as primary (break-glass override): no failover, writable through a control-plane outage
+* [kubectl-dba dc-dr pin-standby](/docs/reference/cli/kubectl-dba_dc-dr_pin-standby.md)	 - Pin this data center as a standby (standby-hold): it never promotes
+* [kubectl-dba dc-dr status](/docs/reference/cli/kubectl-dba_dc-dr_status.md)	 - Show DC-DR state and switchover progress once (re-run to see further progress)
+* [kubectl-dba dc-dr switchover](/docs/reference/cli/kubectl-dba_dc-dr_switchover.md)	 - Trigger a planned zero-RPO switchover of a distributed database to another data center
 
