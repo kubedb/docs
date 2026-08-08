@@ -4,8 +4,6 @@ metadata:
   name: pg-mig
   namespace: demo
 spec:
-  healthChecker:
-    disableWriteCheck: true
   clientAuthMode: md5
   standbyMode: Hot
   replicas: 1

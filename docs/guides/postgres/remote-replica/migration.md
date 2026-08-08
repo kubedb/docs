@@ -16,7 +16,7 @@ section_menu_id: guides
 
 This guide migrates a **self-managed** PostgreSQL — one KubeDB does not manage: a bare
 StatefulSet, a VM in another datacenter, a hardened installation whose superuser you will
-never see — into a KubeDB-managed cluster with seconds of write downtime, using the remote
+never see — into a KubeDB-managed cluster with roughly a minute of write downtime, using the remote
 replica mechanism: seed with `pg_basebackup`, stream until the lag is zero, stop writes,
 cut over.
 
@@ -317,9 +317,11 @@ SELECT min(ts) FILTER (WHERE origin = 'first-write-after-migration')
 
 **Measured on the runs behind this guide** (single-replica, ~1–2 GB databases, same-LAN
 clusters, a ~5 TPS writer running until cutover): write gap from last committed source
-transaction to first accepted write on the migrated database **37.63 s**, measured from
-server-side row timestamps, with all 2904 in-flight-era transactions verified present by
-fingerprint. The full procedure is in the verification section below.
+transaction to first accepted write on the migrated database **roughly 40–70 s across
+repeated runs** (37.63 s in the run shown below), measured from server-side row
+timestamps, with all in-flight-era transactions verified present by fingerprint. Treat
+the number as an approximation — it is dominated by the pod recreate and promotion, not
+by data size. The full procedure is in the verification section below.
 
 ## Verifying the cutover: zero transaction loss and measured downtime
 
