@@ -118,7 +118,11 @@ spec:
       protocol: TCP
 ```
 
-Skip this step if `kubectl get networkpolicy -n demo` shows nothing.
+Skip this step if `kubectl get networkpolicy -n demo` shows nothing — whether KubeDB
+creates these policies is an install-time choice (`networkPolicy.enabled` in the chart
+values). On a cluster **without** them, do **not** apply this policy: it would become the
+only policy selecting the database pods and deny all other ingress — operator health
+checks fail and the CR sticks in `Provisioning`.
 
 ## Step 3: verify the scrape
 
