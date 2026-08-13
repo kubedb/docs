@@ -16,7 +16,7 @@ section_menu_id: guides
 
 Milvus will not start from a bare `Milvus` manifest alone. Every Milvus deployment in KubeDB needs:
 
-- Object storage, exposed through a secret named `my-release-minio`.
+- Object storage, exposed through a secret named `milvus-storage-config`.
 - etcd for metadata.
 
 This guide sets up both dependencies in the `demo` namespace and clarifies when you need only the **etcd operator** and when you instead want to point Milvus at an **external etcd cluster**.
@@ -43,61 +43,90 @@ namespace/demo created
 
 ## Install MinIO
 
-Milvus stores its segments and logs in object storage. For this quickstart, we provide a **sample MinIO deployment** that creates:
+Milvus stores its segments and logs in object storage. We recommend using the MinIO Operator to deploy a MinIO Tenant.
 
-- A MinIO `StatefulSet`
-- The `my-release-minio` service
-- The `my-release-minio` secret expected by all Milvus examples
-
-This is only an example. You may change the namespace, image tag, replica count, PVC size, credentials, or even use an existing S3-compatible object store instead. The only requirement from the Milvus side is that `spec.objectStorage.configSecret` points to a secret containing:
-
-- `address`
-- `accesskey`
-- `secretkey`
-
-If you use the sample as-is, apply it:
+### 1. Install the MinIO Operator
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/minio.yaml
-serviceaccount/my-release-minio created
-secret/my-release-minio created
-configmap/my-release-minio created
-service/my-release-minio created
-service/my-release-minio-svc created
-statefulset.apps/my-release-minio created
+$ helm repo add minio https://operator.min.io/
+$ helm repo update minio
+$ helm upgrade --install --namespace "minio-operator" --create-namespace "minio-operator" minio/operator --set operator.replicaCount=1
 ```
 
-Verify it:
+### 2. Deploy a MinIO Tenant
 
 ```bash
-$ kubectl get secret my-release-minio -n demo
-NAME               TYPE     DATA   AGE
-my-release-minio   Opaque   3      1m
-
-$ kubectl get statefulset my-release-minio -n demo
-NAME               READY   AGE
-my-release-minio   4/4     1m
+$ helm upgrade --install --namespace "demo" milvus-minio minio/tenant \
+  --set tenant.name=milvus-minio \
+  --set tenant.pools[0].servers=1 \
+  --set tenant.pools[0].volumesPerServer=1 \
+  --set tenant.pools[0].size=1Gi \
+  --set tenant.certificate.requestAutoCert=false \
+  --set tenant.buckets[0].name="mlv-release" \
+  --set tenant.pools[0].name="default"
 ```
 
-The full example manifest lives in:
+Wait for the Tenant to become initialized:
 
-- [docs/guides/milvus/quickstart/yamls/minio.yaml](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/minio.yaml)
+```bash
+$ kubectl get tenant -n demo milvus-minio -w
+NAME           STATE         HEALTH   AGE
+milvus-minio   Initialized   green    1m
+```
 
-### If You Already Have S3 or MinIO
+### 3. Create the Storage Config Secret
 
-You do not need to use the sample MinIO deployment. You can instead create only the secret and point Milvus at your existing object store:
+Create a secret with your MinIO connection details. The keys must use the milvus.yaml config key names directly:
 
 ```yaml
 apiVersion: v1
 kind: Secret
 metadata:
-  name: my-release-minio
+  name: milvus-storage-config
   namespace: demo
 type: Opaque
 stringData:
-  address: existing-minio.demo.svc.cluster.local:9000
-  accesskey: minioadmin
-  secretkey: minioadmin
+  address: "milvus-minio-hl.demo.svc.cluster.local"
+  accessKeyID: "minio"
+  secretAccessKey: "minio123"
+  bucketName: "mlv-release"
+  rootPath: "files"
+  port: "9000"
+```
+
+Apply the secret:
+
+```bash
+$ kubectl apply -f milvus-storage-config.yaml
+secret/milvus-storage-config created
+```
+
+Verify:
+
+```bash
+$ kubectl get secret milvus-storage-config -n demo
+NAME                     TYPE     DATA   AGE
+milvus-storage-config    Opaque   6      1m
+```
+
+### If You Already Have S3 or MinIO
+
+You do not need to use the MinIO Operator. You can instead create only the secret and point Milvus at your existing object store:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: milvus-storage-config
+  namespace: demo
+type: Opaque
+stringData:
+  address: "existing-minio.demo.svc.cluster.local"
+  accessKeyID: "minioadmin"
+  secretAccessKey: "minioadmin"
+  bucketName: "milvus"
+  rootPath: "files-1"
+  port: "9000"
 ```
 
 If you use a different secret name, update `spec.objectStorage.configSecret.name` in the `Milvus` manifest accordingly.
@@ -132,8 +161,6 @@ $ kubectl get crd etcdclusters.operator.etcd.io
 NAME                           CREATED AT
 etcdclusters.operator.etcd.io  2026-07-08T...
 ```
-
-> If your environment cannot pull the default etcd-operator image, use the source-build workflow from the official repo: build and push your own image, then run `make install` and `make deploy IMG=<your-image>`.
 
 ## Default Path: KubeDB-Managed etcd
 
@@ -202,16 +229,16 @@ If you want to keep the namespace and clean up dependencies separately:
 
    For KubeDB-managed etcd, the PVC names follow the pattern `etcd-data-<milvus-name>-etcd-<ordinal>`.
 
-3. Delete MinIO:
+3. Delete the MinIO Tenant:
 
    ```bash
-   $ kubectl delete -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/minio.yaml
+   $ helm uninstall milvus-minio -n demo
    ```
 
-4. Delete leftover MinIO PVCs if you are keeping the namespace:
+4. Delete the storage config secret:
 
    ```bash
-   $ kubectl delete pvc -n demo export-my-release-minio-0 export-my-release-minio-1 export-my-release-minio-2 export-my-release-minio-3
+   $ kubectl delete secret -n demo milvus-storage-config
    ```
 
 ## Next Steps
