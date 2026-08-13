@@ -279,7 +279,7 @@ The chart looks up Grafana connection details from an `AppBinding` annotated as 
 
 ```bash
 # Create a Grafana API key (adjust the endpoint/payload shape for your Grafana version)
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 &
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 $ GRAFANA_PW=$(kubectl get secret -n monitoring prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d)
 $ curl -s -X POST -H "Content-Type: application/json" -u admin:$GRAFANA_PW \
     http://localhost:3000/api/auth/keys \

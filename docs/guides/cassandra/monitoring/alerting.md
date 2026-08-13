@@ -165,7 +165,7 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
 
   ```bash
   # Port-forward Grafana
-  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 
   # Retrieve the admin password
   $ kubectl get secret -n monitoring prometheus-grafana \
@@ -330,7 +330,7 @@ Open `http://localhost:9093`. With a healthy Cassandra cluster, no alerts for `c
 Port-forward Grafana and log in.
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 ```
 
 Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Cassandra / demo / cassandra` that the Job imported in Step 2 (search doesn't help here since the title never changes — see the chart-limitation note above; find it by `dashboardId`/`uid` from the Job's log output if you have several).

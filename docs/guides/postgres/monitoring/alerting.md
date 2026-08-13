@@ -210,7 +210,7 @@ The chart needs a Grafana API key to push dashboards.
 
 ```bash
 # Port-forward Grafana
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 
 # Create a service account with Admin role
 $ curl -s -X POST -H "Content-Type: application/json" \
@@ -330,7 +330,7 @@ Open `http://localhost:9093`.
 Port-forward Grafana and log in.
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 ```
 
 Open `http://localhost:3000` (username: `admin`) and navigate to the **KubeDB / Postgres** dashboard.

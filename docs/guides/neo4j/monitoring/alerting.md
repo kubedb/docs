@@ -157,7 +157,7 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
 
  ```bash
 # Port-forward Grafana
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 
 # Retrieve the admin password
 $ kubectl get secret -n monitoring prometheus-grafana \
@@ -322,7 +322,7 @@ No alerts are firing for the `alert-neo4j` namespace.
 Port-forward Grafana and log in.
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 ```
 
 Open `http://localhost:3000` and navigate to the dashboard `kubedb.com / Neo4j / alert-neo4j / neo4j-alert-demo` that the Job imported in Step 2.

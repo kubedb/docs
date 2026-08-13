@@ -249,7 +249,7 @@ $ helm upgrade -i grafana-operator appscode/grafana-operator \
 Skip this if you already have a Grafana `AppBinding` annotated as the cluster default (one is shared across every database). Otherwise:
 
 ```bash
-$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 &
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 $ GRAFANA_PW=$(kubectl get secret -n monitoring prometheus-grafana -o jsonpath='{.data.admin-password}' | base64 -d)
 $ curl -s -X POST -H "Content-Type: application/json" -u admin:$GRAFANA_PW \
     http://localhost:3000/api/auth/keys \

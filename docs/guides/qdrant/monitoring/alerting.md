@@ -160,7 +160,7 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
 
   ```bash
   # Port-forward Grafana
-  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
 
   # Retrieve the admin password
   $ kubectl get secret -n monitoring prometheus-grafana \
