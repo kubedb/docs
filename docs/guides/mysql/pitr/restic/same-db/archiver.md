@@ -455,41 +455,34 @@ Two things worth knowing about the scope:
 **Only do this once you have checked the restored data and are satisfied it is correct.** While
 archiving is off there is no new backup coverage, so do not leave it off indefinitely either.
 
-**First, take a fresh full backup.** This is the step that matters: a base backup taken *after* the
-restore means every later restore selects it and never looks at the abandoned branch.
+**Order matters here, and it is the opposite of what seems natural.**
 
-```bash
-$ kubectl apply -f - <<EOF
-apiVersion: core.kubestash.com/v1alpha1
-kind: BackupSession
-metadata:
-  name: post-restore-full-1
-  namespace: demo
-spec:
-  invoker:
-    apiGroup: core.kubestash.com
-    kind: BackupConfiguration
-    name: mysql-archiver
-  session: full-backup
-EOF
-```
-
-> The BackupSession name must end in `-<digits>`.
-
-Wait for it to succeed, then remove the annotation:
+Re-enable archiving **first**, then take the full backup:
 
 ```bash
 $ kubectl annotate mysql -n demo mysql kubedb.com/suspend-archiver-
 mysql.kubedb.com/mysql annotated
 ```
 
-The sidekick returns within seconds and the `BackupConfiguration` un-pauses:
+Wait for the sidekick to return, then trigger a full backup:
 
 ```bash
-$ kubectl get sidekick -n demo
-NAME             STATUS    AGE
-mysql-sidekick   Current   5s
+$ kubectl create job -n demo post-restore-backup --from=cronjob/trigger-mysql-archiver-full-backup
 ```
+
+The reason is the rule the restore uses to discard a superseded timeline: it drops one only
+when **both that timeline and the timeline after it** were created before the base backup.
+Resuming archiving is what creates that following timeline. So a base backup taken while
+archiving is still suspended is *older* than the timeline that comes next, the pair is not
+discarded, and the abandoned history is replayed after all. Taken after the resume, both
+fall behind it and are dropped.
+
+Treat the gap between the two commands as a window in which restores are not safe, and keep
+it short.
+
+> This protects recovery points **after** the new base backup. Recovering to a moment between
+> the restore and that backup still selects the older base and still replays the abandoned
+> history, until the older base backups age out of retention.
 
 ## Verify
 
