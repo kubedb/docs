@@ -455,6 +455,12 @@ Two things worth knowing about the scope:
 **Only do this once you have checked the restored data and are satisfied it is correct.** While
 archiving is off there is no new backup coverage, so do not leave it off indefinitely either.
 
+> **The backup below is required, not advisory.** A restore forks the binlog history, and until
+> a base backup exists that is newer than the fork, a *later* restore of this database can
+> replay the branch this one abandoned — returning rows you deliberately discarded and dropping
+> rows that were committed, with every status object reporting success. Completing these steps
+> is part of completing the restore.
+
 **Order matters here, and it is the opposite of what seems natural.**
 
 Re-enable archiving **first**, then take the full backup:
