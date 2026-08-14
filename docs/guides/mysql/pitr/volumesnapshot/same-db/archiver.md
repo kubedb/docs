@@ -473,11 +473,30 @@ $ kubectl annotate mysql -n demo mysql kubedb.com/suspend-archiver-
 mysql.kubedb.com/mysql annotated
 ```
 
-Wait for the sidekick to return, then trigger a full backup:
+Then wait for the sidekick to actually **push a binlog** — not merely for its pod to be
+Running:
+
+```bash
+$ kubectl logs mysql-sidekick -n demo | grep "Archiving binlog"
+INFO: 2026/01/02 03:04:05.123456 Archiving binlog.000004
+```
+
+and only then trigger a full backup:
 
 ```bash
 $ kubectl create job -n demo post-restore-backup --from=cronjob/trigger-mysql-archiver-full-backup
 ```
+
+The push is what matters because the restore discovers timelines by listing objects in the
+repository: until a binlog has been uploaded there is nothing under the new timeline's prefix,
+so the restore cannot see it, and a timeline it cannot see cannot be the successor that lets
+the superseded one be dropped.
+
+On a busy database the push follows the resume within seconds, because the archiver uploads
+the already-closed binlogs in the data directory as soon as it starts. On a quiet one there may
+be nothing closed to send, and the timeline will not appear until the next rotation — up to one
+`logRotateInterval`. That is exactly the case where waiting on the pod rather than the log line
+would mislead you.
 
 The reason is the rule the restore uses to discard a superseded timeline: it drops one only
 when **both that timeline and the timeline after it** were created before the base backup.
