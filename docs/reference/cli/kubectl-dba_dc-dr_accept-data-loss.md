@@ -1,33 +1,47 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Dc-Dr Accept-Data-Loss
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-dc-dr-accept-data-loss
+    name: Kubectl-Dba Dc-Dr Accept-Data-Loss
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba dc-dr accept-data-loss
 
-kubectl plugin for KubeDB
+Release a failover held by the RPO budget, explicitly accepting the data loss
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
+When the surviving data center lags more than spec.replication.bestEffortCrossDCLagBytesForFailover (or its lag cannot be measured), the promotion is HELD: the un-replicated WAL of the lost data center is unrecoverable, so choosing between an outage and a loss larger than the budget belongs to a human. This command records that decision by setting dr.kubedb.com/accept-failover-data-loss=true; both promotion paths (the hub gate and the coordinator's data-plane gate) honor it within seconds, and the operator removes the annotation automatically once the failover it authorized lands, so it cannot linger and approve a later, unrelated loss.
 
- Find more information at https://kubedb.com
+ Where the hold is visible before you decide: status.disasterRecovery.protectionMessage (the measured lag), condition DCDRPromotionStalled, and dc-dr status.
+
+ KUBECONFIG: the hub cluster.
 
 ```
-kubectl-dba [flags]
+kubectl-dba dc-dr accept-data-loss DB_NAME --yes [flags]
+```
+
+### Examples
+
+```
+  # See what would be lost first
+  kubectl dba dc-dr status pg-dcdr -n demo
+  
+  # Accept it
+  kubectl dba dc-dr accept-data-loss pg-dcdr -n demo --yes
 ```
 
 ### Options
+
+```
+  -h, --help   help for accept-data-loss
+      --yes    Confirm accepting data loss beyond the configured RPO budget
+```
+
+### Options inherited from parent commands
 
 ```
       --as string                             Username to impersonate for the operation. User could be a regular user or a service account in a namespace.
@@ -41,7 +55,6 @@ kubectl-dba [flags]
       --context string                        The name of the kubeconfig context to use
       --default-seccomp-profile-type string   Default seccomp profile
       --disable-compression                   If true, opt-out of response compression for all requests to the server
-  -h, --help                                  help for kubectl-dba
       --insecure-skip-tls-verify              If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                     Path to the kubeconfig file to use for CLI requests.
       --match-server-version                  Require server version to match client version
@@ -57,20 +70,5 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
-* [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba dc-dr](/docs/reference/cli/kubectl-dba_dc-dr.md)	 - Cross data center DR operations: switchover, failover, pins, and diagnosis
-* [kubectl-dba debug](/docs/reference/cli/kubectl-dba_debug.md)	 - Debug any Database issue
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
-* [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
-* [kubectl-dba monitor](/docs/reference/cli/kubectl-dba_monitor.md)	 - Monitoring related commands for a database
-* [kubectl-dba mssql](/docs/reference/cli/kubectl-dba_mssql.md)	 - MSSQLServer database commands
-* [kubectl-dba options](/docs/reference/cli/kubectl-dba_options.md)	 - Print the list of flags inherited by all commands
-* [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
-* [kubectl-dba remote-config](/docs/reference/cli/kubectl-dba_remote-config.md)	 - generate appbinding , secrets for remote replica
-* [kubectl-dba restart](/docs/reference/cli/kubectl-dba_restart.md)	 - Smartly restart the pods of the database.
-* [kubectl-dba resume](/docs/reference/cli/kubectl-dba_resume.md)	 - Resume processing of an object.
-* [kubectl-dba show-credentials](/docs/reference/cli/kubectl-dba_show-credentials.md)	 - Prints credentials of the database.
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
 
