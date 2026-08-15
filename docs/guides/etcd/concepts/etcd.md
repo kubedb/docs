@@ -389,6 +389,23 @@ spec:
               memory: 2Gi
 ```
 
+#### spec.podTemplate.spec.containers[].args
+
+`args` on the `etcd` container is an optional list of extra etcd command-line flags. It is the escape hatch for the etcd settings `spec.configuration.tuning` does not expose. Set it on the container entry named `etcd` — the pod-level `spec.podTemplate.spec.args` is not read for etcd:
+
+```yaml
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          args:
+            - --heartbeat-interval=250
+            - --election-timeout=2500
+```
+
+These flags are appended **after** the ones the operator renders. etcd parses its command line with Go's standard `flag` package, where a repeated flag is not an error and the last occurrence wins — so a flag you set here also overrides one the operator set. That makes it powerful and sharp: overriding the flags that carry a member's identity, its listeners or its TLS material detaches the member from the cluster KubeDB is reconciling, and `--force-new-cluster` in particular would rewrite the data directory into a fresh single-member cluster on every restart. See [Extra etcd flags](/docs/guides/etcd/custom-configuration/using-config.md#extra-etcd-flags).
+
 #### spec.podTemplate.spec.env
 
 `spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the etcd docker image.

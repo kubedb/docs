@@ -133,15 +133,15 @@ A few archiver fields worth calling out:
 
 Restore for etcd works differently from most KubeDB databases, and the difference is not cosmetic.
 
-**You cannot restore into a running `Etcd` cluster.** etcd's bootstrap semantics require a member's
-data directory to be either genuinely empty — so the member can start a brand new cluster with
-`--initial-cluster-state=new` — or a fully rebuilt, valid snapshot directory. Injecting data into a
-member that is already serving raft traffic is not a supported operation, and there is no "restore
-task" you can point at a live cluster.
+**A snapshot can never be poured into a running member.** etcd's bootstrap semantics require a
+member's data directory to be either genuinely empty — so the member can start a brand new cluster
+with `--initial-cluster-state=new` — or a fully rebuilt, valid snapshot directory. Injecting data
+into a member that is already serving raft traffic is not a supported operation, and there is no
+"restore task" you can point at a live cluster.
 
-KubeDB therefore gates restore entirely at **bootstrap time**. You do not create a `RestoreSession`;
-you create a *new* `Etcd` object with `spec.init.archiver` filled in, and the provisioner does the
-rest before the first pod ever starts:
+The path described below is therefore the **bootstrap-time** restore: you do not create a
+`RestoreSession`; you create a *new* `Etcd` object with `spec.init.archiver` filled in, and the
+provisioner does the rest before the first pod ever starts:
 
 1. You create a new `Etcd` object whose `spec.init.archiver.fullDBRepository` (and optionally
    `.manifestRepository`) points at the repositories produced by the backup.
@@ -163,6 +163,20 @@ rest before the first pod ever starts:
 
 Once the condition is set the gate is permanently open — the provisioner will not re-run a restore
 over a live cluster, which is exactly what you want.
+
+### Restoring into an Etcd that already exists
+
+When the `Etcd` object has to survive — because the `AppBinding`, the connection Secret and every
+application pointing at its Service must keep working — the bootstrap path is not available, and
+deleting and recreating the object loses everything else about it. That is what the `Restore`
+[EtcdOpsRequest](/docs/guides/etcd/concepts/etcdopsrequest.md#specrestore) is for. It obeys the same
+rule as above rather than breaking it: the cluster is taken apart down to a single **empty** volume,
+the very same `etcd-backup-restore` `RestoreSession` writes the snapshot into that volume while
+nothing is running, and the seed member is then started on the restored data directory. Every other
+member is discarded and rejoins as a learner.
+
+The trade-off is severe and unavoidable: an in-place restore **replaces the entire keyspace of the
+live database**. See [In-place Restore](/docs/guides/etcd/restore/overview.md).
 
 Because `spec.storageType: Ephemeral` gives the provisioner no PVC to restore into ahead of the
 pods, restoring from a snapshot requires `spec.storageType: Durable` with `spec.storage` set. The

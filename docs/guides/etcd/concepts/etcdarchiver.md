@@ -170,6 +170,8 @@ spec:
 
 When `spec.init.archiver.fullDBRepository` is set, the provisioner pre-creates the ordinal-0 PVC, runs a KubeStash `RestoreSession` against it *before* the PetSet or the first pod is ever created, and only then bootstraps the cluster from the restored data directory. The remaining members join the restored seed as ordinary new members. A `manifest-restore` session runs alongside for Kubernetes-object-level restore.
 
+To restore a snapshot into an `Etcd` object that **already exists**, use an `EtcdOpsRequest` of type `Restore` instead — it replaces the whole keyspace of the live database. See [In-place Restore](/docs/guides/etcd/restore/overview.md).
+
 ## Next Steps
 
 - Learn about the [Etcd](/docs/guides/etcd/concepts/etcd.md) crd.

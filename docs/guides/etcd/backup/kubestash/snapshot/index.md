@@ -461,7 +461,18 @@ Set it back to `false` to resume.
 
 This is where etcd differs from most KubeDB databases, so read this before you try anything.
 
-{{< notice type="warning" message="**You cannot restore into a running `Etcd` cluster.** etcd requires a member's data directory to be either genuinely empty or a fully rebuilt snapshot directory *before* the member starts. There is no restore task you can point at a live cluster, and KubeDB will not create one. Restore happens only at bootstrap time, on a new `Etcd` object." >}}
+{{< notice type="warning" message="**A snapshot can never be poured into a running member.** etcd requires a member's data directory to be either genuinely empty or a fully rebuilt snapshot directory *before* the member starts. There is no restore task you can point at a live cluster, so restoring always means starting a member on an already-restored volume." >}}
+
+That leaves two ways to restore, and this section covers the first one:
+
+- **Bootstrap-time restore** (below): a **new** `Etcd` object with `spec.init.archiver` filled in.
+  The provisioner performs the restore before it creates the PetSet. Use this whenever you can —
+  there is no existing data to lose.
+- **In-place restore** into an `Etcd` that already exists: an `EtcdOpsRequest` of type `Restore`,
+  which takes the existing cluster apart down to a single empty volume and runs the very same
+  `RestoreSession` against it. It **replaces the entire keyspace of the live database**, so reach
+  for it only when the `Etcd` object itself has to survive. See
+  [In-place Restore](/docs/guides/etcd/restore/overview.md).
 
 So we deploy a **new** `Etcd` object with `spec.init.archiver` filled in, and the provisioner
 performs the restore before it creates the PetSet.
@@ -630,6 +641,8 @@ happens to the repositories then depends on the archiver's `spec.deletionPolicy`
 
 - Read the [Etcd Backup & Restore Overview](/docs/guides/etcd/backup/kubestash/overview/index.md)
   for the architecture behind what you just did.
+- Restore a snapshot into an `Etcd` cluster that already exists with an
+  [in-place Restore](/docs/guides/etcd/restore/restore.md) ops request.
 - Detail concepts of the [EtcdArchiver](/docs/guides/etcd/concepts/etcdarchiver.md) object.
 - Detail concepts of the [Etcd](/docs/guides/etcd/concepts/etcd.md) object.
 - Detail concepts of the [AppBinding](/docs/guides/etcd/concepts/appbinding.md) object.

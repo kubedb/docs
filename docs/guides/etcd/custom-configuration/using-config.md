@@ -63,7 +63,7 @@ The webhook's rejection message spells it out:
 spec.configuration.applyConfig and spec.configuration.configSecret are not supported for Etcd, use spec.configuration.tuning instead
 ```
 
-If you need an etcd flag that `tuning` does not cover, use `spec.podTemplate` to set the corresponding `ETCD_*` environment variable, which etcd reads as an alternative to the flag — but be aware that any variable colliding with one KubeDB manages will be overwritten by the operator.
+If you need an etcd flag that `tuning` does not cover, there is an escape hatch: pass it verbatim through `spec.podTemplate.spec.containers[name=etcd].args`. See [Extra etcd flags](#extra-etcd-flags) below.
 
 ## The tuning knobs
 
@@ -116,6 +116,104 @@ The trade-off is between memory/WAL size and recovery cost:
 - A **higher** value snapshots less often. Fewer I/O spikes, but etcd holds more entries in memory, the WAL directory grows larger, and a member that restarts (or a slow follower catching up) has more to replay.
 
 The main reason to raise it is a slow follower: if a follower falls behind by more than `snapshotCount` entries, the leader can no longer send it the missing log entries and has to ship an entire snapshot instead, which is far more expensive. Raising the count widens the window in which cheap log-based catch-up still works.
+
+## Extra etcd flags
+
+`spec.configuration.tuning` is a deliberately small, closed set of knobs. For anything else, you can
+hand etcd raw command-line flags through `spec.podTemplate.spec.containers[name=etcd].args`:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-extra-args
+  namespace: demo
+spec:
+  version: 3.6.4
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          args:
+            - --heartbeat-interval=250
+            - --election-timeout=2500
+            - --max-request-bytes=3145728
+  deletionPolicy: WipeOut
+```
+
+The container **must** be named `etcd` — that is the container KubeDB renders the etcd process into,
+and `args` on any other entry in the list belongs to a sidecar of your own.
+
+### Append-after, last-one-wins
+
+Your flags are appended **after** the ones KubeDB owns, and that ordering is the whole point:
+
+```
+etcd --name=$(POD_NAME) --data-dir=... --listen-client-urls=... \
+     --quota-backend-bytes=8589934592 \
+     --heartbeat-interval=250 --election-timeout=2500 --max-request-bytes=3145728
+     ^ operator-owned flags first                     ^ yours last
+```
+
+etcd parses its command line with Go's standard `flag` package, where every value **overwrites**
+rather than accumulates. So a flag given twice is **not an error** — the last occurrence simply wins,
+and the last occurrence is always yours. That makes this an escape hatch rather than merely a
+passthrough: you can override a flag KubeDB set, including one that `spec.configuration.tuning`
+renders.
+
+Which also means you can break the cluster with it. Overriding the flags that carry a member's
+identity or its listeners — `--name`, `--data-dir`, `--initial-advertise-peer-urls`,
+`--advertise-client-urls`, `--listen-peer-urls`, `--listen-client-urls`, `--listen-metrics-urls`, or
+any of the `--cert-file`/`--peer-*` TLS paths when TLS is enabled — will detach the member from the
+cluster KubeDB is reconciling. Do not.
+
+> **Never set `--force-new-cluster` here.** It makes etcd rewrite the member's data directory into a
+> brand new single-member cluster on *every* start, silently discarding the rest of the cluster each
+> time the pod restarts. Rebuilding a cluster from one survivor is a supported operation, but it is a
+> one-shot, gated procedure — use a
+> [RecoverFromQuorumLoss EtcdOpsRequest](/docs/guides/etcd/recover-from-quorum-loss/overview.md),
+> which adds the flag for exactly one boot and then takes it back off.
+
+### Some flags worth knowing
+
+| Flag | Unit | etcd default | What it is for |
+|---|---|---|---|
+| `--heartbeat-interval` | milliseconds | `100` | How often the leader pings followers. Raise it when members are separated by a slow or high-latency network, so a healthy follower is not mistaken for a dead one. Upstream guidance is to set it close to the round-trip time between members. |
+| `--election-timeout` | milliseconds | `1000` | How long a follower waits without a heartbeat before starting an election. **Keep it at least 5× — ideally 10× — the heartbeat interval**, or a slow link will trigger spurious elections and stall writes. etcd rejects values above 50000. |
+| `--max-request-bytes` | bytes | `1572864` (1.5 MiB) | The largest client request etcd will accept. Raise it only if your workload genuinely needs bigger values; large requests raise latency for everyone and count against `quotaBackendBytes` fast. |
+
+The pair in the example above (`250` / `2500`) keeps the recommended 10× ratio while giving members
+on a cross-zone network more slack than the default.
+
+### Applying and verifying
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/etcd/custom-configuration/etcd-extra-args.yaml
+etcd.kubedb.com/etcd-extra-args created
+```
+
+The `PetSet` uses an `OnDelete` update strategy, so editing `args` on a live `Etcd` object re-renders
+the `PetSet` but **does not restart the running members** — they keep the flags they booted with.
+Apply the change with a [Restart EtcdOpsRequest](/docs/guides/etcd/restart/restart.md), which rolls
+the members one at a time, leader last, with quorum checks in between.
+
+Verify the same way as the tuning knobs — the pod spec is the source of truth:
+
+```bash
+$ kubectl get pod -n demo etcd-extra-args-0 -o jsonpath='{.spec.containers[0].args}' | tr ',' '\n' | tail -3
+"--heartbeat-interval=250"
+"--election-timeout=2500"
+"--max-request-bytes=3145728"]
+```
 
 ## Deploy Etcd with a tuning configuration
 
@@ -232,6 +330,7 @@ See the [Reconfigure guide](/docs/guides/etcd/reconfigure/reconfigure.md) for th
 
 ```bash
 $ kubectl delete etcd -n demo etcd-custom-config
+$ kubectl delete etcd -n demo etcd-extra-args
 $ kubectl delete ns demo
 ```
 

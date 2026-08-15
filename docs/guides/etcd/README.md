@@ -35,6 +35,8 @@ aliases:
 | Storage Class Migration                                                            |   &#10003;   |
 | Move Raft Leadership / Defragment / Compact                                        |   &#10003;   |
 | Backup/Recovery: Instant, Scheduled ([KubeStash](https://kubestash.com/))          |   &#10003;   |
+| In-place restore into an existing cluster                                          |   &#10003;   |
+| Recovery from a permanent Raft quorum loss                                         |   &#10003;   |
 | Persistent Volume                                                                  |   &#10003;   |
 | Builtin Prometheus Discovery                                                       |   &#10003;   |
 | Using Prometheus operator                                                          |   &#10003;   |
@@ -51,8 +53,11 @@ A few notes on the table above:
   `spec.configuration.tuning` (`quotaBackendBytes`, `autoCompactionMode`,
   `autoCompactionRetention`, `snapshotCount`). etcd's `--config-file` is mutually exclusive
   with the individual command line flags KubeDB has to set for cluster bootstrap, so a
-  free-form config file is intentionally not supported. See
-  [Etcd CRD](/docs/guides/etcd/concepts/etcd.md#specconfiguration).
+  free-form config file is intentionally not supported. Anything the tuning knobs do not cover can
+  still be passed as a raw etcd flag through `spec.podTemplate.spec.containers[name=etcd].args`,
+  which is appended after the operator's own flags. See
+  [Etcd CRD](/docs/guides/etcd/concepts/etcd.md#specconfiguration) and
+  [Extra etcd flags](/docs/guides/etcd/custom-configuration/using-config.md#extra-etcd-flags).
 - **Backup/Recovery** is snapshot based only. etcd has no WAL-shipping style continuous
   archiving primitive that can be streamed out of the cluster, so there is no point-in-time
   recovery between two full snapshots. See
@@ -91,6 +96,8 @@ as healthy while at least `N/2+1` members answer.
 - Tune etcd with [custom configuration](/docs/guides/etcd/reconfigure/overview.md).
 - Scale your cluster [horizontally](/docs/guides/etcd/scaling/horizontal-scaling/overview.md) or [vertically](/docs/guides/etcd/scaling/vertical-scaling/overview.md).
 - [Backup & Restore](/docs/guides/etcd/backup/kubestash/overview/index.md) etcd using KubeStash.
+- [Restore a snapshot in place](/docs/guides/etcd/restore/overview.md) into an `Etcd` cluster that already exists.
+- [Recover from a permanent quorum loss](/docs/guides/etcd/recover-from-quorum-loss/overview.md) when a majority of members is gone for good.
 - [Rotate the authentication credential](/docs/guides/etcd/rotate-authentication/overview.md) of the etcd `root` user.
 - [Restart](/docs/guides/etcd/restart/restart.md) the members with a leader-aware rolling restart.
 - Autoscale [compute](/docs/guides/etcd/autoscaler/compute/overview.md) and [storage](/docs/guides/etcd/autoscaler/storage/overview.md) resources.

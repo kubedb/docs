@@ -18,7 +18,7 @@ section_menu_id: guides
 
 ## What is EtcdOpsRequest
 
-`EtcdOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [etcd](https://etcd.io/) administrative operations like version updating, horizontal scaling, vertical scaling, TLS reconfiguration, and etcd's own maintenance RPCs (leader transfer, defragmentation, compaction) in a Kubernetes native way.
+`EtcdOpsRequest` is a Kubernetes `Custom Resource Definitions` (CRD). It provides a declarative configuration for [etcd](https://etcd.io/) administrative operations like version updating, horizontal scaling, vertical scaling, TLS reconfiguration, etcd's own maintenance RPCs (leader transfer, defragmentation, compaction), and the two disaster-recovery procedures (rebuilding a cluster after a permanent quorum loss, and restoring a snapshot into an existing cluster) in a Kubernetes native way.
 
 ## EtcdOpsRequest CRD Specifications
 
@@ -229,7 +229,7 @@ An `EtcdOpsRequest` object has the following fields in the `spec` section.
 
 ### spec.type
 
-`spec.type` specifies the kind of operation that will be applied to the database. The following twelve types of operations are allowed in an `EtcdOpsRequest`.
+`spec.type` specifies the kind of operation that will be applied to the database. The following fourteen types of operations are allowed in an `EtcdOpsRequest`.
 
 | Type                | What it does                                                                                                                                 |
 |---------------------|------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -245,8 +245,12 @@ An `EtcdOpsRequest` object has the following fields in the `spec` section.
 | `MoveLeader`        | Hands the Raft leadership over to another member on purpose.                                                                                     |
 | `Defragment`        | Runs etcd's `Defragment` RPC on every member, one at a time, to reclaim backend file space.                                                       |
 | `Compact`           | Runs etcd's `Compact` RPC to drop superseded MVCC key revisions from the keyspace history.                                                        |
+| `RecoverFromQuorumLoss` | **Destructive.** Rebuilds a cluster that has permanently lost its Raft quorum from a single surviving member, discarding every other member's data. |
+| `Restore`           | **Destructive.** Replaces the entire keyspace of an existing cluster with a KubeStash snapshot.                                                   |
 
-The last three have no analog in the other KubeDB databases. etcd is its own consensus layer — there is no external replication to repair, no "force failover" and no "reconnect standby" — but it does expose maintenance RPCs that a cluster operator is expected to call, and those are what these ops request types wrap. See [spec.moveLeader](#specmoveleader), [spec.defragment](#specdefragment) and [spec.compact](#speccompact) below.
+The last two are break-glass, disaster-recovery procedures, not routine maintenance. Both throw data away as their *normal* outcome, both require `spec.timeout`, and both leave the cluster as a healthy single member that the ordinary membership reconciliation then regrows back to `spec.replicas`. See [spec.recoverFromQuorumLoss](#specrecoverfromquorumloss) and [spec.restore](#specrestore) below.
+
+`MoveLeader`, `Defragment` and `Compact` have no analog in the other KubeDB databases. etcd is its own consensus layer — there is no external replication to repair, no "force failover" and no "reconnect standby" — but it does expose maintenance RPCs that a cluster operator is expected to call, and those are what these ops request types wrap. See [spec.moveLeader](#specmoveleader), [spec.defragment](#specdefragment) and [spec.compact](#speccompact) below.
 
 > You can perform only one type of operation in a single `EtcdOpsRequest` CR. For example, if you want to update the version of your database and scale up its members, you have to create two separate `EtcdOpsRequest` objects. First create the one for updating. Once it is completed, then create the other one for scaling.
 
@@ -459,6 +463,84 @@ Why it exists: etcd keeps every past version of every key so that watchers and h
 
 If you would rather have this happen automatically, set `spec.configuration.tuning.autoCompactionMode` and `autoCompactionRetention` on the [Etcd](/docs/guides/etcd/concepts/etcd.md#specconfiguration) object instead, and use this ops request only for one-off cleanups.
 
+### spec.recoverFromQuorumLoss
+
+`spec.type: RecoverFromQuorumLoss` rebuilds an etcd cluster that has **permanently** lost its Raft quorum — a majority of its voting members is gone for good — from a single surviving member, using etcd's own `--force-new-cluster` procedure.
+
+> **This is a destructive, break-glass procedure.** Every member except the confirmed survivor has its data directory discarded permanently, and any write the lost majority had committed but the survivor had not yet applied is lost with no way to get it back. It is **never** triggered automatically: the Provisioner operator only ever raises a `QuorumLost` condition on the `Etcd` object as a signal, and the recovery itself has to be asked for by a human-authored ops request. Read the [Recover from Quorum Loss Overview](/docs/guides/etcd/recover-from-quorum-loss/overview.md) before using it.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-recover-quorum
+  namespace: demo
+spec:
+  type: RecoverFromQuorumLoss
+  databaseRef:
+    name: etcd-quickstart
+  recoverFromQuorumLoss:
+    member: etcd-quickstart-1
+    confirmMember: etcd-quickstart-1
+  timeout: 30m
+  apply: Always
+```
+
+- `spec.recoverFromQuorumLoss.member` is the **optional** pod name — or a bare ordinal, e.g. `"1"` — of the surviving member to rebuild the cluster from. If it is empty, the operator picks the reachable member with the **highest Raft applied index**, which is the survivor that has lost the fewest writes.
+- `spec.recoverFromQuorumLoss.confirmMember` is a **mandatory hard confirmation gate**. The operator resolves the survivor exactly once, records it in an `EtcdQuorumLossSurvivorResolved--<pod>` condition, reports it in the `EtcdQuorumLossAwaitingConfirmation` condition, and then refuses to do anything destructive until this field names *exactly* that pod. It waits there indefinitely — the wait never times out and never fails the request, because what it is waiting for is a person. This exists so a mistyped `member` cannot silently destroy the wrong member's data, which is why the gate applies even when you set `member` yourself.
+
+The intended workflow is therefore two steps: create the request with `confirmMember` unset, read the resolved survivor back out of the status, then patch `confirmMember` to match it.
+
+The request is **refused outright** — terminally, without burning `spec.maxRetries` — unless the target `Etcd` currently reports the `QuorumLost` condition with status `True`. The condition is read live from the API server on every admission, and a cluster that has regained its quorum on its own while the request waited for confirmation is refused as well.
+
+> `spec.timeout` is required for a `RecoverFromQuorumLoss` ops request. Several steps — waiting for the rebuilt member to come up, waiting for a volume to rebind — have no other deadline at all. `spec.storageType` must also be `Durable`: an ephemeral member's data died with its pod, so there is nothing to rescue.
+
+Because the cluster it is run against is by definition not `Ready`, this ops request generally needs `spec.apply: Always`. It ends at a healthy **single-member** cluster; the members that were discarded are added back afterwards by the ordinary membership reconciliation, as learners, through the same path an ordinary scale up uses.
+
+See the [Recover from Quorum Loss guide](/docs/guides/etcd/recover-from-quorum-loss/recover-from-quorum-loss.md) for the full walkthrough.
+
+### spec.restore
+
+`spec.type: Restore` restores a [KubeStash](https://kubestash.com/) snapshot into an `Etcd` database that **already exists** and may already have running members.
+
+> **This replaces the entire keyspace of the database.** Everything currently stored in it is discarded and replaced by the contents of the snapshot. Full data loss is not a failure mode here — it is the normal, successful outcome of the operation, and there is no undo.
+
+This is the in-place counterpart of the **bootstrap-time** restore configured through `spec.init.archiver` on the [Etcd](/docs/guides/etcd/concepts/etcd.md#specinit) object itself, which only works while a brand-new `Etcd` object is being created. If you are standing up a new cluster from a backup, use that one instead — see [Snapshot Backup & Restore](/docs/guides/etcd/backup/kubestash/snapshot/index.md#restore).
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-restore
+  namespace: demo
+spec:
+  type: Restore
+  databaseRef:
+    name: etcd-quickstart
+  restore:
+    fullDBRepository:
+      name: etcd-full-repo
+      namespace: demo
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+    recoveryTimestamp: "2026-08-15T08:30:00Z"
+  timeout: 30m
+  apply: Always
+```
+
+- `spec.restore.fullDBRepository` names the KubeStash `Repository` to restore the etcd snapshot from. It is **required and has no default** — unlike the bootstrap-time restore this destroys data that is already there, so guessing which repository was meant is not an option.
+- `spec.restore.recoveryTimestamp` is optional. If it is omitted, the **latest** available snapshot is used; otherwise the operator picks the newest successful full snapshot taken *at or before* that instant. As with the bootstrap restore, this is snapshot selection rather than point-in-time recovery — etcd has no log stream to replay forward.
+- `spec.restore.encryptionSecret` refers to the Secret holding the encryption key the snapshot was backed up with, if any.
+
+Mechanically, **only the seed member (ordinal 0) is ever restored into**. The cluster is taken apart down to a single empty volume, the snapshot is written into it by the same `RestoreSession` the bootstrap path uses, and the seed is started on the restored data directory. The other members are discarded and rejoin as fresh **learners**, streaming the restored keyspace from the seed through the same learner-add/promote path an ordinary [horizontal scale up](#spechorizontalscaling) uses. Their old data directories describe a keyspace the restored one no longer relates to, so they could not have rejoined anyway.
+
+> `spec.timeout` is required for a `Restore` ops request — the `RestoreSession` has no other deadline. `spec.storageType` must be `Durable` with `spec.storage` set: there is no PVC to restore into before the seed member starts otherwise.
+
+Because the cluster it is run against is often degraded, this ops request generally needs `spec.apply: Always`.
+
+See the [In-place Restore guide](/docs/guides/etcd/restore/restore.md) for the full walkthrough.
+
 ### spec.timeout
 
 As we internally retry the ops request steps multiple times, this `timeout` field helps the users specify the timeout for those steps of the ops request. If a step doesn't finish within the specified timeout, the ops request will result in failure.
@@ -520,6 +602,39 @@ Important: The ops-manager operator can skip an ops request only if its executio
 | `EtcdAlarmCleared`         | An etcd alarm (for example `NOSPACE`) has been cleared.                          |
 | `IssueCertificatesSucceeded` | The TLS certificate issuing is successful.                                     |
 | `UpdateDatabase`           | The `Etcd` CR has been updated.                                                  |
+
+A `RecoverFromQuorumLoss` request additionally reports its own step conditions, in this order:
+
+| Type                                      | Meaning                                                                    |
+|-------------------------------------------|------------------------------------------------------------------------------|
+| `EtcdQuorumLossAdmitted`                  | The `Etcd` was observed reporting `QuorumLost=True`, so the request is allowed to run. |
+| `EtcdQuorumLossSurvivorResolved--<pod>`   | The member the cluster will be rebuilt from has been chosen. Resolved **once** and never re-picked. |
+| `EtcdQuorumLossAwaitingConfirmation`      | `False` while `spec.recoverFromQuorumLoss.confirmMember` does not name the resolved survivor — its message tells you what to set it to. `True` once it does. |
+| `EtcdQuorumLossPreflight`                 | The last checks before anything is destroyed: the quorum is still lost, and ordinal 0's pod exists. |
+| `EtcdQuorumLossPVCRelocated`              | The survivor's volume now answers to ordinal 0's claim name.                 |
+| `EtcdQuorumLossStaleMembersRemoved`       | Every member outside the survivor has been discarded.                        |
+| `EtcdQuorumLossClusterStateSeeded`        | The cluster state ConfigMap has been rewritten for a single-member cluster.  |
+| `EtcdQuorumLossForceNewClusterBoot`       | Ordinal 0 has been recreated with `--force-new-cluster`.                     |
+| `EtcdQuorumLossSingleMemberHealthy`       | The rebuilt member is Ready and reports exactly one member.                  |
+| `EtcdQuorumLossFlagRemoved`               | Ordinal 0 has been recreated without `--force-new-cluster`, so a later restart cannot re-trigger it. |
+| `EtcdQuorumLossVolumesReclaimed`          | The parked reclaim policies have been restored — this is what finally destroys the discarded members' data. |
+| `EtcdQuorumLossPetSetRestored`            | The PetSet has been recreated around the rebuilt member.                     |
+| `RecoverEtcdFromQuorumLoss`               | The whole recovery is done.                                                  |
+
+A `Restore` request reports these:
+
+| Type                              | Meaning                                                                            |
+|-----------------------------------|--------------------------------------------------------------------------------------|
+| `EtcdRestorePetSetDeleted`        | The PetSet has been orphaned so its pods and claims can be replaced.                 |
+| `EtcdRestoreMembersDiscarded`     | Every member outside the seed has been discarded. Completed per member first, as `EtcdRestoreMembersDiscarded--<pod>`. |
+| `EtcdRestoreSeedPVCWiped`         | The seed member's data volume has been replaced with an empty PVC.                   |
+| `EtcdRestoreSessionCreated`       | The KubeStash `RestoreSession` has been created — this is what pins the chosen snapshot. |
+| `EtcdRestoreSnapshotApplied`      | The session finished writing the snapshot into the seed volume.                      |
+| `EtcdRestoreClusterStateSeeded`   | The cluster state ConfigMap has been rewritten for a single-member cluster.          |
+| `EtcdRestorePetSetRestored`       | The PetSet has been recreated, bringing the seed back on the restored volume.        |
+| `EtcdRestoreSingleMemberHealthy`  | The seed member is Ready and serving the restored keyspace.                          |
+| `EtcdRestoreVolumesReclaimed`     | The parked reclaim policies have been restored — this is what finally destroys the replaced data. |
+| `RestoreEtcdSnapshot`             | The whole restore is done.                                                           |
 
 - The `status` field is a string, with possible values `True`, `False`, and `Unknown`.
   - `status` will be `True` if the current transition succeeded.
