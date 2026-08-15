@@ -53,15 +53,9 @@ If a user-supplied config file took over, all of those would silently stop being
 So, concretely:
 
 - `spec.configuration.tuning` — **supported**. This is the path described in the rest of this guide.
-- `spec.configuration.applyConfig` — **not supported**. A `Reconfigure` `EtcdOpsRequest` carrying it is rejected by the admission webhook.
-- `spec.configuration.configSecret` — **not supported**. Likewise rejected by the `Reconfigure` webhook.
-- `spec.configSecret` (the deprecated top-level field) — present only for structural parity with the other KubeDB databases. It is not mounted into the etcd container and has no effect. Do not use it.
-
-The webhook's rejection message spells it out:
-
-```
-spec.configuration.applyConfig and spec.configuration.configSecret are not supported for Etcd, use spec.configuration.tuning instead
-```
+- `spec.configuration.applyConfig` — **not supported**. A `Reconfigure` `EtcdOpsRequest` carrying it is rejected by the admission webhook, and the ops-manager refuses it a second time if it ever gets that far. `applyConfig` merges free-form key/value pairs into a rendered config file, and etcd has no such file here — `--config-file` is mutually exclusive with the individual command-line flags KubeDB must set to bootstrap and reconcile membership, so accepting it would silently drop your settings.
+- `spec.configuration.configSecret` — **has no effect**. The field is carried on the `Etcd` object for structural parity with the other KubeDB databases, but the provisioner never mounts it into the etcd container, for the same `--config-file` reason. Do not use it.
+- `spec.configSecret` (the deprecated top-level field) — same story, and likewise inert. Do not use it.
 
 If you need an etcd flag that `tuning` does not cover, there is an escape hatch: pass it verbatim through `spec.podTemplate.spec.containers[name=etcd].args`. See [Extra etcd flags](#extra-etcd-flags) below.
 

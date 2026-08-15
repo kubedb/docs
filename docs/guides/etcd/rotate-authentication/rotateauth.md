@@ -5,7 +5,7 @@ menu:
     identifier: etcd-rotate-auth-details
     name: Guide
     parent: etcd-rotate-authentication
-    weight: 30
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -307,10 +307,10 @@ First, create a Secret of type `kubernetes.io/basic-auth` holding the username a
 want the cluster to use. Both keys must be present and non-empty, otherwise the ops request fails
 validation.
 
-> **Note:** keep the username as `root`, which is the user KubeDB provisions and the one the
-> operator's health checker authenticates with. If the Secret names a *different* user, the operator
-> creates that etcd user and grants it the `root` role rather than renaming the existing one, which
-> leaves the old user behind in etcd's RBAC store.
+> **Note:** the username **must** be `root`. It is the user KubeDB provisions and the one the
+> operator's health checker authenticates with, so the admission webhook rejects a referenced Secret
+> that names anything else with `username in referenced secret <namespace>/<name> must be "root"`.
+> You may omit the `username` key entirely, in which case `root` is assumed.
 
 ```bash
 $ kubectl create secret generic etcd-quickstart-user-auth -n demo \

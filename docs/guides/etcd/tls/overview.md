@@ -39,14 +39,15 @@ There is **no separate `enableSSL` switch** for etcd. Setting `spec.tls` is what
 
 ## Which certificate secures what
 
-etcd is not a single-listener database. A member listens on three separate sockets, and each of them has its own trust story. That is why KubeDB issues four certificates rather than one, addressed by `alias`:
+etcd is not a single-listener database. A member listens on three separate sockets, and each of them has its own trust story. That is why KubeDB issues three certificates rather than one, addressed by `alias`:
 
 | Alias              | Default secret name                    | Mount path                        | Secures                                                                                                |
 |--------------------|----------------------------------------|-----------------------------------|--------------------------------------------------------------------------------------------------------|
 | `server`           | `<db-name>-server-cert`                | `/var/run/etcd/tls/server`        | The **client API** listener on port `2379` — everything your applications and `etcdctl` talk to.        |
 | `client`           | `<db-name>-client-cert`                | `/var/run/etcd/tls/client`        | KubeDB's **own** connections to etcd: the health checker, the ops-manager operator and the backup tooling. |
 | `peer`             | `<db-name>-peer-cert`                  | `/var/run/etcd/tls/peer`          | **Member-to-member (Raft) traffic** on port `2380`.                                                      |
-| `metrics-exporter` | `<db-name>-metrics-exporter-cert`      | `/var/run/etcd/tls/exporter`      | The Prometheus metrics endpoint. Only issued when `spec.monitor` is configured.                          |
+
+> **There is a fourth alias, `metrics-exporter`, and it does nothing.** The `Etcd` schema accepts it, and defaulting even appends an entry for it to `spec.tls.certificates`, but KubeDB never creates or mounts that Secret. etcd's `--listen-metrics-urls` has no TLS flags of its own, so the metrics listener is plain HTTP by design (see below). Do not expect a `<db-name>-metrics-exporter-cert` Secret to appear.
 
 A few properties follow from etcd's own flag semantics and are worth internalising before you enable TLS:
 
@@ -92,7 +93,7 @@ Deploying an `Etcd` cluster with TLS/SSL enabled consists of the following steps
 
 4. When it finds one, it creates the `Service`, `Secret`, RBAC objects, etc. for the `Etcd` cluster.
 
-5. It then creates a cert-manager `Certificate` object for each alias etcd needs — `server`, `client`, `peer` and, when `spec.monitor` is set, `metrics-exporter` — using the `spec.tls.issuerRef` and `spec.tls.certificates` fields from the `Etcd` CR.
+5. It then creates a cert-manager `Certificate` object for each alias etcd actually uses — `server`, `client` and `peer` — using the `spec.tls.issuerRef` and `spec.tls.certificates` fields from the `Etcd` CR.
 
 6. `cert-manager` watches for those `Certificate` objects.
 

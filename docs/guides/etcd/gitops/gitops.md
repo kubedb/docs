@@ -82,7 +82,7 @@ metadata:
   name: ha-etcd
   namespace: demo
 spec:
-  version: "3.6.4"
+  version: "3.5.21"
   replicas: 3
   storageType: Durable
   storage:
@@ -125,7 +125,7 @@ NAME                             AGE
 etcd.gitops.kubedb.com/ha-etcd   2m11s
 
 NAME                      VERSION   STATUS   AGE
-etcd.kubedb.com/ha-etcd   3.6.4     Ready    2m11s
+etcd.kubedb.com/ha-etcd   3.5.21    Ready    2m11s
 ```
 
 And the KubeDB provisioner creates the usual offshoot resources for the database. Note there is a
@@ -147,10 +147,10 @@ secret/ha-etcd-auth   kubernetes.io/basic-auth   2      3m29s
 
 NAME                   TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 service/ha-etcd        ClusterIP   10.43.169.122   <none>        2379/TCP                     3m29s
-service/ha-etcd-pods   ClusterIP   None            <none>        2379/TCP,2380/TCP,2381/TCP   3m29s
+service/ha-etcd-pods   ClusterIP   None            <none>        2379/TCP,2380/TCP   3m29s
 
 NAME                                         TYPE              VERSION   AGE
-appbinding.appcatalog.appscode.com/ha-etcd   kubedb.com/etcd   3.6.4     3m26s
+appbinding.appcatalog.appscode.com/ha-etcd   kubedb.com/etcd   3.5.21    3m26s
 ```
 
 ## Update the cluster using GitOps
@@ -185,7 +185,7 @@ NAME                             AGE
 etcd.gitops.kubedb.com/ha-etcd   13m
 
 NAME                      VERSION   STATUS   AGE
-etcd.kubedb.com/ha-etcd   3.6.4     Ready    13m
+etcd.kubedb.com/ha-etcd   3.5.21    Ready    13m
 
 NAME                                                           TYPE              STATUS        AGE
 etcdopsrequest.ops.kubedb.com/ha-etcd-verticalscaling-i0kr1l    VerticalScaling   Progressing   2s
@@ -304,13 +304,14 @@ etcd has no live-reload path for these flags, so the `Reconfigure` OpsRequest re
 one at a time, moving raft leadership off the leader first, waiting for each pod to become Ready and
 for quorum to be healthy before touching the next.
 
-Removing the `tuning` block from Git generates another `Reconfigure` OpsRequest that resets etcd back
-to the operator defaults.
+Removing the `tuning` block from Git generates another `Reconfigure` OpsRequest that clears the knobs
+again. KubeDB has no defaults of its own for these: an unset knob simply renders no flag, so etcd's
+own built-in default applies.
 
-> `spec.configuration.applyConfig` and `spec.configuration.configSecret` are **not** supported for
-> etcd — the `Reconfigure` webhook rejects them outright. etcd's `--config-file` is mutually
-> exclusive with the individual command line flags KubeDB must set for cluster bootstrap, so only the
-> typed tuning knobs can be reconciled.
+> `spec.configuration.applyConfig` is **not** supported for etcd — the `Reconfigure` webhook rejects
+> it outright — and `spec.configuration.configSecret` is accepted but never mounted. etcd's
+> `--config-file` is mutually exclusive with the individual command line flags KubeDB must set for
+> cluster bootstrap, so only the typed tuning knobs can be reconciled.
 
 ### Update the version
 
@@ -330,9 +331,10 @@ NAME                           TYPE            STATUS        AGE
 ha-etcd-versionupdate-1wxgt9   UpdateVersion   Progressing   5s
 ```
 
-Version updates are constrained: the target must be in the source `EtcdVersion`'s
-`spec.updateConstraints.allowlist`, which means same major, no downgrade, and at most one minor step
-at a time. A target outside that window is rejected by the OpsRequest webhook.
+Version updates are constrained to the same major version, no downgrade, and at most one minor step
+at a time. Those rules are enforced by the ops-manager when the generated `UpdateVersion` request
+starts executing, not at admission — so a target outside that window produces an `EtcdOpsRequest`
+that is created and then reported `Failed`.
 
 ### Rotate credentials and TLS
 

@@ -5,7 +5,7 @@ menu:
     identifier: etcd-using-prometheus-operator-monitoring
     name: Prometheus Operator
     parent: etcd-monitoring-guides
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -152,7 +152,7 @@ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=prom-etcd"
 NAME              TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 prom-etcd         ClusterIP   10.102.7.190     <none>        2379/TCP            2m
 prom-etcd-pods    ClusterIP   None             <none>        2379/TCP,2380/TCP   2m
-prom-etcd-stats   ClusterIP   10.102.128.153   <none>        56790/TCP           2m
+prom-etcd-stats   ClusterIP   10.102.128.153   <none>        2381/TCP           2m
 ```
 
 Here, `prom-etcd` is the load-balanced client Service, `prom-etcd-pods` is the headless governing Service that gives each member its ordinal DNS name, and `prom-etcd-stats` is the monitoring Service. Let's describe it:
@@ -170,7 +170,7 @@ Annotations:       monitoring.appscode.com/agent: prometheus.io/operator
 Selector:          app.kubernetes.io/instance=prom-etcd,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=etcds.kubedb.com
 Type:              ClusterIP
 IP:                10.102.128.153
-Port:              metrics  56790/TCP
+Port:              metrics  2381/TCP
 TargetPort:        metrics/TCP
 Endpoints:         10.244.1.7:2381,10.244.2.9:2381,10.244.3.5:2381
 Session Affinity:  None
@@ -179,7 +179,7 @@ Events:            <none>
 
 Two things to notice:
 
-- The Service port is `56790` (the default `spec.monitor.prometheus.exporter.port`) but the **target port is `metrics`**, which resolves to `2381` on the pod — etcd's own metrics listener. There is no intermediate exporter process; Prometheus talks to etcd directly.
+- The Service port is `2381` (the default `spec.monitor.prometheus.exporter.port` for etcd) and the **target port is `metrics`**, which also resolves to `2381` on the pod — etcd's own metrics listener. There is no intermediate exporter process; Prometheus talks to etcd directly.
 - The endpoint list has one address **per member**. Each etcd member reports its own view of the cluster, so `etcd_server_has_leader` is a per-member metric and the whole point is to scrape all three.
 
 ## The generated ServiceMonitor

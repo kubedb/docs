@@ -207,7 +207,7 @@ Status:
     Status:                True
     Type:                  PetSetReplicasBeforeExpansion
     Last Transition Time:  2026-08-15T11:07:26Z
-    Message:               is pvc expanded; ConditionStatus:True; PodName:data-etcd-cluster-1
+    Message:               is p v c expanded; ConditionStatus:True; PodName:data-etcd-cluster-1
     Observed Generation:   1
     Status:                True
     Type:                  IsPVCExpanded--data-etcd-cluster-1
@@ -246,8 +246,8 @@ Events:
   Type     Reason                                    Age    From                         Message
   ----     ------                                    ----   ----                         -------
   Normal   PauseDatabase                             4m11s  KubeDB Ops-manager Operator  Pausing Etcd demo/etcd-cluster
-  Warning  is pvc expanded; ConditionStatus:False    3m56s  KubeDB Ops-manager Operator  is pvc expanded; ConditionStatus:False
-  Warning  is pvc expanded; ConditionStatus:True     76s    KubeDB Ops-manager Operator  is pvc expanded; ConditionStatus:True
+  Warning  is p v c expanded; ConditionStatus:False    3m56s  KubeDB Ops-manager Operator  is p v c expanded; ConditionStatus:False
+  Warning  is p v c expanded; ConditionStatus:True     76s    KubeDB Ops-manager Operator  is p v c expanded; ConditionStatus:True
   Warning  is pet set deleted; ConditionStatus:True  61s    KubeDB Ops-manager Operator  is pet set deleted; ConditionStatus:True
   Normal   UpdateEtcdNodePVCs                        56s    KubeDB Ops-manager Operator  Successfully expanded the etcd data volumes
   Normal   UpdateDatabase                            51s    KubeDB Ops-manager Operator  Successfully updated the Etcd storage request
@@ -325,17 +325,17 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 etcdopsrequest.ops.kubedb.com/etcd-volume-exp-offline created
 ```
 
-The condition list is the same as for `Online`, with two extra gates at the beginning reflecting the
-shutdown:
+The condition list is the same as for `Online`, with one extra gate at the beginning reflecting the
+shutdown — the operator scales the `PetSet` to zero and then waits for every member pod to go away:
 
 ```yaml
-    Message:  scale pet set; ConditionStatus:True
-    Status:   True
-    Type:     ScalePetSet
     Message:  are pods deleted; ConditionStatus:True
     Status:   True
     Type:     ArePodsDeleted
 ```
+
+> A `ScalePetSet` condition exists too, but only ever appears with `Status: False`, and only if
+> reading or patching the `PetSet` failed. On a clean run you will not see it at all.
 
 Verify the same way as above; the member pods will be new (their `AGE` resets), because they were
 terminated and recreated.

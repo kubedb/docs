@@ -146,8 +146,8 @@ provisioner does the rest before the first pod ever starts:
 1. You create a new `Etcd` object whose `spec.init.archiver.fullDBRepository` (and optionally
    `.manifestRepository`) points at the repositories produced by the backup.
 2. The provisioner sees `spec.init.archiver`, has not yet recorded the
-   `DatabaseSuccessfullyRestored` condition, and so **withholds the PetSet entirely**. The `Etcd`
-   object reports `status.phase: DataRestoring`.
+   `SuccessfullyDataRestored` condition, and so **withholds the PetSet entirely**. The `Etcd`
+   object stays in `status.phase: Provisioning` throughout.
 3. If `manifestRepository` is set, the provisioner first creates a `RestoreSession` named
    `<db-name>-manifest-restorer` running the shared `manifest-restore` task, so that the auth
    `Secret` and friends exist before any pod could reference them.
@@ -157,7 +157,7 @@ provisioner does the rest before the first pod ever starts:
    `<db-name>-0-snapshot-restorer`. That session targets the **PVC**, not a pod, and runs the
    `etcd-backup-restore` task, which rebuilds a complete etcd data directory inside the volume.
 5. Only after that `RestoreSession` reaches `Succeeded` does the provisioner set the
-   `DatabaseSuccessfullyRestored` condition and create the PetSet. Member 0 boots on the restored
+   `SuccessfullyDataRestored` condition and create the PetSet. Member 0 boots on the restored
    data directory; every other member joins through the normal membership path and streams its copy
    of the data from the leader, so only ordinal 0 is ever restored into.
 

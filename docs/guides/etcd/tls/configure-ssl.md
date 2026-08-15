@@ -46,7 +46,7 @@ KubeDB uses the following CRD fields to enable SSL/TLS encryption in `Etcd`:
 
 Read about the fields in detail in the [Etcd Concept Guide](/docs/guides/etcd/concepts/etcd.md#spectls), and about what each certificate alias secures in the [TLS overview](/docs/guides/etcd/tls/overview.md).
 
-There is no `enableSSL` boolean for etcd — setting `spec.tls` is what enables TLS, and `spec.tls.issuerRef` is required once you do. KubeDB then issues one certificate per alias: `server` (client API), `client` (KubeDB's own connections), `peer` (Raft) and, if `spec.monitor` is configured, `metrics-exporter`.
+There is no `enableSSL` boolean for etcd — setting `spec.tls` is what enables TLS, and `spec.tls.issuerRef` is required once you do. KubeDB then issues three certificates: `server` (client API), `client` (KubeDB's own connections) and `peer` (Raft). The `metrics-exporter` alias is accepted by the schema but nothing is ever issued for it, because etcd's metrics listener is always plain HTTP.
 
 ## Create Issuer/ClusterIssuer
 
@@ -138,7 +138,7 @@ etcd-tls   3.6.4     Ready    3m
 
 ### Verify that the certificates were issued
 
-KubeDB creates one cert-manager `Certificate` object per alias. Because `spec.monitor` is not set on this object, the `metrics-exporter` certificate is not issued.
+KubeDB creates one cert-manager `Certificate` object for each alias it actually uses — `server`, `client` and `peer`. No `metrics-exporter` certificate is issued, whether or not `spec.monitor` is set.
 
 ```bash
 $ kubectl get certificate -n demo

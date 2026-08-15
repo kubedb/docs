@@ -227,7 +227,9 @@ spec:
       recoveryTimestamp: "2024-05-02T10:02:45Z"
 ```
 
-Restore is only possible **at bootstrap time**. etcd requires a seed member's data directory to be either genuinely empty or a fully restored, valid snapshot — a snapshot can never be restored into a running cluster. So the operator pre-creates the ordinal-0 PVC, runs the `RestoreSession` against it, and only then creates the PetSet and starts the first member. While that happens, `status.phase` is `DataRestoring`.
+`spec.init.archiver` restores **at bootstrap time**, into a brand new cluster. etcd requires a seed member's data directory to be either genuinely empty or a fully restored, valid snapshot, so a snapshot can never be replayed into a *running* cluster. The operator therefore pre-creates the ordinal-0 PVC, runs the `RestoreSession` against it, and only then creates the PetSet and starts the first member. While that happens, `status.phase` stays `Provisioning`, and the restore's outcome is reported on the `SuccessfullyDataRestored` condition.
+
+> To restore into an `Etcd` object that already exists, use an `EtcdOpsRequest` of type `Restore`. It obeys the same rule rather than breaking it: the cluster is taken apart down to a single empty volume first, the snapshot is replayed into that, and the remaining members rejoin as new members. See [In-place Restore](/docs/guides/etcd/restore/overview.md).
 
 ### spec.monitor
 
@@ -312,7 +314,7 @@ The `spec.tls` contains the following fields:
     - `server` - served by each member on the client (gRPC/HTTP) API port.
     - `client` - used by KubeDB itself (health checker, ops-manager, metrics scraping) to talk to etcd.
     - `peer` - used for member-to-member Raft traffic. Peer traffic is **always mutually authenticated** once TLS is enabled; there is no server-only mode for peers.
-    - `metrics-exporter` - used to serve the metrics endpoint over TLS.
+    - `metrics-exporter` - accepted by the schema, but **inert**. etcd's `--listen-metrics-urls` has no TLS flags of its own, so KubeDB keeps the metrics listener on plain HTTP and never issues or mounts a certificate for this alias. Enabling `spec.tls` does not encrypt the metrics endpoint.
 
   - `secretName` - ( `string` | `"<database-name>-<alias>-cert"` ) - specifies the k8s secret name that holds the certificates.
 
@@ -352,9 +354,7 @@ KubeDB accepts the following fields to set in `spec.podTemplate`:
 - spec:
   - containers
   - initContainers
-  - args
-  - env
-  - resources
+  - volumes
   - imagePullSecrets
   - nodeSelector
   - serviceAccountName
@@ -365,9 +365,11 @@ KubeDB accepts the following fields to set in `spec.podTemplate`:
   - priority
   - securityContext
 
+> `args`, `env` and `resources` are **container**-level fields, not pod-level ones. Set them on the entry in `spec.podTemplate.spec.containers` whose `name` is `etcd`, as shown below.
+
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go).
 
-The etcd pod runs a main container named **`etcd`** and an init container named **`etcd-init`**; use those names when overriding container level settings such as `resources`.
+The etcd pod runs a single operator-managed container, named **`etcd`**; use that name when overriding container level settings such as `resources` or `args`. KubeDB adds no init container of its own — anything you put in `spec.podTemplate.spec.initContainers` is yours and is passed through as-is.
 
 Uses of some fields of `spec.podTemplate` are described below.
 
@@ -391,7 +393,7 @@ spec:
 
 #### spec.podTemplate.spec.containers[].args
 
-`args` on the `etcd` container is an optional list of extra etcd command-line flags. It is the escape hatch for the etcd settings `spec.configuration.tuning` does not expose. Set it on the container entry named `etcd` — the pod-level `spec.podTemplate.spec.args` is not read for etcd:
+`args` on the `etcd` container is an optional list of extra etcd command-line flags. It is the escape hatch for the etcd settings `spec.configuration.tuning` does not expose. It has to go on the container entry named `etcd` — there is no pod-level `args` field:
 
 ```yaml
 spec:
@@ -406,15 +408,26 @@ spec:
 
 These flags are appended **after** the ones the operator renders. etcd parses its command line with Go's standard `flag` package, where a repeated flag is not an error and the last occurrence wins — so a flag you set here also overrides one the operator set. That makes it powerful and sharp: overriding the flags that carry a member's identity, its listeners or its TLS material detaches the member from the cluster KubeDB is reconciling, and `--force-new-cluster` in particular would rewrite the data directory into a fresh single-member cluster on every restart. See [Extra etcd flags](/docs/guides/etcd/custom-configuration/using-config.md#extra-etcd-flags).
 
-#### spec.podTemplate.spec.env
+#### spec.podTemplate.spec.containers[].env
 
-`spec.podTemplate.spec.env` is an optional field that specifies the environment variables to pass to the etcd docker image.
+`env` on the `etcd` container is an optional list of environment variables to pass to the etcd image. Like `args` and `resources`, it is a container-level field — there is no pod-level `spec.podTemplate.spec.env`:
+
+```yaml
+spec:
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          env:
+            - name: ETCD_LOG_LEVEL
+              value: debug
+```
 
 > The cluster bootstrap variables (`ETCD_NAME`, `ETCD_INITIAL_CLUSTER`, `ETCD_INITIAL_CLUSTER_STATE`, `ETCD_INITIAL_ADVERTISE_PEER_URLS`, and the listen/advertise URL variables) are computed by the operator and re-projected on every membership change. Do not override them.
 
-#### spec.podTemplate.spec.imagePullSecret
+#### spec.podTemplate.spec.imagePullSecrets
 
-`KubeDB` provides the flexibility of deploying etcd from a private Docker registry.
+`KubeDB` provides the flexibility of deploying etcd from a private Docker registry. `spec.podTemplate.spec.imagePullSecrets` is a list of references to Secrets in the same namespace that hold the registry credentials.
 
 #### spec.podTemplate.spec.podPlacementPolicy
 
@@ -543,7 +556,6 @@ Know details about KubeDB health checking from this [blog post](https://appscode
 | Phase           | Meaning                                                                                     |
 |-----------------|-----------------------------------------------------------------------------------------------|
 | `Provisioning`  | Offshoot resources are being created.                                                          |
-| `DataRestoring` | The seed member's volume is being restored from a snapshot before the cluster is bootstrapped. |
 | `Ready`         | All members are ready, quorum is healthy and the client endpoint accepts connections.          |
 | `Critical`      | The client endpoint is reachable, but not every member is ready.                               |
 | `NotReady`      | The client endpoint is not reachable.                                                          |
@@ -565,7 +577,7 @@ Know details about KubeDB health checking from this [blog post](https://appscode
 | `AcceptingConnection` | The client endpoint is accepting connection requests.                       |
 | `Ready`               | The readiness check (quorum health) succeeded.                              |
 | `Provisioned`         | The cluster has been successfully provisioned.                              |
-| `DataRestored`        | The bootstrap restore from a snapshot completed.                            |
+| `SuccessfullyDataRestored` | The restore from a snapshot completed (bootstrap or in-place).          |
 
 ### status.authSecret
 

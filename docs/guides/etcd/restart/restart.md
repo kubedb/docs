@@ -303,10 +303,12 @@ Reading the conditions:
 - **`Successful`** is the terminal condition, written after the `Etcd` object is resumed and handed
   back to the Provisioner operator.
 
-> Note: the per-pod conditions above are recorded by the operator's retry bookkeeping — a step that
-> completes on its very first attempt may not leave a condition behind at all. So the exact set of
-> `EvictPod--<pod>` / `CheckPodReady--<pod>` / `EtcdClusterHealthy--<pod>` entries you see varies
-> between runs. `RestartEtcdPods` and `Successful` are always there.
+> Note: the per-pod conditions are not just retry bookkeeping — they are how the operator remembers
+> where it got to. A completed step writes a `True` condition unconditionally, so `GetLeader--<pod>`,
+> `EvictPod--<pod>`, `CheckPodReady--<pod>` and `EtcdClusterHealthy--<pod>` are present for every pod
+> the restart touched, on every run, whether or not anything had to be retried. A step that *is*
+> still waiting shows up as the same condition with `Status: False`. Some of these are elided from
+> the output above for brevity.
 
 If you want to transfer the Raft leadership on its own, without restarting anything, use the
 dedicated `MoveLeader` ops request type instead — it records an `EtcdLeaderMoved` condition and

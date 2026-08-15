@@ -5,7 +5,7 @@ menu:
     identifier: etcd-autoscaling-compute-description
     name: Autoscale Compute Resources
     parent: etcd-autoscaling-compute
-    weight: 15
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

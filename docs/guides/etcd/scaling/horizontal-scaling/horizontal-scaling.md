@@ -307,8 +307,10 @@ Reading that condition list:
   condition is met, which is why you see both polarities of `etcd learner promoted` in the events —
   the ops request observed a learner mid-promotion and waited for it. On a `3 → 5` scale up you will
   typically see that pair of events twice, once per added member.
-- `EtcdMemberListReady` only goes `True` when *all four* checks pass together: the `PetSet` carries 5
-  replicas, etcd reports exactly 5 members, none of them is a learner, and quorum is healthy.
+- `EtcdMemberListReady` goes `True` as soon as the `PetSet` carries 5 replicas and etcd reports
+  exactly 5 members. The no-learner and quorum checks that follow it report through
+  `EtcdLearnerPromoted` and `EtcdClusterHealthy`. It is the request's own top-level
+  `HorizontalScaling` condition — and the `Successful` phase — that means all four passed together.
 - There is **no** `PauseDatabase` / `ResumeDatabase` event pair here. `HorizontalScaling` is the one
   `EtcdOpsRequest` type that does not pause the database, because the Provisioner operator is the
   component doing the membership work.
@@ -398,8 +400,8 @@ that window.
 
 ```bash
 $ kubectl logs -n kubedb -l app.kubernetes.io/name=etcd-operator -f | grep etcd-cluster
-etcd demo/etcd-cluster: removed member 5e6f7a8b9c0d1e2f (etcd-cluster-4)
-etcd demo/etcd-cluster: removed member 4d5e6f7a8b9c0d1e (etcd-cluster-3)
+etcd demo/etcd-cluster: removed member 6804325408493731870 (etcd-cluster-4)
+etcd demo/etcd-cluster: removed member 5571401537629186833 (etcd-cluster-3)
 ```
 
 ### Verify the Scale Down
@@ -441,8 +443,11 @@ Status:
   Phase:      Successful
 ```
 
-Note that there is no `EtcdLearnerPromoted` gate on the way down — nothing is ever added as a learner
-during a scale down, so that check passes on the first poll and never records a condition.
+Note that the `EtcdLearnerPromoted` gate means something different on the way down: nothing is ever
+added as a learner during a scale down, so the check is simply "no member is still a learner", and it
+passes on the first poll. It still records a `True` condition — you just never see the `False`
+polarity that a scale up produces while it waits for a learner to catch up. The scale down also
+opens with an `EtcdMemberRemoved` condition, where a scale up opens with `EtcdMemberAdded`.
 
 ```bash
 $ kubectl get etcd -n demo etcd-cluster -o jsonpath='{.spec.replicas}'

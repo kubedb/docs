@@ -260,7 +260,9 @@ If you want to update your etcd version, you have to specify the `spec.updateVer
 
 - `spec.updateVersion.targetVersion` refers to an [EtcdVersion](/docs/guides/etcd/concepts/etcdversion.md) CR that contains the etcd version information you want to update to.
 
-The target version is validated against the current version's `spec.updateConstraints`, which encode etcd's own upgrade rules: no downgrades, no major version jumps and at most one minor version step at a time. So going from `3.5.x` to `3.7.x` requires two ops requests, with a stop at `3.6.x`.
+The target version is validated against etcd's own upgrade rules: no downgrades, no major version jumps and at most one minor version step at a time. So going from `3.5.x` to `3.7.x` requires two ops requests, with a stop at `3.6.x`. A target whose `EtcdVersion` is marked `spec.deprecated` is refused as well.
+
+> These rules are applied by the ops-manager when the request starts executing — they are hard-coded there, not read from the `EtcdVersion`'s `spec.updateConstraints.allowlist`. The admission webhook only checks that `spec.updateVersion.targetVersion` is non-empty, so an invalid upgrade path produces a request that is accepted and then fails. See [The Upgrade Path Is Validated](/docs/guides/etcd/update-version/overview.md#the-upgrade-path-is-validated--read-this-first).
 
 ### spec.horizontalScaling
 
@@ -329,9 +331,9 @@ spec:
 
 - `spec.configuration.tuning` holds the KubeDB-managed etcd tuning knobs described in [Etcd CRD](/docs/guides/etcd/concepts/etcd.md#specconfiguration). They end up on the etcd command line.
 
-> The generic `configuration.configSecret` and `configuration.applyConfig` fields are **rejected by the webhook for etcd**. etcd's `--config-file` is mutually exclusive with the individual flags KubeDB has to set to bootstrap and reconcile membership, so a free-form config file cannot be supported. Only the typed `tuning` block is available.
+> The generic `configuration.applyConfig` field is **rejected by the webhook for etcd**, and `configuration.configSecret` is accepted but inert — nothing ever mounts it. etcd's `--config-file` is mutually exclusive with the individual flags KubeDB has to set to bootstrap and reconcile membership, so a free-form config file cannot be supported. In practice, only the typed `tuning` block is available.
 
-etcd has no live-reload path for these flags — nothing analogous to Postgres' `pg_reload_conf()` — so a `Reconfigure` ops request always ends with a leader-aware rolling restart of the members.
+etcd has no live-reload path for these flags — nothing analogous to Postgres' `pg_reload_conf()` — so a `Reconfigure` ops request normally ends with a leader-aware rolling restart of the members. You can suppress that with `spec.configuration.restart: "false"`, but the new values will then not take effect until the members are restarted for some other reason.
 
 ### spec.tls
 
@@ -479,11 +481,17 @@ spec:
   type: RecoverFromQuorumLoss
   databaseRef:
     name: etcd-quickstart
-  recoverFromQuorumLoss:
-    member: etcd-quickstart-1
-    confirmMember: etcd-quickstart-1
+  recoverFromQuorumLoss: {}
   timeout: 30m
   apply: Always
+```
+
+You then read the resolved survivor out of the status and patch `confirmMember` to match it:
+
+```yaml
+spec:
+  recoverFromQuorumLoss:
+    confirmMember: etcd-quickstart-1
 ```
 
 - `spec.recoverFromQuorumLoss.member` is the **optional** pod name — or a bare ordinal, e.g. `"1"` — of the surviving member to rebuild the cluster from. If it is empty, the operator picks the reachable member with the **highest Raft applied index**, which is the survivor that has lost the fewest writes.
@@ -592,10 +600,11 @@ Important: The ops-manager operator can skip an ops request only if its executio
 | `UpdateEtcdNodePVCs`       | The PVCs of the etcd members have been updated.                                  |
 | `MigrateEtcdStorage`       | The etcd data has been migrated onto the new StorageClass.                       |
 | `RestartEtcdPods`          | The etcd member pods have been restarted.                                        |
-| `ReadyEtcdPod`             | An etcd member pod has become ready.                                             |
-| `EtcdClusterHealthy`       | The etcd cluster is quorum-healthy.                                              |
+| `EtcdClusterHealthy`       | The etcd cluster is quorum-healthy. Written per pod as `EtcdClusterHealthy--<pod-name>` by the operations that walk the members one at a time (`Restart`, `Reconfigure`, `VerticalScaling`, `UpdateVersion`, `StorageMigration`, `Defragment`), and bare by `HorizontalScaling`. |
 | `EtcdMemberListReady`      | etcd's member list matches the desired membership.                               |
-| `EtcdLearnerPromoted`      | A learner has caught up and has been promoted to a voting member. (`EtcdMemberAdded`/`EtcdMemberRemoved` are declared in the API but not currently set by the operator — the learner-add and member-remove steps are only observable indirectly, via `EtcdMemberListReady` and the provisioner's own logs, not a dedicated condition.) |
+| `EtcdMemberAdded`          | Recorded at the start of a scale-up, before `spec.replicas` is patched.          |
+| `EtcdMemberRemoved`        | Recorded at the start of a scale-down, before `spec.replicas` is patched.        |
+| `EtcdLearnerPromoted`      | A learner has caught up and has been promoted to a voting member. Also set on a scale-down, where the check simply confirms no member is still a learner. |
 | `EtcdLeaderMoved`          | Raft leadership has been transferred to another member. Only set by the standalone `MoveLeader` ops type; a `Restart` that has to move leadership off the pod being evicted instead records a `MoveLeader--<pod-name>` condition. |
 | `EtcdDefragmented`         | The backend of the members has been defragmented.                                |
 | `EtcdCompacted`            | The keyspace history has been compacted.                                         |

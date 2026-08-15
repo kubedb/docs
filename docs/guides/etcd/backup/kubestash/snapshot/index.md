@@ -35,7 +35,7 @@ a brand new `Etcd` cluster from that snapshot.
 - Install the KubeStash `kubectl` plugin following the steps
   [here](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
 - Read the [Etcd Backup & Restore Overview](/docs/guides/etcd/backup/kubestash/overview/index.md)
-  first — especially the part about restore being gated at bootstrap time.
+  first — especially the part about a snapshot always being replayed into an empty data directory.
 
 You should be familiar with the following `KubeStash` concepts:
 
@@ -196,7 +196,7 @@ secret/sample-etcd-auth   kubernetes.io/basic-auth   2      4m30s
 
 NAME                       TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
 service/sample-etcd        ClusterIP   10.96.121.40    <none>        2379/TCP                     4m30s
-service/sample-etcd-pods   ClusterIP   None            <none>        2379/TCP,2380/TCP,2381/TCP   4m30s
+service/sample-etcd-pods   ClusterIP   None            <none>        2379/TCP,2380/TCP   4m30s
 
 NAME                                             TYPE              VERSION   AGE
 appbinding.appcatalog.appscode.com/sample-etcd   kubedb.com/etcd   3.6.4     4m28s
@@ -535,13 +535,13 @@ etcd.kubedb.com/restored-etcd created
 
 ### Watch the restore happen before the cluster boots
 
-The new `Etcd` reports `DataRestoring` while the seed volume is being rebuilt. Note that no pods
+The new `Etcd` stays in `Provisioning` while the seed volume is being rebuilt. Note that no pods
 exist yet — the PetSet is deliberately withheld:
 
 ```bash
 $ kubectl get etcd -n demo restored-etcd
 NAME            VERSION   STATUS          AGE
-restored-etcd   3.6.4     DataRestoring   35s
+restored-etcd   3.6.4     Provisioning    35s
 
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=restored-etcd
 No resources found in demo namespace.
@@ -577,11 +577,11 @@ object and finally creates the PetSet:
 
 ```bash
 $ kubectl get etcd -n demo restored-etcd -o jsonpath='{range .status.conditions[*]}{.type}{"\t"}{.status}{"\t"}{.reason}{"\n"}{end}'
-DatabaseSuccessfullyRestored   True    DatabaseSuccessfullyRestored
+SuccessfullyDataRestored   True    SuccessfullyDataRestored
 ProvisioningStarted            True    DatabaseProvisioningStartedSuccessfully
 ReplicaReady                   True    AllReplicasReady
 AcceptingConnection            True    DatabaseAcceptingConnectionRequest
-Ready                          True    ReadinessCheckSucceeded
+Ready                          True    AllReplicasReady
 Provisioned                    True    DatabaseSuccessfullyProvisioned
 ```
 
@@ -597,7 +597,7 @@ restored-etcd-1   1/1     Running   0          2m18s
 restored-etcd-2   1/1     Running   0          1m56s
 ```
 
-If the restore fails instead, the `DatabaseSuccessfullyRestored` condition is set to `False` with
+If the restore fails instead, the `SuccessfullyDataRestored` condition is set to `False` with
 reason `FailedToRestoreSuccessfully`, and the PetSet is still not created — the cluster never boots on
 a half-restored data directory.
 

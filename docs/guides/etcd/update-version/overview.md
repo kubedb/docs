@@ -66,9 +66,10 @@ The updating process consists of the following steps:
 5. It then pauses the referenced `Etcd` object, so the Provisioner operator does not reconcile it
    during the update.
 
-6. It patches the `PetSet` pod template with the target version's images — the `etcd` container image
-   (resolved to an immutable digest) and the `etcd-init` init container image — so every pod recreated
-   from that point on comes up on the new version.
+6. It patches the `PetSet` pod template with the target version's `etcd` container image, resolved to
+   an immutable digest, so every pod recreated from that point on comes up on the new version. (It
+   also re-images an init container named `etcd-init` if one is present, but the provisioner never
+   creates one, so that only applies if you added it yourself.)
 
 7. It persists `spec.version` on the `Etcd` object, so the Provisioner operator re-renders the same
    template once the database is resumed.

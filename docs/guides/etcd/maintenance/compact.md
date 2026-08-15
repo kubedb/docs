@@ -5,7 +5,7 @@ menu:
     identifier: etcd-maintenance-compact
     name: Compact
     parent: etcd-maintenance
-    weight: 40
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -284,7 +284,7 @@ deliberately.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete etcdopsrequest -n demo etcd-compact
+kubectl delete etcdopsrequest -n demo etcd-compact etcd-compact-revision etcd-defragment
 kubectl delete etcd -n demo etcd-cluster
 kubectl delete ns demo
 ```

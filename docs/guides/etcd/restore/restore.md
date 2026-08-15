@@ -79,7 +79,7 @@ etcd-cluster   3.6.4     Ready    2h
 
 $ kubectl get repository -n demo
 NAME             INTEGRITY   SNAPSHOT-COUNT   SIZE     PHASE   LAST-SUCCESSFUL-BACKUP   AGE
-etcd-full-repo   true        3                2.204MiB Ready   6m32s                    1h
+etcd-full-repo   true        2                2.204MiB   Ready   6m32s                    1h
 
 $ kubectl get snapshots -n demo -l kubestash.com/repo-name=etcd-full-repo
 NAME                                     REPOSITORY       SESSION       SNAPSHOT-TIME   DELETION-POLICY   PHASE       AGE
@@ -279,8 +279,9 @@ Events:
 ```
 
 The per-member and per-resource progress conditions (`EtcdRestoreMembersDiscarded--…`,
-`PVCDeleted--…`, `CheckPVCDelete--…`, `PodDeleted--…`, `PodReady--…`, and so on) are elided above;
-they appear for every step that had to wait and are useful when a restore stalls.
+`PVCDeleted--…`, `CheckPVCDelete--…`, `PodDeleted--…`, `PodCreated--…`, and so on) are elided
+above. They are written for every step the restore completes, not only for steps that had to wait,
+and are useful when a restore stalls.
 
 ## Watch the Cluster Regrow
 
@@ -300,8 +301,12 @@ etcd-cluster-2   0/1     Running   0          11s
 
 $ kubectl get etcd -n demo
 NAME           VERSION   STATUS   AGE
-etcd-cluster   3.6.4     Ready    2h
+etcd-cluster   3.6.4     Critical 2h
 ```
+
+> The `Critical` phase is expected here: the client endpoint is reachable and quorum is healthy, but
+> `etcd-cluster-2` is still catching up as a learner. It becomes `Ready` once the last member is
+> promoted.
 
 ## Verify the Restored Data
 

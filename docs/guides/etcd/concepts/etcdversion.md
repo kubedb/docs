@@ -85,7 +85,9 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 
 ### spec.initContainer.image
 
-`spec.initContainer.image` is an optional field that specifies the image for the init container (`etcd-init`).
+`spec.initContainer.image` is an optional field that specifies the image used for an init container named `etcd-init`.
+
+> The etcd provisioner does **not** create an init container, so on a stock cluster this field is inert. It is only consulted by an `UpdateVersion` `EtcdOpsRequest`, which re-images an init container named `etcd-init` **if one already exists** in the `PetSet` — i.e. only if you added it yourself through `spec.podTemplate.spec.initContainers`.
 
 ### spec.exporter.image
 
@@ -123,7 +125,7 @@ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
   --namespace kubedb --create-namespace \
   --set additionalPodSecurityPolicies[0]=custom-db-policy \
   --set-file global.license=/path/to/the/license.txt \
-  --set global.featureGates.Etcd=true \
+  --set featureGates.Etcd=true \
   --wait --burst-limit=10000 --debug
 ```
 

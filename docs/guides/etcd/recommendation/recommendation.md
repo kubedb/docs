@@ -50,7 +50,7 @@ Recommendation lifecycle, see:
 - [EtcdVersion](/docs/guides/etcd/concepts/etcdversion.md)
 - [EtcdOpsRequest](/docs/guides/etcd/concepts/etcdopsrequest.md)
 - [Rotate Authentication](/docs/guides/etcd/rotate-authentication/overview.md)
-- [Reconfigure TLS](/docs/guides/etcd/tls/overview.md)
+- [Reconfigure TLS](/docs/guides/etcd/reconfigure-tls/overview.md)
 - [Update Version](/docs/guides/etcd/update-version/overview.md)
 
 ---
@@ -111,9 +111,10 @@ following conditions:
 * If the secret lifespan is less than one month, a recommendation is generated when approximately
   one-third of its validity remains.
 
-Note that for etcd this trigger is always live: KubeDB always provisions etcd with its RBAC
-enabled and a `root` user, so the engine treats authentication as unconditionally enabled — there
-is no "auth is off" case for an etcd cluster the way there is for some other databases.
+Note that for etcd this trigger is always live: KubeDB always provisions an auth `Secret` holding a
+`root` credential, so the engine has a secret to age out and treats the database as having
+authentication configured. That is independent of whether etcd's own RBAC has been switched on — see
+[Rotate Authentication](/docs/guides/etcd/rotate-authentication/overview.md).
 
 Once approved, the Supervisor creates an `EtcdOpsRequest` of type `RotateAuth`. For etcd this is
 an unusually cheap operation: an etcd RBAC password change is applied live through the
@@ -205,7 +206,7 @@ gated by an upgrade-path check (same major, no downgrade, at most one minor step
 rolls every member, so it is the one recommendation type that always waits for a human or an
 `ApprovalPolicy`.
 
-For example: recommending a version update from `3.6.4` to `3.6.5`.
+For example: recommending a version update from `3.5.21` to `3.6.4`.
 
 If the `Etcd` object's version changes to something other than what an outstanding recommendation
 targeted, the engine marks that recommendation **outdated** rather than leaving it to fire later
@@ -333,7 +334,7 @@ spec:
         name: etcd-recommendation
       type: UpdateVersion
       updateVersion:
-        targetVersion: 3.6.5
+        targetVersion: 3.6.4
     status: {}
 ```
 

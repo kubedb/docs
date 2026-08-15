@@ -170,10 +170,9 @@ Here,
 - `spec.configuration.tuning` carries the knobs to apply. Only the knobs named here are touched —
   `snapshotCount` is not in the request, so it keeps its current value of `10000`.
 
-> **Note:** `spec.configuration.applyConfig` is **not** supported for etcd, and an ops request that
-> uses it fails with `spec.configuration.applyConfig is not supported for etcd; use
-> spec.configuration.tuning`. See the [overview](/docs/guides/etcd/reconfigure/overview.md#what-configuration-means-for-etcd)
-> for why.
+> **Note:** `spec.configuration.applyConfig` is **not** supported for etcd — an ops request that uses
+> it is rejected at admission and told to use `spec.configuration.tuning` instead. See the
+> [overview](/docs/guides/etcd/reconfigure/overview.md#what-configuration-means-for-etcd) for why.
 
 Let's create the `EtcdOpsRequest` CR we have shown above,
 
@@ -182,17 +181,17 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 etcdopsrequest.ops.kubedb.com/etcd-reconfigure created
 ```
 
-## This ops request always restarts the members
+## This ops request restarts the members
 
 Some KubeDB databases can apply a new configuration to a running server and only restart when the
 changed settings demand it. **Etcd cannot.** The tuning knobs are etcd process command line flags,
-and etcd has no live-reload path for them, so a `Reconfigure` on etcd is always a rolling restart:
-after re-rendering the PetSet, the operator rolls the member pods using the same leader-aware
+and etcd has no live-reload path for them, so a `Reconfigure` on etcd is a rolling restart by
+default: after re-rendering the PetSet, the operator rolls the member pods using the same leader-aware
 sequence as the [Restart](/docs/guides/etcd/restart/restart.md) ops request — followers first, one
 at a time, quorum verified between each, the Raft leader last and only after its leadership has been
 transferred away.
 
-That is why you will always see a `RestartEtcdPods` condition on a successful etcd `Reconfigure`.
+That is why you will normally see a `RestartEtcdPods` condition on a successful etcd `Reconfigure`.
 
 > Setting `spec.configuration.restart: "false"` does skip the rolling restart, but it does **not**
 > give you a live reconfiguration: the running members keep their old flags until something else

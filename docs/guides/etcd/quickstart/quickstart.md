@@ -22,13 +22,13 @@ This tutorial will show you how to use KubeDB to run an [etcd](https://etcd.io/)
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-- Now, install the KubeDB cli on your workstation and the KubeDB operator in your cluster following the steps [here](/docs/setup/README.md). etcd support is behind an **alpha feature gate**, so you must set `global.featureGates.Etcd=true` to install the etcd CRDs and enable the controllers:
+- Now, install the KubeDB cli on your workstation and the KubeDB operator in your cluster following the steps [here](/docs/setup/README.md). etcd support is behind an **alpha feature gate**, so you must set `featureGates.Etcd=true` to install the etcd CRDs and enable the controllers:
 
   ```bash
   helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
     --namespace kubedb --create-namespace \
     --set-file global.license=/path/to/the/license.txt \
-    --set global.featureGates.Etcd=true \
+    --set featureGates.Etcd=true \
     --wait --burst-limit=10000 --debug
   ```
 
@@ -182,22 +182,10 @@ Spec:
         Name:  etcd
         Resources:
           Limits:
-            Memory:  1Gi
+            Memory:  2Gi
           Requests:
             Cpu:     500m
             Memory:  1Gi
-        Security Context:
-          Allow Privilege Escalation:  false
-          Capabilities:
-            Drop:
-              ALL
-          Run As Group:     1000
-          Run As Non Root:  true
-          Run As User:      1000
-          Seccomp Profile:
-            Type:  RuntimeDefault
-      Init Containers:
-        Name:  etcd-init
         Security Context:
           Allow Privilege Escalation:  false
           Capabilities:
@@ -230,25 +218,25 @@ Status:
     Status:                True
     Type:                  ProvisioningStarted
     Last Transition Time:  2026-01-14T08:26:50Z
-    Message:               All replicas are ready for Etcd demo/etcd-quickstart
+    Message:               All the members of Etcd demo/etcd-quickstart are ready.
     Observed Generation:   3
     Reason:                AllReplicasReady
     Status:                True
     Type:                  ReplicaReady
     Last Transition Time:  2026-01-14T08:27:10Z
-    Message:               The Etcd: demo/etcd-quickstart is accepting connection requests.
+    Message:               The Etcd: demo/etcd-quickstart is accepting client requests.
     Observed Generation:   3
     Reason:                DatabaseAcceptingConnectionRequest
     Status:                True
     Type:                  AcceptingConnection
     Last Transition Time:  2026-01-14T08:27:10Z
-    Message:               The Etcd: demo/etcd-quickstart is ready.
+    Message:               The Etcd: demo/etcd-quickstart has a healthy Raft quorum.
     Observed Generation:   3
-    Reason:                ReadinessCheckSucceeded
+    Reason:                AllReplicasReady
     Status:                True
     Type:                  Ready
     Last Transition Time:  2026-01-14T08:27:13Z
-    Message:               Etcd: demo/etcd-quickstart is successfully provisioned.
+    Message:               The Etcd: demo/etcd-quickstart is successfully provisioned.
     Observed Generation:   3
     Reason:                DatabaseSuccessfullyProvisioned
     Status:                True
@@ -320,24 +308,17 @@ spec:
     spec:
       containers:
       - name: etcd
+        resizePolicy:
+        - resourceName: cpu
+          restartPolicy: NotRequired
+        - resourceName: memory
+          restartPolicy: NotRequired
         resources:
           limits:
-            memory: 1Gi
+            memory: 2Gi
           requests:
             cpu: 500m
             memory: 1Gi
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-          runAsGroup: 1000
-          runAsNonRoot: true
-          runAsUser: 1000
-          seccompProfile:
-            type: RuntimeDefault
-      initContainers:
-      - name: etcd-init
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
@@ -370,25 +351,25 @@ status:
     status: "True"
     type: ProvisioningStarted
   - lastTransitionTime: "2026-01-14T08:26:50Z"
-    message: All replicas are ready for Etcd demo/etcd-quickstart
+    message: All the members of Etcd demo/etcd-quickstart are ready.
     observedGeneration: 3
     reason: AllReplicasReady
     status: "True"
     type: ReplicaReady
   - lastTransitionTime: "2026-01-14T08:27:10Z"
-    message: 'The Etcd: demo/etcd-quickstart is accepting connection requests.'
+    message: 'The Etcd: demo/etcd-quickstart is accepting client requests.'
     observedGeneration: 3
     reason: DatabaseAcceptingConnectionRequest
     status: "True"
     type: AcceptingConnection
   - lastTransitionTime: "2026-01-14T08:27:10Z"
-    message: 'The Etcd: demo/etcd-quickstart is ready.'
+    message: 'The Etcd: demo/etcd-quickstart has a healthy Raft quorum.'
     observedGeneration: 3
-    reason: ReadinessCheckSucceeded
+    reason: AllReplicasReady
     status: "True"
     type: Ready
   - lastTransitionTime: "2026-01-14T08:27:13Z"
-    message: 'Etcd: demo/etcd-quickstart is successfully provisioned.'
+    message: 'The Etcd: demo/etcd-quickstart is successfully provisioned.'
     observedGeneration: 3
     reason: DatabaseSuccessfullyProvisioned
     status: "True"
@@ -464,14 +445,19 @@ You can also bring your own credential instead of letting KubeDB generate one; s
 
 ## DoNotTerminate Property
 
-When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of the `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement the `DoNotTerminate` feature. If the admission webhook is enabled, it prevents users from deleting the database as long as `spec.deletionPolicy` is set to `DoNotTerminate`. You can see this below:
+When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of the `ValidationWebhook` feature in Kubernetes 1.9.0 or later clusters to implement the `DoNotTerminate` feature. If the admission webhook is enabled, it prevents users from deleting the database as long as `spec.deletionPolicy` is set to `DoNotTerminate`.
+
+The cluster we created above uses `deletionPolicy: WipeOut`, so to see this for yourself you first have to switch it:
 
 ```bash
+$ kubectl patch -n demo etcd/etcd-quickstart -p '{"spec":{"deletionPolicy":"DoNotTerminate"}}' --type="merge"
+etcd.kubedb.com/etcd-quickstart patched
+
 $ kubectl delete etcd etcd-quickstart -n demo
 The Etcd "etcd-quickstart" is invalid: spec.deletionPolicy: Invalid value: "etcd-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 ```
 
-Now, run `kubectl edit etcd etcd-quickstart -n demo` to set `spec.deletionPolicy` to `Halt`. Then you will be able to delete/halt the database.
+To get the database back to a deletable state, set `spec.deletionPolicy` to something other than `DoNotTerminate` — `Halt`, `Delete` or `WipeOut`, depending on what you want kept. The cleanup below uses `WipeOut`, which removes everything.
 
 ## Cleaning up
 

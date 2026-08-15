@@ -5,7 +5,7 @@ menu:
     identifier: etcd-maintenance-defragment
     name: Defragment
     parent: etcd-maintenance
-    weight: 30
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -131,12 +131,15 @@ etcdopsrequest.ops.kubedb.com/etcd-defragment created
 
 ### A note on `spec.timeout`
 
-`spec.timeout` is optional here, and it is worth understanding what it does before setting it.
-When it is omitted, a single member's defragmentation is allowed up to 10 minutes and the request
-as a whole up to 20 minutes. When it *is* set, that one value bounds **both** — each individual
-member's defragmentation and the whole walk across all members. On a large backend, a value that
-looks generous for one member can therefore be too tight for three of them in sequence. Unless
-you have a specific reason, leaving `spec.timeout` unset is the safer choice.
+`spec.timeout` is optional here, and it is worth understanding what it does before setting it. It
+does **not** bound the request as a whole — it is the budget for each individual step, measured from
+the moment that step first reported "not done yet". So on a three member cluster, each member's
+defragmentation and each quorum re-check gets its own full `spec.timeout`.
+
+When `spec.timeout` is omitted, each step gets a default budget of 10 minutes, and the `Defragment`
+RPC issued against a single member is additionally capped at 10 minutes of its own. Unless you have
+a specific reason — a backend large enough that one member takes longer than ten minutes to rewrite —
+leaving `spec.timeout` unset is the safer choice.
 
 ## What the operator does
 
@@ -236,9 +239,11 @@ Two conditions carry the outcome:
 ### Per-member progress conditions
 
 The walk across members also reports progress per member, using the same
-`<ConditionType>--<podName>` shape KubeDB uses elsewhere. These conditions are emitted when a
-step needs more than one attempt — which is common on a large backend, where the member is busy
-being rewritten — so on a small, fast cluster you may not see them at all:
+`<ConditionType>--<podName>` shape KubeDB uses elsewhere. `EtcdDefragmented--<pod>` and
+`EtcdClusterHealthy--<pod>` are written for **every** member on every run — they are what the
+operator reads back to know which members it has already defragmented, so a restart of the operator
+resumes rather than starts over. While a step is still in flight the same condition is present with
+`Status: False`, which is common on a large backend where the member is busy being rewritten:
 
 ```yaml
   - lastTransitionTime: "2026-02-11T12:21:11Z"

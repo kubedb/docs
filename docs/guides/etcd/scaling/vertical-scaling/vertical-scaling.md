@@ -280,15 +280,18 @@ Events:
 
 A few things worth pointing out in that condition list:
 
-- The per-pod `CheckPodReady--<pod>` / `EtcdClusterHealthy--<pod>` conditions only show up for the
-  steps that actually had to wait. They are the sequencing gate: the operator does not evict the next
-  member until the previous one is `Ready` **and** the cluster reports a healthy quorum
-  (`healthy members >= N/2+1`) again.
+- The per-pod `CheckPodReady--<pod>` / `EtcdClusterHealthy--<pod>` conditions are written for every
+  member the operation touched, not only for the steps that had to wait — they are both the
+  sequencing gate and the operator's own record of what is already done, so they survive a restart of
+  the operator. The gate itself is: the operator does not evict the next member until the previous
+  one is `Ready` **and** the cluster reports a healthy quorum (`healthy members >= N/2+1`) again. The
+  matching `GetLeader--<pod>` and `EvictPod--<pod>` conditions are elided from the output above.
 - The followers (`etcd-cluster-1`, `etcd-cluster-2` in this run) are restarted before the Raft leader
   (`etcd-cluster-0` here). Which pod is the leader is discovered at runtime, so the order you observe
   depends on where leadership happens to sit when the ops request starts.
 - Before the leader is evicted, the operator issues a `MoveLeader` RPC to hand leadership to another
-  voting member; if that step has to wait you will also see a `MoveLeader--<pod>` condition.
+  voting member, and always records a `MoveLeader--<pod>` condition naming the pod it moved
+  leadership away from.
 
 Now let's verify from the `PetSet` and the pods that the resources have been updated:
 

@@ -364,8 +364,9 @@ Events:
   Normal  Successful                 17s    KubeDB Ops-manager Operator  Successfully recovered the etcd cluster from the loss of its quorum
 ```
 
-The per-resource progress conditions (`PVCDeleted--…`, `PodDeleted--…`, `PodReady--…`, and so on)
-are elided above; they appear for every step that had to wait and are useful when a recovery stalls.
+The per-resource progress conditions (`PetSetDeleted--…`, `PVCDeleted--…`, `GetPod--…`, `PodDeleted--…`, `PodCreated--…`, `PatchPV--…`,
+and so on) are elided above. They are written for every step the recovery completes, not only for
+steps that had to wait, and are useful when a recovery stalls.
 
 ## Watch the Cluster Regrow
 

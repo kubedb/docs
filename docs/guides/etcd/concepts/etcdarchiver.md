@@ -34,7 +34,7 @@ Consequently:
 - There is **no point-in-time recovery** between two snapshots. Recovery lands you exactly on the snapshot you restore, and everything written after it is lost.
 - Your recovery point objective is therefore your snapshot interval. Choose `fullBackup.scheduler.schedule` accordingly.
 
-Also note that a snapshot can only be restored **at bootstrap time**, into a brand new cluster. etcd requires a seed member's data directory to be either genuinely empty or a fully restored, valid snapshot; a snapshot can never be restored into a running cluster. See [spec.init](/docs/guides/etcd/concepts/etcd.md#specinit).
+Also note that a snapshot is always replayed into an **empty** data directory: etcd requires a seed member's data directory to be either genuinely empty or a fully restored, valid snapshot, so it can never be replayed into a running member. There are two ways to get there — restore at bootstrap through [spec.init](/docs/guides/etcd/concepts/etcd.md#specinit), or an `EtcdOpsRequest` of type `Restore`, which tears an existing cluster down to one empty volume first. See [In-place Restore](/docs/guides/etcd/restore/overview.md).
 
 ## EtcdArchiver CRD Specifications
 
@@ -168,7 +168,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-When `spec.init.archiver.fullDBRepository` is set, the provisioner pre-creates the ordinal-0 PVC, runs a KubeStash `RestoreSession` against it *before* the PetSet or the first pod is ever created, and only then bootstraps the cluster from the restored data directory. The remaining members join the restored seed as ordinary new members. A `manifest-restore` session runs alongside for Kubernetes-object-level restore.
+When `spec.init.archiver.fullDBRepository` is set, the provisioner pre-creates the ordinal-0 PVC, runs a KubeStash `RestoreSession` against it *before* the PetSet or the first pod is ever created, and only then bootstraps the cluster from the restored data directory. The remaining members join the restored seed as ordinary new members. A separate `manifest-restore` session for Kubernetes-object-level restore runs only if you also set `spec.init.archiver.manifestRepository`; setting `fullDBRepository` alone does not trigger one.
 
 To restore a snapshot into an `Etcd` object that **already exists**, use an `EtcdOpsRequest` of type `Restore` instead — it replaces the whole keyspace of the live database. See [In-place Restore](/docs/guides/etcd/restore/overview.md).
 

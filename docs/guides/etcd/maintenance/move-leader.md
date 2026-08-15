@@ -248,10 +248,12 @@ The condition to look for is **`EtcdLeaderMoved`**. It flips to `True` once the 
 issued *and* the cluster has confirmed that the requested member holds the leadership; the ops
 request is then marked `Successful`.
 
-If the transfer has to be retried — for example because the cluster was momentarily without a
-leader — you will also see interim conditions from the individual sub-steps, such as `GetLeader`
-and `VerifyLeader`, with messages of the shape `get leader; ConditionStatus:False`. Those are
-progress markers, not failures.
+Alongside it, the individual sub-steps record their own conditions on every run: `GetLeader` (the
+current leader was resolved), `EtcdLeaderMoved--<pod-name>` (the transfer was issued at that
+specific member) and `VerifyLeader` (the cluster confirmed the new leader). They are elided from the
+excerpt above. If a step is still in flight — for example because the cluster is momentarily without
+a leader — the same condition is present with `Status: False` and a message of the shape
+`get leader; ConditionStatus:False`. Those are progress markers, not failures.
 
 ## Verify the new leader
 
@@ -275,7 +277,7 @@ The `IS LEADER` column of that table will show `true` for `etcd-cluster-1`.
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete etcdopsrequest -n demo etcd-move-leader
+kubectl delete etcdopsrequest -n demo etcd-move-leader etcd-move-leader-auto
 kubectl delete etcd -n demo etcd-cluster
 kubectl delete ns demo
 ```

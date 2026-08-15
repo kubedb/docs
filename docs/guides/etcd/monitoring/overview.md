@@ -25,7 +25,7 @@ This is the one thing to understand before you read any further, because it diff
 
 For PostgreSQL, MySQL, MongoDB and friends, KubeDB injects a **Prometheus exporter sidecar** into the database pod. The sidecar connects to the database, translates its statistics into Prometheus text format, and serves them on its own port.
 
-**etcd needs none of that.** etcd is written in Go and instrumented with the Prometheus client library directly, so it already speaks Prometheus natively. There is **no exporter sidecar container** in an etcd member pod — the pod contains a single `etcd` container (plus an `etcd-init` init container that does not survive startup). When you enable `spec.monitor`, KubeDB does not add anything to the pod at all; it only creates the Kubernetes objects that let a Prometheus server find the metrics etcd is already serving.
+**etcd needs none of that.** etcd is written in Go and instrumented with the Prometheus client library directly, so it already speaks Prometheus natively. There is **no exporter sidecar container** in an etcd member pod — the pod contains a single operator-managed `etcd` container and nothing else. When you enable `spec.monitor`, KubeDB does not add anything to the pod at all; it only creates the Kubernetes objects that let a Prometheus server find the metrics etcd is already serving.
 
 Practically, that means:
 
@@ -52,14 +52,14 @@ The container port is declared as `metrics` (`2381`) alongside `client` (`2379`)
 
 Keeping metrics on their own listener is deliberate. etcd also serves `/metrics` on the client port, but once TLS is enabled KubeDB renders `--client-cert-auth=true`, and a client that cannot present a certificate — kubelet running a readiness probe, or a Prometheus server that has not been given one — would be rejected there. The dedicated listener stays plain HTTP, so probes and scraping keep working unchanged after you turn TLS on. Note the consequence: **enabling `spec.tls` does not encrypt the metrics endpoint.** If your Prometheus server and your etcd cluster are in different trust domains, use a NetworkPolicy or a service mesh to control access to port `2381`.
 
-> When `spec.monitor` is set on a TLS-enabled `Etcd`, KubeDB does issue a certificate under the `metrics-exporter` alias (secret `<db-name>-metrics-exporter-cert`). The metrics listener itself is served over plain HTTP as described above, so the stats Service and the generated `ServiceMonitor` are configured with `scheme: http`.
+> KubeDB deliberately does **not** issue a `metrics-exporter` certificate for etcd. The alias is accepted by the `Etcd` schema, and defaulting even stamps an entry for it into `spec.tls.certificates`, but nothing ever creates or mounts that Secret — etcd's `--listen-metrics-urls` has no TLS flags of its own, so the listener is plain HTTP by design. The stats Service and the generated `ServiceMonitor` are therefore configured with `scheme: http`.
 
 ## The stats Service
 
 When `spec.monitor.agent` is a Prometheus agent, KubeDB creates a second Service next to the regular client Service, named `<etcd-crd-name>-stats`:
 
 - It selects the same pods as the client Service.
-- It publishes a single port named `metrics`, whose port number is `spec.monitor.prometheus.exporter.port` (default `56790`), targeting etcd's own metrics port on the pod.
+- It publishes a single port named `metrics`, whose port number is `spec.monitor.prometheus.exporter.port` (default `2381`), targeting etcd's own metrics port on the pod.
 - It is labelled with the standard KubeDB offshoot labels plus `kubedb.com/role: stats`, which is what a `ServiceMonitor` selects on.
 
 Everything else depends on which agent you chose.
@@ -69,7 +69,7 @@ Everything else depends on which agent you chose.
 | Field                                              | Type       | Uses                                                                                                                                    |
 |----------------------------------------------------|------------|------------------------------------------------------------------------------------------------------------------------------------------|
 | `spec.monitor.agent`                               | `Required` | The monitoring agent. Either `prometheus.io/builtin` or `prometheus.io/operator`.                                                          |
-| `spec.monitor.prometheus.exporter.port`            | `Optional` | Port number published by the stats Service. Defaults to `56790`. (For etcd this is only the Service port — there is no exporter process.)  |
+| `spec.monitor.prometheus.exporter.port`            | `Optional` | Port number published by the stats Service. Defaults to `2381`. (For etcd this is only the Service port — there is no exporter process.)  |
 | `spec.monitor.prometheus.serviceMonitor.labels`    | `Optional` | Labels put on the generated `ServiceMonitor`, so your `Prometheus` object's `serviceMonitorSelector` matches it.                           |
 | `spec.monitor.prometheus.serviceMonitor.interval`  | `Optional` | Scrape interval on the generated `ServiceMonitor`.                                                                                        |
 
@@ -83,7 +83,7 @@ KubeDB annotates the stats Service so that a plain Prometheus server doing Kuber
 prometheus.io/scrape: "true"
 prometheus.io/scheme: http
 prometheus.io/path: /metrics
-prometheus.io/port: "56790"
+prometheus.io/port: "2381"
 monitoring.appscode.com/agent: prometheus.io/builtin
 ```
 

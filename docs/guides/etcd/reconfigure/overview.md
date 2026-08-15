@@ -51,11 +51,15 @@ reconfiguring etcd:
 
 1. **`spec.configuration.applyConfig` is not supported.** `applyConfig` merges free-form key/value
    pairs into a rendered config file, and there is no such file here — accepting it would silently
-   drop your settings. An `EtcdOpsRequest` that sets it is rejected with
-   `spec.configuration.applyConfig is not supported for etcd; use spec.configuration.tuning`.
-2. **A `Reconfigure` always requires a restart.** The knobs are process command line flags, and
+   drop your settings. An `EtcdOpsRequest` that sets it is rejected at admission, telling you to use
+   `spec.configuration.tuning` instead. (`spec.configuration.configSecret` is accepted by the schema
+   but never mounted, so it has no effect either.)
+2. **A `Reconfigure` needs a restart to take effect.** The knobs are process command line flags, and
    etcd has no live-reload path for them (there is no equivalent of PostgreSQL's
-   `pg_reload_conf()`). The new values only take effect when the member process is started again.
+   `pg_reload_conf()`). The new values only take effect when the member process is started again, so
+   the ops request ends with a leader-aware rolling restart by default. Setting
+   `spec.configuration.restart: "false"` skips that restart — the `Etcd` object and the `PetSet` are
+   updated, but the running members keep their old values until something else restarts them.
 
 ## How the Reconfiguring Etcd Process Works
 

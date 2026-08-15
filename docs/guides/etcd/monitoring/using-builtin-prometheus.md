@@ -5,7 +5,7 @@ menu:
     identifier: etcd-using-builtin-prometheus-monitoring
     name: Builtin Prometheus
     parent: etcd-monitoring-guides
-    weight: 20
+    weight: 15
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -104,7 +104,7 @@ $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=builtin-prom-et
 NAME                      TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)             AGE
 builtin-prom-etcd         ClusterIP   10.102.7.190     <none>        2379/TCP            2m
 builtin-prom-etcd-pods    ClusterIP   None             <none>        2379/TCP,2380/TCP   2m
-builtin-prom-etcd-stats   ClusterIP   10.102.128.153   <none>        56790/TCP           2m
+builtin-prom-etcd-stats   ClusterIP   10.102.128.153   <none>        2381/TCP           2m
 ```
 
 Let's describe the stats Service:
@@ -120,13 +120,13 @@ Labels:            app.kubernetes.io/component=database
                    kubedb.com/role=stats
 Annotations:       monitoring.appscode.com/agent: prometheus.io/builtin
                    prometheus.io/path: /metrics
-                   prometheus.io/port: 56790
+                   prometheus.io/port: 2381
                    prometheus.io/scheme: http
                    prometheus.io/scrape: true
 Selector:          app.kubernetes.io/instance=builtin-prom-etcd,app.kubernetes.io/managed-by=kubedb.com,app.kubernetes.io/name=etcds.kubedb.com
 Type:              ClusterIP
 IP:                10.102.128.153
-Port:              metrics  56790/TCP
+Port:              metrics  2381/TCP
 TargetPort:        metrics/TCP
 Endpoints:         10.244.1.7:2381,10.244.2.9:2381,10.244.3.5:2381
 Session Affinity:  None
@@ -139,7 +139,7 @@ The annotations that matter for discovery are:
 prometheus.io/scrape: true
 prometheus.io/scheme: http
 prometheus.io/path: /metrics
-prometheus.io/port: 56790
+prometheus.io/port: 2381
 ```
 
 The Prometheus server will discover the Service endpoints using these and scrape metrics **straight from etcd** — the `TargetPort: metrics` resolves to port `2381` on each member pod. Note there is one endpoint per member: each etcd member reports its own view of the cluster, so scraping all of them is the point.

@@ -73,7 +73,6 @@ An `Etcd` object goes through the following phases, reported in `status.phase`:
 | Phase          | Meaning                                                                                                            |
 |----------------|--------------------------------------------------------------------------------------------------------------------|
 | `Provisioning` | The KubeDB operator has accepted the object and is creating the offshoot resources (PetSet, Services, Secrets, RBAC). |
-| `DataRestoring`| The seed member's volume is being restored from a KubeStash snapshot before the cluster is bootstrapped.            |
 | `Ready`        | All members are up, the Raft cluster has quorum and the client endpoint is accepting connections.                   |
 | `Critical`     | The client endpoint is reachable, but not every member is ready (for example a learner is still catching up).       |
 | `NotReady`     | The client endpoint is not reachable — quorum has been lost or every member is down.                                |
@@ -82,7 +81,9 @@ An `Etcd` object goes through the following phases, reported in `status.phase`:
 
 In the normal path, an `Etcd` object moves `Provisioning` → `Ready`. When the cluster is
 bootstrapped from a snapshot (`spec.init.archiver`), the operator restores the ordinal-0 volume
-first, so the object passes through `DataRestoring` before the first member is ever started.
+before the first member is ever started, so the object simply stays in `Provisioning` for longer;
+the restore's own outcome is reported on the `SuccessfullyDataRestored` condition rather than as a
+phase.
 
 The phase is derived from the object's conditions — `ProvisioningStarted`, `ReplicaReady`,
 `AcceptingConnection`, `Ready` and `Provisioned`. The health checker keeps them up to date by

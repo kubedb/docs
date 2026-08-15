@@ -267,8 +267,8 @@ for the cluster to report a healthy quorum — that gate is what keeps a 3-membe
 having two members down at once.
 
 The per-resource progress conditions (`PVCCreated--…`, `PodDeleted--…`, `JobCreated--…`,
-`PVCDeleted--…`, `PodReady--…`, and so on) are elided above; they appear for every step that had to
-wait and are useful when a migration stalls.
+`PVCDeleted--…`, `PodReady--…`, and so on) are elided above. They are written for every step the
+migration completes, not only for steps that had to wait, and are useful when a migration stalls.
 
 Confirm the data PVCs are now bound to the target `StorageClass` and the cluster is `Ready`:
 
@@ -324,6 +324,8 @@ To clean up the Kubernetes resources created by this tutorial, run:
 kubectl delete etcdopsrequest -n demo etcd-storage-migration
 kubectl delete etcd -n demo etcd-cluster
 kubectl delete ns demo
+# the StorageClasses are cluster-scoped, so deleting the namespace does not remove them
+kubectl delete storageclass longhorn-single longhorn-single-migrated
 ```
 
 ## Next Steps

@@ -5,7 +5,7 @@ menu:
     identifier: etcd-rotate-auth-overview
     name: Overview
     parent: etcd-rotate-authentication
-    weight: 5
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
