@@ -1,0 +1,24 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: EtcdAutoscaler
+metadata:
+  name: etcd-compute-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: etcd-autoscale
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 5m
+  compute:
+    etcd:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 600m
+        memory: 1.2Gi
+      maxAllowed:
+        cpu: 2
+        memory: 4Gi
+      controlledResources: ["cpu", "memory"]
+      containerControlledValues: "RequestsAndLimits"

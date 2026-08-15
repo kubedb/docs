@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: sample-etcd
+  namespace: demo
+  labels:
+    archiver: "true"
+spec:
+  version: "3.6.4"
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  archiver:
+    ref:
+      name: etcd-archiver
+      namespace: demo
+  deletionPolicy: WipeOut
