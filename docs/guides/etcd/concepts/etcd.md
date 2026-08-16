@@ -312,7 +312,7 @@ The `spec.tls` contains the following fields:
 - `tls.certificates` - is an `optional` field that specifies a list of certificate configurations. It has the following fields:
   - `alias` - represents the identifier of the certificate. etcd supports the following aliases:
     - `server` - served by each member on the client (gRPC/HTTP) API port.
-    - `client` - used by KubeDB itself (health checker, ops-manager, metrics scraping) to talk to etcd.
+    - `client` - used by KubeDB itself (health checker, ops-manager) to talk to etcd.
     - `peer` - used for member-to-member Raft traffic. Peer traffic is **always mutually authenticated** once TLS is enabled; there is no server-only mode for peers.
     - `metrics-exporter` - accepted by the schema, but **inert**. etcd's `--listen-metrics-urls` has no TLS flags of its own, so KubeDB keeps the metrics listener on plain HTTP and never issues or mounts a certificate for this alias. Enabling `spec.tls` does not encrypt the metrics endpoint.
 
@@ -369,7 +369,7 @@ KubeDB accepts the following fields to set in `spec.podTemplate`:
 
 You can check out the full list [here](https://github.com/kmodules/offshoot-api/blob/master/api/v2/types.go).
 
-The etcd pod runs a single operator-managed container, named **`etcd`**; use that name when overriding container level settings such as `resources` or `args`. KubeDB adds no init container of its own — anything you put in `spec.podTemplate.spec.initContainers` is yours and is passed through as-is.
+The etcd pod runs a single operator-managed container, named **`etcd`**; use that name when overriding container-level settings such as `resources` or `args`. KubeDB adds no init container of its own — anything you put in `spec.podTemplate.spec.initContainers` is yours and is passed through as-is.
 
 Uses of some fields of `spec.podTemplate` are described below.
 

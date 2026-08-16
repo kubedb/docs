@@ -362,10 +362,18 @@ $ kubectl exec -n demo etcd-cluster-0 -c etcd -- \
 
 ## Cleaning Up
 
-To clean up the Kubernetes resources created by this tutorial, run:
+`etcd-cluster` and the `demo` namespace are prerequisites this guide assumes were already there (see
+[Prerequisite: a Repository with a Snapshot in It](#prerequisite-a-repository-with-a-snapshot-in-it))
+rather than resources it created, so the default cleanup only removes the `EtcdOpsRequest`:
 
 ```bash
 kubectl delete etcdopsrequest -n demo etcd-restore
+```
+
+If `demo` really was a disposable environment set up just for this walkthrough, you can additionally
+remove the cluster and the namespace:
+
+```bash
 kubectl delete etcd -n demo etcd-cluster
 kubectl delete ns demo
 ```

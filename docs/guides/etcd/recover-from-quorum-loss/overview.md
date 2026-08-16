@@ -34,7 +34,7 @@ has **permanently** lost its Raft quorum, from a single surviving member.
 ## What Quorum Loss Actually Is
 
 An etcd cluster is a Raft consensus group. Every write has to be acknowledged by a quorum of
-`N/2+1` **voting** members, so a 3-member cluster needs 2 and a 5-member cluster needs 3.
+`floor(N/2) + 1` **voting** members, so a 3-member cluster needs 2 and a 5-member cluster needs 3.
 
 When a *majority* of the voting members is gone **for good**, Raft can never make progress again:
 

@@ -94,7 +94,7 @@ as healthy while at least `N/2+1` members answer.
 
 - [Quickstart Etcd](/docs/guides/etcd/quickstart/quickstart.md) with KubeDB Operator.
 - Secure your cluster with [TLS/SSL](/docs/guides/etcd/tls/overview.md) and reconfigure it later with [ReconfigureTLS](/docs/guides/etcd/reconfigure-tls/overview.md).
-- Tune etcd with [custom configuration](/docs/guides/etcd/reconfigure/overview.md).
+- Tune etcd with [custom configuration](/docs/guides/etcd/custom-configuration/using-config.md).
 - Scale your cluster [horizontally](/docs/guides/etcd/scaling/horizontal-scaling/overview.md) or [vertically](/docs/guides/etcd/scaling/vertical-scaling/overview.md).
 - [Backup & Restore](/docs/guides/etcd/backup/kubestash/overview/index.md) etcd using KubeStash.
 - [Restore a snapshot in place](/docs/guides/etcd/restore/overview.md) into an `Etcd` cluster that already exists.

@@ -151,7 +151,7 @@ and `args` on any other entry in the list belongs to a sidecar of your own.
 
 Your flags are appended **after** the ones KubeDB owns, and that ordering is the whole point:
 
-```
+```text
 etcd --name=$(POD_NAME) --data-dir=... --listen-client-urls=... \
      --quota-backend-bytes=8589934592 \
      --heartbeat-interval=250 --election-timeout=2500 --max-request-bytes=3145728
@@ -203,11 +203,15 @@ the members one at a time, leader last, with quorum checks in between.
 Verify the same way as the tuning knobs — the pod spec is the source of truth:
 
 ```bash
-$ kubectl get pod -n demo etcd-extra-args-0 -o jsonpath='{.spec.containers[0].args}' | tr ',' '\n' | tail -3
+$ kubectl get pod -n demo etcd-extra-args-0 -o jsonpath='{.spec.containers[?(@.name=="etcd")].args}' | tr ',' '\n' | tail -3
 "--heartbeat-interval=250"
 "--election-timeout=2500"
 "--max-request-bytes=3145728"]
 ```
+
+Selecting the container by name rather than by index matters here specifically: `spec.podTemplate`
+can carry additional containers of your own, and if one of those sorts before `etcd` in the pod
+spec, `containers[0]` would silently show the wrong container's args.
 
 ## Deploy Etcd with a tuning configuration
 
@@ -323,9 +327,9 @@ See the [Reconfigure guide](/docs/guides/etcd/reconfigure/reconfigure.md) for th
 ## Cleaning up
 
 ```bash
-$ kubectl delete etcd -n demo etcd-custom-config
-$ kubectl delete etcd -n demo etcd-extra-args
-$ kubectl delete ns demo
+kubectl delete etcd -n demo etcd-custom-config
+kubectl delete etcd -n demo etcd-extra-args
+kubectl delete ns demo
 ```
 
 ## Next Steps

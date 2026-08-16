@@ -413,6 +413,9 @@ NAME               TYPE                STATUS       AGE
 etcd-hscale-down   HorizontalScaling   Successful   2m14s
 ```
 
+Abbreviated to the conditions that differ from the scale-up walkthrough above — `EtcdMemberRemoved`
+and `EtcdLearnerPromoted` are both present in the real output too, per the note below:
+
 ```bash
 $ kubectl describe etcdopsrequest -n demo etcd-hscale-down
 ...
@@ -446,8 +449,8 @@ Status:
 Note that the `EtcdLearnerPromoted` gate means something different on the way down: nothing is ever
 added as a learner during a scale down, so the check is simply "no member is still a learner", and it
 passes on the first poll. It still records a `True` condition — you just never see the `False`
-polarity that a scale up produces while it waits for a learner to catch up. The scale down also
-opens with an `EtcdMemberRemoved` condition, where a scale up opens with `EtcdMemberAdded`.
+polarity that a scale-up produces while it waits for a learner to catch up. The scale-down also
+opens with an `EtcdMemberRemoved` condition, where a scale-up opens with `EtcdMemberAdded`.
 
 ```bash
 $ kubectl get etcd -n demo etcd-cluster -o jsonpath='{.spec.replicas}'
