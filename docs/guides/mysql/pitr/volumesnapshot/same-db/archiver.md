@@ -395,18 +395,68 @@ The database is unavailable between steps 3 and 5.
 
 ### What is different from Restic here
 
-Only member 0 is built from the snapshot. Its PVC is created with a `dataSource`:
+Members are built from the snapshot rather than from a restic repository, so their PVCs are created with a
+`dataSource` naming that snapshot. How many carry it depends on `replicationStrategy`:
+
+| strategy | PVCs created with a `dataSource` |
+|---|---|
+| `sync` | member 0 only — the rest get empty volumes and are seeded by Group Replication |
+| `none` | every member, because each one is restored independently |
+
+While the restore is running you can see it:
 
 ```bash
 $ kubectl get pvc -n demo data-mysql-0 -o jsonpath='{.spec.dataSource}'
 {"apiGroup":"snapshot.storage.k8s.io","kind":"VolumeSnapshot","name":"mysql-1734156013"}
 ```
 
-The remaining members get empty volumes and are seeded by Group Replication, which is why they carry no
-`dataSource`. The binlog replay on top is identical to the Restic path.
+The binlog replay on top is identical to the Restic path.
 
-> A PVC's spec is immutable after creation, so this `dataSource` stays on member 0's PVC for the life of
-> the claim. It is inert — it is only read when the volume is provisioned.
+### The dataSource is removed before the restore finishes
+
+A PVC's spec is immutable, so the reference cannot be patched away — the claim has to be rebuilt. The
+operator does this for you, and by the time the restore completes every data PVC is clean:
+
+```bash
+$ kubectl get pvc -n demo data-mysql-0 -o jsonpath='{.spec.dataSource}'
+                                  # empty
+```
+
+It happens after the binlog replay and before the database is started, one member at a time. Nothing is
+copied: the volume already holds the restored data, so the claim is deleted and an identical one without
+the `dataSource` is bound straight back to the same `PersistentVolume`. The volume is forced to `Retain`
+for the duration and its original reclaim policy is put back afterwards.
+
+Why it is worth doing at all:
+
+- **The reference stops being true.** Your retention policy deletes the `VolumeSnapshot` in time, leaving
+  the claim permanently naming an object that no longer exists.
+- **Some CSI drivers refuse to expand a volume whose claim carries one.** This has been reported on
+  `azuredisk`. It is not universal — on Longhorn the same claim expands online with the field present — so
+  treat it as driver-specific rather than a rule of Kubernetes.
+
+### Skipping it
+
+Set `kubedb.com/strip-pvc-datasource: "false"` on the database to leave the claims exactly as the restore
+made them:
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: mysql
+  namespace: demo
+  annotations:
+    kubedb.com/strip-pvc-datasource: "false"
+```
+
+The annotation is read on the database being restored. Any other value — and its absence — means the
+rebuild runs.
+
+Two reasons you might want it off. Each rebuilt claim restarts its member, so a `none` restore of a
+three-member cluster restarts the cluster three times, once per claim; that is cheap on a small database
+and less so on a large one. And on a single-replica database the rebuild never runs regardless of this
+annotation, because it has no peer to fall back on if the swap fails.
 
 ## retainPV
 

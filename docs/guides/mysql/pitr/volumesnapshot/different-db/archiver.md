@@ -482,7 +482,50 @@ mysql> select count(*) from demo_table;
 
 **so we are able to successfully recover from a disaster**
 
+## The snapshot dataSource on the restored PVCs
 
+A VolumeSnapshotter restore builds its members' `PersistentVolumeClaim`s from the snapshot, so those claims
+are created with a `spec.dataSource` naming it. How many carry it follows the strategy above: under `sync`
+only member 0 is built from the snapshot, under `none` every member is.
+
+The reference does not survive the restore. A PVC's spec is immutable, so it cannot be patched away — the
+operator rebuilds each claim instead, and by the time the restored database is ready they are all clean:
+
+```bash
+$ kubectl get pvc -n demo data-restore-mysql-0 -o jsonpath='{.spec.dataSource}'
+                                  # empty
+```
+
+This happens after the binlog replay and before the database starts, one member at a time, and copies
+nothing: the volume already holds the restored data, so the claim is deleted and an identical one without
+the `dataSource` is bound back to the same `PersistentVolume`.
+
+It matters because the reference stops being true — your retention policy deletes the `VolumeSnapshot` in
+time, leaving the claim naming an object that no longer exists. Some CSI drivers have also been reported to
+refuse volume expansion on a claim carrying one (`azuredisk`); that is driver-specific rather than a rule of
+Kubernetes, and Longhorn expands such a claim online without complaint.
+
+To leave the claims exactly as the restore made them, set `kubedb.com/strip-pvc-datasource: "false"` on the
+restored database:
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: MySQL
+metadata:
+  name: restore-mysql
+  namespace: demo
+  annotations:
+    kubedb.com/strip-pvc-datasource: "false"
+spec:
+  init:
+    archiver:
+      ...
+```
+
+Any other value, and the absence of the annotation, mean the rebuild runs. It is worth turning off if the
+restarts are unwelcome — each rebuilt claim restarts its member, so a `none` restore of three members
+restarts each of them once. On a single-replica database the rebuild is skipped regardless, because there is
+no peer to fall back on.
 
 ## Cleaning up
 
