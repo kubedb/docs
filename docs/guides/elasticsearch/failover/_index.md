@@ -2,7 +2,7 @@
 title: Failover and DR Scenarios Elasticsearch
 menu:
   docs_{{ .version }}:
-    identifier: guides-elasticsearch-FDR
+    identifier: guides-elasticsearch-fdr
     name: Failover and Disaster Recovery
     parent: es-elasticsearch-guides
     weight: 40

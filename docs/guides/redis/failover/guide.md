@@ -78,7 +78,7 @@ spec:
   mode: Cluster
   cluster:
     shards: 3
-    replicas: 1
+    replicas: 2
   storageType: Durable
   storage:
     accessModes:
@@ -98,8 +98,8 @@ redis.kubedb.com/redis created
 Here,
 
 - `spec.mode: Cluster` tells the operator to deploy Redis in Cluster mode instead of standalone or Sentinel mode.
-- `spec.cluster.shards` — number of shards. Each shard independently owns a subset of the 16384 hash slots.
-- `spec.cluster.replicas` — number of replicas per shard. With `1`, each shard has exactly one master and one replica (no spare to fail over to if you lose both pods of a shard at once — see Case 4 below).
+- `spec.cluster.shards` — number of shards. Each shard independently owns a subset of the cluster's hash slots.
+- `spec.cluster.replicas` — number of replicas per shard. With `2`, each shard has exactly one master and one replica (no spare to fail over to if you lose both pods of a shard at once — see Case 4 below).
 - `spec.storage` specifies the StorageClass of the PVC dynamically allocated for each pod.
 
 KubeDB operator watches for `Redis` objects using the Kubernetes API. When one is created, the operator

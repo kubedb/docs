@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: elasticsearch-failover
     name: Overview
-    parent: guides-elasticsearch-FDR
+    parent: guides-elasticsearch-fdr
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
