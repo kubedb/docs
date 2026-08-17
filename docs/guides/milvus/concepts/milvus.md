@@ -39,7 +39,7 @@ spec:
     mode: Standalone
   objectStorage:
     configSecret:
-      name: my-release-minio
+      name: milvus-storage-config
   storageType: Durable
   storage:
     accessModes:
@@ -79,7 +79,7 @@ spec:
   version: "2.6.11"
   objectStorage:
     configSecret:
-      name: my-release-minio
+      name: milvus-storage-config
   topology:
     mode: Distributed
     distributed:
@@ -128,7 +128,7 @@ In the current guides, this is usually a MinIO-backed secret referenced as:
 spec:
   objectStorage:
     configSecret:
-      name: my-release-minio
+      name: milvus-storage-config
 ```
 
 ### spec.metaStorage
