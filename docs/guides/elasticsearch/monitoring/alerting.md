@@ -211,7 +211,8 @@ $ helm upgrade -i es-alert appscode/elasticsearch-alerts -n alert-elasticsearch 
   --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
   --set form.alert.groups.database.rules.diskAlmostFull.enabled=false \
   --set form.alert.groups.database.rules.elasticsearchHealthyNodes.val=6 \
-  --set form.alert.groups.database.rules.elasticsearchHealthyDataNodes.val=2
+  --set form.alert.groups.database.rules.elasticsearchHealthyDataNodes.val=2 \
+  --set form.alert.appSuffix=es-grafana-demo
 ```
 
 | Flag | Value | Purpose |

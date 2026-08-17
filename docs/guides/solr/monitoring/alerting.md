@@ -230,7 +230,8 @@ $ helm upgrade -i solr-alert appscode/solr-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=solr-alert-stats
+    --set grafana.jobName=solr-alert-stats \
+    --set form.alert.appSuffix=sl-grafana-demo
 ```
 
 | Flag | Value | Purpose |

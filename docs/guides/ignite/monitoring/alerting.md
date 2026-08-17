@@ -186,7 +186,8 @@ $ helm upgrade -i ignite-alert-demo oci://ghcr.io/appscode-charts/ignite-alerts 
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=ignite-alert-demo-stats
+    --set grafana.jobName=ignite-alert-demo-stats \
+    --set form.alert.appSuffix=ig-grafana-demo
 ```
 
 | Flag | Value | Purpose |

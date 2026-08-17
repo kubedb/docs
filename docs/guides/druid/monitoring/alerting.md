@@ -228,7 +228,8 @@ $ helm upgrade -i druid-alert-demo appscode/druid-alerts \
     -n alert-druid \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=dr-grafana-demo
 ```
 
 | Flag | Value | Purpose |

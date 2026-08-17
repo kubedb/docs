@@ -193,7 +193,8 @@ $ helm upgrade -i mongodb-alert-demo oci://ghcr.io/appscode-charts/mongodb-alert
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=mongodb-alert-demo-stats
+    --set grafana.jobName=mongodb-alert-demo-stats \
+    --set form.alert.appSuffix=mg-grafana-demo
 ```
 
 | Flag | Value | Purpose |

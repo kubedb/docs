@@ -199,7 +199,8 @@ $ helm upgrade -i hazelcast-alert-demo oci://ghcr.io/appscode-charts/hazelcast-a
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=hazelcast-alert-demo-stats
+    --set grafana.jobName=hazelcast-alert-demo-stats \
+    --set form.alert.appSuffix=hz-grafana-demo
 ```
 
 | Flag | Value | Purpose |

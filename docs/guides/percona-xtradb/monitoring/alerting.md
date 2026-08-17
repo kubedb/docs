@@ -153,7 +153,8 @@ $ helm upgrade -i perconaxtradb-alert-demo oci://ghcr.io/appscode-charts/percona
     -n alert-perconaxtradb \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=pxdb-grafana-demo
 ```
 
 ### Verify the PrometheusRule is created

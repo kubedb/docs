@@ -200,7 +200,8 @@ $ helm upgrade -i qd-alert-demo oci://ghcr.io/appscode-charts/qdrant-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=qd-alert-demo-stats
+    --set grafana.jobName=qd-alert-demo-stats \
+    --set form.alert.appSuffix=qd-grafana-demo
 ```
 
 | Flag | Value | Purpose |

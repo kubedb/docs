@@ -238,7 +238,8 @@ $ helm upgrade -i pgpool-alert oci://ghcr.io/appscode-charts/pgpool-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=pgpool-alert-stats
+    --set grafana.jobName=pgpool-alert-stats \
+    --set form.alert.appSuffix=pgp-grafana-demo
 ```
 
 | Flag | Value | Purpose |

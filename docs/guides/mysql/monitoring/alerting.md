@@ -187,7 +187,8 @@ $ helm upgrade -i mysql-alert oci://ghcr.io/appscode-charts/mysql-alerts \
     -n alert-mysql \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=my-grafana-demo
 ```
 
 | Flag | Value | Purpose |

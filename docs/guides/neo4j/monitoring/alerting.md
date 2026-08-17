@@ -202,7 +202,8 @@ $ helm upgrade -i neo4j-alerts appscode/neo4j-alerts -n alert-neo4j \
    --create-namespace \
    --version=v2026.7.14 \
    --set form.alert.labels.release=prometheus \
-   --set grafana.enabled=false
+   --set grafana.enabled=false \
+   --set form.alert.appSuffix=n4j-grafana-demo
 ```
 
 | Flag | Value | Purpose |

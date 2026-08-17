@@ -188,7 +188,8 @@ $ helm upgrade -i kafka-alert-demo oci://ghcr.io/appscode-charts/kafka-alerts \
     --set form.alert.labels.release=prometheus \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<token-from-above>"
+    --set grafana.apikey="<token-from-above>" \
+    --set form.alert.appSuffix=kf-grafana-demo
 ```
 
 | Flag | Value | Purpose |

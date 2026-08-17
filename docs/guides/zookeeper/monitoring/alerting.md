@@ -160,7 +160,8 @@ $ helm upgrade -i zk-alert-demo oci://ghcr.io/appscode-charts/zookeeper-alerts \
     -n demo \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=zk-grafana-demo
 ```
 
 | Flag | Value | Purpose |

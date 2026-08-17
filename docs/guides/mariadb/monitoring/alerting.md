@@ -175,7 +175,8 @@ $ helm upgrade -i mariadb-alert-demo oci://ghcr.io/appscode-charts/mariadb-alert
     --version=v2026.7.14 \
     --set form.alert.labels.release=prometheus \
     --set form.alert.groups.database.rules.diskUsageHigh.enabled=false \
-    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false
+    --set form.alert.groups.database.rules.diskAlmostFull.enabled=false \
+    --set form.alert.appSuffix=mdb-grafana-demo
 ```
 
 | Flag | Value | Purpose |

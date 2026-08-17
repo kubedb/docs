@@ -224,7 +224,8 @@ $ helm upgrade -i singlestore-alert-demo appscode/singlestore-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=singlestore-alert-demo-stats
+    --set grafana.jobName=singlestore-alert-demo-stats \
+    --set form.alert.appSuffix=ss-grafana-demo
 ```
 
 | Flag | Value | Purpose |

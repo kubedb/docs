@@ -153,7 +153,8 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 $ helm upgrade -i clickhouse-alert-demo appscode/clickhouse-alerts \
     -n alert-clickhouse \
     --create-namespace \
-    --version=v2026.7.14 
+    --version=v2026.7.14 \
+    --set form.alert.appSuffix=ch-grafana-demo
 ```
 
 | Flag | Value | Purpose |

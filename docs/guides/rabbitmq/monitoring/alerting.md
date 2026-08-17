@@ -201,7 +201,8 @@ $ helm upgrade -i rmq-alert-demo appscode/rabbitmq-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=rmq-alert-demo-stats
+    --set grafana.jobName=rmq-alert-demo-stats \
+    --set form.alert.appSuffix=rmq-grafana-demo
 ```
 
 | Flag | Value | Purpose |

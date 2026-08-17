@@ -231,7 +231,8 @@ $ helm upgrade -i pgbouncer-alert oci://ghcr.io/appscode-charts/pgbouncer-alerts
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=pgbouncer-alert-stats
+    --set grafana.jobName=pgbouncer-alert-stats \
+    --set form.alert.appSuffix=pgb-grafana-demo
 ```
 
 | Flag | Value | Purpose |

@@ -210,7 +210,8 @@ $ helm upgrade -i cas-alert-demo /home/banusree/go/src/alerts/charts/cassandra-a
   --set form.alert.labels.release=prometheus \
   --set grafana.enabled=true \
   --set grafana.url=http://prometheus-grafana.<grafana_namespace>.svc.cluster.local \
-  --set grafana.apikey=<grafana_apikey>
+  --set grafana.apikey=<grafana_apikey> \
+  --set form.alert.appSuffix=cas-grafana-demo
 
 ```
 

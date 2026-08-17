@@ -222,7 +222,8 @@ $ helm upgrade -i mssqlserver-alert-demo appscode/mssqlserver-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=mssqlserver-alert-demo-stats
+    --set grafana.jobName=mssqlserver-alert-demo-stats \
+    --set form.alert.appSuffix=ms-grafana-demo
 ```
 
 | Flag | Value | Purpose |

@@ -155,7 +155,8 @@ $ helm upgrade -i rd-alert-demo oci://ghcr.io/appscode-charts/redis-alerts \
     -n alert-redis \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=rd-grafana-demo
 ```
 
 | Flag | Value | Purpose |

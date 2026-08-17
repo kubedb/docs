@@ -206,7 +206,8 @@ $ helm upgrade -i proxysql-alert oci://ghcr.io/appscode-charts/proxysql-alerts \
     -n alert-proxysql \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus
+    --set form.alert.labels.release=prometheus \
+    --set form.alert.appSuffix=psql-grafana-demo
 ```
 
 | Flag | Value | Purpose |

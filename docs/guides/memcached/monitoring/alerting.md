@@ -186,7 +186,8 @@ $ helm upgrade -i mc-alert-demo oci://ghcr.io/appscode-charts/memcached-alerts \
     --set grafana.enabled=true \
     --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
     --set grafana.apikey="<token-from-above>" \
-    --set grafana.jobName=mc-alert-demo-stats
+    --set grafana.jobName=mc-alert-demo-stats \
+    --set form.alert.appSuffix=mc-grafana-demo
 ```
 
 | Flag | Value | Purpose |
