@@ -7,7 +7,7 @@ spec:
   version: "2.6.9"
   objectStorage:
     configSecret:
-      name: "my-release-minio"
+      name: "milvus-storage-config"
   topology:
     mode: Distributed
     distributed:
