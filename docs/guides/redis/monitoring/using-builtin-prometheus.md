@@ -302,6 +302,54 @@ $ kubectl apply -f https://github.com/appscode/third-party-tools/raw/master/moni
 deployment.apps/prometheus created
 ```
 
+### Install Panopticon (required for full dashboard data)
+
+The `redis_exporter` sidecar only reports Redis-native metrics (connections, memory, commands, etc.). The KubeDB Redis Grafana dashboards ([Visualize Metrics with Grafana](#visualize-metrics-with-grafana) below) also chart KubeDB's own view of the resource — database status, phase, version, deletion policy — and those come from a **separate** metric source: **Panopticon**, the Appscode operator that exports `kubedb_com_redis_*` metrics for every KubeDB object. Skip this step and the dashboards will still load, but the General Info / phase panels will show "No data".
+
+Install Panopticon with the `prometheus.io/builtin` monitoring agent, matching the scrape style used throughout this tutorial:
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/builtin \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify it's running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
+With `prometheus.io/builtin`, the chart annotates its own `panopticon` service (not a `-stats`-suffixed one) with `prometheus.io/scrape: "true"`, but serves metrics over **HTTPS** on port `443` — the `kubedb-databases` job configured above explicitly *drops* `https` targets and only keeps `*-stats`-suffixed service names, so Panopticon needs its own scrape job rather than reusing that one. Add a second job to the same `prometheus-config` ConfigMap:
+
+```yaml
+- job_name: 'panopticon'
+  honor_labels: true
+  scheme: https
+  tls_config:
+    insecure_skip_verify: true
+  static_configs:
+  - targets: ['panopticon.kubeops.svc:443']
+```
+
+Update the ConfigMap and restart Prometheus to pick it up:
+
+```bash
+$ kubectl edit configmap -n monitoring prometheus-config
+# paste the job above into scrape_configs, alongside the existing kubedb-databases job
+
+$ kubectl rollout restart deployment -n monitoring prometheus
+```
+
 ### Verify Monitoring Metrics
 
 Prometheus server is listening to port `9090`. We are going to use [port forwarding](https://kubernetes.io/docs/tasks/access-application-cluster/port-forward-access-application-cluster/) to access Prometheus dashboard.
@@ -560,6 +608,8 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 
 ```bash
 $ kubectl delete -n demo rd/builtin-prom-redis
+
+$ helm uninstall panopticon -n kubeops
 
 # If you used Option A (automatic dashboard import)
 $ helm uninstall kubedb-grafana-dashboards -n kubeops
