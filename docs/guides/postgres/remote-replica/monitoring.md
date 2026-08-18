@@ -5,7 +5,7 @@ menu:
     identifier: pg-remote-replica-monitoring
     name: Monitoring
     parent: pg-remote-replica
-    weight: 30
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
