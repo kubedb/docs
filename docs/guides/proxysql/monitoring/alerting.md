@@ -29,7 +29,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-proxysql created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+* Before proceeding, complete the [Configuration](/docs/guides/proxysql/monitoring/prometheus-operator/index.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
@@ -58,7 +58,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys ProxySQL with metrics exposed directly by the `proxysql` container itself on port `6070` (an embedded `proxysql_exporter`-style endpoint) — there is no separate exporter sidecar.
 - **ServiceMonitor** (named `{proxysql-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
 - **PrometheusRule** is created by the `proxysql-alerts` chart and contains ProxySQL alert definitions grouped by concern: database health, cluster sync, provisioner, and ops-manager.
-- **Grafana** dashboards for ProxySQL are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
+- **Grafana** dashboards for ProxySQL can be provisioned via the `kubedb-grafana-dashboards` chart (`--set featureGates.ProxySQL=true`) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
@@ -306,7 +306,7 @@ No alerts are firing for the `alert-proxysql` namespace.
 
 ### 5. Explore the Grafana Dashboard
 
-Grafana dashboards for ProxySQL are documented separately rather than duplicated in this alerting guide — see [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the ProxySQL dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.ProxySQL=true`).
+Provision the ProxySQL dashboards via the `kubedb-grafana-dashboards` chart (`--set featureGates.ProxySQL=true`), then explore them in Grafana under `Dashboards`.
 
 ---
 

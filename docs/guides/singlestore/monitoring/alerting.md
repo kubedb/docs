@@ -38,7 +38,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   secret/license-secret created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+* Before proceeding, complete the [Configuration](/docs/guides/singlestore/monitoring/prometheus-operator/index.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 

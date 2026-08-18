@@ -29,6 +29,8 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-clickhouse created
   ```
 
+* Before proceeding, complete the [Configuration](/docs/guides/clickhouse/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:

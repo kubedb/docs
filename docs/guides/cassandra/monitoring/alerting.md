@@ -29,7 +29,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-cas created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+* Before proceeding, complete the [Configuration](/docs/guides/cassandra/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
@@ -498,6 +498,5 @@ $ kubectl delete ns alert-cas
 
 - Monitor your Cassandra cluster with KubeDB using [builtin Prometheus](/docs/guides/cassandra/monitoring/using-builtin-prometheus.md).
 - Monitor your Cassandra cluster with KubeDB using [Prometheus operator](/docs/guides/cassandra/monitoring/using-prometheus-operator.md).
-- Visualise Cassandra metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Learn how to use KubeDB to run a Apache Cassandra cluster [here](/docs/guides/cassandra/README.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

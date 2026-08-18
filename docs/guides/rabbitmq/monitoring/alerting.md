@@ -29,7 +29,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-rabbitmq created
   ```
 
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md) guide for how to deploy kube-prometheus-stack if you don't have it yet.
+* Before proceeding, complete the [Configuration](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
 
@@ -476,6 +478,5 @@ $ kubectl delete ns alert-rabbitmq
 
 - Monitor your RabbitMQ database with KubeDB using [builtin Prometheus](/docs/guides/rabbitmq/monitoring/using-builtin-prometheus.md).
 - Monitor your RabbitMQ database with KubeDB using [Prometheus operator](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md).
-- Visualise RabbitMQ metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Detail concepts of [RabbitMQ object](/docs/guides/rabbitmq/concepts/rabbitmq.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

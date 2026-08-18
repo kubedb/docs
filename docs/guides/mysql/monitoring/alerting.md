@@ -29,7 +29,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-mysql created
   ```
 
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md#configuration) guide for how to deploy kube-prometheus-stack if you don't have it yet.
+* Before proceeding, complete the [Configuration](/docs/guides/mysql/monitoring/prometheus-operator/index.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
 
@@ -73,7 +75,7 @@ metadata:
   name: mysql-alert
   namespace: alert-mysql
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   deletionPolicy: WipeOut
   replicas: 3
   topology:
@@ -597,6 +599,5 @@ $ helm uninstall grafana-operator -n kubeops
 
 - Monitor your MySQL database with KubeDB using [builtin Prometheus](/docs/guides/mysql/monitoring/builtin-prometheus/index.md).
 - Monitor your MySQL database with KubeDB using [Prometheus operator](/docs/guides/mysql/monitoring/prometheus-operator/index.md).
-- Visualise MySQL metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Detail concepts of [MySQL object](/docs/guides/mysql/concepts/database/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

@@ -29,7 +29,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/demo created
   ```
 
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md#configuration) guide for how to deploy kube-prometheus-stack if you don't have it yet.
+* Before proceeding, complete the [Configuration](/docs/guides/qdrant/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
 
@@ -474,6 +476,5 @@ $ kubectl delete ns demo
 ## Next Steps
 
 - Monitor your Qdrant database with KubeDB using [Prometheus operator](/docs/guides/qdrant/monitoring/using-prometheus-operator.md).
-- Visualise Qdrant metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Detail concepts of [Qdrant object](/docs/guides/qdrant/concepts/qdrant.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

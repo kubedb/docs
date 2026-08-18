@@ -29,7 +29,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/demo created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack**.
+* Before proceeding, complete the [Configuration](/docs/guides/zookeeper/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
@@ -44,8 +44,6 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   ```
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/zookeeper/monitoring/overview.md).
-
-* For dashboards and visualisation, see [Grafana Dashboard](grafana-dashboard.md) for ZooKeeper.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/zookeeper](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/zookeeper) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -427,5 +425,4 @@ $ kubectl delete ns demo
 
 - Monitor your ZooKeeper database with KubeDB using [builtin Prometheus](/docs/guides/zookeeper/monitoring/using-builtin-prometheus.md).
 - Monitor your ZooKeeper database with KubeDB using [Prometheus operator](/docs/guides/zookeeper/monitoring/using-prometheus-operator.md).
-- Visualise ZooKeeper metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

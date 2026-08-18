@@ -29,7 +29,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-redis created
   ```
 
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`. See the [Grafana Dashboard](grafana-dashboard.md#configuration) guide for how to deploy kube-prometheus-stack if you don't have it yet.
+* Before proceeding, complete the [Configuration](/docs/guides/redis/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
+* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
   To verify the selectors:
 
@@ -42,8 +44,6 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   ```
 
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/redis/monitoring/overview.md).
-
-* For dashboards and visualisation, see [Grafana Dashboard](grafana-dashboard.md) for Redis.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -442,6 +442,5 @@ $ kubectl delete ns alert-redis
 
 - Monitor your Redis database with KubeDB using [builtin Prometheus](/docs/guides/redis/monitoring/using-builtin-prometheus.md).
 - Monitor your Redis database with KubeDB using [Prometheus operator](/docs/guides/redis/monitoring/using-prometheus-operator.md).
-- Visualise Redis metrics with [Grafana Dashboard](grafana-dashboard.md).
 - Use [private Docker registry](/docs/guides/redis/private-registry/using-private-registry.md) to deploy Redis with KubeDB.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

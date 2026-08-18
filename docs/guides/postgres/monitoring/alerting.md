@@ -29,7 +29,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/demo created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+* Before proceeding, complete the [Configuration](/docs/guides/postgres/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes your Prometheus instance is configured with both `serviceMonitorSelector` and `ruleSelector` matching the label `release: prometheus`.
 

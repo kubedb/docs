@@ -29,7 +29,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-perconaxtradb created
   ```
 
-* Before proceeding, complete the [Configuration](grafana-dashboard.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+* Before proceeding, complete the [Configuration](/docs/guides/percona-xtradb/monitoring/prometheus-operator/index.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
 
 * This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
 
@@ -56,7 +56,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 - **KubeDB** deploys PerconaXtraDB with a `mysqld_exporter`-compatible sidecar (container `exporter`) that exposes metrics (`mysql_*`), the same exporter family used by MySQL/MariaDB.
 - **ServiceMonitor** (named `{perconaxtradb-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
 - **PrometheusRule** is created by the `perconaxtradb-alerts` chart and contains alert definitions grouped by concern: database health, Galera cluster, provisioner, ops-manager, Stash backup/restore, and schema manager.
-- **Grafana** dashboards for PerconaXtraDB are covered separately — see [Grafana Dashboard](grafana-dashboard.md) rather than duplicated here.
+- **Grafana** dashboards for PerconaXtraDB can be provisioned via the `kubedb-grafana-dashboards` chart (`--set featureGates.PerconaXtraDB=true`) rather than duplicated here.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
 
@@ -221,7 +221,7 @@ Open `http://localhost:9093`.
 
 ### 4. Explore the Grafana dashboard
 
-See [Grafana Dashboard](grafana-dashboard.md) for how to provision and explore the PerconaXtraDB dashboards (via the `kubedb-grafana-dashboards` chart, `--set featureGates.PerconaXtraDB=true`).
+Provision the PerconaXtraDB dashboards via the `kubedb-grafana-dashboards` chart (`--set featureGates.PerconaXtraDB=true`), then explore them in Grafana under `Dashboards`.
 
 ---
 
