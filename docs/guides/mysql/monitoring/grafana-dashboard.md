@@ -248,7 +248,82 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB MySQL Dashboard
+## Step 5: Import KubeDB MySQL Dashboard — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+
+Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
+
+**1. Install `grafana-operator`** (skip if it's already running in your cluster):
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install grafana-operator appscode/grafana-operator \
+    --version v2026.6.12 \
+    --namespace kubeops --create-namespace
+```
+
+**2. Register your Grafana instance as an `AppBinding`** (skip if you've already done this in another guide on this cluster). `grafana-operator` needs to know where to push dashboards and how to authenticate — it reads this from an `AppBinding` object, not from the chart install command itself. Since Grafana here came bundled with `kube-prometheus-stack`, reuse its existing admin credentials:
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 &
+
+$ curl -s -X POST -H "Content-Type: application/json" \
+    -u admin:<grafana_password> \
+    http://localhost:3000/api/auth/keys \
+    -d '{"name":"kubedb-dashboards","role":"Admin"}'
+# Note the returned "key"
+
+$ kill %1
+
+$ kubectl create secret generic grafana-admin-token -n monitoring \
+    --from-literal=token='<key-from-above>'
+
+$ cat <<EOF | kubectl apply -f -
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  name: grafana
+  namespace: monitoring
+spec:
+  type: monitoring.appscode.com/grafana
+  clientConfig:
+    url: http://prometheus-grafana.monitoring.svc:80
+  secret:
+    name: grafana-admin-token
+EOF
+```
+
+**3. Install the dashboards:**
+
+```bash
+$ helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
+    -n kubeops --create-namespace --version=v2026.8.14-rc.0 \
+    --set featureGates.MySQL=true \
+    --set grafana.name=grafana \
+    --set grafana.namespace=monitoring
+```
+
+`featureGates.MySQL` already defaults to `true` — set explicitly above for clarity. `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster).
+
+This single command creates every dashboard this chart ships for MySQL — `KubeDB / MySQL / Summary`, `KubeDB / MySQL / Pod`, `KubeDB / MySQL / Database`, `KubeDB / MySQL / Group-Replication-Summary` — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
+
+Verify they landed:
+
+```bash
+$ kubectl get grafanadashboards.openviz.dev -n kubeops | grep -i mysql
+NAME                                              TITLE                                         SYNCED    AGE
+grafana-kubedb-mysql-summary                      KubeDB / MySQL / Summary                      Current   30s
+grafana-kubedb-mysql-pod                          KubeDB / MySQL / Pod                          Current   30s
+grafana-kubedb-mysql-database                     KubeDB / MySQL / Database                     Current   30s
+grafana-kubedb-mysql-group-replication-summary    KubeDB / MySQL / Group-Replication-Summary    Current   30s
+```
+
+`SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
+
+## Step 5: Import KubeDB MySQL Dashboard — Option B: Manually, by uploading JSON files
+
+If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 
 The KubeDB MySQL dashboards are distributed as JSON files. Each JSON file is a complete dashboard definition — panels, queries, variables, and layout — that Grafana loads in one shot. Without importing, you would have to build every panel and write every PromQL query by hand. Importing lets you skip that entirely.
 
