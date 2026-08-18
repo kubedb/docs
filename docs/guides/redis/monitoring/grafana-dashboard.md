@@ -1,5 +1,5 @@
 ---
-title: Visualize Redis Metrics with Grafana Dashboard
+title: Redis Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: rd-grafana-dashboard-monitoring
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize Redis Metrics with Grafana Dashboard
+# Redis Grafana Dashboard
 
 KubeDB exposes Redis metrics through a sidecar exporter, and its own view of each resource (status, phase, version) through Panopticon. Once Prometheus is scraping both, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial covers only the Grafana-specific part of that setup — deploying Grafana, connecting it to Prometheus, and importing the dashboards.
 
@@ -86,7 +86,7 @@ After a successful login you will see the Grafana home page:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Import KubeDB Redis Dashboard — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -160,7 +160,7 @@ grafana-kubedb-redis-summary    KubeDB / Redis / Summary   Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the three dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in [Explore the Dashboard](#explore-the-dashboard) below.
 
-## Import KubeDB Redis Dashboard — Option B: Manually, by uploading JSON files
+## Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 

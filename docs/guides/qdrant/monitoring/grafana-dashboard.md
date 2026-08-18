@@ -1,5 +1,5 @@
 ---
-title: Visualize Qdrant Metrics with Grafana Dashboard
+title: Qdrant Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: guides-qdrant-grafana-dashboard
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize Qdrant Metrics with Grafana Dashboard
+# Qdrant Grafana Dashboard
 
 KubeDB exposes Qdrant metrics through its built-in Prometheus endpoint. Once Prometheus scrapes those metrics, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Qdrant instance, and importing the Grafana dashboards.
 
@@ -108,7 +108,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Setup
 
-## Step 1: Deploy Qdrant with Monitoring Enabled
+## Step 1: Deploy Qdrant
 
 Below is the Qdrant object with monitoring configured to use Prometheus Operator. Qdrant exposes metrics natively on port `6333` so no separate exporter sidecar is needed.
 
@@ -240,7 +240,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB Qdrant Dashboards — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -312,7 +312,7 @@ grafana-kubedb-qdrant-database    KubeDB / Qdrant / Database    Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
-## Step 5: Import KubeDB Qdrant Dashboards — Option B: Manually, by uploading JSON files
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 

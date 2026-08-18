@@ -1,5 +1,5 @@
 ---
-title: Visualize Neo4j Metrics with Grafana Dashboard
+title: Neo4j Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: guides-neo4j-grafana-dashboard
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize Neo4j Metrics with Grafana Dashboard
+# Neo4j Grafana Dashboard
 
 KubeDB exposes Neo4j metrics by enabling Neo4j's built-in metrics support. Once Prometheus scrapes those metrics, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Neo4j instance, and importing the Grafana dashboards.
 
@@ -108,7 +108,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Setup
 
-## Step 1: Deploy Neo4j with Monitoring Enabled
+## Step 1: Deploy Neo4j
 
 Below is the Neo4j object with monitoring configured to use Prometheus Operator.
 
@@ -239,7 +239,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB Neo4j Dashboards — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -311,7 +311,7 @@ grafana-kubedb-neo4j-database    KubeDB / Neo4j / Database    Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
-## Step 5: Import KubeDB Neo4j Dashboards — Option B: Manually, by uploading JSON files
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 

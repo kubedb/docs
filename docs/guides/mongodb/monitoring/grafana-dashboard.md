@@ -1,5 +1,5 @@
 ---
-title: Visualize MongoDB Metrics with Grafana Dashboard
+title: MongoDB Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: mg-grafana-dashboard-monitoring
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize MongoDB Metrics with Grafana Dashboard
+# MongoDB Grafana Dashboard
 
 KubeDB exposes MongoDB metrics through a sidecar exporter. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a MongoDB instance, and importing the Grafana dashboard.
 
@@ -108,7 +108,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Setup
 
-## Step 1: Deploy MongoDB with Monitoring Enabled
+## Step 1: Deploy MongoDB
 
 Below is the MongoDB object with monitoring configured to use Prometheus Operator. It deploys a 3-member replica set — this is what lets you see meaningful data in the dashboard's replication and oplog panels later on.
 
@@ -253,7 +253,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB MongoDB Dashboard — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -325,7 +325,7 @@ grafana-kubedb-mongodb-database-replicaset    KubeDB / MongoDB / Database / Repl
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
-## Step 5: Import KubeDB MongoDB Dashboard — Option B: Manually, by uploading JSON files
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 

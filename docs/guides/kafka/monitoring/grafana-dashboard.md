@@ -1,5 +1,5 @@
 ---
-title: Visualize Kafka Metrics with Grafana Dashboard
+title: Kafka Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: kf-grafana-dashboard-monitoring
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize Kafka Metrics with Grafana Dashboard
+# Kafka Grafana Dashboard
 
 KubeDB exposes Kafka metrics — including JVM, broker/topic, and KRaft controller/quorum metrics — through a JMX Exporter running as a Java agent inside each Kafka container. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Kafka instance, and importing the Grafana dashboard.
 
@@ -108,7 +108,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Setup
 
-## Step 1: Deploy Kafka with Monitoring Enabled
+## Step 1: Deploy Kafka
 
 Kafka runs in KRaft mode (no ZooKeeper), so the combined broker+controller nodes need at least 3 replicas to form a working Raft quorum — this is also what lets you see meaningful data in the dashboard's KRaft Controller and KRaft Quorum panels later on.
 
@@ -268,7 +268,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB Kafka Dashboard — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading a JSON file by hand (Option B below), KubeDB ships a chart that creates matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -342,7 +342,7 @@ grafana-kubedb-kafka-database KubeDB / Kafka / Database Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
-## Step 5: Import KubeDB Kafka Dashboard — Option B: Manually, by uploading JSON files
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or specifically want the single combined dashboard documented here (see the note above), upload it by hand instead.
 

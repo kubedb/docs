@@ -1,5 +1,5 @@
 ---
-title: Visualize RabbitMQ Metrics with Grafana Dashboard
+title: RabbitMQ Grafana Dashboard
 menu:
   docs_{{ .version }}:
     identifier: rm-grafana-dashboard-monitoring
@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Visualize RabbitMQ Metrics with Grafana Dashboard
+# RabbitMQ Grafana Dashboard
 
 KubeDB exposes RabbitMQ metrics through a built-in Prometheus plugin. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a RabbitMQ instance, and importing the Grafana dashboard.
 
@@ -108,7 +108,7 @@ panopticon-xxxx               1/1     Running   0          1m
 
 ## Setup
 
-## Step 1: Deploy RabbitMQ with Monitoring Enabled
+## Step 1: Deploy RabbitMQ
 
 Below is the RabbitMQ object with monitoring configured to use Prometheus Operator.
 
@@ -249,7 +249,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import KubeDB RabbitMQ Dashboard — Option A: Automatically, via the `kubedb-grafana-dashboards` chart
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -321,7 +321,7 @@ grafana-kubedb-rabbitmq-database    KubeDB / RabbitMQ / Database    Current   30
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
-## Step 5: Import KubeDB RabbitMQ Dashboard — Option B: Manually, by uploading JSON files
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 
