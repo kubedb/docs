@@ -134,7 +134,7 @@ KubeDB uses a `PodDisruptionBudget` so that a majority of members stays availabl
 Changing `spec.replicas` (directly, or through a `HorizontalScaling`
 [EtcdOpsRequest](/docs/guides/etcd/concepts/etcdopsrequest.md)) is reconciled against etcd's actual member list:
 
-- **Scale up** — the next ordinal is first added to the cluster as a **learner**. A learner replicates the log but does not vote and does not count toward quorum, so a cold member can never stall the cluster. Once its Raft revision has caught up with the leader's, the operator **promotes** it to a voting member.
+- **Scale up** — the next ordinal is first added to the cluster as a **learner**. A learner replicates the log but does not vote and does not count toward quorum, so a cold member can never stall the cluster. Once its applied revision reaches 90% of the leader's — not full equality — the operator **promotes** it to a voting member.
 - **Scale down** — the **highest ordinal** member is removed from etcd's member list first, and only then is the PetSet shrunk, so etcd never sees the pod disappear before it has been un-registered.
 
 The operator performs at most one membership mutation per reconcile pass, which is what etcd's membership API expects.
@@ -190,14 +190,14 @@ Example:
 $ kubectl create secret generic etcd-auth -n demo \
   --type=kubernetes.io/basic-auth \
   --from-literal=username=root \
-  --from-literal=password=6q8u_2jMOW-OOZXk
+  --from-literal=password=not@secret
 secret "etcd-auth" created
 ```
 
 ```yaml
 apiVersion: v1
 data:
-  password: NnE4dV8yak1PVy1PT1pYaw==
+  password: bm90QHNlY3JldA==
   username: cm9vdA==
 kind: Secret
 metadata:
@@ -205,6 +205,9 @@ metadata:
   namespace: demo
 type: kubernetes.io/basic-auth
 ```
+
+> Use a real, unique password of your own when you actually create this secret — the value above is
+> a placeholder for the example, not something to reuse.
 
 Secrets provided by users are not managed by KubeDB, and therefore won't be modified or garbage collected by the KubeDB operator.
 
