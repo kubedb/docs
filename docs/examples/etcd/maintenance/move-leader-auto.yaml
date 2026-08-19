@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-move-leader-auto
+  namespace: demo
+spec:
+  type: MoveLeader
+  databaseRef:
+    name: etcd-cluster
+  moveLeader: {}
+  timeout: 5m

@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: etcd-quickstart
+  timeout: 5m
+  apply: Always

@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-restore
+  namespace: demo
+spec:
+  type: Restore
+  databaseRef:
+    name: etcd-cluster
+  restore:
+    fullDBRepository:
+      name: etcd-full-repo
+      namespace: demo
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  timeout: 30m
+  apply: Always
