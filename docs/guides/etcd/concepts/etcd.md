@@ -236,7 +236,7 @@ spec:
 
 ### spec.monitor
 
-Etcd managed by KubeDB can be monitored with builtin-Prometheus and Prometheus operator out-of-the-box.
+Etcd managed by KubeDB can be monitored with built-in Prometheus and Prometheus operator out-of-the-box.
 
 etcd exposes Prometheus metrics natively, so **no exporter sidecar container is deployed**. KubeDB creates a stats Service that targets etcd's own metrics endpoint and, for `agent: prometheus.io/operator`, a matching `ServiceMonitor`.
 
@@ -378,7 +378,7 @@ Uses of some fields of `spec.podTemplate` are described below.
 
 #### spec.podTemplate.spec.containers[].resources
 
-`resources` on the `etcd` container can be used to request compute resources required by the database pods. To learn more, visit [here](http://kubernetes.io/docs/user-guide/compute-resources/).
+`resources` on the `etcd` container can be used to request compute resources required by the database pods. To learn more, visit [here](https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/).
 
 ```yaml
 spec:
@@ -506,7 +506,7 @@ spec:
 
 ### spec.deletionPolicy
 
-`deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of the `Etcd` crd or which resources KubeDB should keep or delete when you delete the `Etcd` crd. KubeDB provides the following four deletion policies:
+`deletionPolicy` controls whether KubeDB rejects deletion of the `Etcd` CRD and which resources it keeps or deletes when you do delete it. KubeDB provides the following four deletion policies:
 
 - DoNotTerminate
 - Halt
@@ -544,7 +544,7 @@ It defines the attributes for the health checker.
 - `spec.healthChecker.failureThreshold` specifies the minimum consecutive failures for the healthChecker to be considered failed. Defaults to `1`.
 - `spec.healthChecker.disableWriteCheck` specifies whether to disable the write check or not.
 
-For etcd, the health checker dials the client port of every member and uses etcd's own `Status()` and `MemberList()` RPCs. The cluster is considered quorum-healthy while at least `N/2+1` members respond. etcd is a key-value store, not a relational database, so there is no query-language based health probe.
+For etcd, the health checker dials the client port of every member and uses etcd's own `Status()` and `MemberList()` RPCs. The cluster is considered quorum-healthy while at least `floor(N/2) + 1` members respond. etcd is a key-value store, not a relational database, so there is no query-language-based health probe.
 
 Know details about KubeDB health checking from this [blog post](https://appscode.com/blog/post/kubedb-health-checker/).
 
