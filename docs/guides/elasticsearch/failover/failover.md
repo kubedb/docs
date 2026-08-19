@@ -30,10 +30,12 @@ recovery for all three automatically, though only two of them involve an actual 
   membership. Master-eligible nodes use a quorum-based (Raft-inspired) consensus protocol, so a **majority**
   of the configured master-eligible nodes must be reachable to elect (or keep) an active master. This is why
   production clusters should keep an **odd** master-eligible count (`3`, `5`, ...) — with `3` nodes, any `2`
-  form a majority, so the cluster tolerates losing `1` without losing quorum. An **even** count like `2` gives
-  you a second copy of cluster state, but genuinely **no fault tolerance** — losing either node already drops
-  you below a majority of `2`. The demo cluster in this guide uses `2` master-eligible nodes to keep it
-  lightweight, and Case 2 below demonstrates exactly this failure mode.
+  form a majority, so the cluster tolerates losing `1` without losing quorum; with `5`, it tolerates losing
+  `2`. An **even** count like `2` gives you a second copy of cluster state, but genuinely **no fault
+  tolerance** — losing either node already drops you below a majority of `2`. The demo cluster in this guide
+  uses the production-recommended `3` master-eligible nodes: Case 2 below shows a single master-node loss
+  being absorbed without incident, and Case 3 pushes further to show what happens once a *second* node is
+  lost and the majority itself is gone.
 
 - **Data node (shard) failover:**
   Every index's data is split into shards, and each shard can have one or more replica copies stored on
@@ -73,11 +75,12 @@ Before proceeding:
 
 ## Deploy Elasticsearch Dedicated Topology Cluster
 
-The following is an example `Elasticsearch` object which creates a dedicated topology cluster with 2
+The following is an example `Elasticsearch` object which creates a dedicated topology cluster with 3
 master-eligible nodes, 3 data nodes, and 2 ingest nodes.
 
->note: 2 master-eligible nodes is used here to keep the demo light. As explained above, this gives **zero**
-> tolerance for a single master-node failure — production clusters should use an odd count of `3` or more.
+>note: `3` master-eligible nodes is the production-recommended minimum — an odd count so a majority (`2` of
+> `3`) can still be reached after losing a single node. See Case 2 and Case 3 below for what that looks like
+> in practice.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -89,7 +92,7 @@ spec:
   version: xpack-9.2.3
   topology:
     master:
-      replicas: 2
+      replicas: 3
       storage:
         accessModes:
           - ReadWriteOnce
@@ -157,6 +160,7 @@ pod/es-topology-ingest-0   1/1     Running   0          16m
 pod/es-topology-ingest-1   1/1     Running   0          12m
 pod/es-topology-master-0   1/1     Running   0          16m
 pod/es-topology-master-1   1/1     Running   0          12m
+pod/es-topology-master-2   1/1     Running   0          11m
 ```
 
 ```bash
@@ -191,6 +195,7 @@ es-topology-data-2   d         -
 es-topology-master-1 m         *
 es-topology-ingest-1 i         -
 es-topology-master-0 m         -
+es-topology-master-2 m         -
 es-topology-data-1   d         -
 ```
 
@@ -202,7 +207,7 @@ id                     host        ip          node
 i0hv_X6NQy6raWiWt2CE6A 10.42.0.210 10.42.0.210 es-topology-master-1
 ```
 
-`es-topology-master-1` is currently the active master among the two master-eligible nodes.
+`es-topology-master-1` is currently the active master among the three master-eligible nodes.
 
 ## Insert Data and Check Shard Distribution
 
@@ -266,11 +271,14 @@ Elasticsearch runs two independent election-based failover flows, plus stateless
 **Master election.** Master-eligible nodes exchange heartbeats. If the active master stops responding
 (crash, network partition, or graceful shutdown), the remaining master-eligible nodes detect the loss and
 try to elect a new one — but a candidate only wins with votes from a **majority** of the configured
-master-eligible nodes. With `2` master-eligible nodes (as in this demo), that majority is `2` — so losing
-*either one* already means no master can be elected until it returns. With `3` (the production-recommended
-minimum), any `2` form a majority, so a single node loss is tolerated. Either way, when quorum is lost,
-cluster-management operations (index creation, shard allocation, settings changes) stall — this is a
-deliberate safety measure to avoid split-brain, not a bug.
+master-eligible nodes. With `3` master-eligible nodes (as in this demo, the production-recommended minimum),
+that majority is `2` — so losing a single node still leaves `2` of `3` standing, and a new master is elected
+almost immediately. Losing a **second** node, though, drops you to `1` of `3` — below majority — and no
+master can be elected until at least one of the lost nodes returns. When quorum is lost, cluster-management
+operations (index creation, shard allocation, settings changes) stall — this is a deliberate safety measure
+to avoid split-brain, not a bug. This is also exactly why an **even** master-eligible count doesn't help:
+with `2` nodes the majority is still `2`, so losing *either one* already breaks quorum — you get a second
+copy of cluster state, but no actual fault tolerance.
 
 **Data node failover.** The active master continuously tracks which data nodes hold in-sync copies of each
 shard. If a data node goes down, any primary shards it held are promoted from one of their in-sync replicas
@@ -305,10 +313,10 @@ $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cluster/health?pretty" 
   "status" : "yellow",
 
 $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/shards/info?v"
-index shard prirep state      docs store dataset ip          node
-info  0     r      STARTED       2  11kb    11kb 10.42.0.214 es-topology-data-2
-info  0     p      STARTED       2  11kb    11kb 10.42.0.211 es-topology-data-1
-info  0     r      UNASSIGNED
+index shard prirep state      docs store dataset ip         node
+info  0     r      STARTED       1 5.4kb   5.4kb 10.42.0.47 es-topology-data-2
+info  0     p      STARTED       1 5.4kb   5.4kb 10.42.0.37 es-topology-data-0
+info  0     r      UNASSIGNED 
 ```
 
 Once `es-topology-data-1` returns, it's reused to host a fresh replica copy, and the cluster returns to
@@ -321,23 +329,47 @@ $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/info/_doc/1?pretty" | gr
     "Product" : "KubeDB"
 ```
 
-#### Case 2: Delete a master-eligible node
+#### Case 2: Delete one master-eligible node (tolerated)
 
-This demo cluster has only 2 master-eligible nodes, so the majority needed to elect or keep an active
-master is `2` — both must be reachable. There's no spare to lose here; deleting either one already breaks
-quorum.
+With `3` master-eligible nodes, the majority needed to elect or keep an active master is `2` — so there's
+one spare to lose. Delete the current active master and watch the remaining two elect a new one.
 
 ```bash
 $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/master?v"
 id                     host        ip          node
 i0hv_X6NQy6raWiWt2CE6A 10.42.0.210 10.42.0.210 es-topology-master-1
 
-$ kubectl delete pod -n es-demo es-topology-master-1 es-topology-master-0
+$ kubectl delete pod -n es-demo es-topology-master-1
 pod "es-topology-master-1" deleted
+```
+
+With `2` of `3` master-eligible nodes still reachable, a majority remains and a new master is elected
+almost immediately:
+
+```bash
+$ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/master?v"
+id                     host        ip          node
+p7fT_a2MSf2mbXjXr9BQ2g 10.42.0.208 10.42.0.208 es-topology-master-0
+
+$ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cluster/health?pretty" | grep '"status"'
+  "status" : "green",
+```
+
+Cluster health never leaves `green` — master-dependent operations (index creation, shard allocation,
+settings changes) continue uninterrupted throughout. Once `es-topology-master-1` comes back (KubeDB restarts
+it and reattaches its PVC), it simply rejoins as a non-active master-eligible node.
+
+#### Case 3: Delete a second master-eligible node (quorum lost)
+
+Push further and take out another master-eligible node, leaving only `1` of `3` — below the majority of `2`
+needed to elect or keep an active master.
+
+```bash
+$ kubectl delete pod -n es-demo es-topology-master-0
 pod "es-topology-master-0" deleted
 ```
 
-With `0` of `2` master-eligible nodes left, the cluster can't elect a master:
+With only `1` of `3` master-eligible nodes left, the cluster can't elect (or keep) a master:
 
 ```bash
 $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/master?v"
@@ -345,19 +377,21 @@ $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/master?v"
 ```
 
 Master-dependent operations (index creation, shard allocation, cluster settings changes) stall until quorum
-returns. Once both `es-topology-master-0` and `es-topology-master-1` are back up, the 2-node majority is
-restored and a master is elected again — bringing back only one of the two is **not** enough, since a
-majority of `2` still requires both.
+returns. `es-topology-master-2` alone — the one master-eligible node still up — is never enough on its own,
+since it's still only `1` node; a majority requires `es-topology-master-0` or `es-topology-master-1` (or
+both) to come back before `2` of `3` are reachable again and a master can be elected.
 
 This is exactly why production topology clusters should run an **odd** number of master-eligible nodes —
-`3` or more — so a single node failure still leaves a majority standing.
+`3` or more — a single node failure (Case 2) is absorbed for free, and it takes losing a genuine *majority*
+of nodes (Case 3) to actually stall the cluster.
 
-#### Case 3: Delete every node in the cluster
+#### Case 4: Delete every node in the cluster
 
 ```bash
 $ kubectl delete pod -n es-demo -l app.kubernetes.io/instance=es-topology
 pod "es-topology-master-0" deleted
 pod "es-topology-master-1" deleted
+pod "es-topology-master-2" deleted
 pod "es-topology-data-0" deleted
 pod "es-topology-data-1" deleted
 pod "es-topology-data-2" deleted
@@ -366,7 +400,8 @@ pod "es-topology-ingest-1" deleted
 ```
 
 As the PetSets bring pods back up (each reattaching its own PVC), the master-eligible nodes rediscover each
-other, elect a master once both are reachable again, and data nodes reattach their shards from disk. Cluster
+other, elect a master once a majority (`2` of `3`) is reachable again, and data nodes reattach their shards
+from disk. Cluster
 health transitions `red` → `yellow` → `green` as shards are recovered from local data first, and any
 missing replicas are rebuilt.
 
