@@ -14,49 +14,216 @@ section_menu_id: guides
 
 # Redis Grafana Dashboard
 
-KubeDB exposes Redis metrics through a sidecar exporter, and its own view of each resource (status, phase, version) through Panopticon. Once Prometheus is scraping both, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial covers only the Grafana-specific part of that setup — deploying Grafana, connecting it to Prometheus, and importing the dashboards.
+KubeDB exposes Redis metrics through a sidecar exporter, and its own view of each resource (status, phase, version) through Panopticon. Once Prometheus is scraping both, you can visualize them in Grafana using pre-built KubeDB dashboards. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a Redis instance, and importing the Grafana dashboards.
 
 ## Before You Begin
 
-- Complete the [Monitoring Redis Using Prometheus Operator](/docs/guides/redis/monitoring/using-prometheus-operator.md) tutorial first. It covers the shared prerequisites this page builds on: a running Prometheus (Operator) instance, a Redis instance deployed with `spec.monitor.agent: prometheus.io/operator`, and **Panopticon** installed — required for the dashboards' database status/version/phase panels, without which they show "No data".
+- You need a Kubernetes cluster with `kubectl` configured. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-  This tutorial assumes you completed that guide as written, so:
-  - Prometheus is running in the `monitoring` namespace, reachable in-cluster at `prometheus-operated.monitoring.svc:9090`.
-  - The Redis instance `coreos-prom-redis` is running in the `demo` namespace, with a `ServiceMonitor` already scraping it.
-  - Panopticon is running in the `kubeops` namespace.
+- KubeDB must be installed in your cluster with `kubedb-metrics` enabled. Follow the setup guide [here](/docs/setup/README.md) and make sure to include the flag below during installation:
+
+  ```bash
+  --set kubedb-metrics.enabled=true
+  ```
+
+  `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (Step 2) uses to expose metrics to Prometheus.
+
+- To keep monitoring resources isolated, we use a separate `monitoring` namespace and deploy the database in the `demo` namespace.
+
+  ```bash
+  $ kubectl create ns monitoring
+  namespace/monitoring created
+
+  $ kubectl create ns demo
+  namespace/demo created
+  ```
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/redis/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/redis/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
-## Deploy Grafana
+## Configuration
 
-The Prometheus operator setup used in the prerequisite tutorial doesn't bundle Grafana, so install it separately with Helm.
+> These two steps — deploying `kube-prometheus-stack` and installing Panopticon — are shared prerequisites for all KubeDB database monitoring guides. If you have already completed them in another guide, skip to [Step 1](#step-1-deploy-redis).
+
+### Step 1: Deploy kube-prometheus-stack
+
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
+
+Add the prometheus-community Helm repo and install:
 
 ```bash
-$ helm repo add grafana https://grafana.github.io/helm-charts
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
 $ helm repo update
 
-$ helm upgrade --install grafana grafana/grafana -n monitoring --set persistence.enabled=false
+$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.image.tag=7.5.5
 ```
 
-Wait for the Grafana pod to be ready:
+Wait for all pods to be ready:
 
 ```bash
-$ kubectl get pods -n monitoring -l=app.kubernetes.io/name=grafana
-NAME                       READY   STATUS    RESTARTS   AGE
-grafana-6b9c8f9c7d-x2n4p   1/1     Running   0          45s
+$ kubectl get pods -n monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
+prometheus-grafana-xxxx                                3/3     Running   0          2m
+prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
+prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
+prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
 ```
+
+Find the `serviceMonitorSelector` label that Prometheus uses to pick up `ServiceMonitor` objects. You will need this label when enabling monitoring on the Redis instance.
+
+```bash
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+{"matchLabels":{"release":"prometheus"}}
+```
+
+The label is `release: prometheus`.
+
+### Step 2: Install Panopticon
+
+Panopticon is the Appscode operator that reads `MetricsConfiguration` objects created by `kubedb-metrics` and exposes them to Prometheus. It must be installed before enabling `kubedb-metrics`.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
+## Setup
+
+## Step 1: Deploy Redis
+
+Below is the Redis object with monitoring configured to use Prometheus Operator. This example deploys Redis in **Cluster mode** (3 shards, 2 replicas each) — the mode needed to populate the `KubeDB / Redis / Shard` dashboard's panels; a standalone Redis instance leaves that dashboard empty.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: redis-cluster
+  namespace: demo
+spec:
+  version: 8.2.2
+  mode: Cluster
+  cluster:
+    shards: 3
+    replicas: 2
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+```
+
+Here,
+
+- `spec.mode: Cluster` with `spec.cluster.shards`/`spec.cluster.replicas` deploys a 3-shard Redis Cluster with 2 replicas per shard (9 pods total).
+- `monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` for this instance.
+- `monitor.prometheus.serviceMonitor.labels` must match the `serviceMonitorSelector` label of your Prometheus (`release: prometheus`).
+- `monitor.prometheus.serviceMonitor.interval` sets the scrape interval to 10 seconds.
+
+Create the Redis instance:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/monitoring/redis-cluster.yaml
+redis.kubedb.com/redis-cluster created
+```
+
+Wait for it to be `Ready`:
+
+```bash
+$ kubectl get redis -n demo redis-cluster
+NAME            VERSION   STATUS   AGE
+redis-cluster   8.2.2     Ready    5m
+```
+
+Each shard gets its own stats service named `{redis-name}-shard{N}-stats` for the exporter:
+
+```bash
+$ kubectl get svc -n demo --selector="app.kubernetes.io/instance=redis-cluster"
+NAME                          TYPE        CLUSTER-IP     EXTERNAL-IP   PORT(S)     AGE
+redis-cluster                 ClusterIP   10.96.10.1     <none>        6379/TCP    5m
+redis-cluster-shard0-stats    ClusterIP   10.96.10.2     <none>        56790/TCP   5m
+redis-cluster-shard1-stats    ClusterIP   10.96.10.3     <none>        56790/TCP   5m
+redis-cluster-shard2-stats    ClusterIP   10.96.10.4     <none>        56790/TCP   5m
+```
+
+KubeDB also creates a `ServiceMonitor` per shard in the `demo` namespace:
+
+```bash
+$ kubectl get servicemonitor -n demo
+NAME                          AGE
+redis-cluster-shard0-stats    5m
+redis-cluster-shard1-stats    5m
+redis-cluster-shard2-stats    5m
+```
+
+Verify one carries the correct label:
+
+```bash
+$ kubectl get servicemonitor -n demo redis-cluster-shard0-stats -o jsonpath='{.metadata.labels}'
+{"release":"prometheus", ...}
+```
+
+## Step 2: Verify Prometheus is Scraping
+
+Port-forward the Prometheus pod:
+
+```bash
+$ kubectl port-forward -n monitoring \
+  prometheus-prometheus-kube-prometheus-prometheus-0 9090
+Forwarding from 127.0.0.1:9090 -> 9090
+Forwarding from [::1]:9090 -> 9090
+```
+
+Open [http://localhost:9090/targets](http://localhost:9090/targets) in your browser. Look for entries whose `service` label matches `redis-cluster-shard0-stats`, `redis-cluster-shard1-stats`, and `redis-cluster-shard2-stats`. Their state should be **UP**.
+
+<p align="center">
+  <img alt="Prometheus Target" src="/docs/images/redis/monitoring/rd-prom-targets.png" style="padding:10px">
+</p>
+
+If a target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
+
+## Step 3: Access Grafana
 
 Port-forward the Grafana service:
 
 ```bash
-$ kubectl port-forward -n monitoring svc/grafana 3000:80
-Forwarding from 127.0.0.1:3000 -> 3000
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80
+Forwarding from 127.0.0.1:3000 -> 80
 ```
 
 Open [http://localhost:3000](http://localhost:3000). The username is `admin`. Retrieve the auto-generated password from the secret:
 
 ```bash
-$ kubectl get secret -n monitoring grafana -o jsonpath='{.data.admin-password}' | base64 -d
+$ kubectl get secret -n monitoring prometheus-grafana \
+  -o jsonpath='{.data.admin-password}' | base64 -d
 ```
 
 | Field    | Value                       |
@@ -74,11 +241,15 @@ After a successful login you will see the Grafana home page:
   <img alt="Grafana Home" src="/docs/images/redis/monitoring/rd-grafana-home.png" style="padding:10px">
 </p>
 
-## Configure Prometheus as a Data Source
+## Step 4: Configure Prometheus as a Data Source
+
+If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 5.
+
+For a standalone Grafana installation:
 
 1. Go to **Connections** → **Data sources** → **Add new data source**.
 2. Select **Prometheus**.
-3. Set the URL to the `Prometheus` operator's service (`prometheus-operated`, created automatically by the operator for the `prometheus` CR from the prerequisite tutorial):
+3. Set the URL to your Prometheus service:
 
    ```
    http://prometheus-operated.monitoring.svc:9090
@@ -86,7 +257,7 @@ After a successful login you will see the Grafana home page:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Import Dashboard — Option A: Automatic (chart)
+## Step 5: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -101,10 +272,10 @@ $ helm upgrade --install grafana-operator appscode/grafana-operator \
     --namespace kubeops --create-namespace
 ```
 
-**2. Register your Grafana instance as an `AppBinding`.** `grafana-operator` needs to know where to push dashboards and how to authenticate — it reads this from an `AppBinding` object, not from the chart install command itself. Create an API key for the Grafana deployed above, store it in a Secret, and reference both in an `AppBinding`:
+**2. Register your Grafana instance as an `AppBinding`** (skip if you've already done this in another guide on this cluster). `grafana-operator` needs to know where to push dashboards and how to authenticate — it reads this from an `AppBinding` object, not from the chart install command itself. Since Grafana here came bundled with `kube-prometheus-stack`, reuse its existing admin credentials:
 
 ```bash
-$ kubectl port-forward -n monitoring svc/grafana 3000:80 &
+$ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80 &
 
 $ curl -s -X POST -H "Content-Type: application/json" \
     -u admin:<grafana_password> \
@@ -126,7 +297,7 @@ metadata:
 spec:
   type: monitoring.appscode.com/grafana
   clientConfig:
-    url: http://grafana.monitoring.svc:80
+    url: http://prometheus-grafana.monitoring.svc:80
   secret:
     name: grafana-admin-token
 EOF
@@ -134,33 +305,45 @@ EOF
 
 **3. Install the dashboards:**
 
+The chart packages dashboard JSON for every database it supports, so install it from a copy trimmed down to just Redis's dashboards (this also keeps `grafana-operator` from creating dashboards for databases you don't run):
+
 ```bash
-$ helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
-    -n kubeops --create-namespace --version=v2026.8.14-rc.0 \
-    --set featureGates.Redis=true \
+$ helm pull appscode/kubedb-grafana-dashboards --version v2026.7.10 --untar
+
+$ cd kubedb-grafana-dashboards/dashboards
+$ ls | grep -v '^redis$' | xargs rm -rf   # keep only dashboards/redis (includes the RedisSentinel dashboards too)
+$ cd ../..
+
+$ helm package kubedb-grafana-dashboards
+Successfully packaged chart and saved it to: kubedb-grafana-dashboards-v2026.7.10.tgz
+
+$ helm upgrade -i kubedb-grafana-dashboards ./kubedb-grafana-dashboards-v2026.7.10.tgz \
+    -n kubeops --create-namespace \
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
 
-`featureGates.Redis` already defaults to `true` — set explicitly above for clarity. `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster).
+`grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 
-This single command creates every dashboard this chart ships for Redis — `KubeDB / Redis / Summary`, `KubeDB / Redis / Pod`, `KubeDB / Redis / Shard` (plus the `RedisSentinel` variants) — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
+This creates every dashboard the chart ships for Redis — `KubeDB / Redis / Summary`, `KubeDB / Redis / Pod`, `KubeDB / Redis / Shard` (plus the `RedisSentinel / Pod` and `RedisSentinel / Summary` variants) — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
 
 Verify they landed:
 
 ```bash
 $ kubectl get grafanadashboards.openviz.dev -n kubeops | grep -i redis
-NAME                            TITLE                      SYNCED    AGE
-grafana-kubedb-redis-pod        KubeDB / Redis / Pod       Current   30s
-grafana-kubedb-redis-shard      KubeDB / Redis / Shard     Current   30s
-grafana-kubedb-redis-summary    KubeDB / Redis / Summary   Current   30s
+NAME                                    TITLE                              SYNCED    AGE
+grafana-kubedb-redis-pod                KubeDB / Redis / Pod               Current   30s
+grafana-kubedb-redis-shard               KubeDB / Redis / Shard              Current   30s
+grafana-kubedb-redis-summary            KubeDB / Redis / Summary           Current   30s
+grafana-kubedb-redissentinel-pod        KubeDB / RedisSentinel / Pod       Current   30s
+grafana-kubedb-redissentinel-summary    KubeDB / RedisSentinel / Summary   Current   30s
 ```
 
 > The `grafana-` prefix on each resource name comes from the `grafana.name=grafana` value set above (the chart prepends it to the dashboard title to build the resource name) — this is expected.
 
-`SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the three dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in [Explore the Dashboard](#explore-the-dashboard) below.
+`SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in [Step 6](#step-6-explore-the-dashboard) below.
 
-## Import Dashboard — Option B: Manual (JSON upload)
+## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 
@@ -173,8 +356,6 @@ Three dashboards are available. Download the JSON files from the [opnpulse/dashb
 | `redis_summary_dashboard.json` | KubeDB / Redis / Summary |
 | `redis_pod_dashboard.json` | KubeDB / Redis / Pod |
 | `redis_shards_dashboard.json` | KubeDB / Redis / Shard |
-
-> The Shard dashboard is relevant for Redis Cluster mode (`spec.mode: Cluster`); its panels stay empty for a standalone (non-cluster) Redis instance like the one deployed in the prerequisite tutorial.
 
 **Import steps (repeat for each file you need):**
 
@@ -198,7 +379,7 @@ After importing the files you need, they will appear under `Dashboards` in the l
 | KubeDB / Redis / Pod | Per-pod role, master/slaves, connected clients, memory, commands/sec, network I/O, CPU/memory |
 | KubeDB / Redis / Shard | Cluster shard slot health, node/slave count, per-slave status, cluster mode |
 
-## Explore the Dashboard
+## Step 6: Explore the Dashboard
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 
@@ -206,9 +387,9 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 |----------------|--------------------------|--------------------------------------------------------------|
 | **datasource** | All dashboards          | Your Prometheus data source                                |
 | **Namespace**  | All dashboards          | Namespace where your Redis is deployed (e.g., `demo`)      |
-| **app**        | Summary dashboard       | Name of your Redis instance (e.g., `coreos-prom-redis`)    |
-| **redis**      | Pod, Shard dashboards   | Name of your Redis instance (e.g., `coreos-prom-redis`)    |
-| **Pod Name**   | Pod, Shard dashboards   | A specific pod (e.g., `coreos-prom-redis-0`)               |
+| **app**        | Summary dashboard       | Name of your Redis instance (e.g., `redis-cluster`)         |
+| **redis**      | Pod, Shard dashboards   | Name of your Redis instance (e.g., `redis-cluster`)         |
+| **Pod Name**   | Pod, Shard dashboards   | A specific pod (e.g., `redis-cluster-shard0-0`)             |
 | **Filters**    | Shard dashboard         | Additional label filters for the selected shard             |
 
 **KubeDB / Redis / Summary** — start here for an instance overview:
@@ -230,7 +411,7 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
   <img alt="KubeDB Redis Pod Dashboard" src="/docs/images/redis/monitoring/rd-grafana-pod.png" style="padding:10px">
 </p>
 
-**KubeDB / Redis / Shard** — cluster shard health for Cluster mode:
+**KubeDB / Redis / Shard** — cluster shard health, populated because this tutorial deploys Redis in Cluster mode:
 - **Cluster Shard Slots / Cluster Shard Slots Failed** — hash slot coverage and any failed slots
 - **Cluster Nodes / Cluster Masters** — total nodes and master count in the cluster
 - **Connected Slaves / My Slaves** — number of connected slaves and their IP, port, and online status
@@ -242,16 +423,17 @@ After opening a dashboard, use the dropdown filters at the top to focus on a spe
 
 ## Cleaning up
 
-This page only cleans up the Grafana-specific resources it created. For Redis, Prometheus, and Panopticon, see the [Cleaning up](/docs/guides/redis/monitoring/using-prometheus-operator.md#cleaning-up) section of the prerequisite tutorial.
-
 ```bash
-# If you used Option A (automatic dashboard import)
-$ helm uninstall kubedb-grafana-dashboards -n kubeops
-$ helm uninstall grafana-operator -n kubeops
-$ kubectl delete secret -n monitoring grafana-admin-token
-$ kubectl delete appbinding -n monitoring grafana
+# Remove the Redis instance
+kubectl delete redis -n demo redis-cluster
 
-$ helm uninstall grafana -n monitoring
+# Remove namespaces
+kubectl delete ns demo
+
+# Uninstall monitoring stack (optional)
+helm uninstall prometheus -n monitoring
+helm uninstall panopticon -n kubeops
+kubectl delete ns monitoring kubeops
 ```
 
 ## Next Steps

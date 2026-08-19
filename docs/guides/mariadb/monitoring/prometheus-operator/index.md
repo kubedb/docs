@@ -301,6 +301,36 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
 
 Check the `endpoint` and `service` labels. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
 
+## Install Panopticon (required for full dashboard data)
+
+The sidecar exporter deployed with this MariaDB instance only reports MariaDB-native metrics (connections, queries, memory, etc.). The KubeDB MariaDB Grafana dashboards (see [MariaDB Grafana Dashboard](/docs/guides/mariadb/monitoring/grafana-dashboard.md)) also chart KubeDB's own view of the resource — database status, phase, version, deletion policy — and those come from a **separate** metric source: **Panopticon**, the Appscode operator that exports `kubedb_com_mariadb_*` metrics for every KubeDB object. Skip this step and the dashboards will still load, but the General Info / phase panels will show "No data".
+
+Install Panopticon with the `prometheus.io/operator` monitoring agent — the same agent this tutorial already uses for MariaDB itself, so Panopticon's metrics get picked up the same way, via a `ServiceMonitor` the chart creates automatically. No manual Prometheus config editing needed, unlike the [built-in Prometheus](/docs/guides/mariadb/monitoring/builtin-prometheus/) tutorial.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+> The `monitoring.serviceMonitor.labels.release` value must match whatever label your `Prometheus` CR's `serviceMonitorSelector` expects — `release: prometheus` here, matching the label already used for MariaDB's own `ServiceMonitor` earlier in this tutorial. If your Prometheus server uses a different `serviceMonitorSelector` label, use that instead.
+
+Verify Panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
 ## Cleaning up
 
 To cleanup the Kubernetes resources created by this tutorial, run following commands
@@ -308,6 +338,12 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 ```bash
 # cleanup database
 kubectl delete mariadb -n demo coreos-prom-md
+
+# cleanup panopticon
+helm uninstall panopticon -n kubeops
+
+# if you also completed the Grafana Dashboard tutorial, clean that up first —
+# see https://kubedb.com/docs/guides/mariadb/monitoring/grafana-dashboard.md#cleaning-up
 
 # cleanup Prometheus resources
 kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/operator/artifacts/prometheus.yaml
