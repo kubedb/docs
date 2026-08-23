@@ -454,6 +454,36 @@ If you don't specify `spec.deletionPolicy` KubeDB uses `Halt` termination policy
 
 > For more details you can visit [here](https://appscode.com/blog/post/deletion-policy/)
 
+### spec.license
+
+`spec.license` is an optional field that names the Secret holding the license certificate a "Postgres Enterprise by AppsCode" build needs to start. This is unrelated to the KubeDB platform license you pass via `global.license` when installing the KubeDB operator ([see PostgresVersion](/docs/guides/postgres/concepts/catalog.md)); that license activates KubeDB Enterprise features, while `spec.license` activates the database binary itself, and only applies when `spec.version` points at a [PostgresVersion](/docs/guides/postgres/concepts/catalog.md) whose `spec.distribution` is `AppsCode` and `spec.license.required` is `true`. For any other distribution, `spec.license` must be left unset.
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: p1
+  namespace: demo
+spec:
+  version: "16.9-appscode"
+  license:
+    secretRef:
+      name: p1-license
+      key: license.pem
+  ...
+```
+
+- `spec.license.secretRef.name` is a required field that names a Secret in the same namespace as the Postgres object.
+- `spec.license.secretRef.key` is an optional field naming the key inside that Secret under which the license certificate (an X.509 PEM file) is stored. It defaults to `license.pem` when left unset.
+
+```bash
+$ kubectl create secret generic p1-license -n demo \
+--from-file=license.pem=/path/to/license.pem
+secret "p1-license" created
+```
+
+KubeDB mounts the referenced certificate outside the database's data volume and points the database process at it; the certificate itself, how it is issued, and its validity window are managed entirely outside KubeDB. If `spec.version` requires a license and `spec.license` is not set, or `spec.license` is set against a version that does not require one, the KubeDB admission webhook rejects the Postgres object.
+
 ## Next Steps
 
 - Learn how to use KubeDB to run a PostgreSQL database [here](/docs/guides/postgres/README.md).
