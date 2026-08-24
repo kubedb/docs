@@ -81,7 +81,7 @@ milvus-standalone-compute-autoscaler   94s
 milvus-storage-autoscaler              93s
 ```
 
-The storage autoscaler watches the `streamingnode`/`node` PVC usage (read from Prometheus). When usage crosses `usageThreshold`, it creates a `VolumeExpansion` `MilvusOpsRequest`. In this walkthrough the volume stayed well below the threshold (a freshly-created, near-empty `1Gi` volume), so no expansion was triggered:
+The storage autoscaler watches the `streamingnode`/`node` PVC usage through the `custom.metrics.k8s.io` API backed by the KubeDB storage-metrics apiserver. When usage crosses `usageThreshold`, it creates a `VolumeExpansion` `MilvusOpsRequest`. In this walkthrough the volume stayed well below the threshold (a freshly-created, near-empty `1Gi` volume), so no expansion was triggered:
 
 ```bash
 $ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
