@@ -29,23 +29,76 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
   namespace/alert-mariadb created
   ```
 
-* Before proceeding, complete the [Configuration](/docs/guides/mariadb/monitoring/prometheus-operator/index.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
-
-* This tutorial assumes you already have a **kube-prometheus-stack** running in your cluster, with `Prometheus` configured so that both `serviceMonitorSelector` and `ruleSelector` match the label `release: prometheus`.
-
-  To verify the selectors:
-
-  ```bash
-  $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.ruleSelector}'
-  {"matchLabels":{"release":"prometheus"}}
-
-  $ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
-  {"matchLabels":{"release":"prometheus"}}
-  ```
-
 * To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/mariadb/monitoring/overview/index.md).
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/mariadb](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/mariadb) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Configuration
+
+> Step 1 (`kube-prometheus-stack`) is required to follow this tutorial. Step 2 (Panopticon) is required for the **Provisioner Group** alerts below (`KubeDBMariaDBPhase...`) — skip it only if you just want the exporter-based **Database Group** alerts. If you have already completed the step(s) you need in another guide, skip ahead.
+
+### Step 1: Deploy kube-prometheus-stack
+
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
+
+Add the prometheus-community Helm repo and install:
+
+```bash
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm repo update
+
+$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring --create-namespace \
+  --set grafana.image.tag=7.5.5
+```
+
+Wait for all pods to be ready:
+
+```bash
+$ kubectl get pods -n monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
+prometheus-grafana-xxxx                                3/3     Running   0          2m
+prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
+prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
+prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
+```
+
+Find the `serviceMonitorSelector`/`ruleSelector` labels that Prometheus uses to pick up `ServiceMonitor`/`PrometheusRule` objects — this is the `release: prometheus` label used throughout this tutorial.
+
+```bash
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.ruleSelector}'
+{"matchLabels":{"release":"prometheus"}}
+
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+{"matchLabels":{"release":"prometheus"}}
+```
+
+### Step 2: Install Panopticon (required for the Provisioner Group alerts)
+
+Panopticon is the Appscode operator that exports the KubeDB operator's own view of every resource — `kubedb_com_mariadb_status_phase` and related metrics. It's what powers the **Provisioner Group** alerts below (`KubeDBMariaDBPhaseNotReady`/`KubeDBMariaDBPhaseCritical`). Skip this step if you only need the exporter-based **Database Group** alerts.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify Panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
 
 ## Overview
 
@@ -537,6 +590,10 @@ $ kubectl delete ns alert-mariadb
 $ kubectl delete appbinding -n kubeops grafana
 $ kubectl delete secret -n kubeops grafana-admin-token
 $ helm uninstall grafana-operator -n kubeops
+
+# Uninstall monitoring stack (optional — skip if other tutorials on this cluster still need them)
+$ helm uninstall panopticon -n kubeops
+$ helm uninstall prometheus -n monitoring
 ```
 
 ## Next Steps
