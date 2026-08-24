@@ -35,6 +35,72 @@ section_menu_id: guides
 
 > Note: YAML files used in this tutorial are stored in [/docs/guides/mariadb/monitoring/prometheus-operator/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/prometheus-operator/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Configuration
+
+> Step 1 (`kube-prometheus-stack`) is required to follow this tutorial. Step 2 (Panopticon) is **not** needed for the Prometheus Operator / ServiceMonitor scraping documented on this page — install it only if you also plan to use the KubeDB Grafana dashboards' status panels, or phase-based Alerting. If you have already completed the step(s) you need in another guide, skip ahead.
+
+### Step 1: Deploy kube-prometheus-stack
+
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
+
+Add the prometheus-community Helm repo and install:
+
+```bash
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm repo update
+
+$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.image.tag=7.5.5
+```
+
+Wait for all pods to be ready:
+
+```bash
+$ kubectl get pods -n monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
+prometheus-grafana-xxxx                                3/3     Running   0          2m
+prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
+prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
+prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
+```
+
+Find the `serviceMonitorSelector` label that Prometheus uses to pick up `ServiceMonitor` objects. You will need this label when enabling monitoring on the MariaDB instance.
+
+```bash
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+{"matchLabels":{"release":"prometheus"}}
+```
+
+The label is `release: prometheus`.
+
+### Step 2: Install Panopticon (optional — only for Grafana dashboards & Alerting)
+
+Panopticon is the Appscode operator that reads `MetricsConfiguration` objects (created by `kubedb-metrics`) and exposes them to Prometheus. It is **not required** for the Prometheus Operator / ServiceMonitor scraping covered on this page — skip it, and skip enabling `kubedb-metrics` too, if you only need raw metrics in Prometheus. Install it only if you also plan to use the phase/status panels of the KubeDB Grafana dashboards, or phase-based Alerting — and install it **before** enabling `kubedb-metrics`.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
 ## Find out required labels for ServiceMonitor
 
 We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MariaDB crd so that KubeDB creates `ServiceMonitor` object accordingly.
@@ -300,36 +366,6 @@ Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:909
 </p>
 
 Check the `endpoint` and `service` labels. It verifies that the target is our expected database. Now, you can view the collected metrics and create a graph from homepage of this Prometheus dashboard. You can also use this Prometheus server as data source for [Grafana](https://grafana.com/) and create beautiful dashboard with collected metrics.
-
-## Install Panopticon (required for full dashboard data)
-
-The sidecar exporter deployed with this MariaDB instance only reports MariaDB-native metrics (connections, queries, memory, etc.). The KubeDB MariaDB Grafana dashboards (see [MariaDB Grafana Dashboard](/docs/guides/mariadb/monitoring/grafana-dashboard.md)) also chart KubeDB's own view of the resource — database status, phase, version, deletion policy — and those come from a **separate** metric source: **Panopticon**, the Appscode operator that exports `kubedb_com_mariadb_*` metrics for every KubeDB object. Skip this step and the dashboards will still load, but the General Info / phase panels will show "No data".
-
-Install Panopticon with the `prometheus.io/operator` monitoring agent — the same agent this tutorial already uses for MariaDB itself, so Panopticon's metrics get picked up the same way, via a `ServiceMonitor` the chart creates automatically. No manual Prometheus config editing needed, unlike the [built-in Prometheus](/docs/guides/mariadb/monitoring/builtin-prometheus/) tutorial.
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm upgrade --install panopticon appscode/panopticon \
-  --version v2026.4.30 \
-  --namespace kubeops --create-namespace \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.serviceMonitor.labels.release=prometheus \
-  --set-file license=/path/to/kubedb-license.txt \
-  --wait --timeout 5m0s
-```
-
-> The `monitoring.serviceMonitor.labels.release` value must match whatever label your `Prometheus` CR's `serviceMonitorSelector` expects — `release: prometheus` here, matching the label already used for MariaDB's own `ServiceMonitor` earlier in this tutorial. If your Prometheus server uses a different `serviceMonitorSelector` label, use that instead.
-
-Verify Panopticon is running:
-
-```bash
-$ kubectl get pods -n kubeops
-NAME                          READY   STATUS    RESTARTS   AGE
-panopticon-xxxx               1/1     Running   0          1m
-```
 
 ## Cleaning up
 

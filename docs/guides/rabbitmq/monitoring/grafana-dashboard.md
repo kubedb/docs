@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # RabbitMQ Grafana Dashboard
 
-KubeDB exposes RabbitMQ metrics through a built-in Prometheus plugin. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a RabbitMQ instance, and importing the Grafana dashboard.
+KubeDB exposes RabbitMQ metrics through a built-in Prometheus plugin, and its own view of each resource (status, phase, version) through Panopticon. Once Prometheus is scraping both, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a RabbitMQ instance, and importing the Grafana dashboard.
 
 ## Before You Begin
 
@@ -26,7 +26,7 @@ KubeDB exposes RabbitMQ metrics through a built-in Prometheus plugin. Once Prome
   --set kubedb-metrics.enabled=true
   ```
 
-  `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (Step 2) uses to expose metrics to Prometheus.
+  `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (see [Configuration](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md#configuration)) uses to expose metrics to Prometheus.
 
 - To keep monitoring resources isolated, we use a separate `monitoring` namespace and deploy the database in the `demo` namespace.
 
@@ -38,73 +38,9 @@ KubeDB exposes RabbitMQ metrics through a built-in Prometheus plugin. Once Prome
   namespace/demo created
   ```
 
+* Before proceeding, complete the [Configuration](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon**.
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/rabbitmq/monitoring](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq/monitoring) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-
-## Configuration
-
-> These two steps — deploying `kube-prometheus-stack` and installing Panopticon — are shared prerequisites for all KubeDB database monitoring guides. If you have already completed them in another guide, skip to [Step 1](#step-1-deploy-rabbitmq-with-monitoring-enabled).
-
-### Step 1: Deploy kube-prometheus-stack
-
-`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
-
-Add the prometheus-community Helm repo and install:
-
-```bash
-$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-$ helm repo update
-
-$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring \
-  --set grafana.image.tag=7.5.5
-```
-
-Wait for all pods to be ready:
-
-```bash
-$ kubectl get pods -n monitoring
-NAME                                                   READY   STATUS    RESTARTS   AGE
-alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
-prometheus-grafana-xxxx                                3/3     Running   0          2m
-prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
-prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
-prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
-```
-
-Find the `serviceMonitorSelector` label that Prometheus uses to pick up `ServiceMonitor` objects. You will need this label when enabling monitoring on the RabbitMQ instance.
-
-```bash
-$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
-{"matchLabels":{"release":"prometheus"}}
-```
-
-The label is `release: prometheus`.
-
-### Step 2: Install Panopticon
-
-Panopticon is the Appscode operator that reads `MetricsConfiguration` objects created by `kubedb-metrics` and exposes them to Prometheus. It must be installed before enabling `kubedb-metrics`.
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm upgrade --install panopticon appscode/panopticon \
-  --version v2026.4.30 \
-  --namespace kubeops --create-namespace \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.serviceMonitor.labels.release=prometheus \
-  --set-file license=/path/to/kubedb-license.txt \
-  --wait --timeout 5m0s
-```
-
-Verify panopticon is running:
-
-```bash
-$ kubectl get pods -n kubeops
-NAME                          READY   STATUS    RESTARTS   AGE
-panopticon-xxxx               1/1     Running   0          1m
-```
 
 ## Setup
 
