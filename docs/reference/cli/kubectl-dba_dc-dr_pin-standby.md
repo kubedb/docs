@@ -1,33 +1,53 @@
 ---
-title: Kubectl-Dba
+title: Kubectl-Dba Dc-Dr Pin-Standby
 menu:
   docs_{{ .version }}:
-    identifier: kubectl-dba
-    name: Kubectl-Dba
+    identifier: kubectl-dba-dc-dr-pin-standby
+    name: Kubectl-Dba Dc-Dr Pin-Standby
     parent: reference-cli
-    weight: 0
-
 menu_name: docs_{{ .version }}
 section_menu_id: reference
-url: /docs/{{ .version }}/reference/cli/
-aliases:
-- /docs/{{ .version }}/reference/cli/kubectl-dba/
 ---
-## kubectl-dba
+## kubectl-dba dc-dr pin-standby
 
-kubectl plugin for KubeDB
+Pin this data center as a standby (standby-hold): it never promotes
 
 ### Synopsis
 
-kubectl plugin for KubeDB by AppsCode - Kubernetes ready production-grade Databases
+Creates the human-owned standby-hold ConfigMap<scope> -standby-hold in the coordination namespace of the CURRENT cluster, which must be the data center you are holding down.
 
- Find more information at https://kubedb.com
+ While it exists that DC never contends for the scope's primary-DC Lease, never promotes (it refuses even an explicit handoff naming it), and its coordinator refuses destructive cross-DC rewinds or re-seeds of the data it holds. It fails CLOSED: if the ConfigMap cannot be read the hold is assumed, so a flaky apiserver never silently drops the protection.
+
+ It is deliberately ignored on the data center that is currently ACTIVE, because demoting the active DC without a quiesce is unsafe; move the primary away with a planned switchover first.
+
+ KUBECONFIG: the SPOKE of the data center being held.
 
 ```
-kubectl-dba [flags]
+kubectl-dba dc-dr pin-standby (--scope LEASE | --db DB_NAME) [flags]
+```
+
+### Examples
+
+```
+  # Never let dc-a take the primary role for this scope (run against dc-a)
+  kubectl dba dc-dr pin-standby --scope primary-dc --yes --kubeconfig ~/.kube/dc-a.yaml
+  
+  # Release it
+  kubectl dba dc-dr pin-standby --scope primary-dc --remove --yes --kubeconfig ~/.kube/dc-a.yaml
 ```
 
 ### Options
+
+```
+      --coord-namespace string   Namespace on this spoke that holds the marker ConfigMaps (default "dc-failover")
+      --db string                Resolve the scope from this database instead (requires the kubeconfig to reach the hub)
+  -h, --help                     help for pin-standby
+      --remove                   Remove the pin instead of creating it
+      --scope string             Primary-DC Lease name of the scope (for example primary-dc or primary-dc-orders)
+      --yes                      Confirm
+```
+
+### Options inherited from parent commands
 
 ```
       --as string                             Username to impersonate for the operation. User could be a regular user or a service account in a namespace.
@@ -41,7 +61,6 @@ kubectl-dba [flags]
       --context string                        The name of the kubeconfig context to use
       --default-seccomp-profile-type string   Default seccomp profile
       --disable-compression                   If true, opt-out of response compression for all requests to the server
-  -h, --help                                  help for kubectl-dba
       --insecure-skip-tls-verify              If true, the server's certificate will not be checked for validity. This will make your HTTPS connections insecure
       --kubeconfig string                     Path to the kubeconfig file to use for CLI requests.
       --match-server-version                  Require server version to match client version
@@ -57,20 +76,5 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
-* [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
-* [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
-* [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
 * [kubectl-dba dc-dr](/docs/reference/cli/kubectl-dba_dc-dr.md)	 - Cross data center DR operations: switchover, failover, pins, and diagnosis
-* [kubectl-dba debug](/docs/reference/cli/kubectl-dba_debug.md)	 - Debug any Database issue
-* [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
-* [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.
-* [kubectl-dba monitor](/docs/reference/cli/kubectl-dba_monitor.md)	 - Monitoring related commands for a database
-* [kubectl-dba mssql](/docs/reference/cli/kubectl-dba_mssql.md)	 - MSSQLServer database commands
-* [kubectl-dba options](/docs/reference/cli/kubectl-dba_options.md)	 - Print the list of flags inherited by all commands
-* [kubectl-dba pause](/docs/reference/cli/kubectl-dba_pause.md)	 - Pause the processing of an object.
-* [kubectl-dba remote-config](/docs/reference/cli/kubectl-dba_remote-config.md)	 - generate appbinding , secrets for remote replica
-* [kubectl-dba restart](/docs/reference/cli/kubectl-dba_restart.md)	 - Smartly restart the pods of the database.
-* [kubectl-dba resume](/docs/reference/cli/kubectl-dba_resume.md)	 - Resume processing of an object.
-* [kubectl-dba show-credentials](/docs/reference/cli/kubectl-dba_show-credentials.md)	 - Prints credentials of the database.
-* [kubectl-dba version](/docs/reference/cli/kubectl-dba_version.md)	 - Prints binary version number.
 
