@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
   - [MilvusAutoscaler](/docs/guides/milvus/concepts/milvusautoscaler.md)
   - [Storage Autoscaling Overview](/docs/guides/milvus/autoscaler/storage/overview.md)
 
-- Install the **KubeDB Autoscaler** operator and **Prometheus** (storage autoscaling reads PVC usage from Prometheus).
+- Install the **KubeDB Autoscaler** operator.
 
 - The PVC's `StorageClass` must support volume expansion (`allowVolumeExpansion: true`) — e.g. `longhorn-custom`.
 

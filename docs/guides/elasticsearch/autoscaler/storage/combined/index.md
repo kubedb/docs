@@ -22,8 +22,6 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Elas
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
-
 - You must have a `StorageClass` that supports volume expansion.
   
 - You should be familiar with the following `KubeDB` concepts:

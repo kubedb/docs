@@ -31,8 +31,6 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a distr
   --set kubedb-autoscaler.storage-metrics-server.enabled=true
   ```
 
-- Install Prometheus in each spoke cluster. The autoscaler queries the per-cluster Prometheus endpoint (configured in the `PlacementPolicy`) to collect storage usage metrics. You can install it from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
-
 - You must have a `StorageClass` that supports volume expansion in each spoke cluster.
 
 - You should be familiar with the following `KubeDB` concepts:

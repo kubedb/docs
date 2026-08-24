@@ -35,10 +35,6 @@ This guide shows you how to use `KubeDB` to autoscale the storage of an etcd clu
   --set kubedb-autoscaler.storage-metrics-server.enabled=true
   ```
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
-  The Autoscaler operator reads PVC usage through the custom metrics API, which is backed by
-  Prometheus.
-
 - You must have a `StorageClass` that supports volume expansion.
 
 - You should be familiar with the following `KubeDB` concepts:
