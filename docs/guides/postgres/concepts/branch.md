@@ -117,10 +117,12 @@ template) is copied from the source database.
   driver** as the source, because a snapshot can only be restored by the driver that created it.
 - `resources` — cpu/memory requests and limits for the branched database, typically smaller than the
   source's.
-- `issuerRef` — a reference to a cert-manager issuer, given as `apiGroup`, `kind`, and `name`. TLS
-  secrets are namespace-scoped, so a branch cannot reuse the source's certificates; when the source has
-  TLS enabled, KubeDB mints fresh certificates for the branch from this issuer. Required for a
-  TLS-enabled source, ignored otherwise. Mind the scope of what you reference:
+- `issuerRef` — a reference to a cert-manager issuer, given as `apiGroup`, `kind`, and `name`. A
+  certificate is minted for the specific database it names — its Service DNS names are part of the
+  certificate — so a branch cannot reuse the source's certificate even when it shares the source's
+  namespace; when the source has TLS enabled, KubeDB mints a fresh certificate for the branch from this
+  issuer instead. Required for a TLS-enabled source, ignored otherwise. Namespace scope matters for
+  which `Issuer` you can reference:
   - `kind: Issuer` — namespace-scoped, so it must exist **in the target namespace**
     (`spec.target.namespace`). For a cross-namespace branch that is not the source's namespace.
   - `kind: ClusterIssuer` — cluster-scoped, so it works from any target namespace.
@@ -220,10 +222,12 @@ to `Delete`.
   - `ready` — true once every member snapshot is `readyToUse`.
   - `members` — one entry per source data volume, ordered by ordinal and aligned to the cloned target
     volumes, each with `name`, `sourcePVC`, `readyToUse`, `restoreSize`, and `creationTime`.
-- `refreshGeneration` — increments on each scheduled refresh.
-- `lastRefreshTime` — the time of the last refresh **attempt**, whatever its outcome.
-- `lastSuccessfulRefreshTime` — the time of the last **successful** refresh. This is how current the
-  branch data is, and it drives the `FRESHNESS` print column.
+- `refreshGeneration` — `0` for the branch's initial copy, incrementing on each scheduled refresh after
+  that.
+- `lastRefreshTime` — the time of the last **attempt**, whatever its outcome — the initial copy counts
+  as an attempt too.
+- `lastSuccessfulRefreshTime` — the time of the last **successful** run, initial copy included. This is
+  how current the branch data is, and it drives the `FRESHNESS` print column.
 - `nextRefreshTime` — the next scheduled refresh, computed from `spec.schedule.cron`. Empty for a
   one-shot branch.
 - `history` — the bounded run history, each entry carrying `at`, `result`, and a `message` for a failed

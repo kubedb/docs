@@ -407,7 +407,7 @@ dev-branch-ha   Ready   Local   dev-postgres-ha   1s          81s
 `status.snapshot.members` has one entry per source volume:
 
 ```bash
-$ kubectl get branch -n demo dev-branch-ha -o jsonpath='{.status.snapshot}'
+$ kubectl get branch -n demo dev-branch-ha -o jsonpath-as-json='{.status.snapshot}'
 ```
 
 ```json
@@ -529,7 +529,7 @@ The class must belong to the same CSI driver that provisioned the source volumes
 
 | Symptom | Cause and fix |
 |---|---|
-| `Branch` is `Failed` with `reason: PostActionFailed` | A post-action container exited non-zero. Courier suspends the Job so the failed Pod and its logs survive — read them with `kubectl logs -n <ns> job/<target>-post-action`, then fix `spec.postActions` and re-apply. The edit triggers a retry. |
+| `Branch` is `Failed` with `reason: PostActionFailed` | A post-action container exited non-zero. Courier suspends the Job so the failed Pod and its logs survive. Find it with `kubectl get job -n <ns> -l courier.kubedb.com/branch=<branch>` — it's `<target>-post-action` on the first run, `<target>-post-action-gen<N>` on a refresh — then `kubectl logs -n <ns> job/<name>`, fix `spec.postActions`, and re-apply. The edit triggers a retry. |
 | A post-action Pod fails to start with an exec error | `jobTemplate.spec` has no `command` field, so `args` are passed to the image's entrypoint. For an entrypoint-less image, `args` must start with the binary, e.g. `["sh", "-c", "…"]`. |
 | A post-action succeeded but the branch still shows raw data after a refresh | Each refresh generation runs its own Job (`<target>-post-action-gen<N>`). Check that the latest generation's Job completed — Courier labels the Jobs it owns with the branch name: `kubectl get job -n <ns> -l courier.kubedb.com/branch=<branch>`. |
 | `FRESHNESS` is not advancing on a scheduled branch | Check `status.history` and `status.nextRefreshTime`, and the Courier logs: `kubectl logs -n <ns> deploy/kubedb-courier`. |

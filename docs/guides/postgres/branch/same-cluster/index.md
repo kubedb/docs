@@ -272,7 +272,7 @@ dev-branch   Ready          Local   dev-postgres   0s          40s
 
 The branch was ready in **40 seconds**: `Snapshotting` (take a CSI snapshot of the source volume) → `Cloning` (create the branch's volume from that snapshot) → `Provisioning` (KubeDB brings PostgreSQL up on the cloned volume) → `Ready`. `MODE: Local` confirms this is a same-cluster branch.
 
-Most of that time went into starting the target database, not into copying data. Because the clone is copy-on-write, the snapshot and clone steps take about as long for a 1 TB database as for this 1 GB one.
+Most of that time went into starting the target database, not into copying data. `topolvm-provisioner-thin` clones copy-on-write, so on this driver the snapshot and clone steps take about as long for a 1 TB database as for this 1 GB one — a driver without copy-on-write support would take longer, proportional to the data size.
 
 ## Inspect the Branch
 
@@ -332,7 +332,7 @@ status:
 ```
 
 - `status.snapshot` records the snapshot set the current copy was made from — the `strategy` used (`VolumeSnapshot` per volume, or `VolumeGroupSnapshot` for a group-consistent snapshot), and one `members` entry per source data volume.
-- `status.resources` lists everything the branch owns, which is what teardown removes.
+- `status.resources` lists everything the branch owns. Whether teardown removes it depends on `spec.deletionPolicy` — see [Cleaning Up](#cleaning-up) below.
 - `status.history` keeps the outcome of each run, bounded by `spec.historyLimit`.
 
 The branched database itself is an ordinary KubeDB `Postgres`:
@@ -411,7 +411,7 @@ All 1000 rows captured in the snapshot are present on the branch.
 
 ## Verify the Branch Is Isolated
 
-The branch and the source share storage blocks, but only until either of them writes. Let's prove they are fully independent by writing a row to each and looking for it on the other side.
+On this copy-on-write driver, the branch and the source share storage blocks, but only until either of them writes. Let's prove they are fully independent — writes on one are never visible on the other, regardless of what the storage layer shares underneath — by writing a row to each and looking for it on the other side.
 
 Write a row on the **branch**:
 

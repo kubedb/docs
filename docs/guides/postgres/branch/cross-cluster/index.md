@@ -56,7 +56,7 @@ Everything the [Overview's Requirements](/docs/guides/postgres/branch/overview/i
 
 - **An OCM hub, with both clusters registered as managed clusters (spokes).** Cross-cluster branching is built on [Open Cluster Management](https://open-cluster-management.io/); this guide assumes the hub and spoke registration already exists rather than walking through setting one up.
 - **The courier hub addon manager installed on the hub.** It runs the `kubedb-courier manager` sub-command, registers as an OCM addon, and is what mints each spoke's scoped hub kubeconfig and translates `BranchWork` into `ManifestWork`.
-- **The Courier operator running on both clusters** — `kubedb-courier run` needs `--cluster-name` set to that cluster's own OCM cluster name so it can tell Local, Initiator, and Creator apart, plus the `--hub-kubeconfig` and `--hub-namespace` the manager provisioned for it during addon registration.
+- **The Courier operator running on both clusters, on a release recent enough to include cross-cluster branching and `spec.postActions`.** `kubedb-courier run` needs `--cluster-name` set to that cluster's own OCM cluster name so it can tell Local, Initiator, and Creator apart, plus the `--hub-kubeconfig` and `--hub-namespace` the manager provisioned for it during addon registration. Confirm the installed `Branch` CRD actually has these fields the same way the [same-cluster walkthrough](/docs/guides/postgres/branch/same-cluster/index.md#before-you-begin) does, on both clusters.
 - **A storage backend both clusters can resolve a snapshot against.** This is the requirement that has no same-cluster equivalent. Same-cluster branching clones a PVC from a `VolumeSnapshot` in the same cluster; cross-cluster branching clones a PVC on the target cluster from a snapshot taken on the source cluster, which only works if the CSI driver's backend (the same storage appliance, or the same cloud storage service) is reachable from — and the snapshot handle is importable by — both clusters. Two clusters each with their own unrelated local storage cannot cross-cluster branch.
 
 {{< notice type="warning" message="Cross-cluster VolumeGroupSnapshot import is not broadly supported by CSI drivers today. A single-PVC source (a standalone database, or one PVC per engine) crosses cleanly. A multi-PVC HA source crosses as one VolumeSnapshotContent import per PVC, which only stays crash-consistent if the backend itself guarantees the group of source snapshots was taken at one consistent point — that guarantee is backend-specific, so verify it with your storage vendor before relying on it for an HA cross-cluster branch." >}}
@@ -82,7 +82,7 @@ spec:
     clusterName: dev-cluster    # a different cluster than this one selects cross-cluster
     namespace: demo
     name: dev-postgres-remote
-    storageClassName: netapp-trident   # StorageClass in the TARGET cluster
+    storageClassName: topolvm-provisioner-thin   # TARGET cluster's StorageClass for the SAME CSI driver/backend as the source
     issuerRef:
       apiGroup: cert-manager.io
       kind: Issuer
@@ -91,7 +91,7 @@ spec:
   deletionPolicy: Delete
 ```
 
-This `Branch` is created on the **source** cluster, next to `sample-postgres`, exactly like a same-cluster branch. `spec.target.storageClassName` and `spec.target.issuerRef` name resources in the **target** cluster, not the source — the same rule same-cluster branching already follows for a cross-namespace target, just extended to a different cluster.
+This `Branch` is created on the **source** cluster, next to `sample-postgres`, exactly like a same-cluster branch. `spec.target.storageClassName` and `spec.target.issuerRef` name resources in the **target** cluster, not the source — the same rule same-cluster branching already follows for a cross-namespace target, just extended to a different cluster. `storageClassName` still has to resolve to the same CSI driver and backend the source's volumes use — see [Prerequisites](#prerequisites) — even though the `StorageClass` object it names lives on the target cluster and can be spelled differently there.
 
 ## What Happens
 

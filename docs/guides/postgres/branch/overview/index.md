@@ -26,7 +26,7 @@ Branching is driven by a single custom resource, `Branch`, in the `courier.kubed
 ## Why It Matters
 
 - **Production-like data in seconds.** Developers, QA, and CI get a real copy of the production dataset instead of a stale, hand-curated fixture — without waiting for a multi-hour dump and restore.
-- **Cheap.** Copy-on-write means you pay for what changes, not for another full copy of the database.
+- **Cheap, on a driver that supports it.** On a copy-on-write CSI driver you pay for what changes, not for another full copy of the database.
 - **The source is never touched.** KubeDB never pauses, halts, locks, or writes to the source database. It stays online and serving traffic for the whole operation.
 - **Fully isolated.** The branch is a separate `Postgres` object with its own volumes, Service, and (optionally) its own root credential. Writes on either side are invisible to the other.
 - **Safe to hand out.** Optional *post-actions* run right after the clone comes up, so sensitive columns can be stripped or masked before the branch is ever reported `Ready`.
@@ -185,7 +185,7 @@ KubeDB has three features that copy data, and they answer different questions:
 | [Backup & Restore](/docs/guides/postgres/backup/kubestash/overview/index.md) | "If we lose this database, how do we get it back?" | Data at rest in object storage, restorable on demand | Any KubeDB-managed database |
 | [Migration](/docs/operatormanual/migration/) | "How do we move an existing database into KubeDB?" | The same database, relocated, with minimal downtime | An external instance (RDS, CNPG, self-hosted, …) |
 
-Branching is not a backup: the clone shares storage blocks with the source, so it is not an independent durable copy and it does not protect you from losing the source. Use [KubeStash backups](/docs/guides/postgres/backup/kubestash/overview/index.md) for durability, and branching for disposable copies.
+Branching is not a backup: the clone stays in the same cluster on the same storage backend as the source (and, on a copy-on-write driver, initially shares its blocks), so it is not an independent durable copy stored elsewhere and it does not protect you from losing the source. Use [KubeStash backups](/docs/guides/postgres/backup/kubestash/overview/index.md) for durability, and branching for disposable copies.
 
 ## Next Steps
 
