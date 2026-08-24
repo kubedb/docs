@@ -585,6 +585,7 @@ Deleting a `Branch` with the default `Delete` policy removes the branched databa
 ## Next Steps
 
 - Customize your branch: [a separate credential, post-actions, scheduled refresh, cross-namespace targets, HA, and snapshot-class pinning](/docs/guides/postgres/branch/customization/index.md).
+- Need the branch on a *different* Kubernetes cluster? See [Cross-Cluster Branching](/docs/guides/postgres/branch/cross-cluster/index.md).
 - Read the [PostgreSQL Branching Overview](/docs/guides/postgres/branch/overview/index.md) for how branching works under the hood.
 - See every field of the [Branch CRD](/docs/guides/postgres/concepts/branch.md).
 - Learn about [PostgreSQL backup and restore](/docs/guides/postgres/backup/kubestash/overview/index.md) — branching is for disposable copies, backups are for durability. They solve different problems.

@@ -111,7 +111,8 @@ template) is copied from the source database.
   which case courier mirrors the source snapshot into the target namespace so the clone can reference
   it.
 - `clusterName` — the target cluster. Leave it empty (or omit it) for a same-cluster branch; a different
-  cluster name selects a cross-cluster branch.
+  cluster name selects a cross-cluster branch — see
+  [Cross-Cluster Branching](/docs/guides/postgres/branch/cross-cluster/index.md) for what that needs.
 - `storageClassName` — the `StorageClass` for the branch's volumes. It must be backed by the **same CSI
   driver** as the source, because a snapshot can only be restored by the driver that created it.
 - `resources` — cpu/memory requests and limits for the branched database, typically smaller than the
@@ -203,7 +204,7 @@ to `Delete`.
 - `phase` — the lifecycle phase: `Pending`, `Snapshotting`, `Cloning`, `Provisioning`, `ActionsRunning`,
   `Ready`, `Refreshing`, `Deleting`, or `Failed`.
 - `mode` — how this operator participates: `Local` for a same-cluster branch, `Initiator`/`Creator` for
-  the two sides of a cross-cluster branch.
+  the two sides of a [cross-cluster branch](/docs/guides/postgres/branch/cross-cluster/index.md).
 - `conditions` — the milestones reached, in order: `SnapshotReady`, `TargetCreated`, `TargetReady`,
   `RootPasswordReset` (when `spec.resetRootPassword` is set), `PostActionsCompleted` (when
   `spec.postActions` is set), and `Ready`. A `Failed` condition carries the reason —

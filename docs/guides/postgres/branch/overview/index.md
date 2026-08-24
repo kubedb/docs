@@ -76,9 +76,9 @@ Courier reports this in `status.mode`:
 | Mode | Meaning |
 |---|---|
 | `Local` | Same-cluster branch — this operator runs the whole flow. This is the mode covered here. |
-| `Initiator` / `Creator` | Cross-cluster branching roles. |
+| `Initiator` / `Creator` | Cross-cluster branching roles — see [Cross-Cluster Branching](/docs/guides/postgres/branch/cross-cluster/index.md). |
 
-Leaving `spec.target.clusterName` empty selects a same-cluster branch.
+Leaving `spec.target.clusterName` empty selects a same-cluster branch; setting it to a different cluster sends the same `Branch` object through the cross-cluster path instead.
 
 ## What the Branch Inherits
 
@@ -191,4 +191,5 @@ Branching is not a backup: the clone shares storage blocks with the source, so i
 
 - Follow the hands-on walkthrough: [Branch a PostgreSQL Database in the Same Cluster](/docs/guides/postgres/branch/same-cluster/index.md).
 - Then customize it: [Customizing a PostgreSQL Branch](/docs/guides/postgres/branch/customization/index.md) — separate credential, post-actions, scheduled refresh, cross-namespace targets, HA, snapshot-class pinning.
+- Branching into a different Kubernetes cluster? See [Cross-Cluster Branching](/docs/guides/postgres/branch/cross-cluster/index.md).
 - See every field of the [Branch CRD](/docs/guides/postgres/concepts/branch.md).

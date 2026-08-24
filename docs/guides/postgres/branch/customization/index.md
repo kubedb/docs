@@ -19,6 +19,8 @@ The [same-cluster walkthrough](/docs/guides/postgres/branch/same-cluster/index.m
 
 Each field is independent — apply only the ones you need, or combine several in a single `Branch`. The sections below are written as one continuous session, though, run in order against the `sample-postgres` source left behind by the walkthrough. That source starts at **1001 rows**, and the scheduled-refresh section adds one more, so the counts you see grow as you go; each section states the number it expects.
 
+Every field on this page also applies to a branch on a different Kubernetes cluster — see [Cross-Cluster Branching](/docs/guides/postgres/branch/cross-cluster/index.md) for what else that needs.
+
 ## Before You Begin
 
 Everything here assumes the setup from the [same-cluster walkthrough](/docs/guides/postgres/branch/same-cluster/index.md): the KubeDB Courier operator installed, a CSI driver with volume-snapshot support, and the `sample-postgres` source database seeded in the `demo` namespace. Start there if you have not already.
