@@ -22,7 +22,11 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Druid
 
 - Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
+
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
 
 - Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
 
