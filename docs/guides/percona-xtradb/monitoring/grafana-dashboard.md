@@ -270,6 +270,15 @@ grafana-kubedb-perconaxtradb-galera-cluster    KubeDB / PerconaXtraDB / Galera-C
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / PerconaXtraDB / Summary | Instance overview: status, version, node count, resource requests/limits, CPU usage |
+| KubeDB / PerconaXtraDB / Pod | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections |
+| KubeDB / PerconaXtraDB / Database | Per-pod service status/uptime, cluster size/status, QPS, connections, disk and network I/O |
+| KubeDB / PerconaXtraDB / Galera Cluster | Cluster name, per-node online status, Galera replication latency |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -300,13 +309,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all four files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / PerconaXtraDB / Summary | Instance overview: status, version, node count, resource requests/limits, CPU usage |
-| KubeDB / PerconaXtraDB / Pod | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections |
-| KubeDB / PerconaXtraDB / Database | Per-pod service status/uptime, cluster size/status, QPS, connections, disk and network I/O |
-| KubeDB / PerconaXtraDB / Galera Cluster | Cluster name, per-node online status, Galera replication latency |
 
 ## Step 6: Explore the Dashboard
 
@@ -366,6 +368,12 @@ kubectl delete perconaxtradb -n demo pxc-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-perconaxtradb -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

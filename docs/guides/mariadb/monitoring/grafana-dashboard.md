@@ -269,6 +269,15 @@ grafana-kubedb-mariadb-galera-cluster    KubeDB / MariaDB / Galera-Cluster    Cu
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name                    | Description                                                                                      |
+|-----------------------------------|--------------------------------------------------------------------------------------------------|
+| KubeDB / MariaDB / Summary        | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage       |
+| KubeDB / MariaDB / Pod            | Per-pod summary, CPU/memory/file descriptor stats, connections, client threads                   |
+| KubeDB / MariaDB / Database       | Service status/uptime, cluster size/status, QPS, connections, disk and network I/O               |
+| KubeDB / MariaDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, commit/cert failure rate |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -301,13 +310,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name                    | Description                                                                                      |
-|-----------------------------------|--------------------------------------------------------------------------------------------------|
-| KubeDB / MariaDB / Summary        | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage       |
-| KubeDB / MariaDB / Pod            | Per-pod summary, CPU/memory/file descriptor stats, connections, client threads                   |
-| KubeDB / MariaDB / Database       | Service status/uptime, cluster size/status, QPS, connections, disk and network I/O               |
-| KubeDB / MariaDB / Galera Cluster | Cluster size, node state, wsrep_ready, flow control, replication bytes, commit/cert failure rate |
 
 ## Step 6: Explore the Dashboard
 
@@ -373,6 +375,12 @@ kubectl delete mariadb -n demo mariadb-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-mariadb -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

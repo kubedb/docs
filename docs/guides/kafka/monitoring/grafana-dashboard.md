@@ -393,6 +393,12 @@ kubectl delete secret -n demo kafka-ca
 # Remove namespaces
 kubectl delete ns demo
 
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-kafka -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
+
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring
 helm uninstall panopticon -n kubeops

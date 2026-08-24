@@ -273,6 +273,14 @@ grafana-kubedb-ignite-database    KubeDB / Ignite / Database    Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Ignite / Summary | Cluster-level overview |
+| KubeDB / Ignite / Pod | Per-node drill-down |
+| KubeDB / Ignite / Database | Cache and table metrics |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -353,6 +361,12 @@ kubectl delete ignite -n demo ignite-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-ignite -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

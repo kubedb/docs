@@ -259,6 +259,14 @@ grafana-kubedb-neo4j-database    KubeDB / Neo4j / Database    Current   30s
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Neo4j / Summary | Instance-level overview |
+| KubeDB / Neo4j / Pod | Per-pod drill-down |
+| KubeDB / Neo4j / Database | Graph database metrics |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -333,6 +341,12 @@ kubectl delete neo4j -n demo neo4j-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-neo4j -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

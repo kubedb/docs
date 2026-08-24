@@ -275,6 +275,14 @@ grafana-kubedb-pgbouncer-database    KubeDB / PgBouncer / Database    Current   
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / PgBouncer / Summary | Total/client/server connections, active pools, query throughput, CPU/memory/storage |
+| KubeDB / PgBouncer / Pod | Per-pod connections, pools, waiting clients, query rate, CPU/memory |
+| KubeDB / PgBouncer / Database | Per-database pool state, active/idle/waiting clients, max connections, query rate |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -304,12 +312,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all three files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / PgBouncer / Summary | Total/client/server connections, active pools, query throughput, CPU/memory/storage |
-| KubeDB / PgBouncer / Pod | Per-pod connections, pools, waiting clients, query rate, CPU/memory |
-| KubeDB / PgBouncer / Database | Per-database pool state, active/idle/waiting clients, max connections, query rate |
 
 ## Step 6: Explore the Dashboard
 
@@ -368,6 +370,12 @@ kubectl delete pg -n demo ha-postgres
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-pgbouncer -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

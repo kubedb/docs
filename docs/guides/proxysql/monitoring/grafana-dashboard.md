@@ -264,6 +264,14 @@ grafana-kubedb-proxysql-database    KubeDB / ProxySQL / Database    Current   30
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / ProxySQL / Summary | Instance overview: status, version, backend server, node count, resource requests/limits, CPU usage |
+| KubeDB / ProxySQL / Pod | Per-pod uptime, version, CPU/memory, connections, aborted connections, temporary objects/slow queries |
+| KubeDB / ProxySQL / Database | Per-pod service status/uptime, connections, network received/sent, slow queries, aborted connections |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -293,12 +301,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all three files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / ProxySQL / Summary | Instance overview: status, version, backend server, node count, resource requests/limits, CPU usage |
-| KubeDB / ProxySQL / Pod | Per-pod uptime, version, CPU/memory, connections, aborted connections, temporary objects/slow queries |
-| KubeDB / ProxySQL / Database | Per-pod service status/uptime, connections, network received/sent, slow queries, aborted connections |
 
 ## Step 6: Explore the Dashboard
 
@@ -347,6 +349,12 @@ kubectl delete proxysql -n demo proxysql-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-proxysql -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

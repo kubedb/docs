@@ -303,6 +303,14 @@ grafana-kubedb-mssqlserver-database    KubeDB / MSSQLServer / Database    Curren
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / MSSQLServer / Summary | Instance status, version, node count, resource requests/limits, CPU usage |
+| KubeDB / MSSQLServer / Pod | Per-pod status, role (Primary/Secondary), uptime, server resource overview, connections |
+| KubeDB / MSSQLServer / Database | Service status/uptime, AG cluster replica roles, cluster status, SQL compilations, batch requests |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -332,12 +340,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all three files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / MSSQLServer / Summary | Instance status, version, node count, resource requests/limits, CPU usage |
-| KubeDB / MSSQLServer / Pod | Per-pod status, role (Primary/Secondary), uptime, server resource overview, connections |
-| KubeDB / MSSQLServer / Database | Service status/uptime, AG cluster replica roles, cluster status, SQL compilations, batch requests |
 
 ## Step 6: Explore the Dashboard
 
@@ -391,6 +393,12 @@ kubectl delete issuer mssqlserver-ca-issuer -n demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-mssqlserver -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

@@ -269,6 +269,15 @@ grafana-kubedb-mysql-group-replication-summary    KubeDB / MySQL / Group-Replica
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name                        | Description                                                                                        |
+|---------------------------------------|----------------------------------------------------------------------------------------------------|
+| KubeDB / MySQL / Summary              | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage         |
+| KubeDB / MySQL / Pod                  | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections                     |
+| KubeDB / MySQL / Database             | Per-pod service status/uptime, QPS, connections, disk and network I/O                              |
+| KubeDB / MySQL / Group Replication    | Group member status and primary node, replication lag, transport time                              |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -301,13 +310,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing all files, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name                        | Description                                                                                        |
-|---------------------------------------|----------------------------------------------------------------------------------------------------|
-| KubeDB / MySQL / Summary              | Instance overview: status, version, node count, resource requests/limits, CPU/memory usage         |
-| KubeDB / MySQL / Pod                  | Per-pod uptime, version, QPS, InnoDB buffer pool size, CPU/memory, connections                     |
-| KubeDB / MySQL / Database             | Per-pod service status/uptime, QPS, connections, disk and network I/O                              |
-| KubeDB / MySQL / Group Replication    | Group member status and primary node, replication lag, transport time                              |
 
 ## Step 6: Explore the Dashboard
 
@@ -368,6 +370,12 @@ kubectl delete mysql -n demo mysql-grafana-demo
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-mysql -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring

@@ -282,6 +282,14 @@ grafana-kubedb-redissentinel-summary    KubeDB / RedisSentinel / Summary   Curre
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in [Step 6](#step-6-explore-the-dashboard) below.
 
+After importing them, they will appear under `Dashboards` in the left sidebar as well:
+
+| Dashboard Name | Description |
+|---|---|
+| KubeDB / Redis / Summary | Instance overview: status, version, mode, node count, resource requests/limits, CPU usage |
+| KubeDB / Redis / Pod | Per-pod role, master/slaves, connected clients, memory, commands/sec, network I/O, CPU/memory |
+| KubeDB / Redis / Shard | Cluster shard slot health, node/slave count, per-slave status, cluster mode |
+
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
@@ -311,12 +319,6 @@ The import page looks like this — click **Upload dashboard JSON file** to sele
 </p>
 
 After importing the files you need, they will appear under `Dashboards` in the left sidebar.
-
-| Dashboard Name | Description |
-|---|---|
-| KubeDB / Redis / Summary | Instance overview: status, version, mode, node count, resource requests/limits, CPU usage |
-| KubeDB / Redis / Pod | Per-pod role, master/slaves, connected clients, memory, commands/sec, network I/O, CPU/memory |
-| KubeDB / Redis / Shard | Cluster shard slot health, node/slave count, per-slave status, cluster mode |
 
 ## Step 6: Explore the Dashboard
 
@@ -368,6 +370,12 @@ kubectl delete redis -n demo redis-cluster
 
 # Remove namespaces
 kubectl delete ns demo
+
+# Uninstall the Grafana dashboards chart, if you used Option A
+helm uninstall kubedb-grafana-dashboards-redis -n kubeops
+
+# Uninstall grafana-operator (optional — skip if other DB guides on this cluster still use it)
+helm uninstall grafana-operator -n kubeops
 
 # Uninstall monitoring stack (optional)
 helm uninstall prometheus -n monitoring
