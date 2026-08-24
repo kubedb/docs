@@ -34,8 +34,7 @@ recovery for all three automatically, though only two of them involve an actual 
   `2`. An **even** count like `2` gives you a second copy of cluster state, but genuinely **no fault
   tolerance** — losing either node already drops you below a majority of `2`. The demo cluster in this guide
   uses the production-recommended `3` master-eligible nodes: Case 2 below shows a single master-node loss
-  being absorbed without incident, and Case 3 pushes further to show what happens once a *second* node is
-  lost and the majority itself is gone.
+  being absorbed without incident, since `2` of `3` is still a majority.
 
 - **Data node (shard) failover:**
   Every index's data is split into shards, and each shard can have one or more replica copies stored on
@@ -79,8 +78,8 @@ The following is an example `Elasticsearch` object which creates a dedicated top
 master-eligible nodes, 3 data nodes, and 2 ingest nodes.
 
 >note: `3` master-eligible nodes is the production-recommended minimum — an odd count so a majority (`2` of
-> `3`) can still be reached after losing a single node. See Case 2 and Case 3 below for what that looks like
-> in practice.
+> `3`) can still be reached after losing a single node. See Case 2 below for what that looks like in
+> practice.
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -329,7 +328,7 @@ $ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/info/_doc/1?pretty" | gr
     "Product" : "KubeDB"
 ```
 
-#### Case 2: Delete one master-eligible node (tolerated)
+#### Case 2: Delete one master-eligible node
 
 With `3` master-eligible nodes, the majority needed to elect or keep an active master is `2` — so there's
 one spare to lose. Delete the current active master and watch the remaining two elect a new one.
@@ -359,33 +358,14 @@ Cluster health never leaves `green` — master-dependent operations (index creat
 settings changes) continue uninterrupted throughout. Once `es-topology-master-1` comes back (KubeDB restarts
 it and reattaches its PVC), it simply rejoins as a non-active master-eligible node.
 
-#### Case 3: Delete a second master-eligible node (quorum lost)
-
-Push further and take out another master-eligible node, leaving only `1` of `3` — below the majority of `2`
-needed to elect or keep an active master.
-
-```bash
-$ kubectl delete pod -n es-demo es-topology-master-0
-pod "es-topology-master-0" deleted
-```
-
-With only `1` of `3` master-eligible nodes left, the cluster can't elect (or keep) a master:
-
-```bash
-$ curl -s -u "$ES_USER:$ES_PASS" "http://localhost:9200/_cat/master?v"
-{"error":{"root_cause":[{"type":"null_pointer_exception","reason":"Cannot invoke \"Object.hashCode()\" because \"pk\" is null"}],"type":"null_pointer_exception","reason":"Cannot invoke \"Object.hashCode()\" because \"pk\" is null"},"status":500}
-```
-
-Master-dependent operations (index creation, shard allocation, cluster settings changes) stall until quorum
-returns. `es-topology-master-2` alone — the one master-eligible node still up — is never enough on its own,
-since it's still only `1` node; a majority requires `es-topology-master-0` or `es-topology-master-1` (or
-both) to come back before `2` of `3` are reachable again and a master can be elected.
-
 This is exactly why production topology clusters should run an **odd** number of master-eligible nodes —
-`3` or more — a single node failure (Case 2) is absorbed for free, and it takes losing a genuine *majority*
-of nodes (Case 3) to actually stall the cluster.
+`3` or more: a single node failure is absorbed for free, since `2` of `3` is still a majority. Genuinely
+losing quorum requires losing a *second* node before the first one recovers — not really something you can
+demonstrate hands-on here, since KubeDB's PetSet controller recreates a deleted pod almost immediately, but
+the same majority math from [How Failover Works](#how-failover-works) above still applies: drop to `1` of
+`3` and no master can be elected until quorum is restored.
 
-#### Case 4: Delete every node in the cluster
+#### Case 3: Delete every node in the cluster
 
 ```bash
 $ kubectl delete pod -n es-demo -l app.kubernetes.io/instance=es-topology
