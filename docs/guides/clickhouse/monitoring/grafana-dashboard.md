@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # ClickHouse Grafana Dashboard
 
-KubeDB exposes ClickHouse metrics through a sidecar exporter. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a ClickHouse instance, and importing the Grafana dashboard.
+KubeDB exposes ClickHouse metrics through ClickHouse's own native Prometheus exporter. Once Prometheus scrapes those metrics, you can visualize them in Grafana using a pre-built KubeDB dashboard. This tutorial walks through the full setup: deploying the monitoring stack, enabling monitoring on a ClickHouse instance, and importing the Grafana dashboard.
 
 ## Before You Begin
 
