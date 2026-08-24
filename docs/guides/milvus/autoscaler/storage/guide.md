@@ -25,6 +25,14 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
 
 - Install the **KubeDB Autoscaler** operator.
 
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
+
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
+
 - The PVC's `StorageClass` must support volume expansion (`allowVolumeExpansion: true`) — e.g. `longhorn-custom`.
 
 - Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
