@@ -19,8 +19,9 @@ section_menu_id: guides
 `Branch` is a Kubernetes `Custom Resource Definition` (CRD). It provides a declarative way to create an
 instant, writable copy of a running KubeDB-managed database — the way you would branch a Git
 repository. You describe the source database and the target you want, and the kubedb-courier operator
-snapshots the source's volumes, clones them copy-on-write, and provisions a second database on top of
-the clone.
+snapshots the source's volumes, restores the branch volumes from those snapshots, and provisions a
+second database on top of the restore. How fast that restore is, and whether it costs extra storage,
+depends on the CSI driver: drivers that support copy-on-write restores make this near-instant and cheap.
 
 One `Branch` object is one branch. It owns the database it creates: the branch's lifecycle, its optional
 refresh schedule, and its teardown are all driven from this single object. The branched database itself
@@ -52,7 +53,7 @@ spec:
     # clusterName omitted — same-cluster branch
     namespace: demo
     name: dev-postgres
-    storageClassName: gp3
+    storageClassName: topolvm-provisioner-thin
     resources:
       requests:
         cpu: 500m
@@ -207,8 +208,9 @@ to `Delete`.
   `RootPasswordReset` (when `spec.resetRootPassword` is set), `PostActionsCompleted` (when
   `spec.postActions` is set), and `Ready`. A `Failed` condition carries the reason —
   `PostActionFailed` for a post-action failure, which is terminal until the spec changes.
-- `resources` — the objects the branch owns, which is exactly what teardown removes:
-  `authSecret`, `clonedPVCs`, `configSecret`, and the current generation's `postActionJob`.
+- `resources` — references to the objects the branch owns: `authSecret`, `clonedPVCs`, `configSecret`,
+  and the current generation's `postActionJob`. Which of these teardown actually removes depends on
+  `spec.deletionPolicy` — see [spec.deletionPolicy](#specdeletionpolicy) above.
 - `snapshot` — the snapshot set backing the current copy.
   - `strategy` — `VolumeGroupSnapshot` when the CSI driver offers a `VolumeGroupSnapshotClass`
     (group-consistent across all volumes), otherwise `VolumeSnapshot` (per-volume fallback).

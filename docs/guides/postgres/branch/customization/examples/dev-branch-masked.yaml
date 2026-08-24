@@ -38,7 +38,8 @@ spec:
             - -c
             - |
               UPDATE customers
-                 SET email = 'user' || id || '@example.invalid',
+                 SET full_name = 'Masked Customer',
+                     email = 'user' || id || '@example.invalid',
                      phone = '+1-555-0000';
           resources:
             requests:

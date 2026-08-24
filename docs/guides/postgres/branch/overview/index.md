@@ -120,7 +120,7 @@ Alongside the phase, `status.conditions` records each milestone:
 
 `SnapshotReady` → `TargetCreated` → `TargetReady` → [`RootPasswordReset`] → [`PostActionsCompleted`] → `Ready`
 
-`status.resources` lists everything the branch owns (its auth Secret, cloned PVCs, and current post-action Job), and `status.snapshot` records the snapshot set backing the current copy — the strategy used, and one entry per source volume with its size and readiness.
+`status.resources` lists everything the branch owns (its auth Secret, optional config Secret, cloned PVCs, and current post-action Job), and `status.snapshot` records the snapshot set backing the current copy — the strategy used, and one entry per source volume with its size and readiness.
 
 ## Keeping a Branch Fresh
 

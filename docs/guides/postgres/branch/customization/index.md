@@ -83,7 +83,8 @@ spec:
             - -c
             - |
               UPDATE customers
-                 SET email = 'user' || id || '@example.invalid',
+                 SET full_name = 'Masked Customer',
+                     email = 'user' || id || '@example.invalid',
                      phone = '+1-555-0000';
           resources:
             requests:
@@ -146,11 +147,11 @@ The branch's data is anonymized:
 ```bash
 $ kubectl exec -it -n demo dev-postgres-masked-0 -c postgres -- psql -U postgres \
     -c "SELECT id, full_name, email, phone FROM customers ORDER BY id LIMIT 3;"
- id | full_name  |         email         |    phone
-----+------------+-----------------------+-------------
-  1 | Customer 1 | user1@example.invalid | +1-555-0000
-  2 | Customer 2 | user2@example.invalid | +1-555-0000
-  3 | Customer 3 | user3@example.invalid | +1-555-0000
+ id |    full_name    |         email         |    phone
+----+-----------------+-----------------------+-------------
+  1 | Masked Customer | user1@example.invalid | +1-555-0000
+  2 | Masked Customer | user2@example.invalid | +1-555-0000
+  3 | Masked Customer | user3@example.invalid | +1-555-0000
 (3 rows)
 ```
 
@@ -230,6 +231,9 @@ Create it and wait for the first copy:
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/customization/examples/dev-branch-refresh.yaml
 branch.courier.kubedb.com/dev-branch-refresh created
+
+$ kubectl wait --for=condition=Ready branch/dev-branch-refresh -n demo --timeout=10m
+branch.courier.kubedb.com/dev-branch-refresh condition met
 
 $ kubectl exec -n demo dev-postgres-refresh-0 -c postgres -- psql -U postgres -tAc "SELECT count(*) FROM customers;"
 1001
@@ -346,6 +350,9 @@ namespace/dev created
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/customization/examples/dev-branch-xns.yaml
 branch.courier.kubedb.com/dev-branch-xns created
 
+$ kubectl wait --for=condition=Ready branch/dev-branch-xns -n demo --timeout=10m
+branch.courier.kubedb.com/dev-branch-xns condition met
+
 $ kubectl get branch -n demo dev-branch-xns
 NAME             PHASE   MODE    TARGET             FRESHNESS   AGE
 dev-branch-xns   Ready   Local   dev-postgres-xns   1s          61s
@@ -381,8 +388,14 @@ Deploy a 3-replica source and branch it exactly as before:
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/customization/examples/sample-postgres-ha.yaml
 postgres.kubedb.com/sample-postgres-ha created
 
+$ kubectl wait --for=condition=Ready pg/sample-postgres-ha -n demo --timeout=10m
+postgres.kubedb.com/sample-postgres-ha condition met
+
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/customization/examples/dev-branch-ha.yaml
 branch.courier.kubedb.com/dev-branch-ha created
+
+$ kubectl wait --for=condition=Ready branch/dev-branch-ha -n demo --timeout=10m
+branch.courier.kubedb.com/dev-branch-ha condition met
 
 $ kubectl get branch -n demo dev-branch-ha
 NAME            PHASE   MODE    TARGET            FRESHNESS   AGE
@@ -489,6 +502,9 @@ spec:
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/branch/customization/examples/dev-branch-vsc.yaml
 branch.courier.kubedb.com/dev-branch-vsc created
+
+$ kubectl wait --for=condition=Ready branch/dev-branch-vsc -n demo --timeout=10m
+branch.courier.kubedb.com/dev-branch-vsc condition met
 ```
 
 Only the pinned branch uses that class; every other branch created in this guide left the field unset and took the driver's default, `topolvm-provisioner-thin`:
@@ -521,8 +537,10 @@ For problems with the core branch flow â€” snapshotting, cloning, provisioning â
 
 ## Cleaning up
 
+This page created five branches alongside the source in `demo`, plus one extra database and one extra namespace. Delete each branch by name rather than `--all`, so an unrelated branch left over from another walkthrough in the same `demo` namespace is not swept up. `kubectl delete` on a `Branch` blocks until Courier's cleanup finalizer clears, so there is nothing further to wait for:
+
 ```bash
-$ kubectl delete branch -n demo --all
+$ kubectl delete branch -n demo dev-branch-masked dev-branch-refresh dev-branch-xns dev-branch-ha dev-branch-vsc
 $ kubectl delete pg -n demo sample-postgres-ha
 $ kubectl delete ns dev
 ```

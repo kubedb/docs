@@ -407,7 +407,7 @@ $ kubectl exec -it -n demo dev-postgres-0 -c postgres -- psql -U postgres -c "SE
 (3 rows)
 ```
 
-All 1000 rows are there, byte-for-byte as they were on the source when the snapshot was taken.
+All 1000 rows captured in the snapshot are present on the branch.
 
 ## Verify the Branch Is Isolated
 
