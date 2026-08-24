@@ -223,17 +223,29 @@ EOF
 
 **3. Install the dashboards:**
 
+The chart packages dashboard JSON for every database it supports, so install it from a copy trimmed down to just Neo4j's dashboards (this also keeps `grafana-operator` from creating dashboards for databases you don't run):
+
 ```bash
-$ helm upgrade -i kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
-    -n kubeops --create-namespace --version=v2026.8.14-rc.0 \
-    --set featureGates.Neo4j=true \
+$ helm pull appscode/kubedb-grafana-dashboards --version v2026.7.10 --untar
+
+$ cd kubedb-grafana-dashboards/dashboards
+$ ls | grep -v '^neo4j$' | xargs rm -rf   # keep only dashboards/neo4j
+$ cd ../..
+
+$ helm package kubedb-grafana-dashboards
+Successfully packaged chart and saved it to: kubedb-grafana-dashboards-v2026.7.10.tgz
+
+$ helm upgrade -i kubedb-grafana-dashboards-neo4j ./kubedb-grafana-dashboards-v2026.7.10.tgz \
+    -n kubeops --create-namespace \
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
 
-`featureGates.Neo4j` already defaults to `true` — set explicitly above for clarity. `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster).
+> Use a release name unique to this database (`kubedb-grafana-dashboards-neo4j`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
 
-This single command creates every dashboard this chart ships for Neo4j — `KubeDB / Neo4j / Summary`, `KubeDB / Neo4j / Pod`, `KubeDB / Neo4j / Database` — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
+`grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
+
+This creates every dashboard the chart ships for Neo4j — `KubeDB / Neo4j / Summary`, `KubeDB / Neo4j / Pod`, `KubeDB / Neo4j / Database` — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
 
 Verify they landed:
 

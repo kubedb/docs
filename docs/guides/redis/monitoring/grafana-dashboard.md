@@ -254,11 +254,13 @@ $ cd ../..
 $ helm package kubedb-grafana-dashboards
 Successfully packaged chart and saved it to: kubedb-grafana-dashboards-v2026.7.10.tgz
 
-$ helm upgrade -i kubedb-grafana-dashboards ./kubedb-grafana-dashboards-v2026.7.10.tgz \
+$ helm upgrade -i kubedb-grafana-dashboards-redis ./kubedb-grafana-dashboards-v2026.7.10.tgz \
     -n kubeops --create-namespace \
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
+
+> Use a release name unique to this database (`kubedb-grafana-dashboards-redis`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
 
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 
