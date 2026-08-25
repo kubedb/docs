@@ -44,6 +44,7 @@ spec:
       requests:
         storage: 1Gi
   authSecret:
+    kind: Secret
     name: etcd-cluster-auth
     externallyManaged: false
   configuration:

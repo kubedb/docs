@@ -193,6 +193,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-singapore-auth
   clientAuthMode: md5
   deletionPolicy: Delete
@@ -310,6 +311,7 @@ spec:
       name: pg-singapore
       namespace: demo
   authSecret:
+    kind: Secret
     name: pg-london-auth
   clientAuthMode: md5
   standbyMode: Hot

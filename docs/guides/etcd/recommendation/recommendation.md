@@ -94,6 +94,7 @@ spec:
   version: "3.6.4"
   replicas: 3
   authSecret:
+    kind: Secret
     name: etcd-recommendation-auth
     rotateAfter: 720h
 ```
