@@ -27,7 +27,7 @@ This guide will give you an overview on how KubeDB Ops-manager operator update t
 The following diagram shows how KubeDB Ops-manager operator used to update the version of `Ignite`. Open the image in a new tab to see the enlarged version.
 
 <figure align="center">
-  <img alt="updating Process of Ignite" src="/docs/images/day-2-operation/ignite/ig-version-update.svg">
+  <img alt="updating Process of Ignite" src="/docs/images/day-2-operation/ignite/ig-version-update.png">
 <figcaption align="center">Fig: updating Process of Ignite</figcaption>
 </figure>
 

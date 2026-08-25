@@ -135,7 +135,7 @@ from each pod so `max_connections` returns to its default of `100`.
 > clear that state — recovery requires recreating the `DocumentDB`. Validate `Reconfigure`
 > against a non-production cluster on this build before relying on it. The YAML and rollout
 > mechanics above are the intended workflow; provisioning custom configuration up front (see
-> [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file/)) is
+> [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file.md)) is
 > unaffected.
 
 ## Standalone
@@ -155,5 +155,5 @@ kubectl delete ns demo
 
 ## Next Steps
 
-- Provision a database with [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file/).
+- Provision a database with [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file.md).
 - [Restart](/docs/guides/documentdb/restart/) a DocumentDB database.
