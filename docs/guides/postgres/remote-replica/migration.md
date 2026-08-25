@@ -106,8 +106,6 @@ spec:
       query: sslmode=disable   # TLS source: verify-ca + a tlsSecret carrying the SOURCE's CA
       scheme: postgresql
   secret:
-    apiGroup: ""
-    kind: Secret
     name: source-pg-auth
   type: kubedb.com/postgres
   version: "17.4"
@@ -131,6 +129,7 @@ spec:
       name: source-pg
       namespace: demo
   authSecret:
+    kind: Secret
     name: source-pg-auth       # yes — the migration user's credentials; see below
   clientAuthMode: md5
   standbyMode: Hot

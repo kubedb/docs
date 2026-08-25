@@ -9,6 +9,7 @@ spec:
       name: source-pg          # the AppBinding above, in THIS cluster
       namespace: demo
   authSecret:
+    kind: Secret
     name: source-pg-auth       # during the warm phase: the migration user's credentials
   clientAuthMode: md5
   standbyMode: Hot

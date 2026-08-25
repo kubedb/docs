@@ -26,8 +26,6 @@ spec:
       query: sslmode=disable  # or verify-ca with a tlsSecret carrying the SOURCE's CA
       scheme: postgresql
   secret:
-    apiGroup: ""
-    kind: Secret
     name: source-pg-auth
   type: kubedb.com/postgres
   version: "17.4"

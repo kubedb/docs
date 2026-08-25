@@ -5,6 +5,7 @@ metadata:
   namespace: demo
 spec:
   authSecret:
+    kind: Secret
     name: pg-london-auth
   clientAuthMode: md5
   deletionPolicy: Halt

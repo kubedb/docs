@@ -15,6 +15,7 @@ spec:
       requests:
         storage: 1Gi
   authSecret:
+    kind: Secret
     name: etcd-recommendation-auth
     rotateAfter: 720h
   tls:
