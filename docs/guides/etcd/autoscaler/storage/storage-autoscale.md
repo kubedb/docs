@@ -29,11 +29,13 @@ This guide shows you how to use `KubeDB` to autoscale the storage of an etcd clu
 - etcd support is behind an alpha feature gate. Make sure the operators are installed with
   `Etcd=true` enabled (Helm value `featureGates.Etcd=true`).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation).
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack).
-  The Autoscaler operator reads PVC usage through the custom metrics API, which is backed by
-  Prometheus.
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 

@@ -44,7 +44,8 @@ The autoscaling process consists of the following steps:
 5. The `KubeDB` Autoscaler operator watches the `EtcdAutoscaler` CRO.
 
 6. The `KubeDB` Autoscaler operator continuously reads the PVC usage of the database's pods from
-   Prometheus and compares it against `spec.storage.etcd.usageThreshold`.
+   the `custom.metrics.k8s.io` API backed by the KubeDB storage-metrics apiserver and compares it
+   against `spec.storage.etcd.usageThreshold`.
    - If the usage exceeds the threshold, the operator computes a new size and creates an
      `EtcdOpsRequest` of type `VolumeExpansion` to expand the storage.
 
