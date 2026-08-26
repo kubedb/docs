@@ -25,6 +25,8 @@ You should be familiar with:
 - [Neo4jOpsRequest](/docs/guides/neo4j/concepts/opsrequest.md)
 - [Neo4j vertical scaling](/docs/guides/neo4j/scaling/vertical-scaling/overview.md)
 
+Install [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server#installation) before enabling compute autoscaling. The recommender uses resource metrics collected from the Neo4j pods.
+
 ## How Compute Autoscaling Works
 
 <figure align="center">

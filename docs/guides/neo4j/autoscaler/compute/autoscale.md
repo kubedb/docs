@@ -21,7 +21,7 @@ This guide deploys a Neo4j cluster, loads a small social graph, and configures K
 | Requirement | Details |
 |---|---|
 | KubeDB | Provisioner, Ops Manager, and Autoscaler operators must be installed. |
-| Metrics Server | The Kubernetes Metrics Server must be running so the recommender can observe pod usage. |
+| Metrics Server | Install [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server#installation) so the recommender can observe pod usage. |
 | Storage | This example uses a `longhorn` StorageClass; substitute another available class if necessary. |
 | Tools | `kubectl`, `jq`, and `base64` must be available locally. |
 
