@@ -14,13 +14,14 @@ section_menu_id: guides
 
 # Run Postgres Enterprise by AppsCode
 
-**Postgres Enterprise by AppsCode** is a PostgreSQL distribution built and
-supported by AppsCode. Unlike the community images, its `postgres` binary
-verifies a license certificate at startup and refuses to run without a valid
-one. This guide walks through obtaining that certificate, giving it to KubeDB,
-and running a licensed database end to end.
+**Postgres Enterprise by AppsCode** is a commercially supported PostgreSQL
+distribution built by AppsCode. It is licensed per deployment: the server
+verifies a license certificate issued to you, so running it takes one extra
+piece of setup compared with the community images. This guide covers that setup
+end to end — obtaining the certificate, handing it to KubeDB, and confirming the
+database is running under it.
 
-{{< notice type="warning" message="Two different licenses are involved and they are not interchangeable. The **KubeDB platform license** (passed as `global.license` when you install the KubeDB operator) unlocks KubeDB features. The **database license** described on this page is consumed by the PostgreSQL binary itself. A cluster can have a perfectly valid KubeDB license and still fail to start a Postgres Enterprise database because the database license is missing." >}}
+{{< notice type="info" message="Two separate licenses are in play, and it is worth knowing which is which. The **KubeDB platform license**, passed as `global.license` when you install the operator, covers KubeDB itself. The **database license** on this page is issued for Postgres Enterprise and is read by the database server. You need both, and one does not substitute for the other." >}}
 
 ## Before You Begin
 
@@ -44,8 +45,8 @@ Request a license for the Postgres Enterprise distribution from
 You will receive an X.509 certificate in PEM form. Save it locally, for example
 as `license.pem`.
 
-You can inspect what you were issued before using it. The certificate's
-`notAfter` date is when the database will stop accepting it:
+It is worth checking what you were issued before using it. `notAfter` is the end
+of your license term:
 
 ```bash
 $ openssl x509 -in license.pem -noout -subject -dates
@@ -138,10 +139,9 @@ pg-enterprise   16.9-appscode   Provisioning   5s
 pg-enterprise   16.9-appscode   Ready          45s
 ```
 
-`spec.license.secretRef.key` may be omitted, in which case KubeDB's mutating
-webhook fills in `license.pem`. Spelling it out is still the safer habit: the
-CRD schema itself marks the field required, so a path that bypasses the
-mutating webhook rejects the object rather than defaulting it.
+`spec.license.secretRef.key` may be omitted — KubeDB defaults it to
+`license.pem` — but setting it explicitly is the better habit, and it is
+required if you store the certificate under a different key.
 
 ## Step 5 — Confirm the license was accepted
 
@@ -155,9 +155,8 @@ $ kubectl exec -it -n demo pg-enterprise-0 -c postgres -- psql -U postgres -tAc 
 Postgres Enterprise by AppsCode 16.9 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
 ```
 
-The rebranding is cosmetic and deliberately does not touch the numeric version,
-so extensions and client drivers that gate on it behave exactly as on community
-PostgreSQL:
+It reports the PostgreSQL version it is built on, so existing drivers, tooling
+and extensions work against it unchanged:
 
 ```bash
 $ kubectl exec -it -n demo pg-enterprise-0 -c postgres -- psql -U postgres -tAc 'SHOW server_version; SHOW server_version_num;'
@@ -165,18 +164,17 @@ $ kubectl exec -it -n demo pg-enterprise-0 -c postgres -- psql -U postgres -tAc 
 160009
 ```
 
-**The server logged its acceptance.** One line is emitted per verification. A
-first boot logs two — one for the `initdb` bootstrap phase, which is itself
-license-checked, and one for the server proper:
+**The server logged its acceptance.** Each verification records the license it
+accepted (a first boot logs two lines, since database initialisation is verified
+as well as the server start):
 
 ```bash
 $ kubectl logs -n demo pg-enterprise-0 -c postgres | grep -i 'license accepted'
 2026-08-26 06:04:25.059 UTC [64] LOG:  license accepted: id (serial) 1884894798739465099, CN e366e720-f748-4ca4-b68d-a3bc2dba87f4, features postgres-enterprise, plan postgres-enterprise, product line postgres, tier enterprise, expires 2026-09-23 03:44:53Z (27 days remaining), certificate SHA-256 D2:3D:90:71:6F:8C:87:0C:AE:9B:...
 ```
 
-The `id (serial)` and the SHA-256 fingerprint identify exactly which certificate
-was accepted, which is how you confirm a renewal actually took effect rather
-than the old file still being in place.
+The serial and SHA-256 fingerprint identify precisely which certificate is in
+use — handy for confirming a renewal, and for support conversations.
 
 **The database can describe its own license.** The build ships a reporting
 extension:
@@ -200,9 +198,8 @@ verifies       | t
 leaf_sha256    | D2:3D:90:71:6F:8C:87:0C:AE:9B:...
 ```
 
-This reads a snapshot the postmaster placed in shared memory when it verified
-the certificate, so it costs nothing to query and cannot disagree with what the
-server actually accepted at startup.
+This is served from memory, so it is cheap to query and safe to scrape on a
+schedule — `days_remaining` in particular is the natural thing to alert on.
 
 ## Step 6 — Connect and use it
 
@@ -226,36 +223,15 @@ postgres=# SELECT * FROM tenants;
 (2 rows)
 ```
 
-## Where the license lives in the pod
+## Where the license lives
 
-Worth knowing when debugging. KubeDB projects the Secret to a fixed path
-**outside** the data directory and points the server at it with the `PGLICENSE`
-environment variable:
+KubeDB mounts the certificate read-only at a fixed path **outside** the data
+directory, and points the server at it. Two useful consequences:
 
-```bash
-$ kubectl exec -n demo pg-enterprise-0 -c postgres -- printenv PGLICENSE
-/etc/pg-license/license.pem
-
-$ kubectl exec -n demo pg-enterprise-0 -c postgres -- ls -lL /etc/pg-license/license.pem
--r--r-----    1 root     postgres      1375 Aug 26 06:04 /etc/pg-license/license.pem
-```
-
-The certificate is mounted read-only, owned by `root` and readable by the
-`postgres` group. Note the `-L`: like every Kubernetes Secret volume, the
-visible entry is a symlink into a `..data` directory, so a plain `ls -l` shows
-the link rather than the file's own mode.
-
-Two consequences follow from the path being outside `PGDATA`:
-
-- The license is **not** part of the data volume, so it is absent from
-  snapshots and backups of `PGDATA` and cannot leak through them.
-- Restoring a backup does not carry a license with it. The restored `Postgres`
-  object needs its own `spec.license`.
-
-Only the `postgres` container gets the license. The init container and the
-`pg-coordinator` sidecar have neither the mount nor the variable — the
-coordinator drives `pg_rewind` and `pg_ctl` by executing them *inside* the
-`postgres` container, so it inherits the license from there.
+- The license is not part of the data volume, so it stays out of snapshots and
+  backups of `PGDATA`.
+- Because of that, a database restored from a backup needs its own
+  `spec.license` — it does not inherit one from the backup.
 
 ## Running a highly available cluster
 
@@ -305,8 +281,7 @@ CREATE EXTENSION
 
 `pg_cron` and `pgaudit` are background-worker extensions: the library has to be
 in `shared_preload_libraries` before the extension can be created, which means
-supplying a `spec.configSecret`. Without it they refuse clearly rather than
-failing obscurely:
+supplying a `spec.configSecret`. Until it is, they say so directly:
 
 ```
 ERROR:  pgaudit must be loaded via shared_preload_libraries
@@ -318,35 +293,25 @@ for how to supply that configuration.
 
 ## Renewing the license
 
-Licenses expire. Within 30 days of expiry, each verification emits a warning
-next to the acceptance line:
-
-```bash
-$ kubectl logs -n demo pg-enterprise-0 -c postgres | grep -i license
-2026-08-26 06:04:25.059 UTC [64] LOG:  license accepted: id (serial) 1884894798739465099, CN e366e720-f748-4ca4-b68d-a3bc2dba87f4, features postgres-enterprise, plan postgres-enterprise, product line postgres, tier enterprise, expires 2026-09-23 03:44:53Z (27 days remaining), certificate SHA-256 D2:3D:90:71:6F:8C:87:0C:AE:9B:...
-2026-08-26 06:04:25.087 UTC [68] WARNING:  license for Postgres Enterprise by AppsCode expires in 27 days
-```
-
-Do not rely on that warning to remind you. Verification happens at startup, and
-the periodic re-checks that follow are silent while they keep succeeding — so a
-database that has been up for weeks logs the warning exactly once, at the boot
-where it first applied. `days_remaining` from `appscode_license_info()` carries
-the same number, is queryable at any time, and is the right thing to alert on:
+Licenses are issued for a fixed term, so plan a renewal before the current
+certificate runs out. `appscode_license_info()` reports how long you have, and is
+the right thing to put behind an alert:
 
 ```bash
 $ kubectl exec -n demo pg-enterprise-0 -c postgres -- psql -U postgres -tAc \
-    'SELECT days_remaining FROM appscode_license_info();'
-27
+    'SELECT not_after, days_remaining FROM appscode_license_info();'
+2026-09-23 03:44:53Z|27
 ```
 
-The server does not simply trust the certificate it validated at startup. A
-background worker **re-reads the license file from disk** roughly once a minute
-and re-verifies it. That is what makes an in-place renewal possible: replace the
-file and the next re-check picks it up, with no restart and no downtime.
+Within 30 days of expiry the server also notes it in the log at startup:
 
-{{< notice type="danger" message="The same re-check is what makes a botched renewal an immediate outage. If the replacement certificate is invalid for any reason, the next re-check fails and the server requests a **fast shutdown** within about a minute. Verify the new certificate locally with `openssl x509 -in license-renewed.pem -noout -dates` **before** putting it into the Secret." >}}
+```
+WARNING:  license for Postgres Enterprise by AppsCode expires in 27 days
+```
 
-To renew, replace the certificate in the Secret:
+**Renewal is in place and online.** The server re-reads the license file
+periodically rather than only trusting what it read at boot, so replacing the
+certificate is picked up on its own — no restart, no downtime, no ops request:
 
 ```bash
 $ kubectl patch secret pg-enterprise-license -n demo --type=merge \
@@ -354,135 +319,85 @@ $ kubectl patch secret pg-enterprise-license -n demo --type=merge \
 secret/pg-enterprise-license patched
 ```
 
-`kubectl patch` is used rather than `kubectl apply` only because applying over a
-Secret created with `kubectl create` prints a spurious
-`missing the kubectl.kubernetes.io/last-applied-configuration annotation`
-warning. Either works.
+Check the replacement is the certificate you expect before you apply it —
+`openssl x509 -in license-renewed.pem -noout -dates` — since the server will
+start using it without being asked to.
 
-A Secret update reaches the pod's filesystem on the kubelet's own refresh cycle,
-not instantly — allow a couple of minutes end to end.
-
-Verifying that a renewal succeeded is less direct than you might expect, because
-**a successful periodic re-check logs nothing**. Only failures are logged; a
-server that has been up for hours still shows just the one or two
-`license accepted` lines from its startup. So there is no positive log line to
-wait for.
-
-What that leaves is a reliable negative: an invalid certificate shuts the server
-down within about a minute, so a database still serving several minutes after the
-Secret changed has accepted the new file.
-
-```bash
-$ kubectl get pg -n demo pg-enterprise
-NAME            VERSION         STATUS   AGE
-pg-enterprise   16.9-appscode   Ready    3h
-```
-
-If you want positive confirmation of *which* certificate is in force — after a
-renewal window closes, say — restart the pod and read the fresh startup line,
-which reports the serial and fingerprint of the file as it is now:
+The update reaches the pod on the kubelet's normal refresh cycle, so allow a
+couple of minutes. The database serving normally after that is your confirmation
+that the new certificate was accepted; if you want to see its serial and
+fingerprint recorded explicitly, restart the pod and read the startup line:
 
 ```bash
 $ kubectl delete pod -n demo pg-enterprise-0
 $ kubectl logs -n demo pg-enterprise-0 -c postgres | grep 'license accepted'
 ```
 
-### Recovering from a failed renewal
+### If a renewal is rejected
 
-A license-triggered shutdown does **not** self-heal, and this is the single most
-confusing failure in this guide, because Kubernetes reports the pod as healthy:
-
-```bash
-$ kubectl get pod -n demo
-NAME              READY   STATUS    RESTARTS   AGE
-pg-enterprise-0   1/1     Running   0          4m
-
-$ kubectl get pg -n demo
-NAME            VERSION         STATUS     AGE
-pg-enterprise   16.9-appscode   NotReady   4m
-```
-
-The container's entrypoint stays alive after the PostgreSQL server shuts down, so
-the container never exits, never restarts, and continues to report `1/1 Running`
-with a restart count of `0`. Only the `Postgres` object's `NotReady` phase and
-the container log tell the truth:
-
-```
-LOG:  license verification failed during periodic re-check: license file
-      "/etc/pg-license/license.pem" contains no PEM certificate; requesting fast shutdown
-LOG:  received fast shutdown request
-LOG:  database system is shut down
-```
-
-Putting a valid certificate back is necessary but **not sufficient** — the server
-is not restarted by the entrypoint. Fix the Secret, then delete the pod:
+An unusable certificate is not silently ignored — the server stops rather than
+run unlicensed, and the `Postgres` object goes `NotReady` with the reason in the
+`postgres` container log. Note that the pod itself keeps reporting `1/1 Running`,
+so check `kubectl get pg` rather than the pod. Restore a valid certificate and
+delete the pod:
 
 ```bash
 $ kubectl delete pod -n demo pg-enterprise-0
-pod "pg-enterprise-0" deleted
 ```
 
-The database returns to `Ready` about 45 seconds later. Data is untouched: the
-shutdown was a clean fast shutdown with a completed checkpoint, not a crash.
+The database is back about 45 seconds later, with data intact — the stop is a
+clean shutdown, not a crash.
 
 ## Troubleshooting
 
-Licensing failures land in one of three places, and knowing which saves time:
+License problems surface in one of three places. Knowing which one narrows the
+search immediately:
 
-| Symptom | Where it failed |
+| Symptom | Look at |
 |---|---|
-| `kubectl apply` returns an error, no object created | admission webhook |
-| Pod stuck in `Init:0/1` | kubelet, building the Secret volume |
-| Pod `Running` but `Postgres` is `NotReady` | the PostgreSQL server itself |
+| `kubectl apply` returns an error, no object created | the message it printed |
+| Pod stuck in `Init:0/1` | the pod's events |
+| Pod `Running` but `Postgres` is `NotReady` | the `postgres` container log |
 
-For the third case, the `postgres` container log is the only place the reason
-appears:
+### The Postgres object is rejected
 
-```bash
-$ kubectl logs -n demo pg-enterprise-0 -c postgres | grep -iE 'license|FATAL'
-```
-
-### The Postgres object is rejected outright
-
-Requesting a licensed version without a license:
+KubeDB validates the license reference up front, so a mistake here is caught
+before anything is provisioned. Requesting a licensed version without a license:
 
 ```
-Error from server (Forbidden): admission webhook "postgreswebhook.validators.kubedb.com" denied the request:
+admission webhook "postgreswebhook.validators.kubedb.com" denied the request:
 PostgresVersion "16.9-appscode" requires spec.license (a licensed AppsCode Postgres Enterprise build);
 set spec.license.secretRef to a Secret containing the license certificate under key "license.pem"
 ```
 
-KubeDB refuses rather than creating a database that could only crash-loop. The
-mirror image is refused too — pointing `spec.license` at a community version that
-does not need one:
+And the reverse — setting `spec.license` on a version that does not take one:
 
 ```
-Error from server (Forbidden): admission webhook "postgreswebhook.validators.kubedb.com" denied the request:
+admission webhook "postgreswebhook.validators.kubedb.com" denied the request:
 spec.license is set but PostgresVersion "16.9" is not a licensed distribution (spec.license.required is not set)
 ```
 
 ### The pod stays in `Init:0/1`
 
-The kubelet cannot build the license volume, so no container starts. Check the
-pod's events:
+The Secret named in `spec.license` cannot be mounted yet. Check the pod's events:
 
 ```bash
 $ kubectl describe pod -n demo pg-enterprise-0 | grep -A2 MountVolume
 ```
 
-Either the Secret is absent:
+Either the Secret does not exist:
 
 ```
 MountVolume.SetUp failed for volume "pg-license" : secret "pg-enterprise-license" not found
 ```
 
-or the key inside it does not match `spec.license.secretRef.key`:
+or its key does not match `spec.license.secretRef.key`:
 
 ```
 MountVolume.SetUp failed for volume "pg-license" : references non-existent secret key: license.pem
 ```
 
-Compare the two directly:
+Compare the two:
 
 ```bash
 $ kubectl get pg -n demo pg-enterprise -o jsonpath='{.spec.license.secretRef}'
@@ -492,54 +407,33 @@ $ kubectl get secret -n demo pg-enterprise-license -o go-template='{{range $k,$v
 license.pem
 ```
 
-Both failures are self-healing: fix the Secret and the kubelet completes the
-mount on its next retry, with no need to delete the pod.
+Both cases recover on their own: create or correct the Secret and the mount
+completes on the next retry, with no need to delete the pod.
 
-### The license file is not a certificate
+### The certificate is not accepted
 
-```
-FATAL:  license file "/etc/pg-license/license.pem" contains no PEM certificate
-DETAIL:  License path: "/etc/pg-license/license.pem"; mode: single-user; failure: no-pem.
-```
-
-The Secret key holds something that is not a PEM certificate — commonly the
-wrapper the license arrived in (an email body, an HTML page) rather than the
-certificate itself. Check locally before loading it:
+The server reports the reason in the `postgres` container log, with a `DETAIL`
+line naming the specific failure:
 
 ```bash
-$ openssl x509 -in license.pem -noout -subject
+$ kubectl logs -n demo pg-enterprise-0 -c postgres | grep -iE 'license|FATAL'
 ```
 
-### The certificate was not issued by AppsCode
+| Log message | Meaning |
+|---|---|
+| `contains no PEM certificate` (`failure: no-pem`) | The Secret holds something other than the certificate — often the email or page it arrived in. |
+| `chain does not verify against the AppsCode license CA` (`failure: chain-invalid`) | A well-formed certificate that AppsCode did not issue. |
+| expiry named in the message | The term has ended; renew it. |
 
+In each case, confirm what you have locally, put the right certificate in the
+Secret, and delete the pod:
+
+```bash
+$ openssl x509 -in license.pem -noout -subject -dates
 ```
-FATAL:  license certificate chain does not verify against the AppsCode license CA: self-signed certificate
-DETAIL:  License path: "/etc/pg-license/license.pem"; mode: single-user; failure: chain-invalid.
-```
 
-The file is a well-formed certificate but does not chain to the AppsCode
-licensing CA. Verification is by cryptographic signature, so a self-signed
-certificate that merely copies the AppsCode subject or issuer names fails here
-just the same. The text after the colon varies with how the chain broke
-(`self-signed certificate`, `unable to get local issuer certificate`); the
-`failure: chain-invalid` detail is the stable marker. Request a real license.
-
-### The certificate has expired
-
-The `FATAL` message names expiry as the reason, and the `DETAIL` line carries its
-own `failure:` marker, in the same shape as the two cases above. Renew the
-certificate as described above. A database whose license expires while it is
-running does not keep running: the periodic re-check fails and the server shuts
-itself down. Alert on `days_remaining` and renew ahead of time.
-
-### `"/var/pv/data" is not a valid data directory`
-
-Seen immediately after one of the `FATAL` messages above, on a **brand new**
-database. The license check also covers the single-user phase of `initdb`
-(`mode: single-user` in the `DETAIL` line), so a first-boot license failure
-aborts bootstrap and leaves a partially initialised data directory behind. It is
-a consequence of the license failure, not a separate problem — fix the license
-and delete the pod; `initdb` runs again from scratch.
+If you believe the certificate is correct and it is still refused, send the `CN`
+from that output to AppsCode support.
 
 ## Cleaning up
 
