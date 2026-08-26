@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-compact
+  namespace: demo
+spec:
+  type: Compact
+  databaseRef:
+    name: etcd-cluster
+  compact: {}
+  timeout: 5m

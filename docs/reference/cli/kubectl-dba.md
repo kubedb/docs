@@ -60,6 +60,7 @@ kubectl-dba [flags]
 * [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
 * [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
 * [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database
+* [kubectl-dba dc-dr](/docs/reference/cli/kubectl-dba_dc-dr.md)	 - Cross data center DR operations: switchover, failover, pins, and diagnosis
 * [kubectl-dba debug](/docs/reference/cli/kubectl-dba_debug.md)	 - Debug any Database issue
 * [kubectl-dba describe](/docs/reference/cli/kubectl-dba_describe.md)	 - Show details of a specific resource or group of resources
 * [kubectl-dba exec](/docs/reference/cli/kubectl-dba_exec.md)	 - Execute script or command to a database.

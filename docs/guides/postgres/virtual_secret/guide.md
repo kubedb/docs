@@ -102,7 +102,9 @@ metadata:
   name: vault
 spec:
   vault:
-    url: http://vault.demo.svc:8200
+    ref:
+      name: vault
+      namespace: demo
     roleName: virtual-secrets-role
 ```
 ```bash
@@ -112,8 +114,8 @@ secretstore.config.virtual-secrets.dev/vault configured
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
-- `spec.url` - contains the connection url to the vault server.
-- `spec.roleName` - contains the role name we specified when binding the policy to the service account earlier.
+- `spec.vault.ref` - refers to the AppBinding published by the KubeVault `VaultServer`, which carries the vault connection url and CA bundle.
+- `spec.vault.roleName` - contains the role name we specified when binding the policy to the service account earlier.
 
 > **Note:** `spec.aws`, `spec.azure` and `spec.gcp` can be used to specify the connection information of the corresponding secret manager.
 
