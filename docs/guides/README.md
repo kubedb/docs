@@ -21,6 +21,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [DocumentDB](/docs/guides/documentdb/README.md). Shows how to manage DocumentDB using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
+- [Etcd](/docs/guides/etcd/README.md). Shows how to manage etcd using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.
 - [Ignite](/docs/guides/ignite/README.md). Shows how to manage Ignite using KubeDB.
 - [Kafka](/docs/guides/kafka/README.md). Shows how to manage Kafka using KubeDB.
