@@ -29,12 +29,51 @@ See [Neo4jAutoscaler](/docs/guides/neo4j/concepts/autoscaler.md) and the [comput
 
 ## Deploy Neo4j
 
-Create an isolated namespace and apply the example Neo4j resource:
+Create an isolated namespace. The examples in this guide use the `longhorn` StorageClass. If your cluster uses a different StorageClass, change `spec.storage.storageClassName` before applying the manifest.
 
 ```bash
 $ kubectl create namespace demo
 namespace/demo created
+```
 
+The following manifest creates a three-member Neo4j cluster. Neo4j requires at least `2Gi` of storage per member, so each pod receives its own `2Gi` persistent volume:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-autoscale
+  namespace: demo
+spec:
+  version: "2025.12.1"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  podTemplate:
+    spec:
+      containers:
+        - name: neo4j
+          resources:
+            requests:
+              cpu: 500m
+              memory: 2Gi
+            limits:
+              cpu: 500m
+              memory: 2Gi
+  deletionPolicy: WipeOut
+```
+
+Here, `spec.version` selects an installed `Neo4jVersion`, `replicas: 3` creates a fault-tolerant cluster, and `storageType: Durable` preserves data across pod restarts. `deletionPolicy: WipeOut` removes the database-owned PVCs and credentials when the Neo4j resource is deleted, so use a safer deletion policy when retention is required.
+
+Apply the same manifest from the examples directory:
+
+```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/autoscaler/neo4j.yaml
 neo4j.kubedb.com/neo4j-autoscale created
 ```
@@ -47,20 +86,20 @@ NAME              VERSION     STATUS   AGE
 neo4j-autoscale   2025.12.1   Ready    3m
 ```
 
-The Neo4j container initially requests and limits `500m` CPU and `1Gi` memory:
+The Neo4j container initially requests and limits `500m` CPU and `2Gi` memory. Neo4j needs enough memory for the JVM, page cache, and native allocations; limits that are too small can cause the process to be OOM-killed.
 
 ```bash
 $ kubectl get pod -n demo neo4j-autoscale-0 \
     -o jsonpath='{.spec.containers[?(@.name=="neo4j")].resources}' | jq .
 {
-  "limits": {"cpu": "500m", "memory": "1Gi"},
-  "requests": {"cpu": "500m", "memory": "1Gi"}
+  "limits": {"cpu": "500m", "memory": "2Gi"},
+  "requests": {"cpu": "500m", "memory": "2Gi"}
 }
 ```
 
 ## Create a Sample Graph
 
-Read the generated admin password, create an application database, and insert users connected by `FOLLOWS` relationships:
+Read the generated admin password, create an application database, and wait until it is online:
 
 ```bash
 $ PASS=$(kubectl get secret -n demo neo4j-autoscale-auth \
@@ -69,7 +108,11 @@ $ PASS=$(kubectl get secret -n demo neo4j-autoscale-auth \
 $ kubectl exec -n demo neo4j-autoscale-0 -- \
     cypher-shell -u neo4j -p "$PASS" \
     "CREATE DATABASE appdb IF NOT EXISTS WAIT"
+```
 
+Create a uniqueness constraint, then use `MERGE` to load users and `FOLLOWS` relationships. These commands are safe to repeat because they do not create duplicate users or relationships:
+
+```bash
 $ kubectl exec -n demo neo4j-autoscale-0 -- \
     cypher-shell -d appdb -u neo4j -p "$PASS" \
     "CREATE CONSTRAINT user_id IF NOT EXISTS
@@ -78,13 +121,14 @@ $ kubectl exec -n demo neo4j-autoscale-0 -- \
 $ kubectl exec -n demo neo4j-autoscale-0 -- \
     cypher-shell -d appdb -u neo4j -p "$PASS" \
     "UNWIND range(1,10000) AS i
-     CREATE (:User {id: i, name: 'user-' + toString(i)})"
+     MERGE (u:User {id: i})
+     SET u.name = 'user-' + toString(i)"
 
 $ kubectl exec -n demo neo4j-autoscale-0 -- \
     cypher-shell -d appdb -u neo4j -p "$PASS" \
     "UNWIND range(1,9999) AS i
      MATCH (a:User {id: i}), (b:User {id: i + 1})
-     CREATE (a)-[:FOLLOWS]->(b)"
+     MERGE (a)-[:FOLLOWS]->(b)"
 ```
 
 Verify the initial graph:
@@ -92,14 +136,15 @@ Verify the initial graph:
 ```bash
 $ kubectl exec -n demo neo4j-autoscale-0 -- \
     cypher-shell -d appdb -u neo4j -p "$PASS" \
-    "MATCH (u:User) RETURN count(u) AS users"
-users
-10000
+    "MATCH (u:User) OPTIONAL MATCH (u)-[r:FOLLOWS]->()
+     RETURN count(DISTINCT u) AS users, count(r) AS follows"
+users, follows
+10000, 9999
 ```
 
 ## Create the Neo4jAutoscaler
 
-The example policy permits recommendations from `600m` to `2` CPU and from `1200Mi` to `2Gi` memory:
+The example policy permits recommendations from `600m` to `2` CPU and from `2500Mi` to `4Gi` memory:
 
 ```yaml
 apiVersion: autoscaling.kubedb.com/v1alpha1
@@ -121,10 +166,10 @@ spec:
       resourceDiffPercentage: 20
       minAllowed:
         cpu: 600m
-        memory: 1200Mi
+        memory: 2500Mi
       maxAllowed:
         cpu: "2"
-        memory: 2Gi
+        memory: 4Gi
       controlledResources:
         - cpu
         - memory
@@ -149,15 +194,25 @@ $ for i in $(seq 1 100); do
     kubectl exec -n demo neo4j-autoscale-0 -- \
       cypher-shell -d appdb -u neo4j -p "$PASS" \
       "MATCH (u:User)-[:FOLLOWS*1..3]->(v:User)
-       RETURN count(v)" >/dev/null
+       RETURN count(v)" >/dev/null 2>&1 || true
   done
 ```
+
+The Autoscaler may start the rolling resize while the loop is still running. The `|| true` allows this workload generator to continue past a temporary connection failure while a pod is being replaced. Application clients should use bounded retries with backoff for the same condition.
 
 After the `podLifeTimeThreshold` has passed, inspect the recommendation:
 
 ```bash
 $ kubectl get neo4jautoscaler -n demo neo4j-compute-autoscaler \
     -o jsonpath='{.status.vpas[*].recommendation.containerRecommendations}' | jq .
+[
+  {
+    "containerName": "neo4j",
+    "lowerBound": {"cpu": "600m", "memory": "2500Mi"},
+    "target": {"cpu": "716m", "memory": "2500Mi"},
+    "upperBound": {"cpu": "2", "memory": "4Gi"}
+  }
+]
 ```
 
 KubeDB creates a `Neo4jOpsRequest` when the recommendation differs sufficiently from the current resources:
@@ -173,9 +228,13 @@ Verify that the pod allocation is now within the configured bounds:
 ```bash
 $ kubectl get pod -n demo neo4j-autoscale-0 \
     -o jsonpath='{.spec.containers[?(@.name=="neo4j")].resources}' | jq .
+{
+  "limits": {"cpu": "600m", "memory": "2500Mi"},
+  "requests": {"cpu": "600m", "memory": "2500Mi"}
+}
 ```
 
-The precise recommendation depends on observed usage, but it will not be below `600m` CPU and `1200Mi` memory or above `2` CPU and `2Gi` memory.
+The precise recommendation and completion time depend on observed usage and the available samples. The applied allocation will stay between `600m` and `2` CPU and between `2500Mi` and `4Gi` memory.
 
 ## Verify the Graph
 
@@ -193,6 +252,7 @@ users, follows
 ## Troubleshooting
 
 - If no recommendation appears, verify Metrics Server with `kubectl top pod -n demo` and wait for more samples.
+- Check the Autoscaler's conditions with `kubectl describe neo4jautoscaler -n demo neo4j-compute-autoscaler` before changing its thresholds.
 - If no OpsRequest is created, check `podLifeTimeThreshold`, `resourceDiffPercentage`, and the Autoscaler conditions.
 - If an operation remains pending, describe it with `kubectl describe neo4jopsrequest -n demo <name>` and check Ops Manager logs.
 

@@ -17,10 +17,10 @@ spec:
       resourceDiffPercentage: 20
       minAllowed:
         cpu: 600m
-        memory: 1200Mi
+        memory: 2500Mi
       maxAllowed:
         cpu: "2"
-        memory: 2Gi
+        memory: 4Gi
       controlledResources:
         - cpu
         - memory

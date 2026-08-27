@@ -13,6 +13,6 @@ spec:
   storage:
     neo4j:
       trigger: "On"
-      usageThreshold: 20
+      usageThreshold: 40
       scalingThreshold: 50
       expansionMode: Online

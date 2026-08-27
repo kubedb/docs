@@ -13,7 +13,7 @@ spec:
       - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   podTemplate:
     spec:
       containers:
@@ -21,8 +21,8 @@ spec:
           resources:
             requests:
               cpu: 500m
-              memory: 1Gi
+              memory: 2Gi
             limits:
               cpu: 500m
-              memory: 1Gi
+              memory: 2Gi
   deletionPolicy: WipeOut
