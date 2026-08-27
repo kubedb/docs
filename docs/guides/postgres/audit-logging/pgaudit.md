@@ -81,16 +81,35 @@ pgAudit is a shared library, so it has to be preloaded; it cannot simply be
 created as an extension. KubeDB passes custom PostgreSQL settings through a
 Secret referenced by `spec.configSecret`, under the key `user.conf`.
 
+{{< notice type="tip" message="List **every** shared library the database will ever need in `shared_preload_libraries` now, not just pgAudit. `shared_preload_libraries` can only be changed by restarting the server, so adding one later means a restarting `Reconfigure` ops request and a rolling restart of the whole cluster. Naming them all at creation time costs nothing and avoids that entirely." >}}
+
+The configuration below preloads the four libraries a regulated deployment
+typically wants together — `pg_stat_statements` for query statistics,
+`credcheck` for password policy, `pg_cron` for scheduled jobs and `pgaudit` for
+the audit trail — and then configures pgAudit and credcheck. Preloading
+credcheck without setting its rules leaves every rule at a permissive default,
+so the two belong in the same file.
+
 `audit.conf`:
 
 ```ini
-# ---------------------------------------------------------------------------
-# Audit engine
-# ---------------------------------------------------------------------------
-shared_preload_libraries = 'pgaudit'
+# ===========================================================================
+# Preloaded libraries
+# ===========================================================================
+# Every shared library the database will ever need must be listed here when
+# the database is created. Changing this list later is a restarting change,
+# so a complete list now avoids a restart later.
+shared_preload_libraries = 'pg_stat_statements,credcheck,pg_cron,pgaudit'
 
-# Session audit logging: every statement that changes data, schema, privileges
-# or executable code. Reads are deliberately NOT in this list.
+# pg_cron's background worker connects to this database.
+cron.database_name = 'postgres'
+
+# ===========================================================================
+# Audit engine (pgAudit)
+# ===========================================================================
+# Session audit logging: every statement that changes data, schema,
+# privileges or executable code. Reads are deliberately NOT in this list --
+# see pgaudit.role below.
 pgaudit.log = 'ddl, role, write, function'
 
 # Do not audit reads of the system catalogs; psql \d and every ORM's
@@ -111,20 +130,47 @@ pgaudit.log_statement = on
 pgaudit.log_relation = on
 pgaudit.log_statement_once = off
 
-# Object audit logging: SELECTs are audited only on objects this role has been
-# granted access to.
+# Object audit logging: SELECTs are audited only on objects this role has
+# been granted access to. This is what makes read auditing affordable.
 pgaudit.role = 'auditor'
 
-# ---------------------------------------------------------------------------
-# Log record content -- an audit record is only evidence if it names the actor
-# ---------------------------------------------------------------------------
+# ===========================================================================
+# Password policy (credcheck)
+# ===========================================================================
+# Preloading credcheck alone enforces nothing -- every rule sits at its
+# permissive default. These are the rules.
+credcheck.password_min_length = 11
+credcheck.password_min_upper = 1
+credcheck.password_min_lower = 1
+credcheck.password_min_digit = 1
+credcheck.password_min_special = 0
+credcheck.superuser_nocheck = off
+
+# Reject a password that contains the role name, case-insensitively. Without
+# password_ignore_case the check is case-sensitive, and 'Alice99' passes for
+# role 'alice'.
+credcheck.password_contain_username = on
+credcheck.password_ignore_case = on
+
+# Force a password change on first login.
+credcheck.password_change_first_login = on
+
+# Lock a role out after repeated authentication failures. Valid range is
+# 0..64; a larger value is not an error, it silently falls back to 0.
+credcheck.max_auth_failure = 64
+credcheck.auth_delay_ms = 0
+credcheck.reset_superuser = on
+
+# ===========================================================================
+# Log record content -- a record is only evidence if it names the actor
+# ===========================================================================
 log_line_prefix = '%m [%p] %q%u@%d %r app=%a sid=%c/%l '
 log_error_verbosity = default
 
 # pgaudit supersedes log_statement; leaving both on double-logs everything.
 log_statement = 'none'
 
-# Successful connection logging is off deliberately -- see "Log volume" below.
+# Successful connection logging is off deliberately -- see "Log volume".
 # Failed authentication is still logged regardless of this setting.
 log_connections = off
 log_disconnections = off
@@ -185,20 +231,23 @@ silently inert:
 
 ```bash
 $ kubectl exec -n bank bank-pg-0 -c postgres -- psql -U postgres -c \
-    "SELECT name, setting, source FROM pg_settings WHERE name LIKE 'pgaudit%' ORDER BY name;"
-              name              |          setting           |       source
---------------------------------+----------------------------+--------------------
- pgaudit.log                    | ddl, role, write, function | configuration file
- pgaudit.log_catalog            | off                        | configuration file
- pgaudit.log_client             | off                        | configuration file
- pgaudit.log_level              | log                        | configuration file
- pgaudit.log_parameter          | on                         | configuration file
- pgaudit.log_parameter_max_size | 0                          | default
- pgaudit.log_relation           | on                         | configuration file
- pgaudit.log_rows               | off                        | default
- pgaudit.log_statement          | on                         | configuration file
- pgaudit.log_statement_once     | off                        | configuration file
- pgaudit.role                   | auditor                    | configuration file
+    "SELECT name, setting, source FROM pg_settings
+       WHERE name = 'shared_preload_libraries' OR name LIKE 'pgaudit%' ORDER BY name;"
+              name              |                   setting                    |       source       
+--------------------------------+----------------------------------------------+--------------------
+ pgaudit.log                    | ddl, role, write, function                   | configuration file
+ pgaudit.log_catalog            | off                                          | configuration file
+ pgaudit.log_client             | off                                          | configuration file
+ pgaudit.log_level              | log                                          | configuration file
+ pgaudit.log_parameter          | on                                           | configuration file
+ pgaudit.log_parameter_max_size | 0                                            | default
+ pgaudit.log_relation           | on                                           | configuration file
+ pgaudit.log_rows               | off                                          | default
+ pgaudit.log_statement          | on                                           | configuration file
+ pgaudit.log_statement_once     | off                                          | configuration file
+ pgaudit.role                   | auditor                                      | configuration file
+ shared_preload_libraries       | pg_stat_statements,credcheck,pg_cron,pgaudit | configuration file
+(12 rows)
 ```
 
 `source = configuration file` is the thing to look for. Anything you set that
@@ -215,10 +264,29 @@ $ kubectl exec -it -n bank bank-pg-0 -c postgres -- psql -U postgres
 
 ```sql
 CREATE EXTENSION IF NOT EXISTS pgaudit;
+CREATE EXTENSION IF NOT EXISTS pg_stat_statements;
+CREATE EXTENSION IF NOT EXISTS credcheck;
+CREATE EXTENSION IF NOT EXISTS pg_cron;
 
 -- The audit role is never logged into. It exists only so that GRANTs to it
 -- mark which objects pgAudit should record reads of.
 CREATE ROLE auditor NOLOGIN;
+```
+
+```
+      extname       | extversion
+--------------------+------------
+ credcheck          | 5.0.0
+ pg_cron            | 1.6
+ pg_stat_statements | 1.10
+ pgaudit            | 16.1
+```
+
+Run this on the **primary**; a standby rejects it with
+`cannot execute CREATE EXTENSION in a read-only transaction`:
+
+```bash
+$ kubectl get pod -n bank -l kubedb.com/role=primary -o name
 ```
 
 ## Step 4 — Nominate the sensitive data
@@ -263,6 +331,37 @@ GRANT USAGE ON SCHEMA core TO teller, payments_svc;
 GRANT SELECT ON core.customers, core.accounts, core.card_details TO teller;
 GRANT SELECT, INSERT ON core.transactions TO payments_svc;
 GRANT SELECT, UPDATE ON core.accounts TO payments_svc;
+```
+
+Because credcheck is enforcing, those passwords must satisfy the policy set in
+Step 1 — at least 11 characters with an upper, a lower and a digit — and must
+not contain the role name. A rejected password names the rule it broke:
+
+```
+ERROR:  password length should match the configured credcheck.password_min_length (11)
+ERROR:  password does not contain the configured credcheck.password_min_digit characters (1)
+ERROR:  password should not contain username
+```
+
+`credcheck.password_change_first_login = on` also means a new role cannot do
+anything until it replaces the password it was created with:
+
+```
+ERROR:  you must change your password first.
+```
+
+The role clears the gate itself, and that is the only statement it may run
+until it does:
+
+```sql
+ALTER USER teller PASSWORD '<new-strong-password>';
+```
+
+Both the creation and the change are audited, with the credential redacted:
+
+```
+AUDIT: SESSION,1,1,ROLE,CREATE ROLE,,,CREATE ROLE teller LOGIN PASSWORD <REDACTED>,<none>
+AUDIT: SESSION,1,1,ROLE,ALTER ROLE,,,ALTER USER teller PASSWORD <REDACTED>,<none>
 ```
 
 pgAudit redacts credentials in the records it writes, so role management is
@@ -469,10 +568,22 @@ the database namespace, and forward to storage with the retention and
 immutability your policy requires. Filtering on the `AUDIT:` marker separates the
 audit stream from ordinary server logging.
 
-## Changing the policy on a running cluster
+## Changing the policy later
 
-Audit requirements change. Update the Secret and apply a `Reconfigure`
-ops request; KubeDB rolls the change out replica by replica.
+Nothing in this guide needs an ops request: the libraries were preloaded and the
+policy set when the database was created, which is the whole reason for naming
+every library up front.
+
+When a requirement does change later, which side of the restart line it falls on
+decides the cost:
+
+| Change | Cost |
+|---|---|
+| `pgaudit.*`, `credcheck.*`, `log_*` values | `Reconfigure` ops request, no restart |
+| Adding or removing a `shared_preload_libraries` entry | `Reconfigure` ops request **with a rolling restart** |
+
+Either way, update the Secret and apply a
+[`Reconfigure`](/docs/guides/postgres/reconfigure/overview.md) ops request:
 
 ```bash
 $ kubectl create secret generic bank-pg-audit-config -n bank \
@@ -495,20 +606,9 @@ spec:
       name: bank-pg-audit-config
 ```
 
-```bash
-$ kubectl apply -f reconfigure.yaml
-postgresopsrequest.ops.kubedb.com/bank-pg-tune-audit created
-
-$ kubectl get postgresopsrequest -n bank -w
-NAME                 TYPE          STATUS        AGE
-bank-pg-tune-audit   Reconfigure   Progressing   30s
-bank-pg-tune-audit   Reconfigure   Successful    4m52s
-```
-
-Because `shared_preload_libraries` is involved, this is a restarting change —
-KubeDB restarts the replicas one at a time, which took just under five minutes
-for this three-replica cluster. Confirm the new values with the `pg_settings`
-query from Step 2 afterwards. Data, grants and roles are unaffected.
+A restarting change rolls the replicas one at a time — just under five minutes
+for a three-replica cluster in testing. Data, grants and roles are unaffected.
+Afterwards, confirm the new values with the `pg_settings` query from Step 2.
 
 ## Tuning notes
 
