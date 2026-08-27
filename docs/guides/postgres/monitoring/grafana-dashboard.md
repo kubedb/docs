@@ -56,9 +56,10 @@ metadata:
   namespace: demo
 spec:
   version: "13.13"
+  replicas: 3
   deletionPolicy: WipeOut
   storage:
-    storageClassName: "standard"
+    storageClassName: "local-path"
     accessModes:
     - ReadWriteOnce
     resources:
