@@ -44,7 +44,7 @@ section_menu_id: guides
 
 ### Step 1: Deploy kube-prometheus-stack
 
-`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes. This is where Grafana itself gets installed for this tutorial track — the Grafana Dashboard guide's "Access Grafana" step assumes it's already running from here; you do not install Grafana again there.
 
 Add the prometheus-community Helm repo and install:
 

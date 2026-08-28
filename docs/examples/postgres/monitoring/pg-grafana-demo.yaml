@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-grafana-demo
+  namespace: demo
+spec:
+  version: "13.13"
+  replicas: 3
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

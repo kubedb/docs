@@ -82,7 +82,7 @@ Here,
 Create the ClickHouse instance:
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/coreos-prom-clickhouse.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/clickhouse/monitoring/ch-grafana-demo.yaml
 clickhouse.kubedb.com/ch-grafana-demo created
 ```
 
@@ -172,7 +172,7 @@ After a successful login you will see the Grafana home page:
 
 If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 5.
 
-For a standalone Grafana installation:
+If you're using a different Grafana instance than the one installed in the Configuration prerequisite (linked in "Before You Begin" above), add Prometheus as a data source manually:
 
 1. Go to **Connections** → **Data sources** → **Add new data source**.
 2. Select **Prometheus**.
@@ -267,6 +267,8 @@ grafana-kubedb-clickhouse-database    KubeDB / ClickHouse / Database    Current 
 ```
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboard are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
+
+If the `SYNCED` column is missing entirely from your output (not just showing a non-`Current` value), `grafana-operator` most likely never processed the resource at all. Check that the operator pod is actually running (`kubectl get pods -n kubeops -l app.kubernetes.io/name=grafana-operator`), inspect its logs for `AppBinding`/auth errors (`kubectl logs -n kubeops deploy/grafana-operator`), and check `kubectl get grafanadashboards.openviz.dev -n kubeops <name> -o yaml` for `status.conditions` — the CR existing only means `kubectl` accepted it, not that it reached Grafana.
 
 After importing them, they will appear under `Dashboards` in the left sidebar as well:
 

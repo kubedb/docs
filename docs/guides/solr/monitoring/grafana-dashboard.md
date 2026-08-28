@@ -28,8 +28,6 @@ KubeDB exposes Solr metrics through the built-in Prometheus exporter module, and
 
   `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (see [Configuration](/docs/guides/solr/monitoring/prometheus-operator.md#configuration)) uses to expose metrics to Prometheus.
 
-- Solr requires a ZooKeeper cluster for coordination. Deploy a ZooKeeper instance in the `demo` namespace before creating the Solr instance. See the [ZooKeeper quickstart](/docs/guides/zookeeper/quickstart/quickstart.md) for details.
-
 - To keep monitoring resources isolated, we use a separate `monitoring` namespace and deploy the database in the `demo` namespace.
 
   ```bash
@@ -46,7 +44,26 @@ KubeDB exposes Solr metrics through the built-in Prometheus exporter module, and
 
 ## Setup
 
-## Step 1: Deploy Solr
+## Step 1: Deploy ZooKeeper
+
+Solr requires a ZooKeeper cluster for coordination — the Solr object below references it through `spec.zookeeperRef`. Deploy one before creating the Solr instance:
+
+```bash
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/zookeeper/monitoring/zk-grafana-demo.yaml
+zookeeper.kubedb.com/zk-grafana-demo created
+```
+
+Wait for it to be `Ready`:
+
+```bash
+$ kubectl get zookeeper -n demo zk-grafana-demo
+NAME              VERSION   STATUS   AGE
+zk-grafana-demo   3.8.3     Ready    2m
+```
+
+`zookeeperRef` in the Solr spec below points at this instance by name and namespace, so keep both as `zk-grafana-demo` and `demo` unless you also update the reference.
+
+## Step 2: Deploy Solr
 
 Below is the Solr object with monitoring configured to use Prometheus Operator. The `prometheus-exporter` module must be listed in `solrModules` to enable the metrics endpoint.
 
@@ -126,7 +143,7 @@ $ kubectl get servicemonitor -n demo solr-grafana-demo-stats -o jsonpath='{.meta
 {"release":"prometheus", ...}
 ```
 
-## Step 2: Verify Prometheus is Scraping
+## Step 3: Verify Prometheus is Scraping
 
 Port-forward the Prometheus pod:
 
@@ -145,7 +162,7 @@ Open [http://localhost:9090/targets](http://localhost:9090/targets) in your brow
 
 If the target is missing, check that the `ServiceMonitor` label (`release: prometheus`) matches the Prometheus `serviceMonitorSelector`.
 
-## Step 3: Access Grafana
+## Step 4: Access Grafana
 
 Port-forward the Grafana service:
 
@@ -176,11 +193,11 @@ After a successful login you will see the Grafana home page:
   <img alt="Grafana Home" src="/docs/images/kafka/monitoring/kf-grafana-home.png" style="padding:10px">
 </p>
 
-## Step 4: Configure Prometheus as a Data Source
+## Step 5: Configure Prometheus as a Data Source
 
-If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 5.
+If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 6.
 
-For a standalone Grafana installation:
+If you're using a different Grafana instance than the one installed in the Configuration prerequisite (linked in "Before You Begin" above), add Prometheus as a data source manually:
 
 1. Go to **Connections** → **Data sources** → **Add new data source**.
 2. Select **Prometheus**.
@@ -192,7 +209,7 @@ For a standalone Grafana installation:
 
 4. Click **Save & test**. You should see `Data source is working`.
 
-## Step 5: Import Dashboard — Option A: Automatic (chart)
+## Step 6: Import Dashboard — Option A: Automatic (chart)
 
 Rather than downloading and uploading each JSON file by hand (Option B below), KubeDB ships a chart that creates all matching dashboards for you as `GrafanaDashboard` custom resources. A separate controller, **`grafana-operator`**, watches these resources and pushes the actual dashboard JSON into your Grafana instance — both pieces are required.
 
@@ -274,7 +291,9 @@ grafana-kubedb-solr-pod         KubeDB / Solr / Pod         Current   30s
 grafana-kubedb-solr-database    KubeDB / Solr / Database    Current   30s
 ```
 
-`SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
+`SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 7 below.
+
+If the `SYNCED` column is missing entirely from your output (not just showing a non-`Current` value), `grafana-operator` most likely never processed the resource at all. Check that the operator pod is actually running (`kubectl get pods -n kubeops -l app.kubernetes.io/name=grafana-operator`), inspect its logs for `AppBinding`/auth errors (`kubectl logs -n kubeops deploy/grafana-operator`), and check `kubectl get grafanadashboards.openviz.dev -n kubeops <name> -o yaml` for `status.conditions` — the CR existing only means `kubectl` accepted it, not that it reached Grafana.
 
 After importing them, they will appear under `Dashboards` in the left sidebar as well:
 
@@ -284,7 +303,7 @@ After importing them, they will appear under `Dashboards` in the left sidebar as
 | KubeDB / Solr / Pod | Per-node drill-down |
 | KubeDB / Solr / Database | Collection-level metrics |
 
-## Step 5: Import Dashboard — Option B: Manual (JSON upload)
+## Step 6: Import Dashboard — Option B: Manual (JSON upload)
 
 If you'd rather not run `grafana-operator`, or want fine-grained control over exactly which dashboards get imported, upload the same dashboard JSON files by hand instead.
 
@@ -314,7 +333,7 @@ The import page looks like this:
 
 After importing all three files, they will appear under **Dashboards** in the left sidebar.
 
-## Step 6: Explore the Dashboards
+## Step 7: Explore the Dashboards
 
 After opening a dashboard, use the dropdown filters at the top to focus on a specific instance.
 

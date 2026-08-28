@@ -59,22 +59,27 @@ $ kubectl create secret tls kafka-ca \
   --namespace=demo
 secret/kafka-ca created
 
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kf-Issuer.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/tls/kf-issuer.yaml
 issuer.cert-manager.io/kafka-ca-issuer created
 ```
 
 Below is the Kafka object with monitoring configured to use Prometheus Operator.
 
 ```yaml
-apiVersion: kubedb.com/v1
+apiVersion: kubedb.com/v1alpha2
 kind: Kafka
 metadata:
-  name: kafka-grafana-demo
+  name: kafka
   namespace: demo
 spec:
-  version: "4.2.0"
-  replicas: 1
-  deletionPolicy: WipeOut
+  enableSSL: true
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: kafka-ca-issuer
+      kind: Issuer
+  replicas: 3
+  version: 4.2.0
   storage:
     storageClassName: "local-path"
     accessModes:
@@ -82,17 +87,22 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  storageType: Durable
   monitor:
     agent: prometheus.io/operator
     prometheus:
+      exporter:
+        port: 56790
       serviceMonitor:
         labels:
           release: prometheus
         interval: 10s
+  deletionPolicy: WipeOut
 ```
 
 Here,
 
+- `enableSSL: true` and `tls.issuerRef` turn on TLS using the self-signed `Issuer` created above.
 - `replicas: 3` deploys a 3-node combined KRaft cluster (each node acts as both broker and controller), which is required for the quorum panels to show meaningful data.
 - `monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` for this instance.
 - `monitor.prometheus.exporter.port` sets the port the JMX exporter serves metrics on.
@@ -111,7 +121,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get kafka -n demo kafka
 NAME    VERSION   STATUS   AGE
-kafka   3.9.0     Ready    5m
+kafka   4.2.0     Ready    5m
 ```
 
 KubeDB creates a stats service named `{kafka-name}-stats` for monitoring:
@@ -192,7 +202,7 @@ After a successful login you will see the Grafana home page:
 
 If you installed Grafana via `kube-prometheus-stack`, Prometheus is already configured as the default data source — skip to Step 5.
 
-For a standalone Grafana installation:
+If you're using a different Grafana instance than the one installed in the Configuration prerequisite (linked in "Before You Begin" above), add Prometheus as a data source manually:
 
 1. Go to **Connections** → **Data sources** → **Add new data source**.
 2. Select **Prometheus**.
@@ -289,6 +299,8 @@ grafana-kubedb-kafka-database KubeDB / Kafka / Database Current   30s
 ```
 
 `SYNCED: Current` confirms `grafana-operator` successfully pushed each dashboard into Grafana. Open Grafana — the dashboards are already there under `Dashboards`, fully wired to your Prometheus data source, ready to explore in Step 6 below.
+
+If the `SYNCED` column is missing entirely from your output (not just showing a non-`Current` value), `grafana-operator` most likely never processed the resource at all. Check that the operator pod is actually running (`kubectl get pods -n kubeops -l app.kubernetes.io/name=grafana-operator`), inspect its logs for `AppBinding`/auth errors (`kubectl logs -n kubeops deploy/grafana-operator`), and check `kubectl get grafanadashboards.openviz.dev -n kubeops <name> -o yaml` for `status.conditions` — the CR existing only means `kubectl` accepted it, not that it reached Grafana.
 
 ## Step 5: Import Dashboard — Option B: Manual (JSON upload)
 

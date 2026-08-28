@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Singlestore
+metadata:
+  name: sdb-grafana-demo
+  namespace: demo
+spec:
+  version: "8.7.10"
+  licenseSecret:
+    kind: Secret
+    name: license-secret
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
