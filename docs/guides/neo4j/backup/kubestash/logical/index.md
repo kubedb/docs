@@ -17,6 +17,8 @@ KubeStash allows you to backup and restore `Neo4j` databases. It supports backup
 
 This guide will give you an overview how you can take backup and restore your `Neo4j` databases using `KubeStash`.
 
+For composite databases and local, standalone, or remote aliases, see [Backup and Restore Neo4j Composite Databases and Aliases](/docs/guides/neo4j/backup/kubestash/logical/composite-database/index.md).
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using `Minikube` or `Kind`.
