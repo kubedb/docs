@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: ProxySQL
+metadata:
+  name: sample-proxysql
+  namespace: demo
+spec:
+  version: "2.7.3-debian"
+  replicas: 1
+  backend:
+    name: mysql-server
+  podTemplate:
+    metadata:
+      annotations:
+        passMe: ToProxySQLPod
+    spec:
+      containers:
+      - name: proxysql
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+  deletionPolicy: WipeOut
