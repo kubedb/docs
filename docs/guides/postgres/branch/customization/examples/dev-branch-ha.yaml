@@ -1,0 +1,21 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: dev-branch-ha
+  namespace: demo
+spec:
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: sample-postgres-ha
+    namespace: demo
+  target:
+    namespace: demo
+    name: dev-postgres-ha
+    storageClassName: topolvm-provisioner-thin
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  deletionPolicy: Delete
