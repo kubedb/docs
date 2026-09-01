@@ -62,7 +62,7 @@ metadata:
   name: hz-grafana-demo
   namespace: demo
 spec:
-  version: "5.5.2"
+  version: "5.5.6"
   replicas: 3
   licenseSecret:
     name: hz-license-key
@@ -101,7 +101,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get hazelcast -n demo hz-grafana-demo
 NAME              VERSION   STATUS   AGE
-hz-grafana-demo   5.5.2     Ready    3m
+hz-grafana-demo   5.5.6     Ready    3m
 ```
 
 KubeDB creates a stats service named `{hazelcast-name}-stats` for the exporter:
@@ -250,8 +250,6 @@ $ helm upgrade -i kubedb-grafana-dashboards-hazelcast ./kubedb-grafana-dashboard
     --set grafana.namespace=monitoring
 ```
 
-> Use a release name unique to this database (`kubedb-grafana-dashboards-hazelcast`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
-
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 
 This creates every dashboard the chart ships for Hazelcast — `KubeDB / Hazelcast / Summary`, `KubeDB / Hazelcast / Pod`, `KubeDB / Hazelcast / Database` — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
@@ -317,7 +315,7 @@ Cluster-level overview showing general health, resource usage, storage, and netw
 **General Info section:**
 - **Database Status** — current health (`Ready`, `NotReady`, etc.)
 - **Database Up-time** — how long the cluster has been running
-- **Version** — Hazelcast version (e.g., `5.5.2`)
+- **Version** — Hazelcast version (e.g., `5.5.6`)
 - **Total Nodes** — number of active member pods
 - **CPU / Memory Request & Limit** — configured resource bounds per pod
 - **Deletion Policy** — KubeDB deletion policy (e.g., `WipeOut`)

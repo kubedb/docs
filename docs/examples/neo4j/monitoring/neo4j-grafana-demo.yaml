@@ -4,7 +4,7 @@ metadata:
   name: neo4j-grafana-demo
   namespace: demo
 spec:
-  version: "2025.11.2"
+  version: "2026.06.0"
   replicas: 3
   deletionPolicy: WipeOut
   storage:

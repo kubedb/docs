@@ -55,8 +55,11 @@ metadata:
   name: mariadb-grafana-demo
   namespace: demo
 spec:
-  version: "11.5.2"
-  deletionPolicy: WipeOut
+  version: "12.1.2"
+  replicas: 3
+  topology:
+    mode: GaleraCluster
+  storageType: Durable
   storage:
     storageClassName: "standard"
     accessModes:
@@ -64,6 +67,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
@@ -91,7 +95,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get mariadb -n demo mariadb-grafana-demo
 NAME                   VERSION   STATUS   AGE
-mariadb-grafana-demo   11.5.2    Ready    2m
+mariadb-grafana-demo   12.3.2    Ready    2m
 ```
 
 KubeDB creates a stats service named `{mariadb-name}-stats` for the exporter:
@@ -249,8 +253,6 @@ $ helm upgrade -i kubedb-grafana-dashboards-mariadb ./kubedb-grafana-dashboards-
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
-
-> Use a release name unique to this database (`kubedb-grafana-dashboards-mariadb`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
 
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 

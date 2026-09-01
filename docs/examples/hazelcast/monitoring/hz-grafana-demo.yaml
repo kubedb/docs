@@ -4,7 +4,7 @@ metadata:
   name: hz-grafana-demo
   namespace: demo
 spec:
-  version: "5.5.2"
+  version: "5.5.6"
   replicas: 3
   licenseSecret:
     name: hz-license-key

@@ -55,7 +55,7 @@ metadata:
   name: proxysql-grafana-demo
   namespace: demo
 spec:
-  version: "2.4.4-debian"
+  version: "3.0.1-debian"
   replicas: 1
   backend:
     name: mysql-server
@@ -87,7 +87,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get proxysql -n demo proxysql-grafana-demo
 NAME                    VERSION        STATUS   AGE
-proxysql-grafana-demo   2.4.4-debian   Ready    2m
+proxysql-grafana-demo   3.0.1-debian   Ready    2m
 ```
 
 KubeDB creates a stats service named `{proxysql-name}-stats` for the exporter:
@@ -245,8 +245,6 @@ $ helm upgrade -i kubedb-grafana-dashboards-proxysql ./kubedb-grafana-dashboards
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
-
-> Use a release name unique to this database (`kubedb-grafana-dashboards-proxysql`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
 
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 

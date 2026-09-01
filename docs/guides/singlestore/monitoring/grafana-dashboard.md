@@ -63,7 +63,7 @@ metadata:
   name: sdb-grafana-demo
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   licenseSecret:
     kind: Secret
     name: license-secret
@@ -102,7 +102,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get singlestore -n demo sdb-grafana-demo
 NAME               VERSION   STATUS   AGE
-sdb-grafana-demo   8.7.10    Ready    3m
+sdb-grafana-demo   8.9.3    Ready    3m
 ```
 
 KubeDB creates a stats service named `{singlestore-name}-stats` for the exporter:
@@ -261,8 +261,6 @@ $ helm upgrade -i kubedb-grafana-dashboards-singlestore ./kubedb-grafana-dashboa
     --set grafana.namespace=monitoring
 ```
 
-> Use a release name unique to this database (`kubedb-grafana-dashboards-singlestore`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
-
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 
 This creates every dashboard the chart ships for Singlestore — `KubeDB / Singlestore / Summary`, `KubeDB / Singlestore / Pod`, `KubeDB / Singlestore / Database` — which `grafana-operator` then pushes into your Grafana instance automatically. No manual JSON download or upload needed.
@@ -333,7 +331,7 @@ Start here for a cluster-level overview. The dashboard has three sections:
 
 **General Info** — status cards at the top:
 - **Database Status** — current health (e.g., `Ready`)
-- **Version** — Singlestore version running (e.g., `8.7.10`)
+- **Version** — Singlestore version running (e.g., `8.9.3`)
 - **Require Secure TLS** — whether TLS is enforced
 - **Deletion Policy** — configured deletion policy (e.g., `WipeOut`)
 - **Total Nodes**, **CPU Request/Limit**, **Memory Request/Limit**, **Storage Request** — resource configuration at a glance

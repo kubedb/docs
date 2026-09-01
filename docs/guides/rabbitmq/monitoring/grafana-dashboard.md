@@ -55,7 +55,7 @@ metadata:
   name: rmq-grafana-demo
   namespace: demo
 spec:
-  version: "4.0.4"
+  version: "4.2.4"
   replicas: 1
   deletionPolicy: WipeOut
   storage:
@@ -92,7 +92,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get rabbitmq -n demo rmq-grafana-demo
 NAME               VERSION   STATUS   AGE
-rmq-grafana-demo   4.0.4     Ready    2m
+rmq-grafana-demo   4.2.4     Ready    2m
 ```
 
 KubeDB creates a stats service named `{rabbitmq-name}-stats` for monitoring:
@@ -250,8 +250,6 @@ $ helm upgrade -i kubedb-grafana-dashboards-rabbitmq ./kubedb-grafana-dashboards
     --set grafana.name=grafana \
     --set grafana.namespace=monitoring
 ```
-
-> Use a release name unique to this database (`kubedb-grafana-dashboards-rabbitmq`), not the plain `kubedb-grafana-dashboards` name — if you also follow another DB's Grafana Dashboard guide on this same cluster, each `helm upgrade -i` under a *shared* release name would prune the previous DB's dashboards (Helm removes anything not in the new release's manifest). A per-DB release name lets them coexist.
 
 `grafana.name`/`grafana.namespace` point the chart's `GrafanaDashboard` resources at the `AppBinding` created in step 2 (omitting them falls back to whichever `AppBinding` in your cluster is labeled as the cluster-default Grafana, if any — explicit is safer on a shared cluster). No need to touch `featureGates` — with every other database's `dashboards/` folder removed, their gates simply match zero files and render nothing, regardless of being `true` by default.
 
