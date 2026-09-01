@@ -1,0 +1,27 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: Neo4jAutoscaler
+metadata:
+  name: neo4j-compute-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: neo4j-autoscale
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 10m
+    maxRetries: 3
+  compute:
+    neo4j:
+      trigger: "On"
+      podLifeTimeThreshold: 5m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 600m
+        memory: 2500Mi
+      maxAllowed:
+        cpu: "2"
+        memory: 4Gi
+      controlledResources:
+        - cpu
+        - memory
+      containerControlledValues: RequestsAndLimits
