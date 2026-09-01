@@ -31,7 +31,7 @@ Create the namespace used throughout this guide:
 $ kubectl create namespace demo
 ```
 
-> **Note:** The example manifests are in [the composite-database examples directory](/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples). Replace every placeholder before applying a manifest.
+> **Note:** Replace every placeholder in the example manifests before applying them.
 
 ## Architecture and What Gets Backed Up
 
@@ -107,11 +107,62 @@ Here, `aes` is the Secret data key containing the PKCS12 file, `password` contai
 
 Create the source instance:
 
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: source-neo4j
+  namespace: demo
+spec:
+  version: 2025.12.1
+  replicas: 3
+  configuration:
+    remoteAliasKeystore:
+      keystoreRef:
+        name: neo4j-remote-alias-keystore
+        key: aes
+      passwordRef:
+        name: neo4j-remote-alias-keystore
+        key: password
+      keyName: neo
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
+```
+
+Apply the manifest:
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/source-neo4j.yaml
 ```
 
 Create the separate instance that will host the remote database:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: remote-neo4j
+  namespace: demo
+spec:
+  version: 2025.12.1
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
+```
+
+Apply the manifest:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/remote-neo4j.yaml
@@ -224,7 +275,31 @@ $ kubectl exec -n demo source-neo4j-0 -- cypher-shell -d media -u neo4j -p "$SOU
 
 ## Configure BackupStorage and RetentionPolicy
 
-Create the S3 credential Secret as described in the [basic logical backup guide](/docs/guides/neo4j/backup/kubestash/logical/index.md#prepare-backend). Then edit the placeholders in `backupstorage.yaml` and apply it:
+Create the S3 credential Secret as described in the [basic logical backup guide](/docs/guides/neo4j/backup/kubestash/logical/standalone-and-ha/#prepare-backend). Then replace the placeholders in the following `BackupStorage` manifest:
+
+```yaml
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: <your-bucket-name>
+      region: <your-bucket-region>
+      endpoint: <your-s3-endpoint>
+      secretName: s3-secret
+      prefix: demo
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  default: false
+  deletionPolicy: Delete
+```
+
+Apply the manifest after replacing the placeholders:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/backupstorage.yaml
@@ -233,6 +308,26 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 The provider block selects S3 and supplies its bucket, region, endpoint, credential Secret, and object prefix. `usagePolicy` permits repositories in all namespaces to use this storage. `deletionPolicy: Delete` removes stored backup data when the `BackupStorage` is deleted.
 
 Create the retention policy:
+
+```yaml
+apiVersion: storage.kubestash.com/v1alpha1
+kind: RetentionPolicy
+metadata:
+  name: demo-retention
+  namespace: demo
+spec:
+  default: true
+  failedSnapshots:
+    last: 2
+  maxRetentionPeriod: 2mo
+  successfulSnapshots:
+    last: 5
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+```
+
+Apply the manifest:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/retentionpolicy.yaml
@@ -243,6 +338,44 @@ This policy retains the last five successful and two failed snapshots for at mos
 ## Create BackupConfiguration
 
 Apply the backup configuration:
+
+```yaml
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: source-neo4j-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Neo4j
+    namespace: demo
+    name: source-neo4j
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-neo4j-composite-repo
+          backend: s3-backend
+          directory: /neo4j-composite
+      addon:
+        name: neo4j-addon
+        tasks:
+          - name: logical-backup
+```
+
+Apply the manifest:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/backupconfiguration.yaml
@@ -274,11 +407,41 @@ The `BackupConfiguration` and repository should become `Ready`, and the `BackupS
 
 Create the empty restore target:
 
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: restored-neo4j
+  namespace: demo
+spec:
+  version: 2025.12.1
+  replicas: 3
+  configuration:
+    remoteAliasKeystore:
+      keystoreRef:
+        name: neo4j-remote-alias-keystore
+        key: aes
+      passwordRef:
+        name: neo4j-remote-alias-keystore
+        key: password
+      keyName: neo
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
+```
+
+Apply the manifest:
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/restored-neo4j.yaml
 ```
 
-The target uses the same Neo4j version, topology, and remote alias keystore configuration. `spec.init.waitForInitialRestore: true` keeps initial database startup coordinated with the restore. The restore Job will seed `restored-neo4j-0` through its PVC. The keystore configuration lets the restored Neo4j instance encrypt credentials while KubeStash recreates stored-native remote aliases.
+The target uses the same Neo4j version, topology, and remote alias keystore configuration. The restore Job will seed `restored-neo4j-0` through its PVC. The keystore configuration lets the restored Neo4j instance encrypt credentials while KubeStash recreates stored-native remote aliases.
 
 ## Create the Remote Alias Credential Secret
 
@@ -299,7 +462,7 @@ stringData:
       password: "<remote-database-password>"
 ```
 
-Replace the placeholders locally and apply the file. Do not commit real values:
+Save this manifest as `remote-alias-credentials.yaml`, replace the placeholders locally, and apply it. Do not commit real values:
 
 ```bash
 $ kubectl apply -f remote-alias-credentials.yaml
@@ -307,11 +470,48 @@ $ kubectl apply -f remote-alias-credentials.yaml
 
 The Secret must contain a `credentials.yaml` key. Its value is a map keyed by the exact, complete alias name returned by `SHOW ALIASES FOR DATABASE`. Every selected stored-native remote alias needs a non-empty `password`. The username, URL, driver settings, and properties come from backup metadata; only the password comes from this Secret. The remote endpoint must be reachable from `restored-neo4j`. OIDC credential-forwarding aliases do not use stored passwords and do not need entries.
 
-The committed [example Secret](/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/remote-alias-credentials.yaml) contains placeholders only; download or copy it before substituting credentials.
-
 ## Create RestoreSession
 
 Create the restore session after the credential Secret exists:
+
+```yaml
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: source-neo4j-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Neo4j
+    namespace: demo
+    name: restored-neo4j
+  dataSource:
+    repository: s3-neo4j-composite-repo
+    snapshot: latest
+  addon:
+    name: neo4j-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          seedServerName: "restored-neo4j-0"
+          remoteAliasCredentialsSecret: neo4j-remote-alias-credentials
+    jobTemplate:
+      spec:
+        volumes:
+          - name: data
+            persistentVolumeClaim:
+              claimName: data-restored-neo4j-0
+        volumeMounts:
+          - mountPath: /data
+            name: data
+            subPath: data
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 7474
+```
+
+Apply the manifest:
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/neo4j/backup/kubestash/logical/composite-database/examples/restoresession.yaml
@@ -370,28 +570,6 @@ $ kubectl get restoresession -n demo source-neo4j-restore
 ```
 
 The local query reads restored `movies` data. The remote query reads the live `reviews` database on `remote-neo4j`; it does not prove that remote data was part of the backup. The final command must report the `RestoreSession` phase as `Succeeded`.
-
-## Limitations and Troubleshooting
-
-- **Missing `remoteAliasCredentialsSecret`:** A restore selecting a stored-native remote alias fails preflight. Add the parameter under the restore task and point it to a Secret in the `RestoreSession` namespace.
-- **Missing `credentials.yaml`:** Recreate the Secret with a key named exactly `credentials.yaml`.
-- **Alias absent from the map:** Add the complete name shown by `SHOW ALIASES FOR DATABASE`, including its composite prefix. For example, `media.reviews` is not interchangeable with `reviews`.
-- **Empty password:** Provide a non-empty password for every selected stored-native remote alias.
-- **Remote endpoint unreachable:** Verify DNS, network policy, TLS settings, service availability, and connectivity from the restore-target pods. Metadata restoration does not make the remote endpoint available.
-- **Local target excluded:** Restore the physical target of every selected local alias. If `movies` is excluded or fails, `media.movies` and its dependent composite catalog cannot be restored correctly.
-- **Existing name conflict:** Without overwrite, conflicting physical databases, composite databases, and aliases fail the restore. With overwrite, KubeStash replaces supported catalog definitions and may temporarily detach and recreate dependent aliases.
-- **Remote metadata versus data:** KubeStash captures a remote alias definition, not the data stored in the remote `reviews` database. Back up that remote Neo4j instance separately.
-- **`system` database:** KubeStash reads it to discover the catalog, but does not restore it as an ordinary physical database.
-- **Remote passwords:** Passwords are deliberately never written to backup metadata. They must come from the restore-time Secret. OIDC credential-forwarding aliases are the exception because they do not store a remote password.
-
-For any failure, inspect the restore Job logs and compare both catalogs:
-
-```bash
-$ kubectl get jobs -n demo -l kubestash.com/invoker-name=source-neo4j-restore
-$ kubectl logs -n demo job/<restore-job-name>
-```
-
-Run `SHOW DATABASES` and `SHOW ALIASES FOR DATABASE` against the source and target `system` databases to identify missing targets, conflicts, or mismatched alias names.
 
 ## Cleanup
 

@@ -4,8 +4,6 @@ metadata:
   name: restored-neo4j
   namespace: demo
 spec:
-  init:
-    waitForInitialRestore: true
   version: 2025.12.1
   replicas: 3
   configuration:
