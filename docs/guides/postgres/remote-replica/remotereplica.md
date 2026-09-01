@@ -199,11 +199,73 @@ pg-singapore      nginx   pg-singapore.something.org      172.104.37.147   80   
 ```
 
 # Prepare for Remote Replica
-We wil use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It will create the appbinding and necessary secrets to connect with source server
+We will use the [kubedb_plugin](/docs/setup/README.md) for generating configuration for remote replica. It creates the AppBinding and the secrets the replica needs to connect to the source server:
+
 ```bash
-$ kubectl dba remote-config postgres -n demo pg-singapore -uremote -ppass -d 172.104.37.147 -y
-home/mehedi/go/src/kubedb.dev/yamls/postgres/pg-singapore-remote-config.yaml
+$ kubectl dba remote-config postgres -n demo pg-singapore \
+    -uremote -ppass \
+    -d 172.104.37.147:5432 \
+    --replica-name pg-london \
+    -y
+kubectl apply -f  /home/user/pg-singapore-remote-config.yaml
 ```
+
+- `-d` takes the address the source is reachable on **from the replica's cluster** — a load
+  balancer frontend, not the in-cluster service. A non-standard port can be given as
+  `-d host:port` or with `--port` (it is written into the generated AppBinding's
+  `spec.clientConfig.service.port` and honored by the replica for the seed, streaming and
+  monitoring connections).
+- `--replica-name` additionally emits a ready-to-apply remote replica `Postgres` manifest,
+  sized from the source's spec (version, replicas, storage, resources) with the
+  `remoteReplica` stanza and auth secret filled in. Treat it as a starting point — a
+  secondary site is often sized differently on purpose.
+- `--auth-secret <name>` overrides the generated auth secret's name.
+- The output file is always written to the **current directory** as
+  `<dbname>-remote-config.yaml`; `-y` only skips the confirmation prompt.
+- These flags require the kubectl-dba version shipped with this release or newer.
+
+
+# TLS across clusters: sslmode and certificate SANs
+
+The generated AppBinding inherits its `sslmode` from the source database's `spec.sslMode`.
+Two things matter when the replica connects through a load balancer or any external
+endpoint:
+
+- **`verify-ca` is the recommended mode between clusters.** It verifies the server
+  certificate against your private CA (pinned via the exported `ca.crt`) without checking
+  the hostname — which is what you want when the same database is reached through
+  different names inside and outside its cluster.
+- **`verify-full` additionally requires the exact hostname you dial to be present in the
+  server certificate's SAN list.** KubeDB issues the server certificate for the in-cluster
+  names, so a `verify-full` connection to an external address fails during the TLS
+  handshake unless that address was added to the certificate. The replica then loops
+  forever with `Attempting pg_isready on primary` while a plain (non-TLS) connection works
+  — that symptom almost always means a SAN mismatch, not a network problem.
+
+To use `verify-full`, add the external hostname to the source's server certificate. On an
+existing database do it with a [ReconfigureTLS ops request](/docs/guides/postgres/reconfigure-tls/reconfigure-tls.md)
+— certificates are reissued and rotated without manual restarts:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: add-external-san
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: pg-singapore
+  tls:
+    certificates:
+    - alias: server
+      dnsNames:
+      - pg-singapore.example.com   # the address the replica dials
+  apply: Always
+```
+
+Alternatively, edit the generated AppBinding's `spec.clientConfig.service.query` to
+`sslmode=verify-ca`.
 
 #  Create  Remote Replica
 We have prepared another cluster in london region for replicating across cluster. follow the installation instruction [above](/docs/README.md).
@@ -284,6 +346,21 @@ $ kubectl get pg -n demo
 NAME           VERSION   STATUS   AGE
 pg-london      18.3      Ready    7m17s
 ```
+
+Each remote replica pod runs `2/2` containers: `postgres` plus a `pg-coordinator` sidecar
+in remote-replica mode (no Raft). The coordinator monitors streaming against the source,
+recovers the replica with `pg_rewind` or a fresh basebackup when the source changes
+timeline, keeps the pod's `standby` role label truthful (set only while the source
+confirms the pod is streaming, cleared otherwise), and logs the replication lag:
+
+```bash
+$ kubectl logs pg-london-0 -n demo -c pg-coordinator | grep LagMonitor
+[LagMonitor] Pod pg-london-0: lag=0 B (in sync with source); next check in 40s
+```
+
+A `<name>-standby` Service is created for remote replicas at any replica count and selects
+the pods whose standby label is set — use it (not the primary-selecting `<name>` Service,
+which has no endpoints while the database is a replica) to route read-only traffic.
 
 ##  Validate Remote Replica
 

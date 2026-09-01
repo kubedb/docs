@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcdops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: etcd-quickstart
+  authentication:
+    secretRef:
+      kind: Secret
+      name: etcd-quickstart-user-auth
+  timeout: 5m
+  apply: IfReady

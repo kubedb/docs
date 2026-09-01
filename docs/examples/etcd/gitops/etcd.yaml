@@ -1,0 +1,27 @@
+apiVersion: gitops.kubedb.com/v1alpha1
+kind: Etcd
+metadata:
+  name: ha-etcd
+  namespace: demo
+spec:
+  version: "3.6.4"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          resources:
+            limits:
+              memory: 1Gi
+            requests:
+              cpu: 500m
+              memory: 1Gi
+  deletionPolicy: WipeOut

@@ -29,7 +29,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   topology:
     mode: GroupReplication
   authSecret:
@@ -116,7 +116,7 @@ spec:
 
 `spec.version` is a required field specifying the name of the [MySQLVersion](/docs/guides/mysql/concepts/catalog/index.md) crd where the docker images are specified. Currently, when you install KubeDB, it creates the following `MySQLVersion` resources,
 
-- `9.0.1`, `9.1.0`
+- `9.0.1`, `9.7.1`
 - `8.0.35`, `8.0.36`, `8.1.0`, `8.2.0`, `8.4.2`, `8.4.3`
 - `8.0.31-innodb`
 - `8.4.8`, `5.7.42-debian`
@@ -216,7 +216,7 @@ metadata:
   name: m1
   namespace: demo
 spec:
-  version: 9.6.0
+  version: 9.7.1
   init:
     script:
       configMap:

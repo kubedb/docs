@@ -108,4 +108,4 @@ spec:
 - [Vertical Scaling](/docs/guides/neo4j/scaling/vertical-scaling/scale-vertically/) — resize CPU and memory for Neo4j pods.
 - [Volume Expansion — How It Works](/docs/guides/neo4j/volume-expansion/overview.md) — how KubeDB expands PVCs.
 - [Volume Expansion](/docs/guides/neo4j/volume-expansion/volume-expansion.md) — increase persistent storage size online or offline.
-- [StorageClass Migration](/docs/guides/neo4j/migration/storageMigration.md) — migrate Neo4j data to a different StorageClass.
+- [StorageClass Migration](/docs/guides/neo4j/migration/storagemigration.md) — migrate Neo4j data to a different StorageClass.

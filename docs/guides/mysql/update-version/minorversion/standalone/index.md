@@ -65,6 +65,7 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 ```
 
 The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Now, we are going to select a non-deprecated version from `MySQLVersion` for `MySQL` standalone that will be possible to update from this version to another version. In the next section, we are going to verify version update constraints.
@@ -134,9 +135,9 @@ spec:
   updateConstraints:
     allowlist:
       groupReplication:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
       standalone:
-      - '>= 8.4.8, <= 9.1.0'
+      - '>= 8.4.8, <= 9.7.1'
     denylist:
       groupReplication:
       - < 8.4.8
@@ -145,7 +146,7 @@ spec:
   version: 8.4.8
 ```
 
-The above `spec.updateConstraints.denylist` is showing that updating below version of `8.4.8` is not possible for both standalone and group replication. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` standalone using MySQL  `9.4.0`. Then we are going to update this version to `9.6.0`.
+The above `spec.updateConstraints.denylist` is showing that updating below version of `8.4.8` is not possible for both standalone and group replication. That means, it is possible to update any version above `8.4.8`. Here, we are going to create a `MySQL` standalone using MySQL  `9.4.0`. Then we are going to update this version to `9.7.1`.
 
 **Deploy MySQL standalone:**
 
@@ -216,7 +217,7 @@ We are ready to apply updating on this `MySQL` standalone.
 
 #### UpdateVersion
 
-Here, we are going to update `MySQL` standalone from `9.4.0` to `9.6.0`.
+Here, we are going to update `MySQL` standalone from `9.4.0` to `9.7.1`.
 
 **Create MySQLOpsRequest:**
 
@@ -233,14 +234,14 @@ spec:
     name: my-standalone
   type: UpdateVersion
   updateVersion:
-    targetVersion: "9.6.0"
+    targetVersion: "9.7.1"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `my-group` MySQL database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `9.6.0` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `9.7.1` after updating.
 
 Let's create the `MySQLOpsRequest` cr we have shown above,
 

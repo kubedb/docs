@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-defragment
+  namespace: demo
+spec:
+  type: Defragment
+  databaseRef:
+    name: etcd-cluster
+  defragment: {}

@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: etcd-cluster
+  verticalScaling:
+    mode: InPlace
+    etcd:
+      resources:
+        requests:
+          cpu: "1"
+          memory: "3Gi"
+        limits:
+          cpu: "1"
+          memory: "3Gi"
+  timeout: 10m
+  apply: IfReady

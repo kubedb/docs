@@ -60,10 +60,12 @@ Add `--set kubedb-courier.enabled=true` to the [Kubedb helm upgrade](/docs/setup
 
 The following database has migration support.
 
-[PostgreSQL](/docs/guides/postgres/migration/databaseMigration.md)
+[PostgreSQL](/docs/guides/postgres/migration/databasemigration.md)
 
-[MySQL](/docs/guides/mysql/migration/databaseMigration.md)
+[MySQL](/docs/guides/mysql/migration/databasemigration.md)
 
-[MariaDB](/docs/guides/mariadb/migration/databaseMigration.md)
+[MariaDB](/docs/guides/mariadb/migration/databasemigration.md)
 
-[MongoDB](/docs/guides/mongodb/migration/databaseMigration.md)
+[MongoDB](/docs/guides/mongodb/migration/databasemigration.md)
+
+[MSSQL Server](/docs/guides/mssqlserver/migration/databasemigration.md)

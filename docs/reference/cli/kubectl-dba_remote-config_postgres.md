@@ -31,12 +31,18 @@ kubectl dba remote-config mysql -n <ns> -u <user_name> -p$<password> -d<dns_name
 ### Options
 
 ```
-  -d, --dns string         dns name for the remote replica (default "localhost")
-  -h, --help               help for postgres
-  -n, --namespace string   host namespace for the remote replica (default "default")
-  -p, --pass string        password name for the remote replica (default "password")
-  -u, --user string        user name for the remote replica (default "postgres")
-  -y, --yes                permission for alter password  for the remote replica
+      --auth-secret string    name for the auth secret on the remote cluster (default: <dbname>-remote-replica-auth)
+      --ca-cert string        path to a CA certificate PEM; when set (together with --ca-key) the client certificate is issued locally from this CA instead of through cert-manager
+      --ca-key string         path to the CA private key PEM matching --ca-cert; required to sign the client certificate
+      --client-sans strings   comma separated DNS names to set as SANs on the generated client certificate
+  -d, --dns string            dns name for the remote replica (default "localhost")
+  -h, --help                  help for postgres
+  -n, --namespace string      host namespace for the remote replica (default "default")
+  -p, --pass string           password name for the remote replica (default "password")
+      --port int32            port the source is reachable on from the remote cluster; written into the generated AppBinding (also accepted as -d host:port) (default 5432)
+      --replica-name string   when set, also emit a ready-to-apply remote replica Postgres manifest with this name, sized from the source spec
+  -u, --user string           user name for the remote replica (default "postgres")
+  -y, --yes                   permission for alter password  for the remote replica
 ```
 
 ### Options inherited from parent commands

@@ -631,7 +631,7 @@ mariadbopsrequest.ops.kubedb.com/mariadb-gitops-volumeexpansion-01m39b     Volum
 
 List MariaDB versions using `kubectl get MariaDBversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request [here](/docs/guides/mariadb/update-version/overview/index.md).
 
-Let's choose `12.1.2` in this example.
+Let's choose `12.3.2` in this example.
 
 Update the `MariaDB.yaml` with the following,
 ```yaml
@@ -641,7 +641,7 @@ metadata:
   name: mariadb-gitops
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   replicas: 5
   podTemplate:
     spec:
@@ -685,14 +685,14 @@ spec:
       - "127.0.0.1"
 ```
 
-Update the `version` field to `12.1.2`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
+Update the `version` field to `12.3.2`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MariaDB` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MariaDBOpsRequest to update the `MariaDB` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
 ```bash
 $ kubectl get md,mariadbopsrequest -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb-gitops   12.1.2    Ready    18h
+mariadb.kubedb.com/mariadb-gitops   12.3.2    Ready    18h
 
 NAME                                                                       TYPE                STATUS       AGE
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-m7iex7   HorizontalScaling   Successful   20h
@@ -709,11 +709,11 @@ Now, we are going to verify whether the `MariaDB`, `PetSet` and it's `Pod` have 
 
 ```bash
 $ kubectl get MariaDB -n demo mariadb-gitops -o=jsonpath='{.spec.version}{"\n"}'
-12.1.2
+12.3.2
 $ kubectl get petset -n demo mariadb-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
+ghcr.io/appscode-images/mariadb:12.3.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
 $ kubectl get pod -n demo mariadb-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mariadb:12.1.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
+ghcr.io/appscode-images/mariadb:12.3.2-noble@sha256:843852d8651b3f321896a4a91f8118605d988d70703e520927c8d2c9313aded4
 ```
 
 ### Enable Monitoring
@@ -728,7 +728,7 @@ metadata:
   name: mariadb-gitops
   namespace: demo
 spec:
-  version: "12.1.2"
+  version: "12.3.2"
   replicas: 5
   podTemplate:
     spec:
@@ -785,7 +785,7 @@ Now, `gitops` operator will detect the monitoring changes and create a `Restart`
 ```bash
 $ kubectl get md,mariadbopsrequest -n demo
 NAME                                VERSION   STATUS   AGE
-mariadb.kubedb.com/mariadb-gitops   12.1.2    Ready    19h
+mariadb.kubedb.com/mariadb-gitops   12.3.2    Ready    19h
 
 NAME                                                                       TYPE                STATUS       AGE
 mariadbopsrequest.ops.kubedb.com/mariadb-gitops-horizontalscaling-m7iex7   HorizontalScaling   Successful   20h

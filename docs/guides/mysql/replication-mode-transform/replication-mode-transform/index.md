@@ -117,7 +117,7 @@ spec:
   authSecret:
     kind: Secret
     name: mysql-singapore-auth
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -302,7 +302,7 @@ spec:
     periodSeconds: 10
     timeoutSeconds: 10
     disableWriteCheck: true
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 1
   topology:
     mode: RemoteReplica

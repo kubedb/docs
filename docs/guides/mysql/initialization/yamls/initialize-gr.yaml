@@ -4,7 +4,7 @@ metadata:
   name: mysql-init-script
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   topology:
     mode: GroupReplication
   replicas: 3

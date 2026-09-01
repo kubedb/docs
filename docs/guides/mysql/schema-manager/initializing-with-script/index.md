@@ -53,7 +53,7 @@ metadata:
   name: mysql-server
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -98,7 +98,7 @@ metadata:
   name: vault
   namespace: demo
 spec:
-  version: 1.9.2
+  version: 1.18.4
   replicas: 1
   allowedSecretEngines:
     namespaces:

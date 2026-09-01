@@ -176,6 +176,6 @@ from the source. These fields map directly to `pg_dump` command-line options.
 
 ## Next Steps
 
-- Migrate a PostgreSQL database step by step with the [PostgreSQL Database Migration](/docs/guides/postgres/migration/databaseMigration.md) guide.
+- Migrate a PostgreSQL database step by step with the [PostgreSQL Database Migration](/docs/guides/postgres/migration/databasemigration.md) guide.
 - Learn about the [AppBinding](/docs/guides/postgres/concepts/appbinding.md) concept.
 - Learn about the Postgres CRD [here](/docs/guides/postgres/concepts/postgres.md).

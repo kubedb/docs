@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-quickstart
+  namespace: demo
+spec:
+  version: "3.6.4"
+  replicas: 3
+  storageType: Durable
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: "WipeOut"

@@ -749,7 +749,7 @@ spec:
       requests:
         storage: 500Mi
   storageType: Durable
-  version: 12.1.2
+  version: 12.3.2
   podTemplate:
     spec:
       podPlacementPolicy:

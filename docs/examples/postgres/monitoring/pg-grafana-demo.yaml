@@ -5,9 +5,11 @@ metadata:
   namespace: demo
 spec:
   version: "13.13"
+  replicas: 3
   deletionPolicy: WipeOut
   storage:
-    storageClassName: "standard"
+    storageClassName: "local-path"
+
     accessModes:
     - ReadWriteOnce
     resources:
@@ -16,9 +18,7 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
-      exporter:
-        port: 56790
       serviceMonitor:
-        interval: 10s
         labels:
           release: prometheus
+        interval: 10s

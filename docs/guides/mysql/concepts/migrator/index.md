@@ -181,6 +181,6 @@ to the target.
 
 ## Next Steps
 
-- Migrate a MySQL database step by step with the [MySQL Database Migration](/docs/guides/mysql/migration/databaseMigration.md) guide.
+- Migrate a MySQL database step by step with the [MySQL Database Migration](/docs/guides/mysql/migration/databasemigration.md) guide.
 - Learn about the [AppBinding](/docs/guides/mysql/concepts/appbinding/) concept.
 - Learn about the MySQL CRD [here](/docs/guides/mysql/concepts/database/index.md).
