@@ -1,23 +1,24 @@
 apiVersion: kubedb.com/v1alpha2
-kind: ClickHouse
+kind: Qdrant
 metadata:
-  name: clickhouse-alert-demo
-  namespace: alert-clickhouse
+  name: qd-alert-demo
+  namespace: demo
 spec:
-  version: "26.2.6"
-  replicas: 1
+  version: "1.17.0"
   storage:
     storageClassName: "local-path"
     accessModes:
-      - ReadWriteOnce
+    - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
-  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
+      exporter:
+        port: 6333
       serviceMonitor:
+        interval: 10s
         labels:
           release: prometheus
-        interval: 10s
+  deletionPolicy: WipeOut

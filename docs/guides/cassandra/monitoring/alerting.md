@@ -20,7 +20,13 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
 
-* Install the KubeDB operator by following the steps [here](/docs/setup/README.md).
+* KubeDB must be installed in your cluster with `kubedb-metrics` enabled. Follow the setup guide [here](/docs/setup/README.md) and make sure to include the flag below during installation:
+
+  ```bash
+  --set kubedb-metrics.enabled=true
+  ```
+
+  `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (see [Configuration](/docs/guides/cassandra/monitoring/using-prometheus-operator.md#configuration)) uses to expose metrics to Prometheus.
 
 * Deploy the database in the `alert-cas` namespace:
 
@@ -33,74 +39,9 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 * You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
 
+* Before proceeding, complete the [Configuration](/docs/guides/cassandra/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon** — Panopticon is required for the **Provisioner Group** alerts below (`KubeDBCassandraPhase...`); skip it if you only need the exporter-based **Database Group** alerts.
+
 > Note: YAML files used in this tutorial are stored in [docs/examples/cassandra](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/cassandra) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
-
-## Configuration
-
-> Step 1 (`kube-prometheus-stack`) is required to follow this tutorial. Step 2 (Panopticon) is required for the **Provisioner Group** alerts below (`KubeDBCassandraPhase...`) — skip it only if you just want the exporter-based **Database Group** alerts. If you have already completed the step(s) you need in another guide, skip ahead.
-
-### Step 1: Deploy kube-prometheus-stack
-
-`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes.
-
-Add the prometheus-community Helm repo and install:
-
-```bash
-$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-$ helm repo update
-
-$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
-  --namespace monitoring --create-namespace \
-  --set grafana.image.tag=7.5.5
-```
-
-Wait for all pods to be ready:
-
-```bash
-$ kubectl get pods -n monitoring
-NAME                                                   READY   STATUS    RESTARTS   AGE
-alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
-prometheus-grafana-xxxx                                3/3     Running   0          2m
-prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
-prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
-prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
-```
-
-Find the `serviceMonitorSelector`/`ruleSelector` labels that Prometheus uses to pick up `ServiceMonitor`/`PrometheusRule` objects — this is the `release: prometheus` label used throughout this tutorial.
-
-```bash
-$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.ruleSelector}'
-{"matchLabels":{"release":"prometheus"}}
-
-$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
-{"matchLabels":{"release":"prometheus"}}
-```
-
-### Step 2: Install Panopticon (required for the Provisioner Group alerts)
-
-Panopticon is the Appscode operator that exports the KubeDB operator's own view of every resource — `kubedb_com_cassandra_status_phase` and related metrics. It's what powers the **Provisioner Group** alerts below (`KubeDBCassandraPhaseNotReady`/`KubeDBCassandraPhaseCritical`). Skip this step if you only need the exporter-based **Database Group** alerts.
-
-```bash
-$ helm repo add appscode https://charts.appscode.com/stable/
-$ helm repo update
-
-$ helm upgrade --install panopticon appscode/panopticon \
-  --version v2026.4.30 \
-  --namespace kubeops --create-namespace \
-  --set monitoring.enabled=true \
-  --set monitoring.agent=prometheus.io/operator \
-  --set monitoring.serviceMonitor.labels.release=prometheus \
-  --set-file license=/path/to/kubedb-license.txt \
-  --wait --timeout 5m0s
-```
-
-Verify Panopticon is running:
-
-```bash
-$ kubectl get pods -n kubeops
-NAME                          READY   STATUS    RESTARTS   AGE
-panopticon-xxxx               1/1     Running   0          1m
-```
 
 ## Overview
 
@@ -257,12 +198,13 @@ The chart's default label is `release: kube-prometheus-stack`, so we must also o
 ### Install
 
 ```bash
-$ helm upgrade -i cas-alert-demo /home/banusree/go/src/alerts/charts/cassandra-alerts \
+$ helm upgrade -i cas-alert-demo appscode/cassandra-alerts \
   -n alert-cas \
   --set form.alert.labels.release=prometheus \
   --set grafana.enabled=true \
   --set grafana.url=http://prometheus-grafana.<grafana_namespace>.svc.cluster.local \
   --set grafana.apikey=<grafana_apikey> \
+  --set grafana.jobName=cas-alert-demo-stats \
   --set form.alert.appSuffix=cas-grafana-demo
 
 ```
@@ -272,7 +214,6 @@ $ helm upgrade -i cas-alert-demo /home/banusree/go/src/alerts/charts/cassandra-a
 | `cas-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="cas-alert-demo-stats"`) |
 | `-n alert-cas` | `alert-cas` | Installs the `PrometheusRule` in the same namespace as the database |
 | `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
-| `form.alert.groups.database.rules.cassandraDown.val` | `0` | Sets the threshold used by the `CassandraDown` alert expression |
 | `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
 | `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
 | `grafana.jobName` | `cas-alert-demo-stats` | **Required** — set this to your instance's actual stats-service name so the dashboard's panels show data. |

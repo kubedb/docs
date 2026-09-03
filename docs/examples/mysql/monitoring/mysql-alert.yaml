@@ -1,11 +1,17 @@
 apiVersion: kubedb.com/v1
 kind: MySQL
 metadata:
-  name: mysql-alert-alert-mysql
+  name: mysql-alert
   namespace: alert-mysql
 spec:
-  version: "8.4.8"
+  version: "9.6.0"
   deletionPolicy: WipeOut
+  replicas: 3
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
   storage:
     storageClassName: "longhorn"
     accessModes:
@@ -17,6 +23,6 @@ spec:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
-        interval: 10s
         labels:
           release: prometheus
+        interval: 10s
