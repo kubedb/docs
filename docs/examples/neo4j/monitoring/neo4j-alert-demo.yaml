@@ -1,24 +1,23 @@
-apiVersion: kubedb.com/v1
-kind: Postgres
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: neo4j-alert-demo
+  namespace: alert-neo4j
 spec:
-  version: "13.13"
   replicas: 3
+  version: "2025.12.1"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "local-path"
-
     accessModes:
     - ReadWriteOnce
     resources:
       requests:
-        storage: 1Gi
+        storage: 2Gi
   monitor:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
+        interval: 10s
         labels:
           release: prometheus
-        interval: 10s

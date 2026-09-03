@@ -1,15 +1,12 @@
-apiVersion: kubedb.com/v1
-kind: Postgres
+apiVersion: kubedb.com/v1alpha2
+kind: Qdrant
 metadata:
-  name: pg-grafana-demo
+  name: qd-alert-demo
   namespace: demo
 spec:
-  version: "13.13"
-  replicas: 3
-  deletionPolicy: WipeOut
+  version: "1.17.0"
   storage:
     storageClassName: "local-path"
-
     accessModes:
     - ReadWriteOnce
     resources:
@@ -18,7 +15,10 @@ spec:
   monitor:
     agent: prometheus.io/operator
     prometheus:
+      exporter:
+        port: 6333
       serviceMonitor:
+        interval: 10s
         labels:
           release: prometheus
-        interval: 10s
+  deletionPolicy: WipeOut

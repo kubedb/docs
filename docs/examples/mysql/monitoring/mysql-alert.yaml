@@ -1,15 +1,19 @@
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: MySQL
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: mysql-alert
+  namespace: alert-mysql
 spec:
-  version: "13.13"
-  replicas: 3
+  version: "9.6.0"
   deletionPolicy: WipeOut
+  replicas: 3
+  topology:
+    mode: GroupReplication
+    group:
+      mode: Single-Primary
+  storageType: Durable
   storage:
-    storageClassName: "local-path"
-
+    storageClassName: "longhorn"
     accessModes:
     - ReadWriteOnce
     resources:

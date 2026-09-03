@@ -1,0 +1,43 @@
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-alert
+  namespace: alert-elasticsearch
+spec:
+  version: xpack-9.2.3
+  deletionPolicy: WipeOut
+  topology:
+    master:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

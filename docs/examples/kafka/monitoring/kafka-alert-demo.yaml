@@ -1,20 +1,20 @@
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: Kafka
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: kafka-alert-demo
+  namespace: alert-kafka
 spec:
-  version: "13.13"
-  replicas: 3
-  deletionPolicy: WipeOut
+  replicas: 1
+  version: "3.9.0"
+  storageType: Durable
   storage:
     storageClassName: "local-path"
-
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
