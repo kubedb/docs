@@ -51,7 +51,7 @@ This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-
 
 - **KubeDB** deploys Memcached with a built-in exporter sidecar that exposes metrics on port `56790`.
 - **ServiceMonitor** (named `{memcached-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the exporter every 10 seconds.
-- **PrometheusRule** is created by the `memcached-alerts` chart and contains all Memcached alert definitions grouped by concern: database health, provisioner, and ops-manager.
+- **PrometheusRule** is created by the `memcached-alerts` chart and contains all Memcached alert definitions grouped by concern: database health and provisioner. (The chart's `values.yaml` also defines an `opsManager` group enabled by default, but as of chart `v2026.7.14` it does not actually render into the installed `PrometheusRule` — see the note under [Step 2](#step-2--install-memcached-alerts) below.)
 - **Dashboard-import Job** — when `grafana.enabled` is `true`, the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
 - **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
 - **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
@@ -163,7 +163,9 @@ Either way, you end up with a bearer token to use as `grafana.apikey` below.
 
 ## Step 2 — Install memcached-alerts
 
-The `memcached-alerts` chart creates a `PrometheusRule` resource containing all Memcached alert definitions grouped by concern: database health, provisioner, and ops-manager.
+The `memcached-alerts` chart creates a `PrometheusRule` resource containing Memcached alert definitions.
+
+> **Chart limitation (v2026.7.14):** the chart's `values.yaml` defines a third group, `opsManager` (enabled by default), covering `MemcachedOpsRequest` lifecycle alerts. In practice it does not render into the installed `PrometheusRule` — verified by installing with explicit `--set form.alert.groups.opsManager.enabled=warning` and inspecting the rendered object directly, which still produced only the `database` and `provisioner` groups. The "OpsManager Group" alerts documented below reflect the chart's intent, not its current behavior.
 
 ### Why the Helm release name matters
 

@@ -149,9 +149,10 @@ $ helm upgrade -i rd-alert-demo oci://ghcr.io/appscode-charts/redis-alerts \
     -n alert-redis \
     --create-namespace \
     --version=v2026.7.14 \
-    --set form.alert.labels.release=prometheus \
-    --set form.alert.appSuffix=rd-grafana-demo
+    --set form.alert.labels.release=prometheus
 ```
+
+> Don't set `form.alert.appSuffix` for this chart — in `redis-alerts` v2026.7.14 it gets concatenated directly onto the release name with no separator (producing `rd-alert-demord-grafana-demo` instead of `rd-alert-demo`), breaking every `PrometheusRule` lookup below. It's also unnecessary here since this chart doesn't render a Grafana dashboard to suffix.
 
 | Flag | Value | Purpose |
 |------|-------|---------|
