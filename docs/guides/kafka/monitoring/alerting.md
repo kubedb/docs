@@ -69,7 +69,7 @@ metadata:
   name: kafka-alert-demo
   namespace: alert-kafka
 spec:
-  replicas: 1
+  replicas: 3
   version: "3.9.0"
   storageType: Durable
   storage:
@@ -91,7 +91,7 @@ spec:
 
 Here,
 
-- `spec.replicas: 1` deploys a single-broker Kafka instance for this tutorial.
+- `spec.replicas: 3` deploys a single-broker Kafka instance for this tutorial.
 - `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
 - `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
 

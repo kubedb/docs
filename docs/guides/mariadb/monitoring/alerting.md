@@ -279,8 +279,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.7.10 \
     --set featureGates.MariaDB=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<api-key-from-above>" \
 ```
 
 > **Note:** `featureGates.<DB>` defaults to `true` for almost every database in this chart, so one `helm template | kubectl apply` installs dashboards for many databases at once, not just MariaDB — this is expected. See the render-vs-Secret-size caveat in the [Elasticsearch alerting guide](/docs/guides/elasticsearch/monitoring/alerting.md#install-the-dashboards) for why `helm template | kubectl apply` is used instead of `helm install`.
@@ -514,8 +512,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.7.10 \
     --set featureGates.MariaDB=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<api-key>" \
   | kubectl delete -n kubeops -f - --ignore-not-found
 
 # Remove the mariadb-alerts release

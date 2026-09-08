@@ -295,8 +295,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.7.10 \
     --set featureGates.MySQL=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<api-key-from-above>" \
   | kubectl apply -n kubeops -f -
 ```
 
@@ -570,8 +568,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.7.10 \
     --set featureGates.MySQL=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<api-key>" \
   | kubectl delete -n kubeops -f - --ignore-not-found
 
 # Remove the mysql-alerts release

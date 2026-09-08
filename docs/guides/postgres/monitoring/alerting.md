@@ -247,8 +247,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.6.19 \
     --set featureGates.Postgres=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<token-key-from-above>" \
   | kubectl apply -n kubeops -f -
 ```
 
@@ -537,8 +535,6 @@ $ helm template kubedb-grafana-dashboards appscode/kubedb-grafana-dashboards \
     -n kubeops \
     --version=v2026.6.19 \
     --set featureGates.Postgres=true \
-    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
-    --set grafana.apikey="<token-key>" \
   | kubectl delete -n kubeops -f - --ignore-not-found
 
 # Remove the postgres-alerts

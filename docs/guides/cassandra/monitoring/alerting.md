@@ -165,18 +165,11 @@ The chart's dashboard-import Job authenticates to Grafana with a bearer token, s
   $ kubectl get secret -n monitoring prometheus-grafana \
       -o jsonpath='{.data.admin-password}' | base64 -d && echo
 
-  # Create a service account with Editor role
+  # Create an API key with Editor role
   $ curl -s -X POST -H "Content-Type: application/json" \
       -u admin:<grafana_password> \
-      http://localhost:3000/api/serviceaccounts \
+      http://localhost:3000/api/auth/keys \
       -d '{"name":"cas-alerts-demo","role":"Editor"}'
-  # Note the returned "id"
-
-  # Create a token for the service account (replace <id> with the returned service account ID)
-  $ curl -s -X POST -H "Content-Type: application/json" \
-      -u admin:<grafana_password> \
-      http://localhost:3000/api/serviceaccounts/<id>/tokens \
-      -d '{"name":"cas-alerts-demo-key","secondsToLive":0}'
   # Note the returned "key"
 
   # Stop the port-forward
