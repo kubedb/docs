@@ -246,6 +246,41 @@ See [Monitoring Milvus](/docs/guides/milvus/monitoring/using-prometheus-operator
 
 In distributed mode, role-specific `podTemplate` blocks can also be provided under `spec.topology.distributed.<role>`.
 
+### spec.gpu and spec.network
+
+`spec.gpu` requests a GPU device for GPU-accelerated Milvus indexes (`GPU_CAGRA`, `GPU_IVF_FLAT`, `GPU_IVF_PQ`, `GPU_BRUTE_FORCE`). It is available at the top level for `Standalone` mode, and per role under `spec.topology.distributed.<role>.gpu` for `Distributed` mode:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        gpu:
+          resourceName: nvidia.com/gpu   # optional, this is the default
+          count: 1
+          nodeSelector:
+            nvidia.com/gpu.present: "true"
+          tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+```
+
+The referenced `MilvusVersion` must declare `spec.db.gpu.supported: true`; otherwise the admission webhook rejects the request. In the current KubeDB Milvus topology, `queryNode` (search) and `dataNode` (index build) are the roles that use GPU.
+
+`spec.network.sriov` attaches an SR-IOV virtual function to the pod via Multus CNI, for nodes where the fast NIC is only reachable through SR-IOV. It is `Distributed`-only in its full effect — see the [GPU and SR-IOV networking guide](/docs/guides/milvus/gpu-sriov/guide.md) for the complete picture, including why it must be set on all five distributed roles together, not just the GPU-bearing ones:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        network:
+          sriov:
+            attachmentRef: milvus-sriov-net   # a cluster-admin-authored NetworkAttachmentDefinition
+            resourceName: intel.com/sriov_net_A
+```
+
 ### spec.deletionPolicy
 
 `spec.deletionPolicy` controls what happens to the database resources when the `Milvus` object is deleted. Common values are:
