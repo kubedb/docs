@@ -133,12 +133,36 @@ spec:
 
 ### spec.metaStorage
 
-Milvus uses etcd as its metadata store.
+<!-- The tls/authSecret/storage fields below are drafted from the Milvus/Etcd CRD schemas and controller source, not yet verified against a live cluster. -->
 
-- If you omit `spec.metaStorage`, KubeDB provisions and manages an internal etcd cluster for you.
-- If you set `spec.metaStorage`, you can point Milvus at an externally managed etcd deployment.
+Milvus uses etcd as its metadata store. By default (and whenever `spec.metaStorage.externallyManaged` is not `true`), KubeDB provisions and manages an internal [`Etcd`](/docs/guides/etcd/concepts/etcd.md) database for this - the same `Etcd` CRD and operator used to run etcd as a standalone KubeDB database. This is the path the current quickstart guides use.
 
-The internal-etcd path is what the current quickstart guides use.
+Fields on `spec.metaStorage`:
+
+- `externallyManaged` - set to `true` to point Milvus at an etcd cluster you manage yourself. `endpoints` is then required, and `size`/`storage`/`tls`/`authSecret` are ignored.
+- `endpoints` - client endpoints of an externally managed etcd. Required (and only used) when `externallyManaged: true`.
+- `size` - number of members in the internally-managed etcd cluster.
+- `storageType` / `storage` - storage behavior for the internal etcd cluster's PVCs, same shape as any other KubeDB database's `spec.storage`. Point `storage.storageClassName` at an encrypted-volume StorageClass for encryption at rest - no other configuration is needed for that.
+- `tls` - issues server/client/peer certificates for the internal etcd cluster, same shape as `Etcd.spec.tls`. Only applies when `externallyManaged` is not `true`; requires `tls.issuerRef`.
+- `authSecret` - the internal etcd cluster's root credential. Omit it to let the etcd operator auto-generate one. Only applies when `externallyManaged` is not `true`.
+
+```yaml
+spec:
+  metaStorage:
+    size: 3
+    storage:
+      storageClassName: encrypted-ssd
+      resources:
+        requests:
+          storage: 10Gi
+    tls:
+      issuerRef:
+        apiGroup: cert-manager.io
+        kind: Issuer
+        name: milvus-meta-etcd-issuer
+    authSecret:
+      name: milvus-meta-etcd-auth
+```
 
 ### spec.topology
 
