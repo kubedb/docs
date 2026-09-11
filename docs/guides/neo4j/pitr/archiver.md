@@ -32,8 +32,6 @@ You need:
 - A provisioner for persistent volumes. The example uses `local-path` and requests `2Gi` per database pod; choose a storage class appropriate for your environment.
 - Bash, `jq`, and OpenSSL for the commands below.
 
-> **Tested environment:** This walkthrough was exercised on September 10, 2026, using Neo4j `2026.06.0-enterprise`, Sidekick `v0.0.15`, and development builds of KubeDB and KubeStash. This records the validation environment; it is not a minimum supported release declaration. Verify that your installed controller, CRDs, catalog, and addons support these fields together.
-
 Check the installed API and addon before continuing:
 
 ```bash
@@ -66,9 +64,7 @@ The manifests are in [docs/guides/neo4j/pitr/yamls](https://github.com/kubedb/do
 | Full and manifest repositories | Record the locations and snapshots used during recovery. |
 | Restore sessions | Restore requested manifests and recover database files into the target's seed pod volume. |
 
-Neo4j stores its native `.backup` artifacts in S3-compatible storage. The data-backup driver is `Neo4jAdmin`; this workflow does not require CSI `VolumeSnapshot` resources. Keep the encryption Secret available for the KubeStash repository data that uses it; its presence is not a claim that native Neo4j artifacts are encrypted with the Restic password. Configure object-storage encryption separately as needed.
-
-A five-minute interval schedules backup attempts; it does not guarantee a five-minute maximum data loss. Backup duration, failures, and connectivity affect the latest recoverable transaction. Monitor successful differential backups as well as the full-backup schedule.
+Neo4j stores its native `.backup` artifacts in S3-compatible storage. The data-backup driver is `Neo4jAdmin`.
 
 ## Prepare Backup Storage
 
