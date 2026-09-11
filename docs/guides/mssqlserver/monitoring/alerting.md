@@ -100,7 +100,7 @@ spec:
             - name: ACCEPT_EULA
               value: "Y"
             - name: MSSQL_PID
-              value: Evaluation # Change to a licensed edition for production use
+              value: Developer # Change to a licensed edition for production use
   storage:
     storageClassName: "local-path"
     accessModes:

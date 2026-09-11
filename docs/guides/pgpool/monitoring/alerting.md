@@ -78,9 +78,6 @@ spec:
     storageClassName: "local-path"
     accessModes:
       - ReadWriteOnce
-    resources:
-      requests:
-        storage: 1Gi
   configuration:
     inline:
       user.conf: |
