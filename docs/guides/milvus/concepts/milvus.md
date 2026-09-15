@@ -246,6 +246,76 @@ See [Monitoring Milvus](/docs/guides/milvus/monitoring/using-prometheus-operator
 
 In distributed mode, role-specific `podTemplate` blocks can also be provided under `spec.topology.distributed.<role>`.
 
+### spec.gpu and spec.network
+
+`spec.gpu` requests a GPU device for GPU-accelerated Milvus indexes (`GPU_CAGRA`, `GPU_IVF_FLAT`, `GPU_IVF_PQ`, `GPU_BRUTE_FORCE`). It is available at the top level for `Standalone` mode, and per role under `spec.topology.distributed.<role>.gpu` for `Distributed` mode:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        gpu:
+          resourceName: nvidia.com/gpu   # optional, this is the default
+          count: 1
+          nodeSelector:
+            nvidia.com/gpu.present: "true"
+          tolerations:
+          - key: nvidia.com/gpu
+            operator: Exists
+            effect: NoSchedule
+```
+
+The referenced `MilvusVersion` must declare `spec.db.gpu.supported: true`; otherwise the admission webhook rejects the request. In the current KubeDB Milvus topology, `queryNode` (search) and `dataNode` (index build) are the roles that use GPU.
+
+`spec.network.sriov` attaches an SR-IOV virtual function to the pod via Multus CNI, for nodes where the fast NIC is only reachable through SR-IOV. It is `Distributed`-only in its full effect — see the [GPU and SR-IOV networking guide](/docs/guides/milvus/gpu-sriov/guide.md) for the complete picture, including why it must be set on all five distributed roles together, not just the GPU-bearing ones:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        network:
+          sriov:
+            attachmentRef: milvus-sriov-net   # a cluster-admin-authored NetworkAttachmentDefinition
+            resourceName: intel.com/sriov_net_A
+            gds:                              # optional second attachment, for GPU Direct Storage
+              attachmentRef: milvus-gds-net
+              resourceName: intel.com/sriov_net_B
+```
+
+### spec.topology.distributed groups
+
+Any Distributed role (and Standalone's top-level node) can optionally be split into multiple named `groups`, each independently scheduled with its own `podTemplate`/`replicas`/`gpu`/`network` — e.g. two GPU classes of `queryNode` running side by side. When `groups` is set, the operator creates one PetSet per group (named `<db>-<role>-<group>`) instead of one PetSet for the whole role, and the role-level `replicas`/`podTemplate`/`network`/`gpu` fields above are ignored for pod-building purposes:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        groups:
+        - name: cx6
+          replicas: 2
+          gpu:
+            nodeSelector:
+              nic: connectx-6
+          network:
+            sriov:
+              attachmentRef: milvus-sriov-cx6
+              resourceName: mellanox.com/cx6_vf
+        - name: cx7
+          replicas: 2
+          gpu:
+            nodeSelector:
+              nic: connectx-7
+          network:
+            sriov:
+              attachmentRef: milvus-sriov-cx7
+              resourceName: mellanox.com/cx7_vf
+```
+
+A group of `streamingnode` may also set its own `storageType`/`storage`, overriding the role-level default for that group only. See the [GPU and SR-IOV networking guide](/docs/guides/milvus/gpu-sriov/guide.md) for the full picture, including how `MilvusOpsRequest` scales a single group.
+
 ### spec.deletionPolicy
 
 `spec.deletionPolicy` controls what happens to the database resources when the `Milvus` object is deleted. Common values are:
