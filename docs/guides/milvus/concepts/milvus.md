@@ -279,7 +279,42 @@ spec:
           sriov:
             attachmentRef: milvus-sriov-net   # a cluster-admin-authored NetworkAttachmentDefinition
             resourceName: intel.com/sriov_net_A
+            gds:                              # optional second attachment, for GPU Direct Storage
+              attachmentRef: milvus-gds-net
+              resourceName: intel.com/sriov_net_B
 ```
+
+### spec.topology.distributed groups
+
+Any Distributed role (and Standalone's top-level node) can optionally be split into multiple named `groups`, each independently scheduled with its own `podTemplate`/`replicas`/`gpu`/`network` — e.g. two GPU classes of `queryNode` running side by side. When `groups` is set, the operator creates one PetSet per group (named `<db>-<role>-<group>`) instead of one PetSet for the whole role, and the role-level `replicas`/`podTemplate`/`network`/`gpu` fields above are ignored for pod-building purposes:
+
+```yaml
+spec:
+  topology:
+    distributed:
+      querynode:
+        groups:
+        - name: cx6
+          replicas: 2
+          gpu:
+            nodeSelector:
+              nic: connectx-6
+          network:
+            sriov:
+              attachmentRef: milvus-sriov-cx6
+              resourceName: mellanox.com/cx6_vf
+        - name: cx7
+          replicas: 2
+          gpu:
+            nodeSelector:
+              nic: connectx-7
+          network:
+            sriov:
+              attachmentRef: milvus-sriov-cx7
+              resourceName: mellanox.com/cx7_vf
+```
+
+A group of `streamingnode` may also set its own `storageType`/`storage`, overriding the role-level default for that group only. See the [GPU and SR-IOV networking guide](/docs/guides/milvus/gpu-sriov/guide.md) for the full picture, including how `MilvusOpsRequest` scales a single group.
 
 ### spec.deletionPolicy
 
