@@ -74,3 +74,15 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 - [SQL Server Availability Group Clustering](/docs/guides/mssqlserver/clustering/ag_cluster.md) supported by KubeDB.
 - How to [Backup & Restore](/docs/guides/mssqlserver/backup/overview/index.md) SQL Server using [KubeStash](https://kubestash.com/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+## Cross-DC Disaster Recovery (DC-DR)
+
+KubeDB can run a single distributed `MSSQLServer` across multiple data centers so the database
+survives the loss of an entire data center. Each data center runs its own Always On
+Availability Group (AG), the native Distributed Availability Group (DAG) links the two AGs
+across the data centers, and a `dr-controlplane` Lease decides which data center is writable.
+Exactly one data center is writable at any instant, a fail-closed fence holds the others to
+the DAG secondary role, and the single connection endpoint follows the active data center
+through failover and planned switchover. See the
+[Cross-DC Disaster Recovery overview](/docs/guides/mssqlserver/dr/overview/index.md) to get
+started.
