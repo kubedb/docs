@@ -1,0 +1,9 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: tde-enable-wal
+  namespace: demo
+spec:
+  type: EnableWALEncryption
+  databaseRef:
+    name: tde-postgres

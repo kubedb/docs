@@ -132,6 +132,8 @@ A `PostgresOpsRequest` object has the following fields in the `spec` section.
 - `Restart`
 - `Reconfigure`
 - `ReconfigureTLS`
+- `RotatePrincipalKey`
+- `EnableWALEncryption`
 
 >You can perform only one type of operation on a single `PostgresOpsRequest` CR. For example, if you want to update your database and scale up its replica then you have to create two separate `PostgresOpsRequest`. At first, you have to create a `PostgresOpsRequest` for updating. Once it is completed, then you can create another `PostgresOpsRequest` for scaling. You should not create two `PostgresOpsRequest` simultaneously.
 
@@ -171,6 +173,34 @@ Here, when you specify the resource request for `Postgres` container, the schedu
 - `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`. For a distributed deployment, in-place resize is not possible, so `InPlace` degrades to `Restart`.
 
 >You can increase/decrease resources for both `postgres` container and `exporter` container on a single `PostgresOpsRequest` CR.
+
+#### spec.rotatePrincipalKey
+
+`spec.rotatePrincipalKey` is used with the `RotatePrincipalKey` type to rotate the
+[TDE](/docs/guides/postgres/tde/overview/index.md) principal key. The principal
+key wraps the per-relation internal keys, so rotating it re-wraps those keys
+online, without rewriting data and without a restart. This field consists of the
+following optional sub-field:
+
+- `spec.rotatePrincipalKey.keyName` pins the name of the new principal key in the
+  key provider. If left empty, the operator generates one.
+
+Requires `spec.tde` to be configured on the referenced Postgres.
+
+#### spec.enableWALEncryption
+
+`spec.enableWALEncryption` is used with the `EnableWALEncryption` type to turn on
+WAL (write-ahead log) encryption for a TDE-enabled cluster. The operator sets the
+server key, flips `spec.tde.encryptWAL` on the Postgres object, and performs a
+rolling restart so every node reloads with `pg_tde.wal_encrypt=on`.
+`spec.tde.encryptWAL` is mutable, but this OpsRequest is the supported way to
+change it: patching the field directly skips the server-key setup and rolling
+restart, so replicas would not agree on WAL encryption state. WAL encryption
+requires a global (`vault` or `kmip`) key provider. This field consists of the
+following optional sub-field:
+
+- `spec.enableWALEncryption.keyName` pins the name of the WAL server key in the
+  key provider. If left empty, the operator generates one.
 
 #### spec.timeout
 

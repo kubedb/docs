@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: tde-rotate-key
+  namespace: demo
+spec:
+  type: RotatePrincipalKey
+  databaseRef:
+    name: tde-postgres
+  rotatePrincipalKey:
+    keyName: tde-postgres-principal-2
