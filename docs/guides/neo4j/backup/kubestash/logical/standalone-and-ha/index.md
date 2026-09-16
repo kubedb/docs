@@ -3,9 +3,9 @@ title: Backup & Restore Neo4j | KubeStash
 description: Backup and Restore Neo4j database using KubeStash
 menu:
   docs_{{ .version }}:
-    identifier: guides-neo4j-logical-backup-stashv2
-    name: Logical Backup
-    parent: guides-neo4j-backup-stashv2
+    identifier: guides-neo4j-standalone-ha-logical-backup-stashv2
+    name: Standalone and HA Cluster
+    parent: guides-neo4j-logical-backup-stashv2
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -16,6 +16,8 @@ section_menu_id: guides
 KubeStash allows you to backup and restore `Neo4j` databases. It supports backups for `Neo4j` instances running in Standalone and HA cluster configurations. KubeStash makes managing your `Neo4j` backups and restorations more straightforward and efficient.
 
 This guide will give you an overview how you can take backup and restore your `Neo4j` databases using `KubeStash`.
+
+For composite databases and local, standalone, or remote aliases, see [Backup and Restore Neo4j Composite Databases and Aliases](/docs/guides/neo4j/backup/kubestash/logical/composite-database/).
 
 ## Before You Begin
 
