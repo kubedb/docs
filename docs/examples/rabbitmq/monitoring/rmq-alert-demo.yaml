@@ -1,15 +1,14 @@
-apiVersion: kubedb.com/v1
-kind: Postgres
+apiVersion: kubedb.com/v1alpha2
+kind: RabbitMQ
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: rmq-alert-demo
+  namespace: alert-rabbitmq
 spec:
-  version: "13.13"
+  version: "4.2.4"
   replicas: 3
   deletionPolicy: WipeOut
   storage:
     storageClassName: "local-path"
-
     accessModes:
     - ReadWriteOnce
     resources:

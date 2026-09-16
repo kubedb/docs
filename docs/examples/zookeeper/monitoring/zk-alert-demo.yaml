@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ZooKeeper
+metadata:
+  name: zk-alert-demo
+  namespace: demo
+spec:
+  version: "3.8.3"
+  replicas: 3
+  storage:
+    resources:
+      requests:
+        storage: "1Gi"
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus

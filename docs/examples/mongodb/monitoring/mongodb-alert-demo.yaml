@@ -1,20 +1,22 @@
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: MongoDB
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: mongodb-alert-demo
+  namespace: alert-mongodb
 spec:
-  version: "13.13"
+  version: "8.0.17"
+  replicaSet:
+    name: "rs1"
   replicas: 3
-  deletionPolicy: WipeOut
+  storageType: Durable
   storage:
     storageClassName: "local-path"
-
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:

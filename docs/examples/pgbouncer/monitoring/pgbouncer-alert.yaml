@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: pgbouncer-alert
+  namespace: alert-pgbouncer
+spec:
+  version: "1.23.1"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "pg-backend-alert"
+      namespace: alert-pgbouncer
+  connectionPool:
+    maxClientConnections: 20
+    reservePoolSize: 5
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

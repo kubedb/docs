@@ -1,20 +1,20 @@
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: MariaDB
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: mariadb-alert-demo
+  namespace: alert-mariadb
 spec:
-  version: "13.13"
-  replicas: 3
-  deletionPolicy: WipeOut
+  version: "12.1.2"
+  replicas: 1
+  storageType: Durable
   storage:
     storageClassName: "local-path"
-
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
