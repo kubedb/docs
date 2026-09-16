@@ -59,3 +59,7 @@ ref : https://cacoo.com/diagrams/4PxSEzhFdNJRIbIb/0281B
 
 - [Quickstart Cassandra](/docs/guides/cassandra/quickstart/guide/quickstart.md) with KubeDB Operator.
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+## Cross-DC Disaster Recovery (DC-DR)
+
+Do you want to run your Cassandra database across multiple data centers and recover from a full data center failure with a single, automatically re-routing write endpoint? KubeDB runs one masterless Cassandra ring across the data centers, makes each data center a full Cassandra datacenter replicated by `NetworkTopologyStrategy`, keeps availability with per-DC `LOCAL_QUORUM` consistency (not a fence), and lets the `dr-controlplane` Lease route the single write endpoint to a surviving data center. Follow [here](/docs/guides/cassandra/dr/overview/index.md).
