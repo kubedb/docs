@@ -1,0 +1,18 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: sample-clickhouse-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: ClickHouse
+    namespace: demo
+    name: restored-clickhouse
+  dataSource:
+    repository: s3-clickhouse-repo
+    snapshot: latest
+  addon:
+    name: clickhouse-addon
+    tasks:
+      - name: logical-backup-restore

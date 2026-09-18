@@ -1,0 +1,33 @@
+apiVersion: archiver.kubedb.com/v1alpha1
+kind: ClickHouseArchiver
+metadata:
+  name: sample-clickhouse-archiver
+  namespace: demo
+spec:
+  pause: false
+  databases:
+    namespaces:
+      from: Selector
+      selector:
+        matchLabels:
+          kubernetes.io/metadata.name: demo
+    selector:
+      matchLabels:
+        archiver: "true"
+  retentionPolicy:
+    name: demo-retention
+    namespace: demo
+  encryptionSecret:
+    name: encrypt-secret
+    namespace: demo
+  fullBackup:
+    driver: "ClickHouseBackup"
+    scheduler:
+      successfulJobsHistoryLimit: 1
+      failedJobsHistoryLimit: 1
+      schedule: "*/30 * * * *"
+    sessionHistoryLimit: 2
+  backupStorage:
+    ref:
+      name: "s3-storage"
+      namespace: "demo"
