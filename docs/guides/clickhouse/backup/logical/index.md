@@ -13,9 +13,9 @@ section_menu_id: guides
 
 # Backup and Restore ClickHouse database using KubeStash
 
-KubeStash allows you to backup and restore `ClickHouse` databases. It supports backups for `ClickHouse` instances running with a `clusterTopology` (sharded, replicated clusters with `ClickHouseKeeper`). KubeStash makes managing your `ClickHouse` backups and restorations more straightforward and efficient.
+KubeStash allows you to backup and restore `ClickHouse` databases. It supports backups for `ClickHouse` instances running in both Standalone and `clusterTopology` (sharded, replicated clusters with `ClickHouseKeeper`) configurations. KubeStash makes managing your `ClickHouse` backups and restorations more straightforward and efficient.
 
-This guide will give you an overview how you can take backup and restore your `ClickHouse` databases using `KubeStash`.
+This guide will give you an overview how you can take backup and restore your `ClickHouse` databases using `KubeStash`. Here, we are going to demonstrate the backup and restore process for a `ClickHouse` database using `clusterTopology`. The process is similar for Standalone configuration.
 
 ## Before You Begin
 
@@ -241,6 +241,8 @@ Now, we are ready to backup the database.
 ### Prepare Backend
 
 We are going to store our backed up data into an `S3` bucket. We have to create a `Secret` with necessary credentials and a `BackupStorage` CR to use this backend. If you want to use a different backend, please read the respective backend configuration doc from [here](https://kubestash.com/docs/latest/guides/backends/overview/).
+
+> **Note:** ClickHouse currently supports `S3`, `Azure Blob Storage`, and `Google Cloud Storage` (via S3 compatibility mode) as backup storage backends.
 
 **Create Secret:**
 
