@@ -12,7 +12,7 @@ spec:
       fullDBRepository:
         name: sample-clickhouse-full
         namespace: demo
-      recoveryTimestamp: "2026-09-18T06:54:40Z"
+      recoveryTimestamp: "2026-09-18T09:02:40Z"
   version: 25.7.1
   clusterTopology:
     clickHouseKeeper:

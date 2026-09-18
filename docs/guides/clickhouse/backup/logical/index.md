@@ -209,23 +209,40 @@ $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.username
 admin⏎
 
 $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-oH8VQBO_uFE0kXl8⏎
+fB9sH0(xeg3FBxs7⏎
 ```
 
-Now, let's exec into a `Pod` and create a database and a table,
+Since `sample-clickhouse` is deployed with a `clusterTopology` (2 shards x 2 replicas), a plain `MergeTree` table would only live on a single node and would **not** be replicated or sharded. To properly use the cluster, we create a `ReplicatedMergeTree` table (for replication within a shard, coordinated through `ClickHouseKeeper`) on every node using `ON CLUSTER`, and a `Distributed` table on top of it (for transparently routing reads/writes across all shards).
+
+Now, let's exec into a `Pod` and create the database and tables,
 
 ```bash
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "oH8VQBO_uFE0kXl8"
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7"
 
-# create a database named "playground"
-:) CREATE DATABASE playground;
+# create a database named "playground" on every node of the cluster
+:) CREATE DATABASE playground ON CLUSTER 'appscode-cluster';
 
-# create an "equipment" table and insert some rows
-:) CREATE TABLE playground.equipment (id UInt32, type String, quant UInt32, color String) ENGINE = MergeTree() ORDER BY id;
+# create the underlying replicated table on every shard/replica
+:) CREATE TABLE playground.equipment_local ON CLUSTER 'appscode-cluster'
+   (
+       id UInt32,
+       type String,
+       quant UInt32,
+       color String
+   )
+   ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
+   ORDER BY id;
+
+# create a Distributed table on top, so we can read/write across all shards through a single table
+:) CREATE TABLE playground.equipment ON CLUSTER 'appscode-cluster'
+   AS playground.equipment_local
+   ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand());
+
+# insert some rows through the Distributed table
 :) INSERT INTO playground.equipment VALUES (1,'Swing',10,'Red'),(2,'Slide',5,'Blue'),(3,'Monkey Bars',3,'Yellow');
 
 # verify that data has been inserted successfully
-:) SELECT * FROM playground.equipment;
+:) SELECT * FROM playground.equipment ORDER BY id;
 
 ┌─id─┬─type────────┬─quant─┬─color──┐
 │  1 │ Swing       │    10 │ Red    │
@@ -235,6 +252,45 @@ $ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- click
 
 :) exit
 ```
+
+Here,
+
+- `{shard}` and `{replica}` are macros that KubeDB automatically configures on every `ClickHouse` pod (visible via `SELECT * FROM system.macros`), so the same `CREATE TABLE ... ON CLUSTER` statement creates a correctly-parameterized replica path on each node.
+- The `equipment_local` table on the two replicas of a shard (e.g. `shard-0-0` and `shard-0-1`) stays in sync via `ClickHouseKeeper`, while `rand()` in the `Distributed` engine definition spreads rows for the `equipment` table across the two shards.
+
+We can verify this by checking the local table on each shard directly. In this run, all 3 rows happened to land on shard `0` (and were replicated to both of its replicas), while shard `1` has none — this is expected: with a handful of rows, ClickHouse doesn't guarantee an even split across shards.
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
+1	Swing	10	Red
+2	Slide	5	Blue
+3	Monkey Bars	3	Yellow
+
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
+1	Swing	10	Red
+2	Slide	5	Blue
+3	Monkey Bars	3	Yellow
+
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
+```
+
+Let's insert a few more rows through the `Distributed` table to see the sharding actually spread the data out,
+
+```bash
+$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q \
+  "INSERT INTO playground.equipment VALUES (4,'Item4',4,'Color4'),(5,'Item5',5,'Color5'),(6,'Item6',6,'Color6'),(7,'Item7',7,'Color7'),(8,'Item8',8,'Color8'),(9,'Item9',9,'Color9'),(10,'Item10',10,'Color10'),(11,'Item11',11,'Color11'),(12,'Item12',12,'Color12'),(13,'Item13',13,'Color13'),(14,'Item14',14,'Color14'),(15,'Item15',15,'Color15')"
+
+$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment_local"
+12
+
+$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment_local"
+3
+
+$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment"
+15
+```
+
+Now the data is spread across both shards (12 rows on shard `0`, 3 rows on shard `1`), while the `Distributed` table transparently reports all 15 rows regardless of which shard a client happens to connect to.
 
 Now, we are ready to backup the database.
 
@@ -676,13 +732,13 @@ $ kubectl get secret -n demo restored-clickhouse-auth -o jsonpath='{.data.userna
 admin⏎
 
 $ kubectl get secret -n demo restored-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-gIeJ;JOa~nBxsaN8⏎
+1OfTqKc8IzNgoLMi⏎
 ```
 
-Now, let's exec into the `Pod` and verify the restored data,
+Now, let's exec into the `Pod` and verify the restored data. This time we check more than just the row values — since our `equipment` table is a `Distributed` table on top of a `ReplicatedMergeTree` table, we also verify that both the table engines and the per-shard data distribution were restored correctly.
 
 ```bash
-$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'gIeJ;JOa~nBxsaN8'
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi'
 
 :) SHOW DATABASES;
 
@@ -694,18 +750,50 @@ $ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- cli
 │ system              │
 └────────────────────┘
 
-:) SELECT * FROM playground.equipment;
+:) SHOW CREATE TABLE playground.equipment_local;
 
-┌─id─┬─type────────┬─quant─┬─color──┐
-│  1 │ Swing       │    10 │ Red    │
-│  2 │ Slide       │     5 │ Blue   │
-│  3 │ Monkey Bars │     3 │ Yellow │
-└────┴─────────────┴───────┴────────┘
+CREATE TABLE playground.equipment_local
+(
+    `id` UInt32,
+    `type` String,
+    `quant` UInt32,
+    `color` String
+)
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
+ORDER BY id
+
+:) SHOW CREATE TABLE playground.equipment;
+
+CREATE TABLE playground.equipment
+(
+    `id` UInt32,
+    `type` String,
+    `quant` UInt32,
+    `color` String
+)
+ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand())
+
+:) SELECT count() FROM playground.equipment;
+
+15
 
 :) exit
 ```
 
-So, from the above output, we can see that the `playground` database and the `equipment` table we have created earlier in the original database are now restored successfully.
+The `ReplicatedMergeTree` and `Distributed` table definitions came back exactly as they were, and the `Distributed` table again reports all 15 rows. Let's also confirm the per-shard split survived the restore, matching the original 12/3 split,
+
+```bash
+$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
+12
+
+$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
+3
+
+$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
+12
+```
+
+So, from the above output, we can see that the `playground` database, the `equipment_local`/`equipment` tables, and the exact per-shard row distribution (including the shard-0 replica) from the original database are all restored successfully.
 
 ## Cleanup
 
