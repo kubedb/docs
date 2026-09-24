@@ -78,6 +78,27 @@ We use official Apache Kafka release tar files to build docker images for suppor
 
 The default value of this field is `false`. If `spec.deprecated` is set to `true`, KubeDB operator will skip processing this CRD object and will add a event to the CRD object specifying that the DB version is deprecated.
 
+### spec.distribution
+
+`spec.distribution` is an optional field that specifies the Kafka distribution this `KafkaVersion` uses. Supported values are:
+
+- `KubeDB` (default) - kubedb's own image, built from the official Apache Kafka release.
+- `Confluent` - [Confluent Server](https://docs.confluent.io/platform/current/installation/docker/image-reference.html) (Enterprise), referenced directly from Confluent's own image registry rather than rehosted under KubeDB's registry, since Confluent Server's license is commercial and doesn't permit redistribution.
+
+A `Kafka` object using a `Confluent` distribution `KafkaVersion` must have `spec.license` set (see [Kafka CRD](/docs/guides/kafka/concepts/kafka.md#speclicense)) once Confluent's 30-day trial period expires.
+
+```yaml
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: KafkaVersion
+metadata:
+  name: confluent-8.3.2
+spec:
+  distribution: Confluent
+  db:
+    image: docker.io/confluentinc/cp-server:8.3.2
+  ...
+```
+
 ### spec.db.image
 
 `spec.db.image` is a required field that specifies the docker image which will be used to create PetSet by KubeDB operator to create expected Kafka database.
