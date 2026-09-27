@@ -22,8 +22,8 @@ difference is where the image comes from and how you're allowed to pull it.
 
 ## Does Enterprise Edition need a license key or Secret at runtime?
 
-**No.** `mysqld` itself does not check a license key at startup, and there is no
-separate license activation API to call. Licensing is enforced entirely at the
+**`mysqld` itself does not.** It does not check a license key at startup, and there
+is no separate license activation API to call. Licensing is enforced entirely at the
 **image registry** level:
 
 - MySQL Enterprise Edition is distributed only through the **Oracle Container
@@ -34,8 +34,20 @@ separate license activation API to call. Licensing is enforced entirely at the
   Enterprise plugins are enabled the normal MySQL way (`plugin-load-add`,
   `INSTALL PLUGIN`, or the relevant `my.cnf` settings) after the process is up.
 
-So the only new requirement is a standard Kubernetes `imagePullSecret`, the same
-mechanism KubeDB already documents for any [private registry](/docs/guides/mysql/private-registry/index.md).
+So the only requirement `mysqld` cares about is a standard Kubernetes
+`imagePullSecret`, the same mechanism KubeDB already documents for any
+[private registry](/docs/guides/mysql/private-registry/index.md).
+
+**KubeDB itself does ask for one more thing at the API level.** The `8.4.8-oracle`
+`MySQLVersion` catalog entry sets `spec.license.required: true`, mirroring the same
+`license.required` pattern KubeDB uses for other licensed distributions (e.g.
+AppsCode's Postgres Enterprise build). This does **not** mean a certificate gets
+mounted into the container or checked by `mysqld` &mdash; it means KubeDB's
+admission webhook requires you to set `spec.license.secretRef` on the `MySQL` CR,
+pointing at a Secret you provide, as an explicit administrative record that this
+deployment is backed by a real Oracle subscription. Any Secret works; nothing reads
+its contents. If you omit `spec.license`, the webhook rejects the `MySQL` object with
+an error naming the `MySQLVersion` that requires it.
 
 ## Before You Begin
 
@@ -88,6 +100,8 @@ spec:
   distribution: MySQL
   db:
     image: container-registry.oracle.com/mysql/enterprise-server:8.4.8
+  license:
+    required: true
   # coordinator, exporter, initContainer, router, archiver, stash, etc. are the
   # same sidecar images KubeDB uses for every other MySQL 8.4.8 catalog entry.
   securityContext:
@@ -96,12 +110,28 @@ spec:
 
 > The `distribution` field uses the same `MySQL` value KubeDB already uses for other
 > catalog entries; it does not need a separate Enterprise-specific value. What makes
-> this an Enterprise Edition deployment is only the `db.image` pointing at the OCR
-> image.
+> this an Enterprise Edition deployment is the `db.image` pointing at the OCR image
+> plus `license.required: true`, which is what makes `spec.license` mandatory on any
+> `MySQL` using this version (see the callout above).
 
-## 4. Deploy MySQL using the Enterprise image
+## 4. Create a license Secret
 
-Reference the `oracle-ocr` secret via `spec.podTemplate.spec.imagePullSecrets`:
+Because the catalog entry sets `license.required: true`, every `MySQL` using it must
+reference a Secret via `spec.license.secretRef`. Nothing inside KubeDB reads this
+Secret's contents at runtime; it exists purely so the deployment carries an explicit
+record of the Oracle subscription backing it. Any non-empty value works, for example
+your Oracle Customer Support Identifier (CSI):
+
+```bash
+$ kubectl create secret generic -n demo mysql-enterprise-license \
+  --from-literal=license=<your Oracle CSI or subscription reference>
+secret/mysql-enterprise-license created
+```
+
+## 5. Deploy MySQL using the Enterprise image
+
+Reference the `oracle-ocr` secret via `spec.podTemplate.spec.imagePullSecrets`, and
+the `mysql-enterprise-license` secret via `spec.license`:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -118,6 +148,9 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  license:
+    secretRef:
+      name: mysql-enterprise-license
   podTemplate:
     spec:
       imagePullSecrets:
