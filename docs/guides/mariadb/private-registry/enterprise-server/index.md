@@ -26,7 +26,9 @@ This is a specialized case of the generic [private Docker registry](/docs/guides
 
 ## No in-cluster license is required
 
-Unlike some other commercial database images, **MariaDB Enterprise Server does not check any license key at runtime.** `mariadbd` boots and runs exactly like the community edition once the image is pulled. Access control is entirely at the container registry level: MariaDB Corporation gates pulls from `docker.mariadb.com` behind your Customer Download Token, the same way any other private registry works. There is no separate license Secret, ConfigMap, or environment variable to configure on the `MariaDB` CR beyond the standard `imagePullSecrets`.
+Unlike some other commercial database images, **MariaDB Enterprise Server does not check any license key at runtime.** `mariadbd` boots and runs exactly like the community edition once the image is pulled. Access control is entirely at the container registry level: MariaDB Corporation gates pulls from `docker.mariadb.com` behind your Customer Download Token, the same way any other private registry works. There is no separate license Secret, ConfigMap, or environment variable that `mariadbd` itself reads, beyond the standard `imagePullSecrets`.
+
+**KubeDB itself does ask for one more thing at the API level.** The `11.4.10-enterprise` `MariaDBVersion` catalog entry sets `spec.license.required: true`, mirroring the same `license.required` pattern KubeDB uses for other licensed distributions (e.g. AppsCode's Postgres Enterprise build and Oracle's MySQL Enterprise Edition). This does **not** mean a certificate gets mounted into the container or checked by `mariadbd` &mdash; it means KubeDB's admission webhook requires you to set `spec.license.secretRef` on the `MariaDB` CR, pointing at a Secret you provide, as an explicit administrative record that this deployment is backed by a real MariaDB Enterprise subscription. Any Secret works; nothing reads its contents. If you omit `spec.license`, the webhook rejects the `MariaDB` object with an error naming the `MariaDBVersion` that requires it.
 
 ## 1. Create an ImagePullSecret
 
@@ -62,14 +64,26 @@ spec:
     image: docker.io/prom/mysqld-exporter:v0.18.0
   initContainer:
     image: ghcr.io/kubedb/mariadb-init:0.9.0
+  license:
+    required: true
   podSecurityPolicies:
     databasePolicyName: maria-db
   version: 11.4.10
 ```
 
-`spec.distribution: Enterprise` is descriptive metadata; it does not change how the operator reconciles the database. Only `spec.db.image` and the pull secret determine which image actually runs.
+`spec.distribution: Enterprise` is descriptive metadata; it does not change how the operator reconciles the database. `spec.license.required: true` is what makes `spec.license` mandatory on any `MariaDB` using this version (see the callout above). Only `spec.db.image` and the pull secret determine which image actually runs.
 
-## 3. Deploy a MariaDB using the Enterprise Server image
+## 3. Create a license Secret
+
+Because the catalog entry sets `license.required: true`, every `MariaDB` using it must reference a Secret via `spec.license.secretRef`. Nothing inside KubeDB reads this Secret's contents at runtime; it exists purely so the deployment carries an explicit record of the MariaDB Enterprise subscription backing it. Any non-empty value works, for example your MariaDB customer account ID:
+
+```bash
+$ kubectl create secret generic -n demo mariadb-enterprise-license \
+  --from-literal=license=<your MariaDB customer account ID or subscription reference>
+secret/mariadb-enterprise-license created
+```
+
+## 4. Deploy a MariaDB using the Enterprise Server image
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -86,6 +100,9 @@ spec:
     resources:
       requests:
         storage: 1Gi
+  license:
+    secretRef:
+      name: mariadb-enterprise-license
   podTemplate:
     spec:
       imagePullSecrets:
