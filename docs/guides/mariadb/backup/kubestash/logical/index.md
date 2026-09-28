@@ -68,7 +68,7 @@ metadata:
   name: sample-mariadb
   namespace: demo
 spec:
-  version: 11.1.3
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:
@@ -181,7 +181,7 @@ spec:
   secret:
     name: sample-mariadb-auth
   type: kubedb.com/mariadb
-  version: 11.1.3
+  version: 12.3.2
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -391,7 +391,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-mariadb-backup created
 ```
 
@@ -520,10 +520,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-        - hostPath: dumpfile.sql
-          id: 0a6dfb754cb32bdaf17581fa42b20e8915aabd0b48f37c854b72812f53b7e5b6
-          size: 2.206 KiB
-          uploaded: 2.498 KiB
+        - summary:
+            hostPath: dumpfile.sql
+            id: 0a6dfb754cb32bdaf17581fa42b20e8915aabd0b48f37c854b72812f53b7e5b6
+            size: 2.206 KiB
+            uploaded: 2.498 KiB
       size: 1.096 KiB
   conditions:
     - lastTransitionTime: "2024-09-17T10:43:04Z"
@@ -568,7 +569,7 @@ metadata:
 spec:
   init:
     waitForInitialRestore: true
-  version: 11.1.3
+  version: 12.3.2
   replicas: 3
   storageType: Durable
   storage:
@@ -584,7 +585,7 @@ Let's create the above database,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mariadb/backup/kubestash/logical/examples/restored-mariadb.yaml
-mariadb.kubedb.com/restore-mariadb created
+mariadb.kubedb.com/restored-mariadb created
 ```
 
 If you check the database status, you will see it is stuck in **`Provisioning`** state.

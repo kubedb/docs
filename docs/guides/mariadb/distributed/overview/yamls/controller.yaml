@@ -3,4 +3,4 @@ kubeslice:
     loglevel: info
     rbacResourcePrefix: kubeslice-rbac
     projectnsPrefix: kubeslice
-    endpoint: https://10.2.0.56:6443
+    endpoint: https://<hub-apiserver-ip>:6443

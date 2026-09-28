@@ -102,7 +102,9 @@ metadata:
   name: vault
 spec:
   vault:
-    url: http://vault.demo.svc:8200
+    ref:
+      name: vault
+      namespace: demo
     roleName: virtual-secrets-role
 ```
 ```bash
@@ -112,8 +114,8 @@ secretstore.config.virtual-secrets.dev/vault configured
 Here,
 
 - `spec.vault` - section describes the connection information for vault.
-- `spec.url` - contains the connection url to the vault server.
-- `spec.roleName` - contains the role name we specified when binding the policy to the service account earlier.
+- `spec.vault.ref` - refers to the AppBinding published by the KubeVault `VaultServer`, which carries the vault connection url and CA bundle.
+- `spec.vault.roleName` - contains the role name we specified when binding the policy to the service account earlier.
 
 > **Note:** `spec.aws`, `spec.azure` and `spec.gcp` can be used to specify the connection information of the corresponding secret manager.
 
@@ -288,7 +290,7 @@ spec:
         storage: 1Gi
   storageType: Durable
   deletionPolicy: WipeOut
-  version: "17.5"
+  version: "18.3"
 ```
 Here,
 
@@ -377,7 +379,7 @@ We can see that the Postgres user password is stored in the vault server. Now le
 kubectl exec -it -n demo pg-0 -- bash 
 Defaulted container "postgres" out of: postgres, pg-coordinator, postgres-init-container (init)
 pg-0:/$ PGPASSWORD='EGJl!tHEGzZoYwMi' psql -U postgres -d postgres -p 5432 -h pg.demo.svc
-psql (17.5)
+psql (18.3)
 Type "help" for help.
 
 postgres=# CREATE DATABASE my_database;

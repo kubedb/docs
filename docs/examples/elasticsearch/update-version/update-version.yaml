@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: es-demo
   updateVersion:
-    targetVersion: xpack-9.1.4
+    targetVersion: xpack-9.2.3

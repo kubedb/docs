@@ -112,12 +112,12 @@ Here, is an example of PostgresVersion crd. Replace `<YOUR_PRIVATE_REGISTRY>` wi
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: PostgresVersion
 metadata:
-  name: "13.13"
+  name: "18.3"
 spec:
   coordinator:
     image: PRIVATE_REGISTRY/pg-coordinator:v0.1.0
   db:
-    image: PRIVATE_REGISTRY/postgres:13.2-alpine
+    image: PRIVATE_REGISTRY/postgres:18.3-alpine
   distribution: PostgreSQL
   exporter:
     image: PRIVATE_REGISTRY/postgres-exporter:v0.9.0
@@ -131,7 +131,7 @@ spec:
         name: postgres-backup-13.1
       restoreTask:
         name: postgres-restore-13.1
-  version: "13.13"
+  version: "18.3"
 ```
 
 Now, create the PostgresVersion crd,
@@ -154,7 +154,7 @@ metadata:
   name: pvt-reg-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storage:
     storageClassName: "standard"
     accessModes:

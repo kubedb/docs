@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: add-user
+  namespace: demo
+spec:
+  type: Reconfigure
+  proxyRef:
+    name: proxy-init-inline
+  configuration:
+    mysqlUsers:
+      users:
+        - username: wolverine
+          active: 1
+          default_hostgroup: 2
+        - username: superman
+          active: 1
+          default_hostgroup: 2
+      reqType: add

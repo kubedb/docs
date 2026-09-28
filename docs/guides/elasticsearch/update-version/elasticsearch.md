@@ -38,7 +38,7 @@ namespace/demo created
 
 ## Prepare Elasticsearch
 
-Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-9.1.4`.
+Now, we are going to deploy a `Elasticsearch` replicaset database with version `xpack-8.18.8`.
 
 ### Deploy Elasticsearch
 
@@ -62,7 +62,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: xpack-9.1.4
+  version: xpack-8.18.8
  
 ```
 
@@ -78,7 +78,7 @@ Now, wait until `es-demo` created has status `Ready`. i.e,
 ```bash
 $ kubectl get es -n demo 
 NAME      VERSION        STATUS   AGE
-es-demo   xpack-9.1.4   Ready    9m10s
+es-demo   xpack-8.18.8   Ready    9m10s
 
 ```
 
@@ -86,7 +86,7 @@ We are now ready to apply the `ElasticsearchOpsRequest` CR to update.
 
 ### update Elasticsearch Version
 
-Here, we are going to update `Elasticsearch` from `xpack-9.1.4` to `xpack-9.1.4`.
+Here, we are going to update `Elasticsearch` from `xpack-8.18.8` to `xpack-9.2.3`.
 
 #### Create ElasticsearchOpsRequest:
 
@@ -103,14 +103,14 @@ spec:
   databaseRef:
     name: es-demo
   updateVersion:
-    targetVersion: xpack-9.1.4
+    targetVersion: xpack-9.2.3
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `es-demo` Elasticsearch.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `xpack-9.1.4`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `xpack-9.2.3`.
 
 > **Note:** If you want to update combined Elasticsearch, you just refer to the `Elasticsearch` combined object name in `spec.databaseRef.name`. To create a combined Elasticsearch, you can refer to the [Elasticsearch Combined](/docs/guides/elasticsearch/clustering/combined-cluster/index.md) guide.
 
@@ -154,7 +154,7 @@ Spec:
     Name:  es-demo
   Type:    UpdateVersion
   Update Version:
-    Target Version:  xpack-9.1.4
+    Target Version:  xpack-9.2.3
 Status:
   Conditions:
     Last Transition Time:  2025-11-06T05:19:15Z
@@ -290,13 +290,13 @@ Now, we are going to verify whether the `Elasticsearch` and the related `PetSets
 
 ```bash
 $ kubectl get es -n demo es-demo -o=jsonpath='{.spec.version}{"\n"}'
-xpack-9.1.4
+xpack-9.2.3
 
 $ kubectl get petset -n demo es-demo -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.1.4@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
+ghcr.io/appscode-images/elastic:9.2.3@sha256:e0b89e3ace47308fa5fa842823bc622add3733e47c1067cd1e6afed2cfd317ca
 
 $ kubectl get pods -n demo es-demo-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/elastic:9.1.4
+ghcr.io/appscode-images/elastic:9.2.3
 
 ```
 

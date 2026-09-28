@@ -88,7 +88,7 @@ metadata:
   name: rm-custom-config
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 1
   configuration:
     secretName: rm-configuration

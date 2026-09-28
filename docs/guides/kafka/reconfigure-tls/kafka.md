@@ -48,7 +48,7 @@ metadata:
   name: kafka-prod
   namespace: demo
 spec:
-  version: 4.0.0
+  version: 4.2.0
   topology:
     broker:
       replicas: 2
@@ -455,7 +455,7 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kfops-rotate.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-rotate.yaml
 kafkaopsrequest.ops.kubedb.com/kfops-rotate created
 ```
 
@@ -922,7 +922,7 @@ Here,
 Let's create the `KafkaOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kfops-remove.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/kafka/reconfigure-tls/kafka-remove-tls.yaml
 kafkaopsrequest.ops.kubedb.com/kfops-remove created
 ```
 

@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-autoscale
+  namespace: demo
+spec:
+  version: "3.6.4"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: "topolvm-provisioner"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

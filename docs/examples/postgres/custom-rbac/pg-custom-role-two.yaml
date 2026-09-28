@@ -5,17 +5,17 @@ metadata:
   namespace: demo
 rules:
   - apiGroups:
-      - apps
+      - apps.k8s.appscode.com
     resourceNames:
-      - miniute-postgres
+      - minute-postgres
     resources:
-      - statefulsets
+      - petsets
     verbs:
       - get
   - apiGroups:
       - ""
     resourceNames:
-      - miniute-postgres-leader-lock
+      - minute-postgres-leader-lock
     resources:
       - configmaps
     verbs:

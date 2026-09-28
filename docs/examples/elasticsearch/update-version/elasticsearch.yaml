@@ -15,5 +15,5 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: xpack-9.1.4
+  version: xpack-8.18.8
 

@@ -43,7 +43,7 @@ Here, we are going to deploy a `Druid` topology cluster using a supported versio
 
 ### Prepare Druid Topology Cluster
 
-Now, we are going to deploy a `Druid` topology cluster database with version `28.0.1`.
+Now, we are going to deploy a `Druid` topology cluster database with version `36.0.0`.
 
 ### Create External Dependency (Deep Storage)
 
@@ -105,7 +105,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -119,7 +119,7 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -128,11 +128,11 @@ Now, wait until `druid-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w
 NAME             TYPE                  VERSION    STATUS         AGE
-druid-cluster    kubedb.com/v1aplha2   28.0.1     Provisioning   0s
-druid-cluster    kubedb.com/v1aplha2   28.0.1     Provisioning   24s
+druid-cluster    kubedb.com/v1aplha2   36.0.0     Provisioning   0s
+druid-cluster    kubedb.com/v1aplha2   36.0.0     Provisioning   24s
 .
 .
-druid-cluster    kubedb.com/v1aplha2   28.0.1     Ready          92s
+druid-cluster    kubedb.com/v1aplha2   36.0.0     Ready          92s
 ```
 
 Let's check the Pod containers resources for both `coordinators` and `historicals` of the Druid topology cluster. Run the following command to get the resources of the `coordinators` and `historicals` containers of the Druid topology cluster
@@ -211,6 +211,7 @@ Here,
 - `spec.type` specifies that we are performing `VerticalScaling` on druid.
 - `spec.VerticalScaling.coordinators` specifies the desired resources of `coordinators` node after scaling.
 - `spec.VerticalScaling.historicals` specifies the desired resources of `historicals` node after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/druid/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 > **Note:** Similarly you can scale other druid nodes vertically by specifying the following fields:
 > - For `overlords` use `spec.verticalScaling.overlords`.
@@ -381,7 +382,7 @@ Status:
     Status:                True
     Type:                  CheckPodRunning--druid-cluster-historicals-0
     Last Transition Time:  2024-10-21T12:54:23Z
-    Message:               Successfully completed the vertical scaling for RabbitMQ
+    Message:               Successfully completed the vertical scaling for Druid
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -433,6 +434,53 @@ $ kubectl get pod -n demo druid-cluster-historicals-1 -o json | jq '.spec.contai
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Druid topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`DruidOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DruidOpsRequest
+metadata:
+  name: druid-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: druid-cluster
+  verticalScaling:
+    mode: InPlace
+    coordinators:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+    historicals:
+      resources:
+        requests:
+          memory: "1.1Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.1Gi"
+          cpu: "0.6"
+  timeout: 5m
+  apply: IfReady
+```
+
+Apply it the same way as above:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/scaling/vertical-scaling/yamls/druid-vscale-inplace.yaml
+druidopsrequest.ops.kubedb.com/druid-vscale-inplace created
+```
+
+The resources update in place with no Pod restart.
 
 ## Cleaning Up
 

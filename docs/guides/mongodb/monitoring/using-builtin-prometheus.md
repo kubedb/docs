@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-mgo
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

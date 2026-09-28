@@ -1,0 +1,44 @@
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mv-configuration
+  namespace: demo
+type: Opaque
+stringData:
+  milvus.yaml: |
+    log:
+      level: debug
+      file:
+        maxAge: 20
+    queryNode:
+      gracefulTime: 10
+
+    dataNode:
+      segment:
+        maxSize: 400
+---
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: reconfigure-1
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: milvus-cluster
+  configuration:
+    removeCustomConfig: true
+    configSecret:
+      name: mv-configuration
+    applyConfig:
+      milvus.yaml: |
+        log:
+          level: info
+          file:
+            maxAge: 30
+        queryNode:
+          gracefulTime: 500
+    restart: "false"
+  timeout: 5m
+  apply: IfReady

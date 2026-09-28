@@ -105,7 +105,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 secret/deep-storage-config created
 ```
 
-Now, we are going to deploy a `Druid` combined cluster with version `28.0.1`.
+Now, we are going to deploy a `Druid` combined cluster with version `36.0.0`.
 
 ### Deploy Druid
 
@@ -118,7 +118,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -150,7 +150,7 @@ spec:
 Let's create the `Druid` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-topology.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-cluster.yaml
 druid.kubedb.com/druid-cluster created
 ```
 
@@ -159,11 +159,11 @@ Now, wait until `druid-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w
 NAME            TYPE                  VERSION   STATUS         AGE
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Provisioning   0s
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Provisioning   9s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   0s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Provisioning   9s
 .
 .
-druid-cluster   kubedb.com/v1alpha2   28.0.1    Ready          3m26s
+druid-cluster   kubedb.com/v1alpha2   36.0.0    Ready          3m26s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
@@ -224,7 +224,7 @@ During `Online` VolumeExpansion KubeDB expands volume without pausing database o
 Let's create the `DruidOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/druid-volume-expansion-topology.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/volume-expansion/yamls/volume-expansion-ops.yaml
 druidopsrequest.ops.kubedb.com/dr-volume-exp created
 ```
 

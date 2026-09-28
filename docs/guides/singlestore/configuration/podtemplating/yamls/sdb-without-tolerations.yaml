@@ -16,4 +16,4 @@ spec:
       requests:
         storage: 10Gi
   storageType: Durable
-  version: 8.7.10
+  version: 8.9.3

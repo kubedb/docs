@@ -22,7 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Elas
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
+
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -58,7 +64,7 @@ Now, we are going to deploy a `Elasticsearch` topology cluster using a supported
 
 #### Deploy Elasticsearch Topology
 
-In this section, we are going to deploy a Elasticsearch topology cluster with version `xpack-8.19.9`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
+In this section, we are going to deploy a Elasticsearch topology cluster with version `xpack-9.2.3`.  Then, in the next section we will set up autoscaling for this database using `ElasticsearchAutoscaler` CRD. Below is the YAML of the `Elasticsearch` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -68,7 +74,7 @@ metadata:
   namespace: demo
 spec:
   enableSSL: true 
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   topology:
     master:
@@ -116,14 +122,14 @@ Now, wait until `es-topology` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION             STATUS         AGE
-es-topology   xpack-8.19.9   Provisioning   12s
-es-topology   xpack-8.19.9   Ready          1m50s
+es-topology   xpack-9.2.3   Provisioning   12s
+es-topology   xpack-9.2.3   Ready          1m50s
 ```
 
 Let's check volume size from the data petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1Gi"
@@ -339,7 +345,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the data nodes of the cluster has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
+$ kubectl get petset -n demo es-topology-data -o json | jq '.spec.volumeClaimTemplates[].spec.resources'
 {
   "requests": {
     "storage": "1594884096"

@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-volume-exp-online
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: etcd-cluster
+  volumeExpansion:
+    mode: Online
+    etcd: 2Gi
+  timeout: 20m
+  apply: IfReady

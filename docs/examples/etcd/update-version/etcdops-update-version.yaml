@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: etcd-cluster
+  updateVersion:
+    targetVersion: "3.6.4"
+  timeout: 20m
+  apply: IfReady

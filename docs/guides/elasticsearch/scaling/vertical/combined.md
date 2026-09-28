@@ -43,7 +43,7 @@ Here, we are going to deploy a `Elasticsearch` combined cluster using a supporte
 
 ### Prepare Elasticsearch Combined Cluster
 
-Now, we are going to deploy a `Elasticsearch` combined cluster database with version `xpack-8.19.9`.
+Now, we are going to deploy a `Elasticsearch` combined cluster database with version `xpack-9.2.3`.
 
 ### Deploy Elasticsearch Combined Cluster
 
@@ -56,7 +56,7 @@ metadata:
   name: es-combined
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 1
   storageType: Durable
@@ -83,7 +83,7 @@ Now, wait until `es-combined` has status `Ready`. i.e,
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME          VERSION        STATUS   AGE
-es-combined   xpack-8.19.9   Ready    3h17m
+es-combined   xpack-9.2.3   Ready    3h17m
 
 ```
 
@@ -141,6 +141,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `es-combined` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on Elasticsearch.
 - `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](overview.md#vertical-scaling-modes).
 
 Let's create the `ElasticsearchOpsRequest` CR we have shown above,
 
@@ -292,6 +293,41 @@ $ kubectl get pod -n demo es-combined-0 -o json | jq '.spec.containers[].resourc
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Elasticsearch combined cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`ElasticsearchOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: vscale-combined-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: es-combined
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        limits:
+          cpu: 1500m
+          memory: 2Gi
+        requests:
+          cpu: 600m
+          memory: 2Gi
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/elasticsearch/scalling/vertical/Elasticsearch-vertical-scaling-combined-inplace.yaml
+Elasticsearchopsrequest.ops.kubedb.com/vscale-combined-inplace created
+```
 
 ## Cleaning Up
 

@@ -1,5 +1,5 @@
 ---
-title: Oracle Faoilover and Disaster Recovery
+title: Oracle Failover and Disaster Recovery
 menu:
   docs_{{ .version }}:
     identifier: guides-oracle-fdr-overview
@@ -51,7 +51,7 @@ $ kubectl create ns demo
 
 **Create an Oracle Container Registry token, if you haven't created one already, by following the instructions in the guide below:**
 
-[here](/docs/guides/oracle/quickstart/guide.md#create-oracle-image-pull-secret-important)
+[here](/docs/guides/oracle/quickstart#create-oracle-image-pull-secret-important)
 
 Then create the image pull secret:
 
@@ -178,7 +178,7 @@ $ kubectl apply -f oracle-dataguard.yaml
 
 ```shell
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/oracle/dataguard/dataguard.yaml
-oracle.kubedb.com/oracle created
+oracle.kubedb.com/oracle-sample created
 
 ```
 Monitor status until all pods are ready:
@@ -462,8 +462,8 @@ SQL> SELECT * FROM kathak;
    ID NAME		    AGE
 ----- -------------------- ----
     1 Radha		     25
-    3 Gopal		     28
-    2 Mohan		     30
+    2 Gopal		     28
+    3 Mohan		     30
 
 SQL> exit
 Disconnected from Oracle Database 21c Enterprise Edition Release 21.0.0.0.0 - Production
@@ -541,13 +541,13 @@ kubectl delete ns demo
 
 > ## ⚠️ Legal Notice
 >
-> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.  
+> Oracle® and Oracle Database® are registered trademarks of Oracle Corporation.
 > KubeDB is not affiliated with, endorsed by, or sponsored by Oracle Corporation.
 >
-> KubeDB provides only orchestration and management tooling for Kubernetes.  
+> KubeDB provides only orchestration and management tooling for Kubernetes.
 > It does not distribute, bundle, ship, or include any Oracle Database software or binaries.
 >
-> Users must provide their own Oracle container images and hold valid Oracle licenses.  
+> Users must provide their own Oracle container images and hold valid Oracle licenses.
 > Users are solely responsible for compliance with Oracle’s licensing terms, including all rules regarding containers, Docker, and Kubernetes environments.
 >
 > KubeDB makes no representations or warranties regarding Oracle licensing compliance.

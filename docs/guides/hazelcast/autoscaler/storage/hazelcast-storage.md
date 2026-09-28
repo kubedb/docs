@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Hazel
 
 - Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -59,7 +63,7 @@ Now, we are going to deploy a `Hazelcast`  using a supported version by `KubeDB`
 
 #### Deploy Hazelcast 
 
-In this section, we are going to deploy a Hazelcast  cluster with version `5.5.2`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
+In this section, we are going to deploy a Hazelcast  cluster with version `5.5.6`.  Then, in the next section we will set up autoscaling for this cluster using `HazelcastAutoscaler` CRD. Below is the YAML of the `Hazelcast` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -69,7 +73,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 2
-  version: 5.5.2
+  version: 5.5.6
   licenseSecret:
     name: hz-license-key
   podTemplate:
@@ -168,7 +172,7 @@ Here,
 Let's create the `HazelcastAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaling/storage/hazelcast-storage-autoscaler.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/hazelcast/autoscaler/storage/hazelcast-storage-autoscaler.yaml
 hazelcastautoscaler.autoscaling.kubedb.com/hz-storage-autoscaler created
 ```
 
@@ -439,7 +443,7 @@ The above output verifies that we have successfully autoscaled the volume of the
 To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete hazelcastopsrequests -n demo zops-hazelcast-dev-a89p
+kubectl delete hazelcastopsrequests -n demo hzops-hazelcast-dev-a89pwf
 kubectl delete hazelcastautoscaler -n demo hz-storage-autoscaler
 kubectl delete hz -n demo hazelcast-dev
 ```

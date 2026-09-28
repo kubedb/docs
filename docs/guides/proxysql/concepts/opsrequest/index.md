@@ -37,7 +37,7 @@ spec:
   proxyRef:
     name: proxy-server
   updateVersion:
-    targetVersion: "2.4.4-debian"
+    targetVersion: "3.0.1-debian"
 ```
 
 **Sample ProxySQLOpsRequest Objects for Horizontal Scaling of proxysql cluster:**
@@ -216,6 +216,7 @@ If you want to scale-up or scale-down your ProxySQL cluster or different compone
 - `spec.verticalScaling.proxysql` indicates the desired resources for ProxySQL standalone or cluster after scaling.
 - `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
 - `spec.verticalScaling.coordinator` indicates the desired resources for the `coordinator` container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 
 All of them has the below structure:

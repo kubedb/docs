@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcdops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: etcd-cluster
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: etcd-ca-issuer
+    certificates:
+      - alias: server
+        subject:
+          organizations:
+            - kubedb
+          organizationalUnits:
+            - server

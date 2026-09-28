@@ -57,7 +57,7 @@ longhorn-static        driver.longhorn.io      Delete          Immediate        
 
 We can see from the output the `longhorn` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Cassandra` combined cluster with version `5.0.3`.
+Now, we are going to deploy a `Cassandra` combined cluster with version `5.0.7`.
 
 ### Deploy Cassandra
 
@@ -70,14 +70,14 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
         replicas: 2
         storage:
           storageClassName:
-            longhorn
+            standard
           accessModes:
             - ReadWriteOnce
           resources:
@@ -165,8 +165,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing volume expansion operation on `cassandra-prod`.
 - `spec.type` specifies that we are performing `VolumeExpansion` on our database.
-- `spec.volumeExpansion.broker` specifies the desired volume size for broker node.
-- `spec.volumeExpansion.controller` specifies the desired volume size for controller node.
+- `spec.volumeExpansion.node` specifies the desired volume size for the cassandra nodes.
 
 > If you want to expand the volume of only one node, you can specify the desired volume size for that node only.
 

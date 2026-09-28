@@ -89,7 +89,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 4.0.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -102,7 +102,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/kafka/yamls/kafka-v1.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 
@@ -114,7 +114,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: 4.0.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce
@@ -127,7 +127,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/Kafka/quickstart/kafka/yamls/kafka-v1alpha2.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/kafka/quickstart/kafka/yamls/kafka-v1alpha2.yaml
 kafka.kubedb.com/kafka-quickstart created
 ```
 

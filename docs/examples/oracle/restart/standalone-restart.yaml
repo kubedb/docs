@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: standalone-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: oracle-sa-sample
+  timeout: 30m

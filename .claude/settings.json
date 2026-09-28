@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sort -t: -k1 -n)",
+      "Bash(grep -nE \"\\(^|[^-]\\)neo4j-backup\\([^-]|$\\)|\\(^|[^-]\\)neo4j-restore\\([^-]|$\\)\" index.md)",
+      "Bash(python3 -)",
+      "Bash(python3 -c \"import yaml,glob; [list\\(yaml.safe_load_all\\(open\\(f\\)\\)\\) for f in glob.glob\\('**/*.yaml',recursive=True\\)]; print\\('all YAMLs parse OK'\\)\")",
+      "Bash(git mv *)"
+    ]
+  }
+}

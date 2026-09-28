@@ -60,7 +60,7 @@ spec:
       name: kafka-ca-issuer
       kind: Issuer
   replicas: 3
-  version: 4.0.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce

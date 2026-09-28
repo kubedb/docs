@@ -306,7 +306,7 @@ metadata:
   name: custom-certificate-es-ssl
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   enableSSL: true
   storage:
     storageClassName: "standard"
@@ -333,7 +333,7 @@ KubeDB operator sets the `status.phase` to `Running` once the database is succes
 ```bash
 $ kubectl get es -n demo custom-certificate-es-ssl -o wide
 NAME               VERSION   STATUS    AGE
-custom-certificate-es-ssl   7.3.2    Running   1m
+custom-certificate-es-ssl   xpack-9.2.3    Running   1m
 ```
 
 ## Connect to Elasticsearch Database
@@ -416,7 +416,7 @@ $ curl --user "elastic:uft73z6j" "https://localhost:9200/_nodes/_all/settings?pr
       "transport_address" : "10.4.0.166:9300",
       "host" : "10.4.0.166",
       "ip" : "10.4.0.166",
-      "version" : "7.3.2",
+      "version" : "xpack-9.2.3",
       "build_flavor" : "default",
       "build_type" : "docker",
       "build_hash" : "508c38a",

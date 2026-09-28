@@ -40,7 +40,7 @@ Now, we are going to deploy a  `MongoDB` standalone using a supported version by
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `4.4.26`.
+Now, we are going to deploy a `MongoDB` standalone database with version `8.0.17`.
 
 ### Deploy MongoDB standalone 
 
@@ -69,7 +69,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -101,17 +101,17 @@ Now, we will check if the database has started with the custom configuration we 
 
 First we need to get the username and password to connect to a mongodb instance,
 ```bash
-$ kubectl get secrets -n demo mg-standalone-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-standalone-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mg-standalone-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-standalone-auth -o jsonpath='{.data.password}' | base64 -d
 m6lXjZugrC4VEpB8
 ```
 
 Now let's connect to a mongodb instance and run a mongodb internal command to check the configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-standalone-0  -- mongo admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+$ kubectl exec -n demo  mg-standalone-0  -- mongosh admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
 		"mongod",
@@ -334,7 +334,7 @@ Events:
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-standalone-0  -- mongo admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+$ kubectl exec -n demo  mg-standalone-0  -- mongosh admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
 		"mongod",
@@ -543,7 +543,7 @@ Events:
 Now let's connect to a mongodb instance and run a mongodb internal command to check the new configuration we have provided.
 
 ```bash
-$ kubectl exec -n demo  mg-standalone-0  -- mongo admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
+$ kubectl exec -n demo  mg-standalone-0  -- mongosh admin -u root -p m6lXjZugrC4VEpB8 --eval "db._adminCommand( {getCmdLineOpts: 1})" --quiet
 {
 	"argv" : [
 		"mongod",

@@ -85,7 +85,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 3
   standbyMode: Hot
   sslMode: verify-full
@@ -140,10 +140,10 @@ Now, watch `Postgres` is going to `Running` state and also watch `PetSet` and it
 $  watch kubectl get postgres -n demo pg
 
 NAMESPACE   NAME   VERSION   STATUS   AGE
-demo        pg     13.2      Ready    62s
+demo        pg     18.3      Ready    62s
 
 
-$ watch -n 3 kubectl get sts -n demo pg
+$ watch -n 3 kubectl get petset -n demo pg
 NAME   READY   AGE
 pg     3/3     2m30s
 
@@ -187,7 +187,7 @@ bash-5.1$ ls /tls/certs/server
 ca.crt      server.crt  server.key
 
 bash-5.1$ psql
-psql (13.2)
+psql (18.3)
 Type "help" for help.
 
 postgres=# SELECT * FROM pg_stat_ssl;
@@ -235,7 +235,7 @@ Let's connect to the database server with a secure connection,
 $ kubectl exec -it -n  demo  pg-0 -- bash
 
 bash-5.1$ psql -d "user=postgres password=$POSTGRES_PASSWORD host=pg port=5432 connect_timeout=15 dbname=postgres sslmode=verify-full sslrootcert=/tls/certs/client/ca.crt"
-psql (13.2)
+psql (18.3)
 SSL connection (protocol: TLSv1.3, cipher: TLS_AES_256_GCM_SHA384, bits: 256, compression: off)
 Type "help" for help.
 

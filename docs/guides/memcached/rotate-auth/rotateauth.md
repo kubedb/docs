@@ -50,12 +50,12 @@ NAME       VERSION   DB_IMAGE                                          DEPRECATE
 1.5.22     1.5.22    ghcr.io/appscode-images/memcached:1.5.22-alpine                5d19h
 1.5.4      1.5.4     ghcr.io/kubedb/memcached:1.5.4                    true         5d19h
 1.5.4-v1   1.5.4     ghcr.io/kubedb/memcached:1.5.4-v1                 true         5d19h
-1.6.22     1.6.22    ghcr.io/appscode-images/memcached:1.6.22-alpine                5d19h
+1.6.40     1.6.40    ghcr.io/appscode-images/memcached:1.6.40-alpine                5d19h
 1.6.29     1.6.29    ghcr.io/appscode-images/memcached:1.6.29-alpine                5d19h
 1.6.33     1.6.33    ghcr.io/appscode-images/memcached:1.6.33-alpine                5d19h
 ```
 
-> **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached](/docs/examples/memcached/update-version) directory of [kubedb/docs](https://github.com/kube/docs) repository.
+> **Note:** YAML files used in this tutorial are stored in [docs/examples/memcached/rotate-auth](/docs/examples/memcached/rotate-auth) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Create a Memcached Server
 
@@ -71,7 +71,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
@@ -96,7 +96,7 @@ Now, wait until memcd-quickstart has status Ready. i.e,
 ```shell
 $  kubectl get mc -n demo -w
 NAME               VERSION   STATUS   AGE
-memcd-quickstart   1.6.22    Ready    17h
+memcd-quickstart   1.6.40    Ready    17h
 ```
 ## Verify Authentication
 The user can verify whether they are authorized by executing a query directly in the database. To do this, the user needs `username` and `password` in order to connect to the database. Below is an example showing how to retrieve the credentials from the Secret.
@@ -104,7 +104,7 @@ The user can verify whether they are authorized by executing a query directly in
 ````shell
 $ kubectl get memcached -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "memcd-quickstart-auth"
-$ kubectl get secret-n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:ikbkjbodeewenrgj
 ````
 Here, `username`is `user` and `password` is `ikbkjbodeewenrgj`
@@ -143,7 +143,7 @@ STORED
 
 #now you can use DB
 version
-VERSION 1.6.22
+VERSION 1.6.40
 
 # Exit
 quit
@@ -271,7 +271,7 @@ Events:
 ```shell
 $ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "memcd-quickstart-auth"
-$ kubectl get secret-n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
+$ kubectl get secret -n demo memcd-quickstart-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:yjf3Oc;ZlSs.iMVO                    
 ```
 **Let's verify whether the credential is working or not:**
@@ -304,7 +304,7 @@ STORED
 #command
 version
 #output
-VERSION 1.6.22
+VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.
@@ -313,7 +313,7 @@ Your credentials have been rotated successfully, so everything’s working.
 Also, there will be two more new keys in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
 
 ```shell
-$ kubectl get secret-n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
+$ kubectl get secret -n demo memcd-quickstart-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 user:ikbkjbodeewenrgj
 ```
 The above output shows that the password has been changed successfully. The previous username & password is stored for rollback purpose.
@@ -352,7 +352,7 @@ metadata:
 spec:
   type: RotateAuth
   databaseRef:
-    name: memcached-quickstart
+    name: memcd-quickstart
   authentication:
     secretRef:
       kind: Secret
@@ -469,7 +469,7 @@ Events:
 ```shell
 $ kubectl get mc -n demo memcd-quickstart -ojson | jq .spec.authSecret.name
 "mc-new-auth"
-$  kubectl get secret-n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
+$  kubectl get secret -n demo mc-new-auth -o=jsonpath='{.data.authData}' | base64 -d
 user:pass                                                                                   
 ```
 **Let's verify whether the credential is working or not:**
@@ -502,16 +502,16 @@ STORED
 #command
 version
 #output
-VERSION 1.6.22
+VERSION 1.6.40
 #output
 quit
 Connection closed by foreign host.
 ```
 Your credentials have been rotated successfully, so everything’s working.
 
-Also, there will be two more new keys in the secretthat stores the previous credentials. The keys are `username.prev` and `password.prev`. You can find the secretand its data by running the following command:
+Also, there will be a new key in the secretthat stores the previous credentials. The key is `authData.prev`. You can find the secretand its data by running the following command:
 ```shell
-$ kubectl get secret-n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
+$ kubectl get secret -n demo mc-new-auth -o go-template='{{ index .data "authData.prev" }}' | base64 -d
 user:yjf3Oc;ZlSs.iMVO
                   
 ```
@@ -524,12 +524,15 @@ To clean up the Kubernetes resources you can delete the CRD or namespace.
 Or, you can delete one by one resource by their name by this tutorial, run:
 
 ```shell
-$ kubectl delete Memcachedopsrequest mcops-rotate-auth-generated mcops-rotate-auth-user -n demo
-Memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" "mcops-rotate-auth-user" deleted
-$ kubectl delete secret-n demo mc-new-auth
-secret"mc-new-auth" deleted
-$ kubectl delete secret-n demo  memcd-quickstart-auth
-secret"memcd-quickstart-auth" deleted
+$ kubectl delete memcachedopsrequest -n demo mcops-rotate-auth-generated mcops-rotate-auth-user
+memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-generated" deleted
+memcachedopsrequest.ops.kubedb.com "mcops-rotate-auth-user" deleted
+$ kubectl delete secret -n demo mc-new-auth
+secret "mc-new-auth" deleted
+$ kubectl delete secret -n demo memcd-quickstart-auth
+secret "memcd-quickstart-auth" deleted
+$ kubectl delete memcached -n demo memcd-quickstart
+memcached.kubedb.com "memcd-quickstart" deleted
 ```
 
 ## Next Steps

@@ -37,7 +37,7 @@ demo                 Active   9s
 
 ## Create Standalone Elasticsearch Cluster
 
-Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.19.2`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a standalone (ie. `replicas: 1`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-3.4.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -46,7 +46,7 @@ metadata:
   name: es-standalone
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 1
   storageType: Durable
@@ -72,11 +72,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-standalone   opensearch-2.19.2   Provisioning   1m32s
-es-standalone   opensearch-2.19.2   Provisioning   2m17s
-es-standalone   opensearch-2.19.2   Provisioning   2m17s
-es-standalone   opensearch-2.19.2   Provisioning   2m20s
-es-standalone   opensearch-2.19.2   Ready          2m20s
+es-standalone   opensearch-3.4.0   Provisioning   1m32s
+es-standalone   opensearch-3.4.0   Provisioning   2m17s
+es-standalone   opensearch-3.4.0   Provisioning   2m17s
+es-standalone   opensearch-3.4.0   Provisioning   2m20s
+es-standalone   opensearch-3.4.0   Ready          2m20s
 ```
 
 Hence the cluster is ready to use.
@@ -100,7 +100,7 @@ appbinding.appcatalog.appscode.com/es-standalone   kubedb.com/elasticsearch   7.
 
 NAME                                        TYPE                       DATA   AGE
 secret/es-standalone-admin-cert             kubernetes.io/tls          3      33m
-secret/es-standalone-admin-cred             kubernetes.io/basic-auth   2      33m
+secret/es-standalone-auth             kubernetes.io/basic-auth   2      33m
 secret/es-standalone-archiver-cert          kubernetes.io/tls          3      33m
 secret/es-standalone-ca-cert                kubernetes.io/tls          2      33m
 secret/es-standalone-config                 Opaque                     3      33m
@@ -127,9 +127,9 @@ Forwarding from [::1]:9200 -> 9200
 
 ```bash
 # Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-standalone-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo es-standalone-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-standalone-auth -o jsonpath='{.data.password}' | base64 -d
 V,YY1.qXxoAch9)B
 
 # Check cluster health
@@ -155,7 +155,7 @@ $ curl -XGET -k -u 'admin:V,YY1.qXxoAch9)B' "https://localhost:9200/_cluster/hea
 
 ## Create Multi-Node Combined Elasticsearch Cluster
 
-Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-2.19.2`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
+Here, we are going to create a multi-node (say `replicas: 3`) Elasticsearch cluster. We will use the Elasticsearch image provided by the Opendistro (`opensearch-3.4.0`) for this demo. To learn more about Elasticsearch CR, visit [here](/docs/guides/elasticsearch/concepts/elasticsearch/index.md).
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -164,7 +164,7 @@ metadata:
   name: es-multinode
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -190,11 +190,11 @@ Watch the bootstrap progress:
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME            VERSION             STATUS         AGE
-es-multinode    opensearch-2.19.2   Provisioning   18s
-es-multinode    opensearch-2.19.2   Provisioning   78s
-es-multinode    opensearch-2.19.2   Provisioning   78s
-es-multinode    opensearch-2.19.2   Provisioning   81s
-es-multinode    opensearch-2.19.2   Ready          81s
+es-multinode    opensearch-3.4.0   Provisioning   18s
+es-multinode    opensearch-3.4.0   Provisioning   78s
+es-multinode    opensearch-3.4.0   Provisioning   78s
+es-multinode    opensearch-3.4.0   Provisioning   81s
+es-multinode    opensearch-3.4.0   Ready          81s
 ```
 
 Hence the cluster is ready to use.
@@ -220,7 +220,7 @@ appbinding.appcatalog.appscode.com/es-multinode   kubedb.com/elasticsearch   7.1
 
 NAME                                       TYPE                       DATA   AGE
 secret/es-multinode-admin-cert             kubernetes.io/tls          3      6m14s
-secret/es-multinode-admin-cred             kubernetes.io/basic-auth   2      6m13s
+secret/es-multinode-auth             kubernetes.io/basic-auth   2      6m13s
 secret/es-multinode-archiver-cert          kubernetes.io/tls          3      6m13s
 secret/es-multinode-ca-cert                kubernetes.io/tls          2      6m14s
 secret/es-multinode-config                 Opaque                     3      6m12s
@@ -250,9 +250,9 @@ Forwarding from [::1]:9200 -> 9200
 
 ```bash
 # Get admin username & password from k8s secret
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo es-multinode-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo es-multinode-auth -o jsonpath='{.data.password}' | base64 -d
 9f$A8o2pBpKL~1T8
 
 # Check cluster health

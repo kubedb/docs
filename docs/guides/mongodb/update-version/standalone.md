@@ -38,7 +38,7 @@ namespace/demo created
 
 ### Prepare MongoDB Standalone Database
 
-Now, we are going to deploy a `MongoDB` standalone database with version `3.6.8`.
+Now, we are going to deploy a `MongoDB` standalone database with version `7.0.28`.
 
 ### Deploy MongoDB standalone :
 
@@ -51,7 +51,7 @@ metadata:
   name: mg-standalone
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "7.0.28"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -74,14 +74,14 @@ Now, wait until `mg-standalone` created has status `Ready`. i.e,
 ```bash
 $ kubectl get mg -n demo
   NAME            VERSION    STATUS    AGE
-  mg-standalone   4.4.26   Ready     8m58s
+  mg-standalone   7.0.28   Ready     8m58s
 ```
 
 We are now ready to apply the `MongoDBOpsRequest` CR to update this database.
 
 ### update MongoDB Version
 
-Here, we are going to update `MongoDB` standalone from `3.6.8` to `4.0.5`.
+Here, we are going to update `MongoDB` standalone from `7.0.28` to `8.0.17`.
 
 #### Create MongoDBOpsRequest:
 
@@ -98,7 +98,7 @@ spec:
   databaseRef:
     name: mg-standalone
   updateVersion:
-    targetVersion: 4.4.26
+    targetVersion: 8.0.17
   readinessCriteria:
     oplogMaxLagSeconds: 20
     objectsCountDiffPercentage: 10
@@ -110,7 +110,7 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `mg-standalone` MongoDB database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `4.0.5`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.0.17`.
 - Have a look [here](/docs/guides/mongodb/concepts/opsrequest.md#specreadinesscriteria) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.
 
 
@@ -242,13 +242,13 @@ Now, we are going to verify whether the `MongoDB` and the related `PetSets` thei
 
 ```bash
 $ kubectl get mg -n demo mg-standalone -o=jsonpath='{.spec.version}{"\n"}'                                                                                          
-4.4.26
+8.0.17
 
-$ kubectl get sts -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
-mongo:4.0.5
+$ kubectl get petset -n demo mg-standalone -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'                                                               
+mongo:8.0.17
 
 $ kubectl get pods -n demo mg-standalone-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'                                                                           
-mongo:4.0.5
+mongo:8.0.17
 ```
 
 You can see from above, our `MongoDB` standalone database has been updated with the new version. So, the update process is successfully completed.

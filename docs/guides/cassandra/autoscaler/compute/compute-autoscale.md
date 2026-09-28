@@ -41,7 +41,7 @@ namespace/demo created
 
 ## Autoscaling of Cassandra
 
-In this section, we are going to deploy a Cassandra with version `5.0.3`  Then, in the next section we will set up autoscaling for this Cassandra using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
+In this section, we are going to deploy a Cassandra with version `5.0.7`  Then, in the next section we will set up autoscaling for this Cassandra using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -50,7 +50,7 @@ metadata:
   name: cassandra-autoscale
   namespace: demo
 spec:
-  version: "5.0.3"
+  version: "5.0.7"
   topology:
     rack:
       - name: r0

@@ -42,7 +42,7 @@ metadata:
   name: ig
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 3
   storageType: Durable
   storage:
@@ -104,7 +104,7 @@ kind: IgniteOpsRequest
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"ops.kubedb.com/v1alpha1","kind":"IgniteOpsRequest","metadata":{"annotations":{},"name":"restart","namespace":"demo"},"spec":{"apply":"Always","databaseRef":{"name":"mongo"},"readinessCriteria":{"objectsCountDiffPercentage":15,"oplogMaxLagSeconds":10},"timeout":"3m","type":"Restart"}}
+      {"apiVersion":"ops.kubedb.com/v1alpha1","kind":"IgniteOpsRequest","metadata":{"annotations":{},"name":"restart","namespace":"demo"},"spec":{"apply":"Always","databaseRef":{"name":"ig"},"timeout":"3m","type":"Restart"}}
   creationTimestamp: "2022-10-31T08:54:45Z"
   generation: 1
   name: restart
@@ -126,11 +126,11 @@ status:
     status: "True"
     type: Restart
   - lastTransitionTime: "2022-10-31T08:57:05Z"
-    message: Successfully Restarted ReplicaSet nodes
+    message: Successfully restarted all nodes
     observedGeneration: 1
-    reason: RestartReplicaSet
+    reason: RestartNodes
     status: "True"
-    type: RestartReplicaSet
+    type: RestartNodes
   - lastTransitionTime: "2022-10-31T08:57:05Z"
     message: Successfully restarted all nodes of Ignite
     observedGeneration: 1

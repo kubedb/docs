@@ -4,7 +4,7 @@ metadata:
   name: custom-mc
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   podTemplate:
     spec:

@@ -80,10 +80,6 @@ These are the options to pass in the internally created opsRequest CRO. `opsRequ
 - `resourceDiffPercentage` specifies the minimum resource difference between recommended value and the current value in percentage. If the difference percentage is greater than this value than autoscaling will be triggered.
 - `podLifeTimeThreshold` specifies the minimum pod lifetime of at least one of the pods before triggering autoscaling.
 
-There are two more fields, those are only specifiable for the percona variant inMemory databases.
-- `inMemoryStorage.UsageThresholdPercentage` If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased.
-- `inMemoryStorage.ScalingFactorPercentage` If db uses more than usageThresholdPercentage of the total memory, memoryStorage should be increased by this given scaling percentage.
-
 ### spec.storage
 
 `spec.storage` specifies the autoscaling configuration for the storage resources of the database components. This field consists of the following sub-field:

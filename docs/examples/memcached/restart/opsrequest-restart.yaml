@@ -1,7 +1,7 @@
 apiVersion: ops.kubedb.com/v1alpha1
 kind: MemcachedOpsRequest
 metadata:
-  name: memcd-new
+  name: restart
   namespace: demo
 spec:
   type: Restart

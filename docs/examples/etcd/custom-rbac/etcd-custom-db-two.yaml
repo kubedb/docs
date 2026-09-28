@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: minute-etcd
+  namespace: demo
+spec:
+  version: "3.6.4"
+  replicas: 1
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      serviceAccountName: my-custom-serviceaccount
+      containers:
+        - name: etcd
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+  deletionPolicy: DoNotTerminate

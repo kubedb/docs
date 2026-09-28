@@ -217,7 +217,7 @@ spec:
   addon:
     name: druid-addon
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore
 ```
 
 
@@ -251,7 +251,7 @@ spec:
           runAsUser: 0
           runAsGroup: 0
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore
 ```
 
 ### Specifying Memory/CPU limit/request for the restore job
@@ -288,7 +288,7 @@ spec:
             cpu: "200m"
             memory: "1Gi"
     tasks:
-      - name: mysql-metadata-storage-backup
+      - name: mysql-metadata-storage-restore
 ```
 
 > You can configure additional runtime settings for restore jobs within the `addon.jobTemplate.spec` sections. For further details, please refer to the [reference](https://kubestash.com/docs/latest/concepts/crds/restoresession/#podtemplate-spec).

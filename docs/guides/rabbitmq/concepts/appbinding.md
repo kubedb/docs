@@ -30,7 +30,7 @@ kind: AppBinding
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rabbitmq","namespace":"rabbit"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":"600m","memory":"1.5Gi"},"requests":{"cpu":"500m"}}}]}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"3.13.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rabbitmq","namespace":"rabbit"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":"600m","memory":"1.5Gi"},"requests":{"cpu":"500m"}}}]}},"replicas":3,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"},"storageType":"Durable","version":"4.2.4"}}
   creationTimestamp: "2024-09-05T19:30:24Z"
   generation: 1
   labels:
@@ -62,9 +62,9 @@ spec:
       scheme: http
     url: amqp://<username>:<password>@rabbitmq.rabbit.svc.cluster.local:5672/
   secret:
-    name: rabbitmq-admin-cred
+    name: rabbitmq-auth
   type: kubedb.com/rabbitmq
-  version: 3.13.2
+  version: 4.2.4
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

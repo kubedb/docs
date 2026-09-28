@@ -65,6 +65,29 @@ We modify original PostgreSQL docker image to support additional features like W
 
 `spec.version` is a required field that specifies the original version of PostgreSQL database that has been used to build the docker image specified in `spec.db.image` field.
 
+### spec.distribution
+
+`spec.distribution` is an optional field that names the PostgreSQL distribution the image in `spec.db.image` was built from. Supported values are `Official`, `TimescaleDB`, `PostGIS`, `KubeDB`, `DocumentDB`, `PostgreSQL`, `Percona`, and `AppsCode`.
+
+The `AppsCode` distribution is "Postgres Enterprise by AppsCode", a custom-branded, license-enforced PostgreSQL build whose postmaster refuses to start without a valid license certificate. A `PostgresVersion` for this distribution should also set `spec.license.required: true` (below); every `Postgres` object using it must then set [`spec.license`](/docs/guides/postgres/concepts/postgres.md#speclicense).
+
+### spec.license.required
+
+`spec.license.required` is an optional field, only meaningful for the `AppsCode` distribution, that is `true` when the image in `spec.db.image` refuses to start without a valid license file. When it is `true`, every `Postgres` object referencing this `PostgresVersion` must set `spec.license`; the KubeDB admission webhook rejects a `Postgres` object that gets this wrong in either direction. Leave it unset (or `false`) for every other distribution.
+
+```yaml
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: PostgresVersion
+metadata:
+  name: "16.9-appscode"
+spec:
+  ...
+  distribution: AppsCode
+  license:
+    required: true
+  version: "16.9"
+```
+
 ### spec.deprecated
 
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator. For example, we have modified `kubedb/postgres:10.2` docker image to support custom configuration and re-tagged as `kubedb/postgres:10.2-v2`. Now, KubeDB `0.9.0-rc.0` supports providing custom configuration which required `kubedb/postgres:10.2-v2` docker image. So, we have marked `kubedb/postgres:10.2` as deprecated in KubeDB `0.9.0-rc.0`.

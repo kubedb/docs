@@ -1,5 +1,5 @@
 ---
-title: Scaling Memcached
+title: Scaling Hazelcast
 menu:
   docs_{{ .version }}:
     identifier: hz-scaling

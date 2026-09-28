@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-pvt-reg
+  namespace: demo
+spec:
+  version: "3.6.4"
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: myregistrykey
+      containers:
+        - name: etcd
+          resources:
+            limits:
+              cpu: 500m
+              memory: 1Gi
+            requests:
+              cpu: 250m
+              memory: 512Mi
+  deletionPolicy: WipeOut

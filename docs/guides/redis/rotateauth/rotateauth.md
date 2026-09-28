@@ -57,7 +57,7 @@ metadata:
   name: redis-quickstart
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -118,7 +118,7 @@ Here,
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/redis/rotate-auth/Redis-rotate-auth-generated.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/Redis-rotate-auth-generated.yaml
 redisopsrequest.ops.kubedb.com/rdops-rotate-auth-generated created
 ```
 Let's wait for `RedisOpsrequest` to be `Successful`. Run the following command to watch `RedisOpsrequest` CRO
@@ -273,7 +273,7 @@ Here,
 Let's create the `RedisOpsRequest` CR we have shown above,
 
 ```shell
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{ .version }}/docs/examples/Redis/rotate-auth/rotate-auth-user.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/rotate-auth/rotate-auth-user.yaml
 redisopsrequest.ops.kubedb.com/rdops-rotate-auth-user created
 ```
 Let’s wait for `RedisOpsRequest` to be Successful. Run the following command to watch `RedisOpsRequest` CRO:

@@ -48,7 +48,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:
@@ -84,7 +84,7 @@ metadata:
   name: rd-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sen-demo
@@ -108,7 +108,7 @@ redis.kubedb.com/rd-demo created
 
 Here,
 
-- `spec.mode` specifies the mode for Redis. Here we have used `Redis` to tell the operator that we want to deploy Redis in sentinel mode.
+- `spec.mode` specifies the mode for Redis. Here we have used `Sentinel` to tell the operator that we want to deploy Redis in sentinel mode.
 - `spec.replicas` denotes the number of replica nodes
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. So, each members will have a pod of this storage configuration. You can specify any StorageClass available in your cluster with appropriate resource requests.
 
@@ -211,7 +211,7 @@ spec:
     storageClassName: standard
   storageType: Durable
   deletionPolicy: Halt
-  version: 6.2.14
+  version: 8.2.2
 status:
   conditions:
   - lastTransitionTime: "2023-02-03T06:36:16Z"
@@ -257,14 +257,14 @@ status:
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.username}' | base64 -d
   default
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo rd-demo-auth -o jsonpath='{.data.password}' | base64 -d
   5VjZ7iYaoo8YRp!p
   ```
 Now, you can connect to this redis database using the service using the credentials.
@@ -277,14 +277,14 @@ Now, you can connect to this redis database using the service using the credenti
 - Username: Run following command to get _username_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.\username}' | base64 -d
+  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.username}' | base64 -d
   root
   ```
 
 - Password: Run the following command to get _password_,
 
   ```bash
-  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.\password}' | base64 -d
+  $ kubectl get secrets -n demo sen-demo-auth -o jsonpath='{.data.password}' | base64 -d
   Gw_sd;~Vrsj9kJSL
   ```
 

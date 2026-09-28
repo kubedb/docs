@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: mg-sharding
   updateVersion:
-    targetVersion: 4.0.5-v3
+    targetVersion: 8.0.17

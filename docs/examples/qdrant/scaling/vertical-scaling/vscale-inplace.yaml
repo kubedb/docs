@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: QdrantOpsRequest
+metadata:
+  name: qdops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: qdrant-sample
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          cpu: "500m"
+          memory: "1Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
+  timeout: 5m
+  apply: IfReady

@@ -42,7 +42,7 @@ metadata:
   name: zk-quickstart
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:

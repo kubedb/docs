@@ -5,19 +5,17 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "1.6.22"
+  version: "1.6.40"
   podTemplate:
     spec:
       containers:
         - name: memcached
           resources:
-          limits:
-            cpu: 500m
-            memory: 128Mi
-          requests:
-            cpu: 250m
-            memory: 64Mi
-  podTemplate:
-    spec:
+            limits:
+              cpu: 500m
+              memory: 128Mi
+            requests:
+              cpu: 250m
+              memory: 64Mi
       imagePullSecrets:
-      - name: myregistrykey
+        - name: myregistrykey

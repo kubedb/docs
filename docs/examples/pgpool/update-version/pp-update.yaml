@@ -4,7 +4,7 @@ metadata:
   name: pp-update
   namespace: demo
 spec:
-  version: "4.4.5"
+  version: "4.5.3"
   replicas: 1
   postgresRef:
     name: ha-postgres

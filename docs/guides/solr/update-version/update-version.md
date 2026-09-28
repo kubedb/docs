@@ -51,7 +51,7 @@ metadata:
   name: solr-cluster
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.7.0
   zookeeperRef:
     name: zoo
     namespace: demo
@@ -105,7 +105,7 @@ We are now ready to apply the `SolrOpsRequest` CR to update.
 
 ### update Solr Version
 
-Here, we are going to update `Solr` from `9.4.1` to `9.6.1`.
+Here, we are going to update `Solr` from `9.7.0` to `9.8.0`.
 
 #### Create SolrOpsRequest:
 
@@ -122,14 +122,14 @@ spec:
     name: solr-cluster
   type: UpdateVersion
   updateVersion:
-    targetVersion: 9.6.1
+    targetVersion: 9.8.0
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `solr-cluster` Solr.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `9.6.1`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `9.8.0`.
 
 > **Note:** If you want to update combined Solr, you just refer to the `Solr` combined object name in `spec.databaseRef.name`. To create a combined Solr, you can refer to the [Solr Combined](/docs/guides/solr/clustering/combined_cluster.md) guide.
 

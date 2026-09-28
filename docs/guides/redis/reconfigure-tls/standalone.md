@@ -51,7 +51,7 @@ metadata:
   name: rd-sample
   namespace: demo
 spec:
-  version: "6.2.14"
+  version: "8.2.2"
   mode: Standalone
   storage:
     storageClassName: "standard"

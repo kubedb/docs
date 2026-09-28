@@ -49,7 +49,7 @@ metadata:
   name: cassandra-builtin-prom
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -304,7 +304,7 @@ data:
 Let's create above `ConfigMap`,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/monitoring/builtin-prometheus/prom-config.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/monitoring/builtin-prometheus/prom-config.yaml
 configmap/prometheus-config created
 ```
 

@@ -126,7 +126,7 @@ xpack-7.9.1-v2         7.9.1     ElasticStack   elasticsearch:7.9.1             
 
 Notice the `DEPRECATED` column. Here, `true` means that this ElasticsearchVersion is deprecated for the current KubeDB version. KubeDB will not work for deprecated ElasticsearchVersion.
 
-In this tutorial, we will use `opensearch-2.19.2` ElasticsearchVersion CR to create an OpenSearch cluster.
+In this tutorial, we will use `opensearch-3.4.0` ElasticsearchVersion CR to create an OpenSearch cluster.
 
 > Note: An image with a higher modification tag will have more features and fixes than an image with a lower modification tag. Hence, it is recommended to use ElasticsearchVersion CRD with the highest modification tag to take advantage of the latest features. For example, we are using `opensearch-2.19.2` over `opensearch-1.1.0`.
 
@@ -145,7 +145,7 @@ metadata:
   name: sample-opensearch
   namespace: demo
 spec:
-  version: opensearch-2.19.2
+  version: opensearch-3.4.0
   enableSSL: true
   replicas: 3
   storageType: Durable
@@ -166,7 +166,7 @@ elasticsearch.kubedb.com/es-quickstart created
 
 Here,
 
-- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-2.19.2` version.
+- `spec.version` - is the name of the ElasticsearchVersion CR. Here, we are using `opensearch-3.4.0` version.
 - `spec.enableSSL` - specifies whether the HTTP layer is secured with certificates or not.
 - `spec.replicas` - specifies the number of OpenSearch nodes.
 - `spec.storageType` - specifies the type of storage that will be used for OpenSearch database. It can be `Durable` or `Ephemeral`. The default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create the OpenSearch database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
@@ -180,11 +180,11 @@ Wait for few minutes until the `STATUS` will go from `Provisioning` to `Ready`. 
 ```bash
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS         AGE
-sample-opensearch   opensearch-2.19.2   Provisioning   49s
+sample-opensearch   opensearch-3.4.0   Provisioning   49s
 ... ...
 $ kubectl get elasticsearch -n demo -w
 NAME                VERSION            STATUS   AGE
-sample-opensearch   opensearch-2.19.2   Ready    5m4s
+sample-opensearch   opensearch-3.4.0   Ready    5m4s
 ```
 
 Describe the object to observe the progress if something goes wrong or the status is not changing for a long period of time:
@@ -206,14 +206,14 @@ Metadata:
   UID:               20c388a6-54b1-4c0d-891b-879ec8e2a8c6
 Spec:
   Auth Secret:
-    Name:      sample-opensearch-admin-cred
+    Name:      sample-opensearch-auth
   Enable SSL:  true
   Internal Users:
     Admin:
       Backend Roles:
         admin
       Reserved:     true
-      Secret Name:  sample-opensearch-admin-cred
+      Secret Name:  sample-opensearch-auth
     Kibanaro:
       Secret Name:  sample-opensearch-kibanaro-cred
     Kibanaserver:
@@ -288,7 +288,7 @@ Spec:
       Subject:
         Organizations:
           kubedb
-  Version:  opensearch-2.19.2
+  Version:  opensearch-3.4.0
 Status:
   Conditions:
     Last Transition Time:  2022-02-15T07:00:21Z
@@ -352,7 +352,7 @@ appbinding.appcatalog.appscode.com/sample-opensearch   kubedb.com/elasticsearch 
 
 NAME                                            TYPE                       DATA   AGE
 secret/sample-opensearch-admin-cert             kubernetes.io/tls          3      23m
-secret/sample-opensearch-admin-cred             kubernetes.io/basic-auth   2      23m
+secret/sample-opensearch-auth             kubernetes.io/basic-auth   2      23m
 secret/sample-opensearch-archiver-cert          kubernetes.io/tls          3      23m
 secret/sample-opensearch-ca-cert                kubernetes.io/tls          2      23m
 secret/sample-opensearch-config                 Opaque                     3      23m
@@ -408,7 +408,7 @@ KubeDB will create some Secrets for the database. Let’s check which Secrets ha
 ```bash
 $ kubectl get secret -n demo | grep sample-opensearch
 sample-opensearch-admin-cert             kubernetes.io/tls                     3      10m
-sample-opensearch-admin-cred             kubernetes.io/basic-auth              2      10m
+sample-opensearch-auth             kubernetes.io/basic-auth              2      10m
 sample-opensearch-ca-cert                kubernetes.io/tls                     2      10m
 sample-opensearch-config                 Opaque                                3      10m
 sample-opensearch-kibanaro-cred          kubernetes.io/basic-auth              2      10m
@@ -419,7 +419,7 @@ sample-opensearch-snapshotrestore-cred   kubernetes.io/basic-auth              2
 sample-opensearch-token-zbn46            kubernetes.io/service-account-token   3      10m
 sample-opensearch-transport-cert         kubernetes.io/tls                     3      10m
 ```
-Now, we can connect to the database with any of these secret that have the prefix `cred`. Here, we are using `sample-opensearch-admin-cred` which contains the admin level credentials to connect with the database.
+Now, we can connect to the database using the `sample-opensearch-auth` secret, which holds the `admin` credentials used to connect with the database.
 
 
 ### Accessing Database Through CLI
@@ -427,9 +427,9 @@ Now, we can connect to the database with any of these secret that have the prefi
 To access the database through CLI, we have to get the credentials to access. Let’s export the credentials as environment variable to our current shell :
 
 ```bash
-$ kubectl get secret -n demo sample-opensearch-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secret -n demo sample-opensearch-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secret -n demo sample-opensearch-auth -o jsonpath='{.data.password}' | base64 -d
 9aHT*ZhEK_qjPS~v
 ```
 

@@ -97,7 +97,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -119,7 +119,7 @@ Now, wait until `druid-quickstart` has status Ready. i.e,
 ```shell
 $ kubectl get druid -n demo
 NAME               TYPE                  VERSION   STATUS   AGE
-druid-quickstart   kubedb.com/v1alpha2   28.0.1    Ready    5m3s
+druid-quickstart   kubedb.com/v1alpha2   36.0.0    Ready    5m3s
 ```
 
 ## Verify authentication
@@ -158,7 +158,7 @@ Here,
 
 Let's create the `DruidOpsRequest` CR we have shown above,
 ```shell
- $ kubectl apply -f kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
+ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/druid/rotate-auth/yamls/Druid-rotate-auth-generated.yaml
  Druidopsrequest.ops.kubedb.com/druidops-rotate-auth-generated created
 ```
 Let's wait for `DruidOpsrequest` to be `Successful`. Run the following command to watch `DruidOpsrequest` CRO
@@ -374,7 +374,7 @@ spec:
   authentication:
     secretRef:
       kind: Secret
-      name: sample-druid-auth-user
+      name: druid-quickstart-auth-user
   timeout: 5m
   apply: IfReady
 ```
@@ -417,7 +417,7 @@ Spec:
   Apply:  IfReady
   Authentication:
     Secret Ref:
-      Name:  sample-druid-auth-user
+      Name:  druid-quickstart-auth-user
   Database Ref:
     Name:   druid-quickstart
   Timeout:  5m

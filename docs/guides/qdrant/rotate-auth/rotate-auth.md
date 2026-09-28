@@ -146,12 +146,15 @@ You can also rotate the authentication credentials using a custom secret that yo
 apiVersion: v1
 stringData:
   api-key: MyCus0mAPIKey
+  read-only-api-key: MyCus0mReadOnlyKey
 kind: Secret
 metadata:
   name: my-custom-auth-secret
   namespace: demo
 type: Opaque
 ```
+
+> **Note:** The custom auth secret must contain both `api-key` and `read-only-api-key`. If `read-only-api-key` is missing, the `RotateAuth` OpsRequest will not complete.
 
 Let's create the `Secret` we have shown above:
 

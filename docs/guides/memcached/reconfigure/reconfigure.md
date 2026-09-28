@@ -40,7 +40,7 @@ Now, we are going to deploy a  `Memcached` database using a supported version by
 
 ### Prepare Memcached Database
 
-Now, we are going to deploy a `Memcached` database with version `1.6.22`.
+Now, we are going to deploy a `Memcached` database with version `1.6.40`.
 
 ### Deploy Memcached 
 
@@ -75,7 +75,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "1.6.22"
+  version: "1.6.40"
   configuration:
     secretName: mc-configuration
   deletionPolicy: WipeOut
@@ -84,7 +84,7 @@ spec:
 Let's create the `Memcached` CR we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/sample-memcached-config.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/memcached-config.yaml
 memcached.kubedb.com/memcd-quickstart created
 ```
 
@@ -93,7 +93,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION     STATUS    AGE
-memcd-quickstart   1.6.22      Ready     23s
+memcd-quickstart   1.6.40      Ready     23s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -113,6 +113,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 500
@@ -175,7 +180,7 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/ops-request-reconfigure.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/config-secret-reconfigure.yaml
 memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
 ```
 
@@ -276,7 +281,7 @@ Now, wait until `memcd-quickstart` has status `Ready`. i.e,
 ```bash
 $ kubectl get mc -n demo
 NAME               VERSION     STATUS    AGE
-memcd-quickstart   1.6.22      Ready     20s
+memcd-quickstart   1.6.40      Ready     20s
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
@@ -296,6 +301,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 2000
@@ -341,7 +351,7 @@ Here,
 Let's create the `MemcachedOpsRequest` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/ops-request-reconfigure.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/reconfigure/apply-config-reconfigure.yaml
 memcachedopsrequest.ops.kubedb.com/memcd-reconfig created
 ```
 
@@ -453,6 +463,11 @@ $ telnet 127.0.0.1 11211
 Trying 127.0.0.1...
 Connected to 127.0.0.1.
 Escape character is '^]'.
+# Authenticate first. Without this, the server returns `CLIENT_ERROR unauthenticated`.
+# The value is the username and password (from the auth secret) separated by a space.
+set auth 0 0 21
+user tysiujogcmzapyhz
+STORED
 stats
 ...
 STAT max_connections 3000

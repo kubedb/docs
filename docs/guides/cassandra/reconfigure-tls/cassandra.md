@@ -48,7 +48,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -139,7 +139,7 @@ Now, Let's create an `Issuer` using the `cassandra-ca` secret that we have just 
 apiVersion: cert-manager.io/v1
 kind: Issuer
 metadata:
-  name: cassandra-ca-issuer
+  name: cas-issuer
   namespace: demo
 spec:
   ca:
@@ -169,7 +169,7 @@ spec:
     name: cassandra-prod
   tls:
     issuerRef:
-      name: cassandra-ca-issuer
+      name: cas-issuer
       kind: Issuer
       apiGroup: "cert-manager.io"
     certificates:
@@ -973,7 +973,7 @@ So, we can see from the above that, output that tls is disabled successfully.
 To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
-kubectl delete opsrequest casops-add-tls casops-remove casops-rotate casops-update-issuer
+kubectl delete opsrequest -n demo casops-add-tls casops-remove casops-rotate casops-update-issuer
 kubectl delete cassandra -n demo cassandra-prod
 kubectl delete issuer -n demo cas-issuer cas-new-issuer
 kubectl delete ns demo

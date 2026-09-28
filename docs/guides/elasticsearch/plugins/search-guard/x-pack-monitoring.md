@@ -338,7 +338,7 @@ Once everything is created, Elasticsearch will go to Running state. Check that E
 ```bash
 $ kubectl get es -n demo es-mon-demo
 NAME          VERSION    STATUS    AGE
-es-mon-demo   7.3.2   Running   1m
+es-mon-demo   searchguard-7.9.3   Running   1m
 ```
 
 Now, check elasticsearch log to see if the cluster is ready to accept requests,

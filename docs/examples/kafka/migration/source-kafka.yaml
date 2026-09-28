@@ -8,7 +8,7 @@ spec:
     kind: Secret
     name: source-kafka-auth
   replicas: 2
-  version: 3.9.0
+  version: 4.2.0
   storage:
     accessModes:
       - ReadWriteOnce

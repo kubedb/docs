@@ -9,6 +9,8 @@ spec:
   mode: Standalone
   podTemplate:
     spec:
+      imagePullSecrets:
+        - name: orclcred
       containers:
         - name: oracle
           resources:

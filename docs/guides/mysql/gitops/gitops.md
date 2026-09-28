@@ -378,7 +378,7 @@ mysql> show variables like 'read_buffer_size';
 
 ```
 At first, we will create a secret containing `user.conf` file with required configuration settings.
-To know more about this configuration file, check [here](/docs/guides/mysql/configuration/using-config-file.md)
+To know more about this configuration file, check the [Run MySQL with Custom Configuration](/docs/guides/mysql/configuration/config-file/index.md) guide.
 ```yaml
 apiVersion: v1
 stringData:
@@ -809,9 +809,9 @@ mysql> SHOW VARIABLES LIKE '%require_secure_transport%';
 
 ### Update Version
 
-List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for umyrade from current version. Check the version constraints and ops request [here](/docs/guides/mysql/update-version/versionumyrading/index.md).
+List MySQL versions using `kubectl get MySQLversion` and choose desired version that is compatible for upgrade from current version. Check the version constraints and ops request in the [Updating MySQL Overview](/docs/guides/mysql/update-version/overview/index.md).
 
-Let's choose `9.6.0` in this example.
+Let's choose `9.7.1` in this example.
 
 Update the `MySQL.yaml` with the following, 
 ```yaml
@@ -821,7 +821,7 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 4
   configSecret:
     name: my-config
@@ -865,7 +865,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Update the `version` field to `9.6.0`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
+Update the `version` field to `9.7.1`. Commit the changes and push to your Git repository. Your repository is synced with `ArgoCD` and the `MySQL` CR is updated in your cluster.
 
 Now, `gitops` operator will detect the version changes and create a `VersionUpdate` MySQLOpsRequest to update the `MySQL` database version. List the resources created by `gitops` operator in the `demo` namespace.
 
@@ -875,7 +875,7 @@ NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
+mysql.kubedb.com/my-gitops   9.7.1     Ready    22h
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   20h
@@ -893,11 +893,11 @@ Now, we are going to verify whether the `MySQL`, `PetSet` and it's `Pod` have up
 
 ```bash
 $ kubectl get MySQL -n demo my-gitops -o=jsonpath='{.spec.version}{"\n"}'
-9.6.0
+9.7.1
 $ kubectl get petset -n demo my-gitops -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+ghcr.io/appscode-images/mysql:9.7.1-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 $ kubectl get pod -n demo my-gitops-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/mysql:9.6.0-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
+ghcr.io/appscode-images/mysql:9.7.1-oracle@sha256:16e6b7b93df8aa255d3886ff33c2d78093d1cd2346522d14bf1b9cc0ad03a460
 ```
 
 ### Enable Monitoring
@@ -912,7 +912,7 @@ metadata:
   name: my-gitops
   namespace: demo
 spec:
-  version: "9.6.0"
+  version: "9.7.1"
   replicas: 4
   configSecret:
     name: my-config
@@ -965,7 +965,7 @@ NAME                                AGE
 mysql.gitops.kubedb.com/my-gitops   22h
 
 NAME                         VERSION   STATUS   AGE
-mysql.kubedb.com/my-gitops   9.6.0     Ready    22h
+mysql.kubedb.com/my-gitops   9.7.1     Ready    22h
 
 NAME                                                                TYPE                STATUS       AGE
 mysqlopsrequest.ops.kubedb.com/my-gitops-horizontalscaling-h542j4   HorizontalScaling   Successful   21h
@@ -983,10 +983,10 @@ Verify the monitoring is enabled by checking the prometheus targets.
 
 ## Next Steps
 
-- Learn MySQL [GitOps](/docs/guides/mysql/concepts/MySQL-gitops.md)
+- Learn MySQL [GitOps](/docs/guides/mysql/gitops/overview.md)
 - Learn MySQL Scaling 
   - [Horizontal Scaling](/docs/guides/mysql/scaling/horizontal-scaling/overview/index.md)
   - [Vertical Scaling](/docs/guides/mysql/scaling/vertical-scaling/overview/index.md)
-- Learn Version Update Ops Request and Constraints [here](/docs/guides/mysql/update-version/versionumyrading/index.md)
+- Learn Version Update Ops Request and Constraints in the [Updating MySQL Overview](/docs/guides/mysql/update-version/overview/index.md)
 - Monitor your MySQL database with KubeDB using [built-in Prometheus](/docs/guides/mysql/monitoring/using-builtin-prometheus.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

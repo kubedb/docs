@@ -41,19 +41,19 @@ metadata:
     app.kubernetes.io/name: kubedb-catalog
     app.kubernetes.io/version: v2024.8.21
     helm.sh/chart: kubedb-catalog-v2024.8.21
-  name: 1.6.22
+  name: 1.6.40
   resourceVersion: "2566"
   uid: 90041c04-21b8-4b39-a2a6-af2e6a2ccacd
 spec:
   db:
-    image: ghcr.io/appscode-images/memcached:1.6.22-alpine
+    image: ghcr.io/appscode-images/memcached:1.6.40-alpine
   exporter:
     image: ghcr.io/appscode-images/memcached_exporter:v0.14.3-ac
   podSecurityPolicies:
     databasePolicyName: memcached-db
   securityContext:
     runAsUser: 999
-  version: 1.6.22
+  version: 1.6.40
 ```
 
 ### metadata.name

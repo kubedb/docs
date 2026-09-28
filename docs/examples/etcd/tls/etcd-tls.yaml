@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-tls
+  namespace: demo
+spec:
+  version: 3.6.4
+  replicas: 3
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: etcd-ca-issuer
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut

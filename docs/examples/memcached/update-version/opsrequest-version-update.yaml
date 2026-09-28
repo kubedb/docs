@@ -8,4 +8,4 @@ spec:
   databaseRef:
     name: memcd-quickstart
   updateVersion:
-    targetVersion: 1.6.29
+    targetVersion: 1.6.40

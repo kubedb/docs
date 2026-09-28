@@ -4,7 +4,7 @@ metadata:
   name: zookeeper
   namespace: demo
 spec:
-  version: 3.8.3
+  version: 3.9.1
   replicas: 3
   storage:
     resources:

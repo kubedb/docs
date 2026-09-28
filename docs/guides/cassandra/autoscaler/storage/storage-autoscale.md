@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Cassa
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -59,7 +63,7 @@ Now, we are going to deploy a `Cassandra` cluster using a supported version by `
 
 #### Deploy Cassandra Cluster
 
-In this section, we are going to deploy a Cassandra cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
+In this section, we are going to deploy a Cassandra cluster with version `5.0.7`.  Then, in the next section we will set up autoscaling for this database using `CassandraAutoscaler` CRD. Below is the YAML of the `Cassandra` CR that we are going to create,
 
 > If you want to autoscale Cassandra `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -71,7 +75,7 @@ metadata:
   name: cassandra-autoscale
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -103,7 +107,7 @@ spec:
 Let's create the `Cassandra` CRO we have shown above,
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/autoscaling/storage/cassandra-autoscale.yaml
 cassandra.kubedb.com/cassandra-autoscale created
 ```
 
@@ -576,6 +580,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete cassandra -n demo cassandra-autoscale
-kubectl delete cassandraautoscaler -n demo casops-cassandra-autoscale-xojkua
+kubectl delete cassandraautoscaler -n demo cassandra-storage-autoscaler
 kubectl delete ns demo
 ```

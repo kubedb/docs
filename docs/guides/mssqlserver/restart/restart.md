@@ -78,7 +78,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

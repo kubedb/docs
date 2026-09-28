@@ -455,6 +455,7 @@ If you want to scale-up or scale-down your Kafka cluster or different components
 - `spec.verticalScaling.node` indicates the desired resources for combined Kafka cluster after scaling.
 - `spec.verticalScaling.broker` indicates the desired resources for broker of Kafka topology cluster after scaling.
 - `spec.verticalScaling.controller` indicates the desired resources for controller of Kafka topology cluster after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 > If the reference kafka object is combined cluster, then you can only specify `spec.verticalScaling.node` field. If the reference kafka object is topology cluster, then you can only specify `spec.verticalScaling.broker` or `spec.verticalScaling.controller` or both fields. You can not specify `spec.verticalScaling.node` field with any other fields at the same time, but you can specify `spec.verticalScaling.broker` and `spec.verticalScaling.controller` fields at the same time.
 

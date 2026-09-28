@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MSSQLServerOpsRequest
+metadata:
+  name: mops-vscale-standalone-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: mssql-standalone
+  verticalScaling:
+    mode: InPlace
+    mssqlserver:
+      resources:
+        requests:
+          memory: "5Gi"
+          cpu: "1000m"
+        limits:
+          memory: "5Gi"

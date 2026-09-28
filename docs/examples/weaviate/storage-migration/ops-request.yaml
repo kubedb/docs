@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: weaviate-sample
+  timeout: 10m 
+  migration:
+    storageClassName: local-path
+    oldPVReclaimPolicy: Delete

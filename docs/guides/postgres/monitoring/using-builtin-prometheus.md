@@ -49,7 +49,7 @@ metadata:
   name: builtin-prom-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "standard"

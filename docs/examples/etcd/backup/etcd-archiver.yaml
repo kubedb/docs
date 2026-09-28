@@ -1,0 +1,39 @@
+apiVersion: archiver.kubedb.com/v1alpha1
+kind: EtcdArchiver
+metadata:
+  name: etcd-archiver
+  namespace: demo
+spec:
+  databases:
+    namespaces:
+      from: Same
+    selector:
+      matchLabels:
+        archiver: "true"
+  backupStorage:
+    ref:
+      name: s3-storage
+      namespace: demo
+    subDir: etcd-archiver
+  retentionPolicy:
+    name: demo-retention
+    namespace: demo
+  encryptionSecret:
+    name: encrypt-secret
+    namespace: demo
+  fullBackup:
+    driver: Restic
+    scheduler:
+      successfulJobsHistoryLimit: 3
+      failedJobsHistoryLimit: 3
+      schedule: "0 */2 * * *"
+      jobTemplate:
+        backoffLimit: 1
+  manifestBackup:
+    scheduler:
+      successfulJobsHistoryLimit: 3
+      failedJobsHistoryLimit: 3
+      schedule: "0 */2 * * *"
+      jobTemplate:
+        backoffLimit: 1
+  deletionPolicy: WipeOut

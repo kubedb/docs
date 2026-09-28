@@ -5,7 +5,7 @@ metadata:
   name: ag2
   namespace: demo
 spec:
-  version: "2022-cu16"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: DistributedAG

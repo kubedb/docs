@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DocumentDBOpsRequest
+metadata:
+  name: documentdb-sa-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: documentdb-sa-sample
+  configuration:
+    applyConfig:
+      user.conf: |
+        max_connections=250

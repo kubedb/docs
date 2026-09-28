@@ -52,7 +52,7 @@ metadata:
   name: quick-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -67,7 +67,7 @@ spec:
 Create above Postgres object with following command
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/quickstart/quick-postgres-v1.yaml
 postgres.kubedb.com/quick-postgres created
 ```
 

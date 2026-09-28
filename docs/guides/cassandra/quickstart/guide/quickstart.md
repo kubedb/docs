@@ -62,7 +62,7 @@ NAME    VERSION   DB_IMAGE                                             DEPRECATE
 5.0.3   5.0.3     ghcr.io/appscode-images/cassandra-management:5.0.3                3m50s
 ```
 
-In this tutorial, we will use `5.0.3` CassandraVersion CR to create a Cassandra cluster.
+In this tutorial, we will use `5.0.7` CassandraVersion CR to create a Cassandra cluster.
 
 ## Create a Cassandra Cluster
 
@@ -77,7 +77,7 @@ metadata:
   name: cassandra-quickstart
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -93,7 +93,7 @@ spec:
 ```
 
 Here,
-- `spec.version` - is the name of the CassandraVersion CR. Here, a Cassandra of version `5.0.3` will be created.
+- `spec.version` - is the name of the CassandraVersion CR. Here, a Cassandra of version `5.0.7` will be created.
 - `spec.topology` - is the definition of the topology that will be deployed. This contains an array of racks definition.
 - `spec.deletionPolicy` specifies what KubeDB should do when a user try to delete Cassandra CR. Deletion policy `Delete` will delete the database pods and PVC when the Cassandra CR is deleted.
 

@@ -41,7 +41,7 @@ namespace/demo created
 
 ## Autoscaling of Ignite
 
-In this section, we are going to deploy a Ignite with version `2.17.0`  Then, in the next section we will set up autoscaling for this Ignite using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
+In this section, we are going to deploy a Ignite with version `2.18.0`  Then, in the next section we will set up autoscaling for this Ignite using `IgniteAutoscaler` CRD. Below is the YAML of the `Ignite` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -50,7 +50,7 @@ metadata:
   name: ignite-autoscale
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   replicas: 1
   storage:
     accessModes:
@@ -67,7 +67,7 @@ spec:
         - name: ignite
           resources:
             requests:
-              cpu: "0.5m"
+              cpu: "500m"
               memory: "1Gi"
             limits:
               cpu: "1"
@@ -86,7 +86,7 @@ Now, wait until `ignite-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME                 TYPE                  VERSION   STATUS   AGE
-ignite-autoscale     kubedb.com/v1alpha2   2.17.0     Ready    22s
+ignite-autoscale     kubedb.com/v1alpha2   2.18.0     Ready    22s
 ```
 
 Let's check the Pod containers resources,
@@ -99,7 +99,7 @@ $ kubectl get pod -n demo ignite-autoscale-0 -o json | jq '.spec.containers[].re
     "memory": "2Gi"
   },
   "requests": {
-    "cpu": "0.5m",
+    "cpu": "500m",
     "memory": "1Gi"
   }
 }
@@ -114,7 +114,7 @@ $ kubectl get ignite -n demo ignite-autoscale -o json | jq '.spec.podTemplate.sp
     "memory": "2Gi"
   },
   "requests": {
-    "cpu": "0.5m",
+    "cpu": "500m",
     "memory": "1Gi"
   }
 }
@@ -161,7 +161,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `ignite-autoscale`.
 - `spec.compute.ignite.trigger` specifies that compute resource autoscaling is enabled for this ignite.
 - `spec.compute.ignite.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
-- `spec.compute.ignite.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 10%.
+- `spec.compute.ignite.resourceDiffPercentage` specifies the minimum resource difference in percentage. The default is 50%.
   If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.ignite.minAllowed` specifies the minimum allowed resources for this ignite.
 - `spec.compute.ignite.maxAllowed` specifies the maximum allowed resources for this ignite.
@@ -173,7 +173,7 @@ Let's create the `IgniteAutoscaler` CR we have shown above,
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/autoscaling/compute/ignite-autoscaler.yaml
-igniteautoscaler.autoscaling.kubedb.com/ignite-autoscaler-ops created
+igniteautoscaler.autoscaling.kubedb.com/ignite-autoscale-ops created
 ```
 
 #### Verify Autoscaling is set up successfully

@@ -54,7 +54,7 @@ secret/license-secret created
 
 #### Deploy SingleStore Cluster
 
-In this section, we are going to deploy a SingleStore with version `8.7.10`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
+In this section, we are going to deploy a SingleStore with version `8.9.3`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -63,7 +63,7 @@ metadata:
   name: sdb-sample
   namespace: demo
 spec:
-  version: 8.7.10
+  version: 8.9.3
   topology:
     aggregator:
       replicas: 2
@@ -123,7 +123,7 @@ Now, wait until `sdb-sample` has status `Ready`. i.e,
 
 ```bash
 NAME                                TYPE                  VERSION   STATUS   AGE
-singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.7.10    Ready    4m35s
+singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.9.3    Ready    4m35s
 ```
 
 Let's check the aggregator pod containers resources,

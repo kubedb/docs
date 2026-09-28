@@ -71,7 +71,7 @@ spec:
   licenseSecret:
     name: hz-license-key
   replicas: 2
-  version: 5.5.2
+  version: 5.5.6
   storage:
     accessModes:
       - ReadWriteOnce
@@ -109,7 +109,7 @@ If you can access the map and retrieve values using the REST API, it means the s
 
 #### 1. Using operator generated credentials:
 
-In order to rotate authentication to the Hazelcast using operator generated, we have to create a `RabbitMQOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `HazelcastOpsRequest` CRO that we are going to create,
+In order to rotate authentication to the Hazelcast using operator generated, we have to create a `HazelcastOpsRequest` CRO with `RotateAuth` type. Below is the YAML of the `HazelcastOpsRequest` CRO that we are going to create,
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
 kind: HazelcastOpsRequest
@@ -208,7 +208,7 @@ Status:
     Status:                True
     Type:                  RunningPod--hazelcast-quickstart-1
     Last Transition Time:  2025-08-18T06:57:06Z
-    Message:               Successfully completed reconfigure Ignite
+    Message:               Successfully completed reconfigure Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True
@@ -373,7 +373,7 @@ Status:
     Status:                True
     Type:                  RunningPod--hazelcast-quickstart-1
     Last Transition Time:  2025-08-18T07:13:21Z
-    Message:               Successfully completed reconfigure Ignite
+    Message:               Successfully completed reconfigure Hazelcast
     Observed Generation:   1
     Reason:                Successful
     Status:                True

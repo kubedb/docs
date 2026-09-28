@@ -84,7 +84,7 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
+  - apps.k8s.appscode.com
   resourceNames:
   - quick-postgres
   resources:
@@ -176,7 +176,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: quick-postgres
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:
@@ -256,9 +256,9 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
+  - apps.k8s.appscode.com
   resourceNames:
-  - miniute-postgres
+  - minute-postgres
   resources:
   - petsets
   verbs:
@@ -266,7 +266,7 @@ rules:
 - apiGroups:
   - ""
   resourceNames:
-  - miniute-postgres-leader-lock
+  - minute-postgres-leader-lock
   resources:
   - configmaps
   verbs:
@@ -301,7 +301,7 @@ metadata:
     app.kubernetes.io/component: database
     app.kubernetes.io/instance: quick-postgres
 spec:
-  version: "13.13"
+  version: "18.3"
   storageType: Durable
   podTemplate:
     spec:

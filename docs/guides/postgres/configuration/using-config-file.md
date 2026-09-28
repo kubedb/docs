@@ -54,7 +54,7 @@ shared_buffers=256MB
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
+$ kubectl create secret generic -n demo pg-configuration --from-literal=user.conf="$(curl -fsSL https://raw.githubusercontent.com/kubedb/docs/{{< param "info.version" >}}/docs/examples/postgres/custom-config/user.conf)"
 secret/pg-configuration created
 ```
 
@@ -80,7 +80,7 @@ metadata:
 Now, create Postgres crd specifying `spec.configuration.secretName` field.
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/configuration/pg-configuration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/postgres/custom-config/pg-custom-config.yaml
 postgres.kubedb.com/custom-postgres created
 ```
 
@@ -93,7 +93,7 @@ metadata:
   name: custom-postgres
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   configuration:
     secretName: pg-configuration
   storage:
@@ -156,7 +156,7 @@ Now, we will check if the database has started with the custom configuration we 
  / #
  ## login as user "postgres". no authentication required from inside the pod because it is using trust authentication local connection.
 / # psql -U postgres
-psql (9.6.7)
+psql (18.3)
 Type "help" for help.
 
 ## query for "max_connections"

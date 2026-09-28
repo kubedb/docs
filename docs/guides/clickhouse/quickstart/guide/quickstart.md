@@ -65,7 +65,7 @@ metadata:
   name: clickhouse-quickstart
   namespace: demo
 spec:
-  version: 24.4.1
+  version: 26.2.6
   replicas: 1
   storage:
     accessModes:
@@ -83,7 +83,7 @@ clickhouse.kubedb.com/clickhouse-quickstart created
 
 Here,
 
-- `spec.version` is the name of the ClickHouseVersion CRD where the docker images are specified. In this tutorial, a ClickHouse `24.4.1` database is going to be created.
+- `spec.version` is the name of the ClickHouseVersion CRD where the docker images are specified. In this tutorial, a ClickHouse `26.2.6` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for ClickHouse database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create ClickHouse database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
 - `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `ClickHouse` crd or which resources KubeDB should keep or delete when you delete `ClickHouse` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
@@ -291,7 +291,7 @@ spec:
       requests:
         storage: 1Gi
   storageType: Durable
-  version: 24.4.1
+  version: 26.2.6
 status:
   conditions:
     - lastTransitionTime: "2025-09-03T10:06:06Z"

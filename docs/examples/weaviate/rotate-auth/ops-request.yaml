@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: weaviate-rotate-auth-generated
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: weaviate-sample
+  authentication:
+    secretRef:
+      kind: Secret
+      name: weaviate-rotate-auth
+  timeout: 5m
+  apply: IfReady

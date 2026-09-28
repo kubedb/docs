@@ -68,7 +68,7 @@ metadata:
   name: sdb-sample
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   init:
     script:
       configMap:
@@ -139,7 +139,7 @@ kind: Singlestore
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-sample","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","init":{"script":{"configMap":{"name":"sdb-init-script"}}},"licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"600m","memory":"2Gi"},"requests":{"cpu":"600m","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"600m","memory":"2Gi"},"requests":{"cpu":"600m","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.7.10"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"Singlestore","metadata":{"annotations":{},"name":"sdb-sample","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","init":{"script":{"configMap":{"name":"sdb-init-script"}}},"licenseSecret":{"name":"license-secret"},"storageType":"Durable","topology":{"aggregator":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"600m","memory":"2Gi"},"requests":{"cpu":"600m","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"standard"}},"leaf":{"podTemplate":{"spec":{"containers":[{"name":"singlestore","resources":{"limits":{"cpu":"600m","memory":"2Gi"},"requests":{"cpu":"600m","memory":"2Gi"}}}]}},"replicas":2,"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"10Gi"}},"storageClassName":"standard"}}},"version":"8.9.3"}}
   creationTimestamp: "2024-10-03T07:00:56Z"
   finalizers:
   - kubedb.com
@@ -150,7 +150,7 @@ metadata:
   uid: ccfe9d0e-6f13-4187-b652-4e157a21568e
 spec:
   authSecret:
-    name: sdb-sample-root-cred
+    name: sdb-sample-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 1
@@ -303,7 +303,7 @@ spec:
           requests:
             storage: 10Gi
         storageClassName: standard
-  version: 8.7.10
+  version: 8.9.3
 status:
   conditions:
   - lastTransitionTime: "2024-10-03T07:01:02Z"

@@ -1,0 +1,24 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: prom-etcd
+  namespace: demo
+spec:
+  version: 3.6.4
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+  deletionPolicy: WipeOut

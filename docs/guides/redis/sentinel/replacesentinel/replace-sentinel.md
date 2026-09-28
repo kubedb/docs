@@ -42,7 +42,7 @@ Here, we are going to deploy a  `Redis` and `RedisSentinel` instance using a sup
 
 ### Prepare RedisSentinel
 
-Now, we are going to deploy a `RedisSentinel` version `6.2.14`.
+Now, we are going to deploy a `RedisSentinel` version `8.2.2`.
 ```yaml
 apiVersion: kubedb.com/v1
 kind: RedisSentinel
@@ -50,7 +50,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:
@@ -86,7 +86,7 @@ metadata:
   name: rd-demo
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   sentinelRef:
     name: sen-demo
@@ -175,7 +175,7 @@ metadata:
   name: new-sentinel
   namespace: demo
 spec:
-  version: 6.2.14
+  version: 8.2.2
   replicas: 3
   storageType: Durable
   storage:

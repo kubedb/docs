@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: SinglestoreOpsRequest
+metadata:
+  name: sdbops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: sample-sdb
+  verticalScaling:
+    mode: InPlace
+    aggregator:
+      resources:
+        requests:
+          memory: "2500Mi"
+          cpu: "0.7"
+        limits:
+          memory: "2500Mi"
+          cpu: "0.7"

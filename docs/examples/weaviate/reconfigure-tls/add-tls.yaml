@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: WeaviateOpsRequest
+metadata:
+  name: weaviate-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: weaviate-sample
+
+  tls:
+    issuerRef:
+      name: weaviate-issuer
+      kind: Issuer
+      apiGroup: cert-manager.io
+
+  timeout: 5m
+  apply: IfReady

@@ -146,7 +146,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.4.4-debian"
+  version: "3.0.1-debian"
   replicas: 1
   backend:
     name: xtradb-galera-appbinding

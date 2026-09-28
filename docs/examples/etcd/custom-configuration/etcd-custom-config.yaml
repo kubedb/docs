@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-custom-config
+  namespace: demo
+spec:
+  version: 3.6.4
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  configuration:
+    tuning:
+      quotaBackendBytes: 8589934592
+      autoCompactionMode: periodic
+      autoCompactionRetention: "1h"
+      snapshotCount: 10000
+  deletionPolicy: WipeOut

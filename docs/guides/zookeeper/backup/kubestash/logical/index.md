@@ -68,7 +68,7 @@ metadata:
   name: sample-zookeeper
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -94,7 +94,7 @@ Let's check if the zookeeper is ready to use,
 ```bash
 $ kubectl get zk -n demo sample-zookeeper
 NAME               VERSION   STATUS   AGE
-sample-zookeeper   8.3.3     Ready    5m1s
+sample-zookeeper   3.9.1     Ready    5m1s
 ```
 
 The zookeeper is `Ready`. Verify that KubeDB has created a `Secret` and a `Service` for this zookeeper using the following commands,
@@ -121,7 +121,7 @@ Verify that the `AppBinding` has been created successfully using the following c
 ```bash
 $ kubectl get appbindings -n demo
 NAME                       TYPE                   VERSION    AGE
-sample-zookeeper           kubedb.com/zookeeper   3.8.3      9m30s
+sample-zookeeper           kubedb.com/zookeeper   3.9.1      9m30s
 ```
 
 Let's check the YAML of the above `AppBinding`,
@@ -169,7 +169,7 @@ spec:
   secret:
     name: sample-zookeeper-auth
   type: kubedb.com/zookeeper
-  version: 3.8.3
+  version: 3.9.1
 ```
 
 KubeStash uses the `AppBinding` CR to connect with the target database. It requires the following two fields to set in AppBinding's `.spec` section.
@@ -364,7 +364,7 @@ spec:
 Let's create the `BackupConfiguration` CR that we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/kubestash/logical/examples/backupconfiguration.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/zookeeper/backup/kubestash/logical/examples/backupconfiguration.yaml
 backupconfiguration.core.kubestash.com/sample-zookeeper-backup created
 ```
 
@@ -458,7 +458,7 @@ metadata:
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: s3-zookeeper-repo
   annotations:
-    kubedb.com/db-version: "3.8.3"
+    kubedb.com/db-version: "3.9.1"
   name: s3-zookeeper-repo-sample-zookeeper-backup-frequent-backup-1726572962
   namespace: demo
   ownerReferences:
@@ -492,10 +492,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-interim/data
-        id: cd20fca1a2bf6a97e669cb9eacdc74a312a08266da92b9d687aad88841e1205d
-        size: 3.345 KiB
-        uploaded: 299 B
+      - summary:
+          hostPath: /kubestash-interim/data
+          id: cd20fca1a2bf6a97e669cb9eacdc74a312a08266da92b9d687aad88841e1205d
+          size: 3.345 KiB
+          uploaded: 299 B
       size: 2.202 KiB
   conditions:
   - lastTransitionTime: "2024-09-04T11:30:00Z"
@@ -538,7 +539,7 @@ metadata:
   name: restored-zookeeper
   namespace: demo
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:
@@ -562,7 +563,7 @@ If you check the database status, you will see it is stuck in **`Provisioning`**
 ```bash
 $ kubectl get zookeeper -n demo restored-zookeeper
 NAME                 VERSION   STATUS         AGE
-restored-zookeeper   3.8.3     Provisioning   61s
+restored-zookeeper   3.9.1     Provisioning   61s
 ```
 
 #### Create RestoreSession:
@@ -614,7 +615,7 @@ Once, you have created the `RestoreSession` object, KubeStash will create restor
 $ watch kubectl get restoresession -n demo
 Every 2.0s: kubectl get restores... AppsCode-PC-03: Wed Aug 21 10:44:05 2024
 NAME                      REPOSITORY          FAILURE-POLICY   PHASE       DURATION   AGE
-sample-zookeeper-restore   gcs-zookeeper-repo                    Succeeded   7s         116s
+sample-zookeeper-restore   s3-zookeeper-repo                     Succeeded   7s         116s
 ```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
@@ -628,7 +629,7 @@ At first, check if the database has gone into **`Ready`** state by the following
 ```bash
 $ kubectl get zookeeper -n demo restored-zookeeper
 NAME                 VERSION   STATUS   AGE
-restored-zookeeper   8.3.1      Ready    6m31s
+restored-zookeeper   3.9.1      Ready    6m31s
 ```
 
 Now, find out the database `Pod` by the following command,
@@ -680,7 +681,7 @@ To cleanup the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete backupconfigurations.core.kubestash.com  -n demo sample-zookeeper-backup
-kubectl delete restoresessions.core.kubestash.com -n demo restore-sample-zookeeper
+kubectl delete restoresessions.core.kubestash.com -n demo sample-zookeeper-restore
 kubectl delete retentionpolicies.storage.kubestash.com -n demo demo-retention
 kubectl delete backupstorage -n demo s3-storage
 kubectl delete secret -n demo s3-secret

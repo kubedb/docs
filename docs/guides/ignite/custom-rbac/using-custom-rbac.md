@@ -39,7 +39,7 @@ If a service account name is given, but there's no existing service account by t
 
 If a service account name is given, and there's an existing service account by that name, the KubeDB operator will use that existing service account. Since this service account is not managed by KubeDB, users are responsible for providing necessary access permissions manually.
 
-This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Ignite instance named `quick-ignite` to provide the bare minimum access permissions.
+This guide will show you how to create custom `Service Account`, `Role`, and `RoleBinding` for a Ignite instance named `ignite-quickstart` to provide the bare minimum access permissions.
 
 ## Custom RBAC for Ignite
 
@@ -67,7 +67,7 @@ secrets:
 - name: myserviceaccount-token-t8zxd
 ```
 
-Now, we need to create a role that has necessary access permissions for the Ignite instance named `quick-ignite`.
+Now, we need to create a role that has necessary access permissions for the Ignite instance named `ignite-quickstart`.
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-role.yaml
@@ -144,7 +144,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "2.17.0"
+  version: "2.18.0"
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -160,7 +160,7 @@ spec:
   deletionPolicy: DoNotTerminate
 ```
 
-Now, wait a few minutes. the KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-ignite-0` has been created.
+Now, wait a few minutes. the KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we should see that a pod with the name `ignite-quickstart-0` has been created.
 
 Check that the pod is running:
 
@@ -180,7 +180,7 @@ Now, create Ignite crd `minute-ignite` using the existing service account name `
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/ignite/custom-rbac/ig-custom-db-two.yaml
-ignite.kubedb.com/ignite-quickstart created
+ignite.kubedb.com/minute-ignite created
 ```
 
 Below is the YAML for the Ignite crd we just created.
@@ -193,7 +193,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "2.17.0"
+  version: "2.18.0"
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount

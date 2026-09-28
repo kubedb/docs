@@ -54,7 +54,7 @@ linode-block-storage  linodebs.csi.linode.com   Delete          Immediate       
 
 We can see the output from the `linode-block-storage` storage class has `ALLOWVOLUMEEXPANSION` field as true. So, this storage class supports volume expansion. We can use it.
 
-Now, we are going to deploy a `Postgres` standalone database with version `13.13`.
+Now, we are going to deploy a `Postgres` standalone database with version `18.3`.
 
 #### Deploy Postgres standalone
 
@@ -67,7 +67,7 @@ metadata:
   name: pg-standalone
   namespace: demo
 spec:
-  version: "13.13"
+  version: "18.3"
   replicas: 1
   standbyMode: Hot
   storageType: Durable
@@ -93,13 +93,13 @@ Now, wait until `pg-standalone` has status `Ready`. i.e,
 ```bash
 $ kubectl get pg -n demo
 NAME            VERSION    STATUS    AGE
-pg-standalone   13.13      Ready     3m47s
+pg-standalone   18.3      Ready     3m47s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "10Gi"
 
 $ kubectl get pv -n demo
@@ -233,7 +233,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the standalone database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo pg-standalone -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "12Gi"
 
 $ kubectl get pv -n demo

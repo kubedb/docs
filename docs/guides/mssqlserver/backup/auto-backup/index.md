@@ -248,7 +248,7 @@ metadata:
     blueprint.kubestash.com/name: mssqlserver-default-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 1
   storageType: Durable
   tls:
@@ -615,7 +615,7 @@ metadata:
     variables.kubestash.com/targetName: sample-mssqlserver-2
     variables.kubestash.com/targetedDatabase: agdb1
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

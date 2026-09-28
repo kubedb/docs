@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Singl
 
 - Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -66,7 +70,7 @@ secret/license-secret created
 
 #### Deploy SingleStore Cluster
 
-In this section, we are going to deploy a SingleStore with version `8.7.10`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
+In this section, we are going to deploy a SingleStore with version `8.9.3`.  Then, in the next section we will set up autoscaling for this database using `SingleStoreAutoscaler` CRD. Below is the YAML of the `SingleStore` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -75,7 +79,7 @@ metadata:
   name: sdb-sample
   namespace: demo
 spec:
-  version: 8.7.10
+  version: 8.9.3
   topology:
     aggregator:
       replicas: 2
@@ -135,7 +139,7 @@ Now, wait until `sdb-sample` has status `Ready`. i.e,
 
 ```bash
 NAME                                TYPE                  VERSION   STATUS   AGE
-singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.7.10    Ready    4m35s
+singlestore.kubedb.com/sdb-sample   kubedb.com/v1alpha2   8.9.3    Ready    4m35s
 ```
 
 > **Note:** You can manage storage autoscale for aggregator and leaf nodes separately. Here, we will focus on leaf nodes.

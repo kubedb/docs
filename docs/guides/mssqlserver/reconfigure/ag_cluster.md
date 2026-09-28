@@ -43,7 +43,7 @@ Now, we are going to deploy a  `MSSQLServer` Availability Group using a supporte
 
 ### Prepare MSSQLServer Availability Group
 
-Now, we are going to deploy a `MSSQLServer` Availability Group with version `2022-cu12`.
+Now, we are going to deploy a `MSSQLServer` Availability Group with version `2025-cu0`.
 
 ### Deploy MSSQLServer Availability Group Cluster
 
@@ -106,7 +106,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   configuration:
     secretName: ms-custom-config
   replicas: 3
@@ -177,7 +177,7 @@ mssql@mssqlserver-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 2048
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  
@@ -363,7 +363,7 @@ mssql@mssqlserver-ag-cluster-0:/$ cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 2560
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  
@@ -544,7 +544,7 @@ mssql@mssqlserver-ag-cluster-0:/$  cat /var/opt/mssql/mssql.conf
 lcid = 1033
 [memory]
 memorylimitmb = 3072
-mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt
+mssql@mssqlserver-ag-cluster-0:/$ /opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P gkBGX7RE0ap4yjHt -No
 1> SELECT physical_memory_kb / 1024 AS physical_memory_mb FROM sys.dm_os_sys_info;
 2> go
 physical_memory_mb  

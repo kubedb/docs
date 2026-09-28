@@ -96,6 +96,10 @@ To see all available upgrade targets before proceeding:
 
 ```bash
 kubectl get neo4jversions
+NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
+2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
+2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
 ```
 
 ---
@@ -205,10 +209,13 @@ Common causes include image pull failures, insufficient node resources, or a ver
 The version must exist as a `Neo4jVersion` catalog entry in your cluster. If the version you want is missing from the list, your KubeDB catalog is outdated:
 
 ```bash
-kubectl get neo4jversions | grep 2025
+NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
+2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
+2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
+2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
 ```
 
-Update your KubeDB operator to get the latest catalog, or check the [supported versions list](/docs/guides/neo4j/README.md).
+Update your KubeDB operator to get the latest catalog.
 
 **Neo4j stuck in `Critical` and does not recover**
 

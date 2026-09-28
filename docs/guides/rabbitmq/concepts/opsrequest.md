@@ -26,7 +26,7 @@ Here, some sample `RabbitMQOpsRequest` CRs for different administrative operatio
 
 **Sample `RabbitMQOpsRequest` for updating database:**
 
-Let's assume that you have a KubeDB managed RabbitMQ cluster named `rm-quickstart` running on your kubernetes with version `3.12.12`. Now, You can update it's version to `3.13.2` using the following manifest.
+Let's assume that you have a KubeDB managed RabbitMQ cluster named `rm-quickstart` running on your kubernetes with version `4.0.4`. Now, You can update it's version to `4.2.4` using the following manifest.
 
 ```yaml
 apiVersion: ops.kubedb.com/v1alpha1
@@ -39,7 +39,7 @@ spec:
   databaseRef:
     name: rm-quickstart
   updateVersion:
-    targetVersion: 3.13.2
+    targetVersion: 4.2.4
 ```
 
 **Sample `RabbitMQOpsRequest` Objects for Horizontal Scaling of the database Cluster:**
@@ -264,6 +264,7 @@ If you want to scale-up or scale-down your RabbitMQ cluster or different compone
 `spec.verticalScaling` is a required field specifying the information of `RabbitMQ` resources like `cpu`, `memory` etc. that will be scaled. This field consists of the following sub-fields:
 
 - `spec.verticalScaling.node` indicates the desired resources for PetSet of RabbitMQ after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 It has the below structure:
 

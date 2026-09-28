@@ -40,11 +40,11 @@ Now, we are going to deploy a  `Ignite` cluster using a supported version by `Ku
 
 ### Prepare Ignite Database
 
-Now, we are going to deploy a `Ignite` cluster with version `2.17.0`.
+Now, we are going to deploy a `Ignite` cluster with version `2.18.0`.
 
 ### Deploy Ignite
 
-At first, we will create `ignite.conf` file containing required configuration settings.
+At first, we will create `node-configuration.xml` file containing required configuration settings.
 
 Now, we will create a secret with this configuration file.
 
@@ -62,7 +62,7 @@ metadata:
   name: ig-cluster
   namespace: demo
 spec:
-  version: "2.17.0"
+  version: "2.18.0"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -87,17 +87,17 @@ Now, wait until `ig-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get ig -n demo
 NAME            TYPE                  VERSION   STATUS   AGE
-ig-cluster      kubedb.com/v1alpha2   2.17.0    Ready    79m
+ig-cluster      kubedb.com/v1alpha2   2.18.0    Ready    79m
 ```
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
 First we need to get the username and password to connect to a Ignite instance,
 ```bash
-$ kubectl get secrets -n demo ig-cluster-admin-cred -o jsonpath='{.data.\username}' | base64 -d
-admin
+$ kubectl get secrets -n demo ig-cluster-auth -o jsonpath='{.data.username}' | base64 -d
+ignite
 
-$ kubectl get secrets -n demo ig-cluster-admin-cred  -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo ig-cluster-auth  -o jsonpath='{.data.password}' | base64 -d
 m6lXjZugrC4VEpB8
 ```
 
@@ -106,7 +106,7 @@ m6lXjZugrC4VEpB8
 Now, we will create a new secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo new-custom-config --from-file=./ignite.conf
+$ kubectl create secret generic -n demo new-custom-config --from-file=./node-configuration.xml
 secret/new-custom-config created
 ```
 
@@ -133,7 +133,7 @@ spec:
 
 Here,
 
-- `spec.databaseRef.name` specifies that we are reconfiguring `igps-reconfigure` database.
+- `spec.databaseRef.name` specifies that we are reconfiguring `ig-cluster` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
 - Have a look [here](/docs/guides/ignite/concepts/opsrequest.md#specconfiguration) on the respective sections to understand the `readinessCriteria`, `timeout` & `apply` fields.

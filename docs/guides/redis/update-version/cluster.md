@@ -39,7 +39,7 @@ namespace/demo created
 
 ### Prepare Redis Cluster Database
 
-Now, we are going to deploy a `Redis` cluster database with version `6.2.14`.
+Now, we are going to deploy a `Redis` cluster database with version `7.4.6`.
 
 ### Deploy Redis cluster :
 
@@ -52,7 +52,7 @@ metadata:
   name: redis-cluster
   namespace: demo
 spec:
-  version: 6.0.20
+  version: 7.4.6
   mode: Cluster
   cluster:
     shards: 3
@@ -87,7 +87,7 @@ We are now ready to apply the `RedisOpsRequest` CR to update this database.
 
 ### Update Redis Version
 
-Here, we are going to update `Redis` cluster from `6.0.20` to `7.0.14`.
+Here, we are going to update `Redis` cluster from `7.4.6` to `8.2.2`.
 
 #### Create RedisOpsRequest:
 
@@ -104,14 +104,14 @@ spec:
   databaseRef:
     name: redis-cluster
   updateVersion:
-    targetVersion: 7.0.14
+    targetVersion: 8.2.2
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `redis-cluster` Redis database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `7.0.14`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.2.2`.
 
 Let's create the `RedisOpsRequest` CR we have shown above,
 

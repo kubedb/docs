@@ -29,7 +29,7 @@ To uninstall KubeDB, run the following command:
 
 ## Using Helm 3
 
-In Helm 3, release names are [scoped to a namespace](https://v3.helm.sh/docs/faq/#release-names-are-now-scoped-to-the-namespace). So, provide the namespace you used to install the operator when installing.
+In Helm 3, release names are [scoped to a namespace](https://helm.sh/docs/v3/faq/changes_since_helm2/). So, provide the namespace you used to install the operator when installing.
 
 ```bash
 $ helm uninstall kubedb --namespace kubedb

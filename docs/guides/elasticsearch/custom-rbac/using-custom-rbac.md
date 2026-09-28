@@ -142,7 +142,7 @@ metadata:
   name: quick-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   podTemplate:
     spec:
       serviceAccountName: my-custom-serviceaccount
@@ -160,7 +160,7 @@ spec:
 ```bash
 $ kubectl get es -n demo
 NAME                  VERSION   STATUS    AGE
-quick-elasticsearch   7.3.2     Running   74s
+quick-elasticsearch   9.2.3     Running   74s
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `quick-elasticsearch-0` has been created.
@@ -193,7 +193,7 @@ metadata:
   name: minute-elasticsearch
   namespace: demo
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   storageType: Durable
   podTemplate:
     spec:
@@ -211,8 +211,8 @@ spec:
 ```bash
 $ kubectl get es -n demo
 NAME                   VERSION   STATUS    AGE
-minute-elasticsearch   7.3.2     Running   59s
-quick-elasticsearch    7.3.2     Running   3m17s
+minute-elasticsearch   9.2.3     Running   59s
+quick-elasticsearch    9.2.3     Running   3m17s
 ```
 
 Now, wait a few minutes. the KubeDB operator will create necessary PVC, petset, services, secret etc. If everything goes well, we should see that a pod with the name `minute-elasticsearch-0` has been created.

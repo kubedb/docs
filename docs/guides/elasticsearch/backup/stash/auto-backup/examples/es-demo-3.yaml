@@ -7,7 +7,7 @@ metadata:
     stash.appscode.com/backup-blueprint: elasticsearch-backup-template
     params.stash.appscode.com/args: --ignoreType=settings,template
 spec:
-  version: xpack-8.19.9
+  version: xpack-9.2.3
   replicas: 1
   storageType: Durable
   storage:

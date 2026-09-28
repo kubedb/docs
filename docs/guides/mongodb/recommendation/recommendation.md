@@ -64,7 +64,7 @@ metadata:
   name: mg-recommendation
   namespace: demo
 spec:
-  version: "8.0.10"
+  version: "8.0.17"
   authSecret:
     kind: Secret
     name: mg-auth
@@ -104,7 +104,7 @@ metadata:
   name: mg-tls
   namespace: demo
 spec:
-  version: "8.0.10"
+  version: "8.0.17"
   tls:
     issuerRef:
       apiGroup: "cert-manager.io"
@@ -144,7 +144,7 @@ metadata:
   name: mg-recommendation
   namespace: demo
 spec:
-  version: "8.0.10"
+  version: "8.0.17"
   storage:
     resources:
       requests:

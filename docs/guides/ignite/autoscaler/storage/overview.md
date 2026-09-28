@@ -12,7 +12,7 @@ section_menu_id: guides
 
 > New to KubeDB? Please start [here](/docs/README.md).
 
-# Ignite Vertical Autoscaling
+# Ignite Storage Autoscaling
 
 This guide will give an overview on how KubeDB Autoscaler operator autoscales the database storage using `Igniteautoscaler` crd.
 

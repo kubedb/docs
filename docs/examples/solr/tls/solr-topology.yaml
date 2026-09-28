@@ -19,7 +19,7 @@ spec:
           - localhost
         ipAddresses:
           - "127.0.0.1"
-  version: 9.4.1
+  version: 9.8.0
   zookeeperRef:
     name: zoo
     namespace: demo

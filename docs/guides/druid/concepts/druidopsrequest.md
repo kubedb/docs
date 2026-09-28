@@ -38,7 +38,7 @@ spec:
   databaseRef:
     name: druid-prod
   updateVersion:
-    targetVersion: 30.0.1
+    targetVersion: 36.0.0
 status:
   conditions:
     - lastTransitionTime: "2024-07-25T18:22:38Z"
@@ -324,6 +324,7 @@ If you want to scale-up or scale-down your Druid cluster or different components
 - `spec.verticalScaling.routers` indicates the desired resources for routers of Druid topology cluster after scaling.
 - `spec.verticalScaling.historicals` indicates the desired resources for historicals of Druid topology cluster after scaling.
 - `spec.verticalScaling.middleManagers` indicates the desired resources for middleManagers of Druid topology cluster after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 All of them has the below structure:
 
@@ -357,10 +358,11 @@ Example usage of this field is given below:
 ```yaml
 spec:
   volumeExpansion:
-    node: "2Gi"
+    historicals: "2Gi"
+    middleManagers: "2Gi"
 ```
 
-This will expand the volume size of all the combined nodes to 2 GB.
+This will expand the volume size of the `historicals` and `middleManagers` nodes to 2 GB.
 
 ### spec.configuration
 
@@ -377,7 +379,7 @@ middleManagers.properties: |
 
 - `applyConfig` contains the new custom config as a string which will be merged with the previous configuration.
 
-- `applyConfig` is a map where key supports 3 values, namely `server.properties`, `broker.properties`, `controller.properties`. And value represents the corresponding configurations.
+- `applyConfig` is a map where key supports values like `common.runtime.properties`, `coordinators.properties`, `overlords.properties`, `brokers.properties`, `routers.properties`, `historicals.properties` and `middleManagers.properties`. And value represents the corresponding configurations.
 
 ```yaml
   applyConfig:

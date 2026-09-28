@@ -65,10 +65,11 @@ NAME            VERSION   DISTRIBUTION   DB_IMAGE                               
 9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 45h
 9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 45h
 9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 45h
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 45h
 ```
 
 
-The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `8.4.8`.
+The version above that does not show `DEPRECATED` `true` is supported by `KubeDB` for `MySQL`. You can use any non-deprecated version. Here, we are going to create a MySQL Group Replication using `MySQL`  `9.7.1`.
 
 **Deploy MySQL Cluster:**
 
@@ -103,7 +104,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: GroupReplication
@@ -184,7 +185,7 @@ metadata:
   name: my-group
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.7.1"
   replicas: 3
   topology:
     mode: SemiSync
@@ -228,8 +229,8 @@ Every 3.0s: kubectl get my -n demo my-group                     suaas-appscode: 
 NAME       VERSION   STATUS    AGE
 my-group   8.4.8    Running   16m
 
-$ watch -n 3 kubectl get sts -n demo my-group
-Every 3.0s: kubectl get sts -n demo my-group                     Every 3.0s: kubectl get sts -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
+$ watch -n 3 kubectl get petset -n demo my-group
+Every 3.0s: kubectl get petset -n demo my-group                     Every 3.0s: kubectl get petset -n demo my-group                    suaas-appscode: Tue Jun 30 22:44:35 2020
 
 NAME       READY   AGE
 my-group   3/3     16m
@@ -246,10 +247,10 @@ my-group-2   2/2     Running   0          11m
 Let's verify that the PetSet's pods have joined into a group replication cluster,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 sWfUMoqRpOJyomgb
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=sWfUMoqRpOJyomgb --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -383,10 +384,10 @@ Events:
 Now, we are going to verify whether the number of members has increased to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 Y28qkWFQ8QHVzq2h
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=Y28qkWFQ8QHVzq2h --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"
@@ -516,10 +517,10 @@ Events:
 Now, we are going to verify whether the number of members has decreased to meet up the desired state, Let's check,
 
 ```bash
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo my-group-auth -o jsonpath='{.data.password}' | base64 -d
 Y28qkWFQ8QHVzq2h
 
 $ kubectl exec -it -n demo my-group-0 -c mysql -- mysql -u root --password=5pwciRRUWHhSJ6qQ --host=my-group-0.my-group-pods.demo -e "select * from performance_schema.replication_group_members"

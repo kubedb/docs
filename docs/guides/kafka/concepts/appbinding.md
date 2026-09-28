@@ -70,7 +70,7 @@ spec:
   tlsSecret:
     name: kafka-client-cert
   type: kubedb.com/kafka
-  version: 4.0.0
+  version: 4.2.0
 ```
 
 Here, we are going to describe the sections of an `AppBinding` crd.

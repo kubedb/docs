@@ -53,7 +53,7 @@ metadata:
   name: builtin-prom-sl
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   replicas: 2
   enableSSL: true
   monitor:

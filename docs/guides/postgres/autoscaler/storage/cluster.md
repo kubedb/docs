@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Postg
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -57,7 +61,7 @@ Now, we are going to deploy a `Postgres` cluster using a supported version by `K
 
 #### Deploy Postgres Cluster
 
-In this section, we are going to deploy a Postgres cluster database with version `16.1`.  Then, in the next section we will set up autoscaling for this database using `PostgresAutoscaler` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
+In this section, we are going to deploy a Postgres cluster database with version `18.3`.  Then, in the next section we will set up autoscaling for this database using `PostgresAutoscaler` CRD. Below is the YAML of the `Postgres` CR that we are going to create,
 
 > If you want to autoscale Postgres `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -68,7 +72,7 @@ metadata:
   name: ha-postgres
   namespace: demo
 spec:
-  version: "16.1"
+  version: "18.3"
   replicas: 3
   storageType: Durable
   storage:
@@ -93,7 +97,7 @@ Now, wait until `ha-postgres` has status `Ready`. i.e,
 ```bash
 $ kubectl get postgres -n demo
 NAME             VERSION   STATUS   AGE
-ha-postgres        16.1    Ready    3m46s
+ha-postgres        18.3    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ClickHouseOpsRequest
+metadata:
+  name: ch-scale-vertical-cluster-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: clickhouse-prod
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "3"
+        limits:
+          memory: "3Gi"
+          cpu: "3"

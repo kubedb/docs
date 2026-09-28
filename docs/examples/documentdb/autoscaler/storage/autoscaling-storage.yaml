@@ -1,0 +1,33 @@
+# STORAGE autoscaler for DocumentDB.
+# The storage loop reads PVC usage from the custom-metrics API (volume_used_percentage)
+# for the DB's pods. When usage% > usageThreshold, it computes a new size from
+# scalingRules and creates a VolumeExpansion DocumentDBOpsRequest (capped at upperBound)
+# using expansionMode.
+#
+# IMPORTANT: the DocumentDB storage autoscaler computes the scaled size ONLY from
+# `scalingRules[].threshold` (see GetVolumeForOpsReq) -- the simpler top-level
+# `scalingThreshold` field is NOT read by this controller path. You MUST provide
+# scalingRules or NO ops request is ever created. A single rule with empty
+# appliesUpto applies to all sizes; threshold "50%" grows capacity by 50%.
+#
+# REQUIRES: an expandable StorageClass (provision the DB with autoscaling-storage-object.yaml)
+# AND the custom.metrics.k8s.io API (storage-metrics-apiserver) -- metrics-server
+# alone is NOT enough. The autoscaler ServiceAccount also needs get/list on
+# custom.metrics.k8s.io (added to ClusterRole kubedb-kubedb-autoscaler).
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: DocumentDBAutoscaler
+metadata:
+  name: dcdb-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: dcdb
+  storage:
+    documentdb:
+      trigger: "On"           # "On" | "Off"
+      usageThreshold: 60       # scale when PVC usage% is > 60
+      scalingRules:            # REQUIRED: drives the new size (scalingThreshold is ignored here)
+        - appliesUpto: ""      # empty = applies to all current sizes
+          threshold: 50%       # grow capacity by 50% (e.g. 2Gi -> 3Gi)
+      expansionMode: "Online"  # Online | Offline (Online needs online-resize-capable CSI)
+      upperBound: 10Gi         # never grow past this

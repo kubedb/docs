@@ -67,7 +67,7 @@ spec:
   secret:
     name: ch-cluster-auth
   type: kubedb.com/clickhouse
-  version: 24.4.1
+  version: 26.2.6
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 

@@ -1,0 +1,23 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: MilvusAutoscaler
+metadata:
+  name: milvus-standalone-compute-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: milvus-standalone
+  compute:
+    node:
+      trigger: "On"
+      podLifeTimeThreshold: 1m
+      minAllowed:
+        cpu: 100m
+        memory: 256Mi
+      maxAllowed:
+        cpu: 1000m
+        memory: 2Gi
+      resourceDiffPercentage: 10
+      controlledResources: ["cpu", "memory"]
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 5m

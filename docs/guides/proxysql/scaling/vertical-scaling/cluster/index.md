@@ -72,7 +72,7 @@ Here, we are going to deploy a  `ProxySQL` cluster using a supported version by 
 
 ### Prepare ProxySQL Cluster
 
-Now, we are going to deploy a `ProxySQL` cluster database with version `2.3.2-debian`.
+Now, we are going to deploy a `ProxySQL` cluster database with version `3.0.1-debian`.
 
 In this section, we are going to deploy a ProxySQL cluster. Then, in the next section we will update the resources of the servers using `ProxySQLOpsRequest` CRD. Below is the YAML of the `ProxySQL` CR that we are going to create,
 
@@ -83,7 +83,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "3.0.1-debian"
   replicas: 3
   backend:
     name: mysql-server
@@ -114,7 +114,7 @@ Now, wait until `proxy-server` has status `Ready`. i.e,
 ```bash
 $ kubectl get proxysql -n demo
 NAME             VERSION         STATUS     AGE
-proxy-server    2.3.2-debian     Ready     3m46s
+proxy-server    3.0.1-debian     Ready     3m46s
 ```
 
 Let's check the Pod containers resources,
@@ -171,6 +171,7 @@ Here,
 - `spec.proxyRef.name` specifies that we are performing vertical scaling operation on `proxy-server` instance.
 - `spec.type` specifies that we are performing `VerticalScaling` on our server.
 - `spec.verticalScaling.proxysql` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](../overview/#vertical-scaling-modes).
 
 Let's create the `ProxySQLOpsRequest` CR we have shown above,
 
@@ -209,6 +210,41 @@ $ kubectl get pod -n demo proxy-server-0 -o json | jq '.spec.containers[].resour
 ```
 
 The above output verifies that we have successfully scaled up the resources of the ProxySQL instance.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`ProxySQLOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: proxyops-vscale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  proxyRef:
+    name: proxy-server
+  verticalScaling:
+    mode: InPlace
+    proxysql:
+      resources:
+        requests:
+          memory: "1.2Gi"
+          cpu: "0.6"
+        limits:
+          memory: "1.2Gi"
+          cpu: "0.6"
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/scaling/vertical-scaling/cluster/example/proxyops-vscale-inplace.yaml
+proxysqlopsrequest.ops.kubedb.com/proxyops-vscale-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

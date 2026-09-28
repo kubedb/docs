@@ -49,17 +49,22 @@ When you have installed KubeDB, it has created `MySQLVersion` crd for all suppor
 
 ```bash
 $ kubectl get mysqlversions
-5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                29h
-8.4.8          8.4.8    Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                29h
-8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                29h
-8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                29h
-8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                29h
-8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 29h
-8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 29h
-8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 29h
-8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 29h
-9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 29h
-8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 29h
+NAME            VERSION   DISTRIBUTION   DB_IMAGE                                      DEPRECATED   AGE
+5.7.42-debian   5.7.42    Official       ghcr.io/appscode-images/mysql:5.7.42-debian                10d
+5.7.44          5.7.44    Official       ghcr.io/appscode-images/mysql:5.7.44-oracle                10d
+8.0.31-innodb   8.0.31    MySQL          ghcr.io/appscode-images/mysql:8.0.31-oracle                10d
+8.0.35          8.0.35    Official       ghcr.io/appscode-images/mysql:8.0.35-oracle                10d
+8.0.36          8.0.36    Official       ghcr.io/appscode-images/mysql:8.0.36-debian                10d
+8.1.0           8.1.0     Official       ghcr.io/appscode-images/mysql:8.1.0-oracle                 10d
+8.2.0           8.2.0     Official       ghcr.io/appscode-images/mysql:8.2.0-oracle                 10d
+8.4.2           8.4.2     Official       ghcr.io/appscode-images/mysql:8.4.2-oracle                 10d
+8.4.3           8.4.3     Official       ghcr.io/appscode-images/mysql:8.4.3-oracle                 10d
+8.4.8           8.4.8     Official       ghcr.io/appscode-images/mysql:8.4.8-oracle                 10d
+9.0.1           9.0.1     Official       ghcr.io/appscode-images/mysql:9.0.1-oracle                 10d
+9.1.0           9.1.0     Official       ghcr.io/appscode-images/mysql:9.1.0-oracle                 10d
+9.4.0           9.4.0     Official       ghcr.io/appscode-images/mysql:9.4.0-oracle                 10d
+9.6.0           9.6.0     Official       ghcr.io/appscode-images/mysql:9.6.0-oracle                 10d
+9.7.1           9.7.1     Official       ghcr.io/appscode-images/mysql:9.7.1-oracle                 2d1h
 ```
 
 ## Create a MySQL database
@@ -75,7 +80,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.7.1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -99,7 +104,7 @@ metadata:
   name: mysql-quickstart
   namespace: demo
 spec:
-  version: "8.4.8"
+  version: "9.7.1"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -120,7 +125,7 @@ Here,
 
 - `spec.version` is the name of the MySQLVersion CRD where the docker images are specified. In this tutorial, a MySQL `8.4.8` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for MySQL database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create MySQL database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
-- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the StatefulSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
+- `spec.storage` specifies the StorageClass of PVC dynamically allocated to store data for this database. This storage spec will be passed to the PetSet created by KubeDB operator to run database pods. You can specify any StorageClass available in your cluster with appropriate resource requests.
 - `spec.terminationPolicy` or `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `MySQL` crd or which resources KubeDB should keep or delete when you delete `MySQL` crd. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.terminationPolicy` is set to `DoNotTerminate`. Learn details of all `TerminationPolicy` [here](/docs/guides/mysql/concepts/database/index.md#specterminationpolicy)
 
 > Note: spec.storage section is used to create PVC for database pod. It will create PVC with storage size specified instorage.resources.requests field. Don't specify limits here. PVC does not get resized automatically.
@@ -307,7 +312,7 @@ spec:
   storageType: Durable
   deletionPolicy: Delete
   useAddressType: DNS
-  version: 8.4.8
+  version: 9.7.1
 status:
   conditions:
   - lastTransitionTime: "2022-06-03T06:50:40Z"
@@ -353,10 +358,10 @@ Now, we need `username` and `password` to connect to this database from `kubectl
 $ kubectl get pods mysql-quickstart-0 -n demo -o yaml | grep podIP
   podIP: 10.244.0.30
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 root
 
-$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mysql-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 H(Y.s)pg&cX1Ds3J
 ```
 we will exec into the pod `mysql-quickstart-0` and connect to the database using username and password
@@ -514,7 +519,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      23h
 secret/mysql-quickstart-auth   Opaque                                2      20h
@@ -543,7 +548,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 NAME                           TYPE                                  DATA   AGE
 secret/default-token-lgbjm     kubernetes.io/service-account-token   3      24h
 secret/mysql-quickstart-auth   Opaque
@@ -567,7 +572,7 @@ mysql.kubedb.com "mysql-quickstart" deleted
 Now, run the following command to get all mysql resources in `demo` namespaces,
 
 ```bash
-$ kubectl get sts,svc,secret,pvc -n demo
+$ kubectl get petset,svc,secret,pvc -n demo
 No resources found in demo namespace.
 ```
 
@@ -584,7 +589,7 @@ Suppose we have a database running `mysql-quickstart` in our cluster. Now, we ar
 Run the following command to get MySQL resources,
 
 ```bash
-$ kubectl get my,sts,secret,svc,pvc -n demo
+$ kubectl get my,petset,secret,svc,pvc -n demo
 NAME                                VERSION   STATUS   AGE
 mysql.kubedb.com/mysql-quickstart   8.4.8    Halted   22m
 

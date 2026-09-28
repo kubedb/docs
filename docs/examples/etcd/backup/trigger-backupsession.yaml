@@ -1,0 +1,11 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupSession
+metadata:
+  name: manual-full-backup
+  namespace: demo
+spec:
+  invoker:
+    apiGroup: core.kubestash.com
+    kind: BackupConfiguration
+    name: sample-etcd-archiver
+  session: full-backup

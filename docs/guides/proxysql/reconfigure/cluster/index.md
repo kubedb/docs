@@ -85,7 +85,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"  
+  version: "3.0.1-debian"  
   replicas: 3
   backend:
     name: mysql-server
@@ -102,7 +102,7 @@ Let's wait for the ProxySQL to be Ready.
 ```bash
 $ kubectl get proxysql -ndemo               
 NAME           VERSION        STATUS   AGE
-proxy-server   2.3.2-debian   Ready    98s
+proxy-server   3.0.1-debian   Ready    98s
 ```
 
 ## Reconfigure MYSQL USERS

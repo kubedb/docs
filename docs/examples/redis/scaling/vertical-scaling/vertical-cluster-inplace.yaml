@@ -1,0 +1,19 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: RedisOpsRequest
+metadata:
+  name: redisops-vertical-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: redis-cluster
+  verticalScaling:
+    mode: InPlace
+    redis:
+      resources:
+        requests:
+          memory: "300Mi"
+          cpu: "200m"
+        limits:
+          memory: "800Mi"
+          cpu: "500m"

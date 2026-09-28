@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-add-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: hanadb-cluster
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: hdb-ca-issuer
+  timeout: 30m
+  apply: IfReady

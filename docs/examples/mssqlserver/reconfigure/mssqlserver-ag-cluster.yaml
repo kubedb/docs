@@ -4,7 +4,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   configuration:
     secretName: ms-custom-config
   replicas: 3

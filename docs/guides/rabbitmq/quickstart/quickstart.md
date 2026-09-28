@@ -64,7 +64,7 @@ metadata:
   name: rm-quickstart
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -99,7 +99,7 @@ rabbitmq.kubedb.com/rm-quickstart created
 Here,
 
 - `.spec.replica` is used to provide the number of required replicas or, peers for intended rabbitmq cluster. 
-- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `3.13.2` database is going to be created.
+- `spec.version` is the name of the RabbitMQVersion CRD where the docker images are specified. In this tutorial, a RabbitMQ `4.2.4` database is going to be created.
 - `spec.storageType` specifies the type of storage that will be used for RabbitMQ database. It can be `Durable` or `Ephemeral`. Default value of this field is `Durable`. If `Ephemeral` is used then KubeDB will create RabbitMQ database using `EmptyDir` volume. In this case, you don't have to specify `spec.storage` field. This is useful for testing purposes.
   - `spec.deletionPolicy` gives flexibility whether to `nullify`(reject) the delete operation of `RabbitMQ` CRD or which resources KubeDB should keep or delete when you delete `RabbitMQ` CRD. If admission webhook is enabled, It prevents users from deleting the database as long as the `spec.deletionPolicy` is set to `DoNotTerminate`. Learn details of all `DeletionPolicy` [here](/docs/guides/rabbitmq/concepts/rabbitmq.md#specdeletionpolicy)
 - `.spec.podTemplate` is used to provide specific pod specifications or container specification. You can override default resources, securityContext etc.  set for rabbitmq container. Find details [here](https://kubernetes.io/docs/reference/kubernetes-api/workload-resources/pod-v1/#PodSpec)
@@ -134,7 +134,7 @@ rm-quickstart-pods        ClusterIP      None            <none>           4369/T
 
 $ kubectl get appbinding -n demo
 NAME            TYPE                  VERSION   AGE
-rm-quickstart   kubedb.com/rabbitmq   3.13.2    23h
+rm-quickstart   kubedb.com/rabbitmq   4.2.4    23h
 ```
 
 KubeDB operator sets the `status.phase` to `Running` once the database is successfully created. Run the following command to see the modified `RabbitMQ` object:
@@ -148,7 +148,7 @@ kind: RabbitMQ
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"3.13.2"}}
+      {"apiVersion":"kubedb.com/v1alpha2","kind":"RabbitMQ","metadata":{"annotations":{},"name":"rm-quickstart","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"rabbitmq","resources":{"limits":{"cpu":2,"memory":"2Gi"},"requests":{"cpu":0.5,"memory":"1Gi"}}}]}},"replicas":3,"serviceTemplates":[{"alias":"primary","spec":{"type":"LoadBalancer"}}],"storage":{"accessModes":["ReadWriteOnce"],"resources":{"requests":{"storage":"1Gi"}},"storageClassName":"linode-block-storage"},"storageType":"Durable","version":"4.2.4"}}
   creationTimestamp: "2024-09-10T09:23:57Z"
   finalizers:
   - kubedb.com/rabbitmq
@@ -160,7 +160,7 @@ metadata:
 spec:
   authSecret:
     kind: Secret
-    name: rm-quickstart-admin-cred
+    name: rm-quickstart-auth
   deletionPolicy: WipeOut
   healthChecker:
     failureThreshold: 3
@@ -218,7 +218,7 @@ spec:
         storage: 1Gi
     storageClassName: standard
   storageType: Durable
-  version: 3.13.2
+  version: 4.2.4
 status:
   conditions:
   - lastTransitionTime: "2024-09-10T09:23:57Z"
@@ -268,16 +268,16 @@ status:
 
 ## Connect with RabbitMQ database
 
-Unless provided by the user in `.spec.authSecret.name` field, KubeDB operator creates a new Secret called `rm-quickstart-admin-cred` *(format: {rabbitmq-object-name}-admin-cred)* for storing the password for `admin` user who has administrative authorizations over `/` vhost of RabbitMQ cluster. This secret contains a `username` key which contains the *username* for RabbitMQ `admin` user and a `password` key which contains the *password* for this user.
+Unless provided by the user in `.spec.authSecret.name` field, KubeDB operator creates a new Secret called `rm-quickstart-auth` *(format: {rabbitmq-object-name}-auth)* for storing the password for `admin` user who has administrative authorizations over `/` vhost of RabbitMQ cluster. This secret contains a `username` key which contains the *username* for RabbitMQ `admin` user and a `password` key which contains the *password* for this user.
 
 If you want to use an existing secret please specify that when creating the RabbitMQ object using `spec.authSecret.name`. While creating this secret manually, make sure the secret contains these two keys containing data `username` and `password` and also make sure of using `admin` as value of `username`.
 
 Now, we need `username` and `password` to connect to this database. 
 
 ```bash
-$ kubectl get secrets -n demo rm-quickstart-admin-cred -o jsonpath='{.data.username}' | base64 -d
+$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.username}' | base64 -d
 admin
-$ kubectl get secrets -n demo rm-quickstart-admin-cred -o jsonpath='{.data.password}' | base64 -d
+$ kubectl get secrets -n demo rm-quickstart-auth -o jsonpath='{.data.password}' | base64 -d
 password
 ```
 We can check client connectivity using an opensource load-testing tool called `perf-test`. It runs producers and consumers to continuously publish and consume messages in RabbitMQ cluster. Here's how to run it on kubernetes using the credentials and the address for operator generated primary service.
@@ -355,7 +355,7 @@ Now, run the following command to get all rabbitmq resources in `demo` namespace
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/rm-quickstart-admin-cred   kubernetes.io/basic-auth   2      3m35s
+secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      3m35s
 
 NAME                                 STATUS   VOLUME                                     CAPACITY   ACCESS MODES   STORAGECLASS   VOLUMEATTRIBUTESCLASS   AGE
 rm-quickstart-data-rm-quickstart-0   Bound    pvc-596bd8de-4123-40fd-a8d1-a864b9acddc2   1Gi        RWO            standard       <unset>                 6m38s
@@ -386,7 +386,7 @@ Now, run the following command to get all RabbitMQ resources in `demo` namespace
 ```bash
 $ kubectl get petset,svc,secret,pvc -n demo
 NAME                              TYPE                       DATA   AGE
-secret/rm-quickstart-admin-cred   kubernetes.io/basic-auth   2      17m
+secret/rm-quickstart-auth   kubernetes.io/basic-auth   2      17m
 ```
 
 From the above output, you can see that all RabbitMQ resources(`PetSet`, `Service`, `PVCs` etc.) are deleted except `Secret`.

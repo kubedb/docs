@@ -1,0 +1,17 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-mig
+  namespace: demo
+spec:
+  clientAuthMode: md5
+  standbyMode: Hot
+  replicas: 1
+  storage:
+    accessModes: [ReadWriteOnce]
+    resources:
+      requests:
+        storage: 10Gi          # must hold the full source database plus WAL
+  storageType: Durable
+  deletionPolicy: Halt
+  version: "17.4"              # must match the source's MAJOR version

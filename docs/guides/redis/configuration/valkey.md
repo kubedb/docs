@@ -61,7 +61,7 @@ maxclients 425
 Now, create a Secret with this configuration file.
 
 ```bash
-$ kubectl create secret generic -n demo rd-configuration --from-file=./redis.conf
+$ kubectl create secret generic -n demo rd-configuration --from-file=./valkey.conf
 secret/rd-configuration created
 ```
 

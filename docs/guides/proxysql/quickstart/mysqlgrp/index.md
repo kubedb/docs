@@ -160,7 +160,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "3.0.1-debian"
   replicas: 1
   syncUsers: true
   backend:
@@ -183,7 +183,7 @@ metadata:
   name: proxy-server
   namespace: demo
 spec:
-  version: "2.3.2-debian"
+  version: "3.0.1-debian"
   replicas: 1
   syncUsers: true
   backend:
@@ -192,18 +192,18 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/quickstart/mysqlgrp/examples/sample-proxysql-v1alpha2.yaml
   proxysql.kubedb.com/proxysql-server created
 ```
 
-This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-2.3.2 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
+This is the simplest version of a KubeDB ProxySQL server. Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have written 1, so the operator will create a single node ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend MySQL server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
 $ kubectl get proxysql -n demo
 NAME           VERSION        STATUS   AGE
-proxy-server   2.3.2-debian   Ready    4m
+proxy-server   3.0.1-debian   Ready    4m
 ```
 
 Let's check the pod.

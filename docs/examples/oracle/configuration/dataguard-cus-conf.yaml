@@ -1,0 +1,26 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: dataguard-cus-conf
+  namespace: demo
+spec:
+  configuration:
+    secretName: oracle-custom-config
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  version: "21.3.0"
+  edition: enterprise
+  mode: DataGuard
+  storageType: Durable
+  replicas: 3
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+
+  deletionPolicy: WipeOut

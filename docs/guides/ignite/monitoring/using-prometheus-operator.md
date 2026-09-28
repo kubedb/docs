@@ -43,9 +43,75 @@ The following diagram shows how KubeDB Provisioner operator monitor `Ignite` usi
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/ignite](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/ignite) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Configuration
+
+> Step 1 (`kube-prometheus-stack`) is required to follow this tutorial. Step 2 (Panopticon) is **not** needed for the Prometheus Operator / ServiceMonitor scraping documented on this page — install it only if you also plan to use the KubeDB Grafana dashboards' status panels, or phase-based Alerting. If you have already completed the step(s) you need in another guide, skip ahead.
+
+### Step 1: Deploy kube-prometheus-stack
+
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes. This is where Grafana itself gets installed for this tutorial track — the Grafana Dashboard guide's "Access Grafana" step assumes it's already running from here; you do not install Grafana again there.
+
+Add the prometheus-community Helm repo and install:
+
+```bash
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm repo update
+
+$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.image.tag=7.5.5
+```
+
+Wait for all pods to be ready:
+
+```bash
+$ kubectl get pods -n monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
+prometheus-grafana-xxxx                                3/3     Running   0          2m
+prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
+prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
+prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
+```
+
+Find the `serviceMonitorSelector` label that Prometheus uses to pick up `ServiceMonitor` objects. You will need this label when enabling monitoring on the Ignite instance.
+
+```bash
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+{"matchLabels":{"release":"prometheus"}}
+```
+
+The label is `release: prometheus`.
+
+### Step 2: Install Panopticon (optional — only for Grafana dashboards & Alerting)
+
+Panopticon is the Appscode operator that reads `MetricsConfiguration` objects (created by `kubedb-metrics`) and exposes them to Prometheus. It is **not required** for the Prometheus Operator / ServiceMonitor scraping covered on this page — skip it, and skip enabling `kubedb-metrics` too, if you only need raw metrics in Prometheus. Install it only if you also plan to use the phase/status panels of the KubeDB Grafana dashboards, or phase-based Alerting — and install it **before** enabling `kubedb-metrics`.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
 ## Find out required labels for ServiceMonitor
 
-We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of Ignite crd so that KubeDB creates `ServiceMonitor` object accordingly.
+We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.serviceMonitor.labels` field of Ignite crd so that KubeDB creates `ServiceMonitor` object accordingly.
 
 At first, let's find out the available Prometheus server in our cluster.
 
@@ -168,7 +234,7 @@ status:
   updatedReplicas: 1
 ```
 
-Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.labels` field of Ignite crd.
+Notice the `spec.serviceMonitorSelector` section. Here, `release: prometheus` label is used to select `ServiceMonitor` crd. So, we are going to use this label in `spec.monitor.prometheus.serviceMonitor.labels` field of Ignite crd.
 
 ## Deploy Ignite with Monitoring Enabled
 
@@ -182,7 +248,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 1
-  version: "2.17.0"
+  version: "2.18.0"
   deletionPolicy: WipeOut
   podTemplate:
     spec:
@@ -206,11 +272,10 @@ spec:
 
 Here,
 - `monitor.agent:  prometheus.io/operator` indicates that we are going to monitor this server using Prometheus operator.
-- `monitor.prometheus.namespace: monitoring` specifies that KubeDB should create `ServiceMonitor` in `monitoring` namespace.
 
-- `monitor.prometheus.labels` specifies that KubeDB should create `ServiceMonitor` with these labels.
+- `monitor.prometheus.serviceMonitor.labels` specifies that KubeDB should create `ServiceMonitor` with these labels. The `ServiceMonitor` is created in the same namespace as the database.
 
-- `monitor.prometheus.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
+- `monitor.prometheus.serviceMonitor.interval` indicates that the Prometheus server should scrape metrics from this database with 10 seconds interval.
 
 Let's create the Ignite object that we have shown above,
 
@@ -224,7 +289,7 @@ Now, wait for the database to go into `Running` state.
 ```bash
 $ kubectl get ig -n demo ignite
 NAME        VERSION   STATUS   AGE
-ignite      2.17.0    Ready    2m
+ignite      2.18.0    Ready    2m
 ```
 
 KubeDB will create a separate stats service with name `{Ignite crd name}-stats` for monitoring purpose.
@@ -232,8 +297,8 @@ KubeDB will create a separate stats service with name `{Ignite crd name}-stats` 
 ```bash
 $ kubectl get svc -n demo --selector="app.kubernetes.io/instance=ignite"
 NAME              TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)     AGE
-ignite            ClusterIP   10.96.91.51   <none>        11211/TCP   3m9s
-ignite-pods       ClusterIP   None          <none>        11211/TCP   3m9s
+ignite            ClusterIP   10.96.91.51   <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   3m9s
+ignite-pods       ClusterIP   None          <none>        8080/TCP,10800/TCP,47500/TCP,47100/TCP   3m9s
 ignite-stats      ClusterIP   10.96.50.21   <none>        56790/TCP   3m9s
 ```
 
@@ -319,7 +384,7 @@ spec:
 
 Notice that the `ServiceMonitor` has label `release: prometheus` that we had specified in Ignite crd.
 
-Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `ignite-stats` service. It also, target the `prom-http` port that we have seen in the stats service.
+Also notice that the `ServiceMonitor` has selector which match the labels we have seen in the `ignite-stats` service. It also, target the `metrics` port that we have seen in the stats service.
 
 ## Verify Monitoring Metrics
 
@@ -341,7 +406,7 @@ Forwarding from 127.0.0.1:9090 -> 9090
 Forwarding from [::1]:9090 -> 9090
 ```
 
-Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `prom-http` endpoint of `ignite-stats` service as one of the targets.
+Now, we can access the dashboard at `localhost:9090`. Open [http://localhost:9090](http://localhost:9090) in your browser. You should see `metrics` endpoint of `ignite-stats` service as one of the targets.
 
 <p align="center">
   <img alt="Prometheus Target" src="/docs/images/ignite/monitoring/ig-coreos-prom-target.png" style="padding:10px">
@@ -366,7 +431,7 @@ kubectl delete -n monitoring service prometheus-operated
 
 # cleanup prometheus operator resources
 kubectl delete -n monitoring deployment prometheus-operator
-kubectl delete -n dmeo serviceaccount prometheus-operator
+kubectl delete -n demo serviceaccount prometheus-operator
 kubectl delete clusterrolebinding prometheus-operator
 kubectl delete clusterrole prometheus-operator
 

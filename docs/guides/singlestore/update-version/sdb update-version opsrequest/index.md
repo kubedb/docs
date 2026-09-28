@@ -48,7 +48,7 @@ $ kubectl create secret generic -n demo license-secret \
 secret/license-secret created
 ```
 
-Now, we are going to deploy a `SingleStore` cluster database with version `8.5.30`.
+Now, we are going to deploy a `SingleStore` cluster database with version `8.7.21`.
 
 ### Deploy SingleStore cluster
 
@@ -61,7 +61,7 @@ metadata:
   name: sample-sdb
   namespace: demo
 spec:
-  version: "8.5.30"
+  version: "8.7.21"
   topology:
     aggregator:
       replicas: 1
@@ -123,14 +123,14 @@ Now, wait until `sample-sdb` created has status `Ready`. i.e,
 ```bash
 $ kubectl get sdb -n demo
 NAME         TYPE                  VERSION   STATUS   AGE
-sample-sdb   kubedb.com/v1alpha2   8.5.30    Ready    4m37s
+sample-sdb   kubedb.com/v1alpha2   8.7.21    Ready    4m37s
 ```
 
 We are now ready to apply the `SingleStoreOpsRequest` CR to update this database.
 
 ### update SingleStore Version
 
-Here, we are going to update `SingleStore` cluster from `8.5.30` to `8.7.10`.
+Here, we are going to update `SingleStore` cluster from `8.7.21` to `8.9.3`.
 
 #### Create SingleStoreOpsRequest:
 
@@ -147,14 +147,14 @@ spec:
   databaseRef:
     name: sample-sdb
   updateVersion:
-    targetVersion: "8.7.10"
+    targetVersion: "8.9.3"
 ```
 
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `sample-sdb` SingleStore database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.7.10`.
+- `spec.updateVersion.targetVersion` specifies the expected version of the database `8.9.3`.
 
 Let's create the `SingleStoreOpsRequest` CR we have shown above,
 
@@ -181,19 +181,19 @@ Now, we are going to verify whether the `SingleStore` and the related `PetSets` 
 
 ```bash
 $ kubectl get sdb -n demo sample-sdb -o=jsonpath='{.spec.version}{"\n"}'
-8.7.10
+8.9.3
 
 $ kubectl get petset -n demo sample-sdb-aggregator -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
 
 $ kubectl get petset -n demo sample-sdb-leaf -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
 
 $ kubectl get pods -n demo sample-sdb-aggregator-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
 
 $ kubectl get pods -n demo sample-sdb-leaf-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-ghcr.io/appscode-images/singlestore-node:alma-8.7.10-95e2357384
+ghcr.io/appscode-images/singlestore-node:alma-8.9.3-bfa36a984a
 ```
 
 You can see from above, our `SingleStore` cluster database has been updated with the new version. So, the update process is successfully completed.

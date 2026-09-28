@@ -4,11 +4,11 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.4.1
+  version: 9.8.0
   deletionPolicy: Halt
   replicas: 2
   zookeeperRef:
-    name: zk-com
+    name: zoo-com
     namespace: demo
   storage:
     accessModes:

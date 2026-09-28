@@ -71,7 +71,7 @@ metadata:
   name: custom-memcached
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   podTemplate:
     spec:
@@ -146,7 +146,7 @@ metadata:
   name: memcached-custom-sidecar
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   podTemplate:
     spec:
@@ -195,7 +195,7 @@ kind: Memcached
 metadata:
   annotations:
     kubectl.kubernetes.io/last-applied-configuration: |
-      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcached-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"100m","memory":"100Mi"},"requests":{"cpu":"100m","memory":"100Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"1.6.22"}}
+      {"apiVersion":"kubedb.com/v1","kind":"Memcached","metadata":{"annotations":{},"name":"memcached-custom-sidecar","namespace":"demo"},"spec":{"deletionPolicy":"WipeOut","podTemplate":{"spec":{"containers":[{"name":"memcached","resources":{"limits":{"cpu":"100m","memory":"100Mi"},"requests":{"cpu":"100m","memory":"100Mi"}}},{"image":"evanraisul/custom_filebeat:latest","name":"filebeat","resources":{"limits":{"cpu":"300m","memory":"300Mi"},"requests":{"cpu":"300m","memory":"300Mi"}}}]}},"replicas":1,"version":"1.6.40"}}
   creationTimestamp: "2024-12-02T10:59:59Z"
   finalizers:
   - kubedb.com
@@ -250,7 +250,7 @@ spec:
         fsGroup: 999
       serviceAccountName: memcached-custom-sidecar
   replicas: 1
-  version: 1.6.22
+  version: 1.6.40
 status:
   conditions:
   - lastTransitionTime: "2024-12-02T10:59:59Z"
@@ -343,7 +343,7 @@ metadata:
   name: memcached-node-selector
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   podTemplate:
     spec:
@@ -432,12 +432,12 @@ metadata:
   name: memcached-without-tolerations
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   deletionPolicy: WipeOut
 ```
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/memcached-without-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/without-toleration.yaml
 memcached.kubedb.com/memcached-without-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-without-tolerations-0` has been created and running.
@@ -470,7 +470,7 @@ IPs:              <none>
 Controlled By:    PetSet/memcached-without-tolerations
 Containers:
   memcached:
-    Image:           ghcr.io/appscode-images/memcached:1.6.22-alpine
+    Image:           ghcr.io/appscode-images/memcached:1.6.40-alpine
     Ports:           11211/TCP
     Host Ports:      0/TCP, 0/TCP
     SeccompProfile:  RuntimeDefault
@@ -544,7 +544,7 @@ metadata:
   name: memcached-with-tolerations
   namespace: demo
 spec:
-  version: "1.6.22"
+  version: "1.6.40"
   replicas: 1
   podTemplate:
     spec:
@@ -557,7 +557,7 @@ spec:
 ```
 
 ```bash
-$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/configuration/with-tolerations.yaml
+$ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/memcached/custom-config/with-tolerations.yaml
 memcached.kubedb.com/memcached-with-tolerations created
 ```
 Now, wait a few minutes. KubeDB operator will create necessary petset, services, secret etc. If everything goes well, we will see that a pod with the name `memcached-with-tolerations-0` has been created.

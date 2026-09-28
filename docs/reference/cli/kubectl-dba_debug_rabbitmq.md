@@ -10,7 +10,7 @@ section_menu_id: reference
 ---
 ## kubectl-dba debug rabbitmq
 
-Debug helper for Rabbitmq database
+Debug helper for RabbitMQ database
 
 ```
 kubectl-dba debug rabbitmq [flags]

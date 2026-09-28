@@ -47,6 +47,7 @@ KubeDB supports the following RabbitMQ Versions.
 - `3.12.12`
 - `3.13.2`
 - `4.0.4`
+- `4.2.4`
 
 ## Life Cycle of a RabbitMQ Object
 

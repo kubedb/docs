@@ -42,7 +42,7 @@ Here, we are going to deploy a `Hazelcast` database using a supported version by
 
 ### Prepare Hazelcast Database
 
-Now, we are going to deploy a `Hazelcast` database with version `5.5.2`.
+Now, we are going to deploy a `Hazelcast` database with version `5.5.6`.
 
 ### Deploy Hazelcast
 
@@ -67,7 +67,7 @@ spec:
   licenseSecret:
     name: hz-license-key
   replicas: 3
-  version: 5.5.2
+  version: 5.5.6
   storage:
     accessModes:
       - ReadWriteOnce
@@ -299,7 +299,7 @@ $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=hz-prod" | wc 
 3
 ```
 
-From all the above outputs we can see that the number of member nodes are 3. That means we have successfully scaled down the member nodes of the Hazelcast database.
+From all the above outputs we can see that the number of member nodes are 2. That means we have successfully scaled down the member nodes of the Hazelcast database.
 
 ## Cleaning up
 

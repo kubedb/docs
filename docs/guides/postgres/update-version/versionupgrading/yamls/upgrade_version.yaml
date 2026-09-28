@@ -6,6 +6,6 @@ metadata:
 spec:
   type: UpdateVersion
   updateVersion:
-    targetVersion: "13.13"
+    targetVersion: "18.3"
   databaseRef:
     name: pg

@@ -65,7 +65,7 @@ spec:
     resources:
       requests:
         storage: 1Gi
-  version: "16.1"
+  version: "18.3"
 ```
 A petset with the name `{{ dbName }}-arbiter` should be created once you apply this yaml. 
 

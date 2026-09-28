@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: HanaDBOpsRequest
+metadata:
+  name: hdbops-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: hanadb-standalone
+  configuration:
+    applyConfig:
+      global.ini: |
+        [memorymanager]
+        global_allocation_limit = 9663676416
+    restart: "true"
+  timeout: 30m
+  apply: IfReady

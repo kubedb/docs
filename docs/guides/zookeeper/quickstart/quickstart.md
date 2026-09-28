@@ -386,10 +386,10 @@ When `deletionPolicy` is `DoNotTerminate`, KubeDB takes advantage of `Validation
 
 ```bash
 $ kubectl delete zk zk-quickstart -n demo
-Error from server (BadRequest): admission webhook "zookeeper.validators.kubedb.com" denied the request: zookeeper "zookeeper-quickstart" can't be deleted. To delete, change spec.deletionPolicy
+The ZooKeeper "zk-quickstart" is invalid: spec.deletionPolicy: Invalid value: "zk-quickstart": Can not delete as deletionPolicy is set to "DoNotTerminate"
 ```
 
-Now, run `kubectl edit zk zookeeper-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
+Now, run `kubectl edit zk zk-quickstart -n demo` to set `spec.deletionPolicy` to `Halt` . Then you will be able to delete/halt the database.
 
 
 ## Cleaning up

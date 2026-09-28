@@ -4,7 +4,7 @@ metadata:
   name: pgbouncer-sync
   namespace: demo
 spec:
-  version: "1.23.1"
+  version: "1.24.0"
   replicas: 1
   database:
     syncUsers: true

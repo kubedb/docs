@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Mongo
 
 - Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -60,7 +64,7 @@ Now, we are going to deploy a `MongoDB` replicaset using a supported version by 
 
 #### Deploy MongoDB replicaset
 
-In this section, we are going to deploy a MongoDB replicaset database with version `4.4.26`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
+In this section, we are going to deploy a MongoDB replicaset database with version `8.0.17`.  Then, in the next section we will set up autoscaling for this database using `MongoDBAutoscaler` CRD. Below is the YAML of the `MongoDB` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -69,7 +73,7 @@ metadata:
   name: mg-rs
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "replicaset"
   replicas: 3
@@ -100,7 +104,7 @@ mg-rs     4.4.26      Ready     2m53s
 Let's check volume size from petset, and from the persistent volume,
 
 ```bash
-$ kubectl get sts -n demo mg-rs -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-rs -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1Gi"
 
 $ kubectl get pv -n demo
@@ -366,7 +370,7 @@ Events:
 Now, we are going to verify from the `Petset`, and the `Persistent Volume` whether the volume of the replicaset database has expanded to meet the desired state, Let's check,
 
 ```bash
-$ kubectl get sts -n demo mg-rs -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
+$ kubectl get petset -n demo mg-rs -o json | jq '.spec.volumeClaimTemplates[].spec.resources.requests.storage'
 "1594884096"
 $ kubectl get pv -n demo
 NAME                                       CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                  STORAGECLASS          REASON   AGE

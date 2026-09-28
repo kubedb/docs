@@ -171,7 +171,7 @@ metadata:
   name: pg
   namespace: demo
 spec:
-  version: "11.22"
+  version: "17.9"
   replicas: 3
   standbyMode: Hot
   storageType: Durable
@@ -202,10 +202,10 @@ $ watch -n 3 kubectl get postgres -n demo
 Every 3.0s: kubectl get postgres -n demo     
             
 NAME   VERSION   STATUS   AGE
-pg     11.11     Ready    3m17s
+pg     17.9      Ready    3m17s
 
-$ watch -n 3 kubectl get sts -n demo pg
-Every 3.0s: kubectl get sts -n demo pg                              ac-emon: Tue Nov 30 11:38:12 2021
+$ watch -n 3 kubectl get petset -n demo pg
+Every 3.0s: kubectl get petset -n demo pg                              ac-emon: Tue Nov 30 11:38:12 2021
 
 NAME   READY   AGE
 pg     3/3     4m17s
@@ -226,20 +226,20 @@ Let's verify the `Postgres`, the `PetSet` and its `Pod` image version,
 
 ```bash
 $ kubectl get pg -n demo pg -o=jsonpath='{.spec.version}{"\n"}'
-11.11
+17.9
 
-$  kubectl get sts -n demo pg -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-postgres:11.11-alpine
+$  kubectl get petset -n demo pg -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/postgres:17.9-alpine
 
 $ kubectl get pod -n demo pg-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-postgres:11.11-alpine
+ghcr.io/appscode-images/postgres:17.9-alpine
 ```
 
 We are ready to apply updating on this `Postgres` Instance.
 
 #### UpdateVersion
 
-Here, we are going to update `Postgres` Instance from `11.11` to `13.2`.
+Here, we are going to update `Postgres` Instance from `17.9` to `18.3`.
 
 **Create PostgresOpsRequest:**
 
@@ -254,7 +254,7 @@ metadata:
 spec:
   type: UpdateVersion
   updateVersion:
-    targetVersion: "13.13"
+    targetVersion: "18.3"
   databaseRef:
     name: pg
 ```
@@ -263,12 +263,12 @@ Here,
 
 - `spec.databaseRef.name` specifies that we are performing operation on `pg-group` Postgres database.
 - `spec.type` specifies that we are going to perform `UpdateVersion` on our database.
-- `spec.updateVersion.targetVersion` specifies expected version `13.2` after updating.
+- `spec.updateVersion.targetVersion` specifies expected version `18.3` after updating.
 
 Let's create the `PostgresOpsRequest` cr we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupgrading/yamls/update_version.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/update-version/versionupgrading/yamls/upgrade_version.yaml
 postgresopsrequest.ops.kubedb.com/pg-update created
 ```
 
@@ -449,13 +449,13 @@ Now, we are going to verify whether the `Postgres`, `PetSet` and it's `Pod` have
 
 ```bash
 $ kubectl get postgres -n demo pg -o=jsonpath='{.spec.version}{"\n"}'
-13.2
+18.3
 
-$ kubectl get sts -n demo pg -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
-postgres:13.2-alpine
+$ kubectl get petset -n demo pg -o=jsonpath='{.spec.template.spec.containers[0].image}{"\n"}'
+ghcr.io/appscode-images/postgres:18.3-alpine
 
 $ kubectl get pod -n demo pg-0 -o=jsonpath='{.spec.containers[0].image}{"\n"}'
-postgres:13.2-alpine
+ghcr.io/appscode-images/postgres:18.3-alpine
 ```
 
 You can see above that our `Postgres` has been updated with the new version. It verifies that we have successfully updated our Postgres Instance.

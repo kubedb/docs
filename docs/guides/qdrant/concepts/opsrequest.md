@@ -172,6 +172,7 @@ A `QdrantOpsRequest` object has the following fields in the `spec` section:
   - `topology` — the topology constraints for the vertical scaling operation:
     - `key` — the topology key (required).
     - `value` — the topology value (required).
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`.
 
 #### spec.volumeExpansion
 

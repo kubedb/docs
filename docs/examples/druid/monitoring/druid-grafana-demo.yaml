@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Druid
+metadata:
+  name: druid-grafana-demo
+  namespace: demo
+spec:
+  version: 36.0.0
+  deepStorage:
+    type: s3
+    configSecret:
+      name: deep-storage-config
+  topology:
+    routers:
+      replicas: 1
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

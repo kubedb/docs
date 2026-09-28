@@ -45,7 +45,7 @@ Here, we are going to deploy a `RedisSentinel` instance using a supported versio
 
 #### Deploy Redis standalone
 
-In this section, we are going to deploy a RedisSentinel instance with version `6.2.14`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
+In this section, we are going to deploy a RedisSentinel instance with version `8.2.2`.  Then, in the next section we will set up autoscaling for this database using `RedisSentinelAutoscaler` CRD. Below is the YAML of the `RedisSentinel` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -54,7 +54,7 @@ metadata:
   name: sen-demo
   namespace: demo
 spec:
-  version: "6.2.14"
+  version: "8.2.2"
   storageType: Durable
   replicas: 3
   storage:
@@ -163,7 +163,7 @@ spec:
 Here,
 
 - `spec.databaseRef.name` specifies that we are performing compute resource autoscaling on `sen-demo` database.
-- `spec.compute.standalone.trigger` specifies that compute resource autoscaling is enabled for this database.
+- `spec.compute.sentinel.trigger` specifies that compute resource autoscaling is enabled for this database.
 - `spec.compute.sentinel.podLifeTimeThreshold` specifies the minimum lifetime for at least one of the pod to initiate a vertical scaling.
   If the difference between current & recommended resource is less than ResourceDiffPercentage, Autoscaler Operator will ignore the updating.
 - `spec.compute.sentinel.minAllowed` specifies the minimum allowed resources for the database.
@@ -178,7 +178,7 @@ If it was an `InMemory database`, we could also autoscaler the inMemory resource
 Let's create the `RedisAutoscaler` CR we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/compute/autoscaling/sen-as.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/redis/autoscaling/compute/sen-as.yaml
 redissentinelautoscaler.autoscaling.kubedb.com/sen-as created
 ```
 
@@ -187,7 +187,7 @@ redissentinelautoscaler.autoscaling.kubedb.com/sen-as created
 Let's check that the `redisautoscaler` resource is created successfully,
 
 ```bash
-$ kubectl get redisautoscaler -n demo
+$ kubectl get redissentinelautoscaler -n demo
 NAME    AGE
 sen-as   102s
 
@@ -358,7 +358,7 @@ $ kubectl get pod -n demo sen-demo-0 -o json | jq '.spec.containers[].resources'
   }
 }
 
-$ kubectl get redis -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
+$ kubectl get redissentinel -n demo sen-demo -o json | jq '.spec.podTemplate.spec.containers[] | select(.name == "redissentinel") | .resources'
 {
   "limits": {
     "cpu": "400m",

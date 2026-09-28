@@ -1,0 +1,36 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-singapore
+  namespace: demo
+spec:
+  authSecret:
+    kind: Secret
+    name: pg-singapore-auth
+  clientAuthMode: md5
+  deletionPolicy: Delete
+  replicas: 2
+  sslMode: verify-ca
+  standbyMode: Hot
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      name: pg-issuer
+      kind: Issuer
+    certificates:
+    - alias: server
+      subject:
+        organizations:
+        - kubedb:server
+      dnsNames:
+      - localhost
+      ipAddresses:
+      - "127.0.0.1"
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 3Gi
+  storageType: Durable
+  version: "17.4"

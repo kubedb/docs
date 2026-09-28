@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-mariadbopsrequest
     name: MariaDBOpsRequest
     parent: guides-mariadb-concepts
-    weight: 15
+    weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -255,6 +255,7 @@ If you want to scale-up or scale-down your MariaDB cluster or different componen
 - `spec.verticalScaling.mariadb` indicates the desired resources for MariaDB standalone or cluster after scaling.
 - `spec.verticalScaling.exporter` indicates the desired resources for the `exporter` container.
 - `spec.verticalScaling.coordinator` indicates the desired resources for the `coordinator` container.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated. `Restart` (the default) applies the new resources by restarting the Pods, while `InPlace` resizes the running Pods in place via the Kubernetes `pods/resize` subresource (no restart), automatically falling back to `Restart` for any Pod whose Node cannot fit the new resources. Optional; defaults to `Restart`. For a distributed deployment, in-place resize is not possible, so `InPlace` degrades to `Restart`.
 
 
 All of them has the below structure:

@@ -110,7 +110,7 @@ spec:
   configuration:
     secretName: qdrant-configuration
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -167,10 +167,12 @@ spec:
   replicas: 3
   configuration:
     inline:
-      log_level: DEBUG
-      max_request_size_mb: "64"
+      config.yaml: |
+        log_level: DEBUG
+        service:
+          max_request_size_mb: 64
   storage:
-    storageClassName: "longhorn"
+    storageClassName: "standard"
     accessModes:
       - ReadWriteOnce
     resources:
@@ -179,7 +181,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-> **Note:** The `inline` field is a `map[string]string`, so values must be strings. To set the config key `max_request_size_mb` to `64`, write `max_request_size_mb: "64"`. The config Secret method (shown above) supports full nested YAML structure.
+> **Note:** The `inline` field is a `map[string]string` keyed by config file name. Use the key `config.yaml` and put the full Qdrant configuration (nested YAML is supported) as its string value, exactly as you would in the config Secret. Bare config keys such as `log_level` placed directly under `inline` are ignored.
 
 When both `spec.configuration.secretName` and `spec.configuration.inline` are set, the inline values override the corresponding keys from the config Secret. Keys not specified in inline retain their values from the config Secret.
 

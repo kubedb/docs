@@ -131,7 +131,7 @@ metadata:
   name: xtradb-proxy
   namespace: demo
 spec:
-  version: "2.7.3-debian"
+  version: "3.0.1-debian"
   replicas: 3
   syncUsers: true
   backend:
@@ -144,14 +144,14 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 proxysql.kubedb.com/xtradb-proxy created
 ```
 
-Here in the `.spec.version` field we are saying that we want a ProxySQL-2.6.3 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend PerconaXtraDB server will be fetched to the ProxySQL server.
+Here in the `.spec.version` field we are saying that we want a ProxySQL-3.0.1 with base image of debian. In the `.spec.replicas` section we have given 3, so the operator will create 3 nodes for ProxySQL. The `spec.syncUser` field is set to  true, which means all the users in the backend PerconaXtraDB server will be fetched to the ProxySQL server.
 
 Let's wait for the ProxySQL to be Ready. 
 
 ```bash
 $ kubectl get prx -n demo
 NAME            VERSION        STATUS   AGE
-xtradb-proxy    2.7.3-debian   Ready    17m
+xtradb-proxy    3.0.1-debian   Ready    17m
 ```
 
 Let's check the pods and associated kubernetes objects

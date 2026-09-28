@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Rabbi
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -58,7 +62,7 @@ Now, we are going to deploy a `RabbitMQ` cluster using a supported version by `K
 
 #### Deploy RabbitMQ Cluster
 
-In this section, we are going to deploy a RabbitMQ cluster with version `3.13.2`.  Then, in the next section we will set up autoscaling for this database using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
+In this section, we are going to deploy a RabbitMQ cluster with version `4.2.4`.  Then, in the next section we will set up autoscaling for this database using `RabbitMQAutoscaler` CRD. Below is the YAML of the `RabbitMQ` CR that we are going to create,
 
 > If you want to autoscale RabbitMQ `Standalone`, Just remove the `spec.Replicas` from the below yaml and rest of the steps are same.
 
@@ -69,7 +73,7 @@ metadata:
   name: rabbitmq-autoscale
   namespace: demo
 spec:
-  version: "3.13.2"
+  version: "4.2.4"
   replicas: 3
   storage:
     accessModes:
@@ -109,7 +113,7 @@ Now, wait until `rabbitmq-autoscale` has status `Ready`. i.e,
 ```bash
 $ kubectl get rabbitmq -n demo
 NAME                 VERSION   STATUS   AGE
-rabbitmq-autoscale   3.13.2    Ready    3m46s
+rabbitmq-autoscale   4.2.4    Ready    3m46s
 ```
 
 Let's check volume size from petset, and from the persistent volume,

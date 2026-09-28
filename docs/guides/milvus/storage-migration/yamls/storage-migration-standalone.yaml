@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: milvus-standalone
+  migration:
+    storageClassName: longhorn-custom
+    oldPVReclaimPolicy: Delete
+  timeout: 10m

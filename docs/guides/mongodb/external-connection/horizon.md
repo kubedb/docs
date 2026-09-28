@@ -295,7 +295,7 @@ spec:
       apiGroup: cert-manager.io
       kind: Issuer
       name: mongo-ca-issuer
-  version: 7.0.21
+  version: "8.0.17"
 ```
 
 Here,

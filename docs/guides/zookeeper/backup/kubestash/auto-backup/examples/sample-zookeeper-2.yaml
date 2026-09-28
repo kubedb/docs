@@ -12,7 +12,7 @@ metadata:
     variables.kubestash.com/targetName: sample-zookeeper-2
     variables.kubestash.com/targetedDatabase: zookeeper
 spec:
-  version: "3.8.3"
+  version: "3.9.1"
   adminServerPort: 8080
   replicas: 3
   storage:

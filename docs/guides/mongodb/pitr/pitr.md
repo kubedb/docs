@@ -244,7 +244,7 @@ metadata:
   labels:
     archiver: "true"
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs"
   replicas: 3
@@ -313,7 +313,7 @@ $ kubectl exec -it -n demo mg-rs-0 bash
 kubectl exec [POD] [COMMAND] is DEPRECATED and will be removed in a future version. Use kubectl exec [POD] -- [COMMAND] instead.
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 mongodb@mg-rs-0:/$ 
-mongodb@mg-rs-0:/$ mongo -u root -p $MONGO_INITDB_ROOT_PASSWORD 
+mongodb@mg-rs-0:/$ mongosh -u root -p $MONGO_INITDB_ROOT_PASSWORD 
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("4a51b9fc-a26c-487b-848d-341cf5512c86") }
@@ -381,7 +381,7 @@ metadata:
   name: mg-rs-restored
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs"
   replicas: 3
@@ -437,7 +437,7 @@ mg-rs-restored   4.4.26    Ready    5m47s
 **Validating data on Restored MongoDB**
 ```bash
 $ kubectl exec -it -n demo mg-rs-restored-0 bash
-mongodb@mg-rs-restored-0:/$ mongo -u root -p $MONGO_INITDB_ROOT_PASSWORD 
+mongodb@mg-rs-restored-0:/$ mongosh -u root -p $MONGO_INITDB_ROOT_PASSWORD 
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("50d3fc74-bffc-4c97-a1e6-a2ea63cb88e1") }

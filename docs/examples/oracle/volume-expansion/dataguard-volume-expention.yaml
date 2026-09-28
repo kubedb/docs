@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: OracleOpsRequest
+metadata:
+  name: dataguard-volume-expention
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: oracle-dg-sample
+  volumeExpansion:
+    mode: "Offline"
+    node: 12Gi

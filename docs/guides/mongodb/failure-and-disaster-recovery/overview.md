@@ -66,7 +66,7 @@ metadata:
   name: mg-ha-demo
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   replicaSet:
     name: "rs1"
   replicas: 3
@@ -128,15 +128,15 @@ The pod having `kubedb.com/role=primary` is the primary and `kubedb.com/role=sta
 Lets create a table in the primary.
 
 ```shell
-$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.\username}' | base64 -d
+$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.username}' | base64 -d
 root⏎          
-$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.\password}' | base64 -d
+$ kubectl get secrets -n demo mg-ha-demo-auth -o jsonpath='{.data.password}' | base64 -d
 JUIevJ)ISh!Srg4y⏎              
 # find the primary pod
 $ kubectl exec -it -n demo mg-ha-demo-0  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
 # exec into the primary pod
-$ mongodb@mg-ha-demo-0:/$ mongo admin
+$ mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("57604543-ec8b-478a-bca3-bdbcf4dda0b6") }
@@ -194,7 +194,7 @@ observe any visible differences between their states.
 ```shell
 kubectl exec -it -n demo mg-ha-demo-1  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-1:/$ mongo admin
+mongodb@mg-ha-demo-1:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("9ec7b2cc-8972-4f07-996f-f6c9573acc36") }
@@ -324,7 +324,7 @@ Now we know how failover is done, let's check if the new primary is working.
 ```shell
 $ `kubectl exec -it -n demo mg-ha-demo-1  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-1:/$ mongo admin
+mongodb@mg-ha-demo-1:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("9ec7b2cc-8972-4f07-996f-f6c9573acc36") }
@@ -377,7 +377,7 @@ Lets check if the standby `mg-ha-demo-0` got the updated data from new primary `
 ```shell
 $ kubectl exec -it -n demo mg-ha-demo-0  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-0:/$ mongo admin
+mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
@@ -420,7 +420,7 @@ You can validate the replica set status from the new primary `mg-ha-demo-0` by c
 ```shell
 $ kubectl exec -it -n demo mg-ha-demo-0  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-0:/$ mongo admin
+mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
@@ -623,7 +623,7 @@ Lets verify cluster state.
 ```shell
 $ kubectl exec -it -n demo mg-ha-demo-0  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-0:/$ mongo admin
+mongodb@mg-ha-demo-0:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("8c1a76f9-61cf-4105-b3b1-d82190640c87") }
@@ -682,7 +682,7 @@ Lets verify the cluster state now.
 ```shell
 $ kubectl exec -it -n demo mg-ha-demo-1  -- bash
 Defaulted container "mongodb" out of: mongodb, replication-mode-detector, copy-config (init)
-mongodb@mg-ha-demo-1:/$ mongo admin
+mongodb@mg-ha-demo-1:/$ mongosh admin
 MongoDB shell version v4.4.26
 connecting to: mongodb://127.0.0.1:27017/admin?compressors=disabled&gssapiServiceName=mongodb
 Implicit session: session { "id" : UUID("f99795f2-9fb1-4221-bf2c-916f0e92d152") }

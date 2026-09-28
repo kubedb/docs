@@ -57,7 +57,7 @@ metadata:
   name: sample-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -116,11 +116,11 @@ sample-mongodb-0   1/1     Running   0          12m
 Now, let's exec into the pod and create a table,
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo sample-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo sample-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo sample-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
 > show dbs
 admin          0.000GB
@@ -409,7 +409,7 @@ metadata:
   name: restore-mongodb
   namespace: demo
 spec:
-  version: "4.4.26"
+  version: "8.0.17"
   storageType: Durable
   storage:
     storageClassName: "standard"
@@ -439,11 +439,11 @@ restore-mongodb   4.4.26     Ready    3m30s
 Let's verify all the databases of this `restore-mongodb` by exec into its pod
 
 ```bash
-$ export USER=$(kubectl get secrets -n demo restore-mongodb-auth -o jsonpath='{.data.\username}' | base64 -d)
+$ export USER=$(kubectl get secrets -n demo restore-mongodb-auth -o jsonpath='{.data.username}' | base64 -d)
 
-$ export PASSWORD=$(kubectl get secrets -n demo restore-mongodb-auth -o jsonpath='{.data.\password}' | base64 -d)
+$ export PASSWORD=$(kubectl get secrets -n demo restore-mongodb-auth -o jsonpath='{.data.password}' | base64 -d)
 
-$ kubectl exec -it -n demo restore-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo restore-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
 > show dbs
 admin          0.000GB
@@ -536,7 +536,7 @@ In this section, we are going to verify that the desired data has been restored 
 Lets, exec into the database pod and list available tables,
 
 ```bash
-$ kubectl exec -it -n demo restore-mongodb-0 -- mongo admin -u $USER -p $PASSWORD
+$ kubectl exec -it -n demo restore-mongodb-0 -- mongosh admin -u $USER -p $PASSWORD
 
 > show dbs
 admin          0.000GB

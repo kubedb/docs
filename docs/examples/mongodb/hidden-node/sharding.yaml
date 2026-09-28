@@ -4,7 +4,7 @@ metadata:
   name: mongo-sh-hid
   namespace: demo
 spec:
-  version: "percona-7.0.18"
+  version: "percona-8.0.17"
   shardTopology:
     configServer:
       replicas: 3

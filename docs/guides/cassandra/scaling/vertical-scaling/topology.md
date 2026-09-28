@@ -42,7 +42,7 @@ Here, we are going to deploy a `Cassandra` topology cluster using a supported ve
 
 ### Prepare Cassandra Topology Cluster
 
-Now, we are going to deploy a `Cassandra` topology cluster database with version `5.0.3`.
+Now, we are going to deploy a `Cassandra` topology cluster database with version `5.0.7`.
 
 ### Deploy Cassandra Topology Cluster
 
@@ -55,7 +55,7 @@ metadata:
   name: cassandra-prod
   namespace: demo
 spec:
-  version: 5.0.3
+  version: 5.0.7
   topology:
     rack:
       - name: r0
@@ -131,7 +131,7 @@ apiVersion: ops.kubedb.com/v1alpha1
 kind: CassandraOpsRequest
 metadata:
   name: cassandra-vertical-scale
-  namespace: default
+  namespace: demo
 spec:
   type: VerticalScaling
   databaseRef:
@@ -154,6 +154,7 @@ Here,
 - `spec.databaseRef.name` specifies that we are performing vertical scaling operation on `cassandra-prod` cluster.
 - `spec.type` specifies that we are performing `VerticalScaling` on cassandra.
 - `spec.VerticalScaling.node` specifies the desired resources after scaling.
+- `spec.verticalScaling.mode` specifies how the scaling is actuated — `Restart` (default, restarts the Pods) or `InPlace` (resizes the running Pods without a restart, falling back to restart if a Node can't fit the new resources). See [Vertical Scaling Modes](/docs/guides/cassandra/scaling/vertical-scaling/overview.md#vertical-scaling-modes).
 
 Let's create the `CassandraOpsRequest` CR we have shown above,
 
@@ -294,6 +295,45 @@ $  kubectl get pod -n demo cassandra-prod-rack-r0-0 -o json | jq '.spec.containe
 ```
 
 The above output verifies that we have successfully scaled up the resources of the Cassandra topology cluster.
+
+### In-Place Vertical Scaling
+
+To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `InPlace` in the
+`CassandraOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
+subresource and only restarts a Pod if its Node cannot accommodate the new resources.
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: CassandraOpsRequest
+metadata:
+  name: cassandra-vertical-scale-inplace
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: cassandra-prod
+  verticalScaling:
+    mode: InPlace
+    node:
+      resources:
+        requests:
+          memory: "3Gi"
+          cpu: "2"
+        limits:
+          memory: "4Gi"
+          cpu: "3"
+  timeout: 5m
+  apply: IfReady
+```
+
+Let's create the `CassandraOpsRequest` CR we have shown above,
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/cassandra/scaling/vertical-scaling/cassandra-vertical-scaling-topology-inplace.yaml
+cassandraopsrequest.ops.kubedb.com/cassandra-vertical-scale-inplace created
+```
+
+Apply it the same way as above; the resources update in place with no Pod restart.
 
 ## Cleaning Up
 

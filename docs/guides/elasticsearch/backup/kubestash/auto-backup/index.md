@@ -197,7 +197,7 @@ Here,
 Let's create the `BackupBlueprint` we have shown above,
 
 ```bash
-$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backupblueprint.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/elasticsearch/backup/kubestash/auto-backup/examples/default-backup-blueprint.yaml
 backupblueprint.core.kubestash.com/es-quickstart-backup-blueprint created
 ```
 
@@ -219,7 +219,7 @@ metadata:
     blueprint.kubestash.com/name: es-quickstart-backup-blueprint
     blueprint.kubestash.com/namespace: demo
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -408,7 +408,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart
     kubestash.com/app-ref-namespace: demo
@@ -446,10 +446,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-interim/data
-        id: 147fa51e71e523631e74ba3195499995696c6ac69560e1c7f4ab1b4222a97a73
-        size: 509 B
-        uploaded: 2.141 KiB
+      - summary:
+          hostPath: /kubestash-interim/data
+          id: 147fa51e71e523631e74ba3195499995696c6ac69560e1c7f4ab1b4222a97a73
+          size: 509 B
+          uploaded: 2.141 KiB
       size: 7.791 KiB
   conditions:
   - lastTransitionTime: "2024-09-19T05:06:01Z"
@@ -566,7 +567,7 @@ metadata:
     variables.kubestash.com/namespace: demo
     variables.kubestash.com/args: --ignoreType=template,settings
 spec:
-  version: xpack-8.17.6
+  version: xpack-9.2.3
   enableSSL: true
   replicas: 2
   storageType: Durable
@@ -753,7 +754,7 @@ metadata:
   - kubestash.com/cleanup
   generation: 1
   labels:
-    kubedb.com/db-version: 8.15.0
+    kubedb.com/db-version: 9.2.3
     kubestash.com/app-ref-kind: Elasticsearch
     kubestash.com/app-ref-name: es-quickstart-2
     kubestash.com/app-ref-namespace: demo
@@ -791,10 +792,11 @@ status:
       path: repository/v1/frequent-backup/dump
       phase: Succeeded
       resticStats:
-      - hostPath: /kubestash-interim/data
-        id: 4e15656770c55e4e08ed6dbfe6a190eb96db979259ca9c3900a5918cac116330
-        size: 11.717 KiB
-        uploaded: 3.835 KiB
+      - summary:
+          hostPath: /kubestash-interim/data
+          id: 4e15656770c55e4e08ed6dbfe6a190eb96db979259ca9c3900a5918cac116330
+          size: 11.717 KiB
+          uploaded: 3.835 KiB
       size: 15.974 KiB
   conditions:
   - lastTransitionTime: "2024-09-19T06:30:01Z"

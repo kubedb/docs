@@ -47,10 +47,10 @@ cat memcached-demo.yaml | kubectl create -f -
 ```bash
 $ kubectl get memcached
 NAME             VERSION    STATUS    AGE
-memcached-demo   1.6.22     Running   40s
-memcached-dev    1.6.22     Running   40s
-memcached-prod   1.6.22     Running   40s
-memcached-qa     1.6.22     Running   40s
+memcached-demo   1.6.40     Running   40s
+memcached-dev    1.6.40     Running   40s
+memcached-prod   1.6.40     Running   40s
+memcached-qa     1.6.40     Running   40s
 ```
 
 To get YAML of an object, use `--output=yaml` flag.
@@ -87,7 +87,7 @@ spec:
           memory: 64Mi
   replicas: 1
   deletionPolicy: WipeOut
-  version: 1.6.22
+  version: 1.6.40
 status:
   observedGeneration: 1$7916315637361465932
   phase: Running
@@ -104,10 +104,10 @@ To list all KubeDB objects, use following command:
 ```bash
 $ kubectl get all -o wide
 NAME                    VERSION     STATUS    AGE
-mc/memcached-demo       1.6.22      Running   3h
-mc/memcached-dev        1.6.22      Running   3h
-mc/memcached-prod       1.6.22      Running   3h
-mc/memcached-qa         1.6.22      Running   3h
+mc/memcached-demo       1.6.40      Running   3h
+mc/memcached-dev        1.6.40      Running   3h
+mc/memcached-prod       1.6.40      Running   3h
+mc/memcached-qa         1.6.40      Running   3h
 ```
 
 Flag `--output=wide` is used to print additional information.
@@ -121,7 +121,7 @@ You can print labels with objects. The following command will list all Memcached
 ```bash
 $ kubectl get mc --show-labels
 NAME             VERSION    STATUS    AGE       LABELS
-memcached-demo   1.6.22     Running   2m        kubedb=cli-demo
+memcached-demo   1.6.40     Running   2m        kubedb=cli-demo
 ```
 
 To print only object name, run the following command:

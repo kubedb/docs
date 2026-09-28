@@ -5,7 +5,7 @@ menu:
     identifier: guides-mariadb-concepts-autoscaler
     name: MariaDBAutoscaler
     parent: guides-mariadb-concepts
-    weight: 26
+    weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

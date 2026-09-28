@@ -34,7 +34,7 @@ An `AppBinding` object created by `KubeDB` for Memcached database is shown below
   metadata:
     annotations:
       kubectl.kubernetes.io/last-applied-configuration: |
-        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"memcached-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"Memcached","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"memcached","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"memcached-auth"},"type":"kubedb.com/memcached","version":"1.6.22"}}
+        {"apiVersion":"appcatalog.appscode.com/v1alpha1","kind":"AppBinding","metadata":{"annotations":{},"name":"memcached-appbinding","namespace":"demo"},"spec":{"appRef":{"apiGroup":"kubedb.com","kind":"Memcached","name":"mc1","namespace":"demo"},"clientConfig":{"service":{"name":"memcached","namespace":"demo","port":11211,"scheme":"tcp"}},"secret":{"name":"memcached-auth"},"type":"kubedb.com/memcached","version":"1.6.40"}}
     creationTimestamp: "2024-08-26T09:51:57Z"
     generation: 1
     name: memcached-appbinding
@@ -56,7 +56,7 @@ An `AppBinding` object created by `KubeDB` for Memcached database is shown below
     secret:
       name: memcached-auth
     type: kubedb.com/memcached
-    version: 1.6.22
+    version: 1.6.40
 ```
 Here, we are going to describe the sections of an `AppBinding` crd.
 

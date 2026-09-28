@@ -24,9 +24,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a MSSQL
 
 - To configure TLS/SSL in `MSSQLServer`, `KubeDB` uses `cert-manager` to issue certificates. So first you have to make sure that the cluster has `cert-manager` installed. To install `cert-manager` in your cluster following steps [here](https://cert-manager.io/docs/installation/kubernetes/).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -95,7 +99,7 @@ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" 
 issuer.cert-manager.io/mssqlserver-ca-issuer created
 ```
 
-Now, we are going to deploy a MSSQLServer cluster database with version `2022-cu12`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
+Now, we are going to deploy a MSSQLServer cluster database with version `2025-cu0`. Then, in the next section we will set up autoscaling for this database using `MSSQLServerAutoscaler` CRD. Below is the YAML of the `MSSQLServer` CR that we are going to create,
 
 > If you want to autoscale MSSQLServer `Standalone`, Just deploy a [standalone](/docs/guides/mssqlserver/clustering/standalone.md) sql server instance using KubeDB.
 
@@ -106,7 +110,7 @@ metadata:
   name: mssqlserver-ag-cluster
   namespace: demo
 spec:
-  version: "2022-cu12"
+  version: "2025-cu0"
   replicas: 3
   topology:
     mode: AvailabilityGroup

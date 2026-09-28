@@ -22,9 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of a Druid
 
 - Install `KubeDB` Provisioner, Ops-manager and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install `Metrics Server` from [here](https://github.com/kubernetes-sigs/metrics-server#installation)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -109,7 +113,7 @@ secret/deep-storage-config created
 
 ### Deploy Druid Cluster
 
-In this section, we are going to deploy a Druid topology cluster with monitoring enabled and with version `28.0.1`.  Then, in the next section we will set up autoscaling for this cluster using `DruidAutoscaler` CRD. Below is the YAML of the `Druid` CR that we are going to create,
+In this section, we are going to deploy a Druid topology cluster with monitoring enabled and with version `36.0.0`.  Then, in the next section we will set up autoscaling for this cluster using `DruidAutoscaler` CRD. Below is the YAML of the `Druid` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -118,7 +122,7 @@ metadata:
   name: druid-cluster
   namespace: demo
 spec:
-  version: 28.0.1
+  version: 36.0.0
   deepStorage:
     type: s3
     configSecret:
@@ -166,11 +170,11 @@ Now, wait until `druid-cluster` has status `Ready`. i.e,
 ```bash
 $ kubectl get dr -n demo -w
 NAME          TYPE            VERSION   STATUS         AGE
-druid-cluster    kubedb.com/v1alpha2    28.0.1          Provisioning   0s
-druid-cluster    kubedb.com/v1alpha2    28.0.1          Provisioning   24s
+druid-cluster    kubedb.com/v1alpha2    36.0.0          Provisioning   0s
+druid-cluster    kubedb.com/v1alpha2    36.0.0          Provisioning   24s
 .
 .
-druid-cluster    kubedb.com/v1alpha2   28.0.1           Ready          2m20s
+druid-cluster    kubedb.com/v1alpha2   36.0.0           Ready          2m20s
 ```
 
 Let's check volume size from petset, and from the persistent volume,
@@ -222,7 +226,7 @@ spec:
 
 Here,
 
-- `spec.clusterRef.name` specifies that we are performing vertical scaling operation on `druid-cluster` cluster.
+- `spec.databaseRef.name` specifies that we are performing storage autoscaling operation on `druid-cluster` cluster.
 - `spec.storage.historicals.trigger/spec.storage.middleManagers.trigger` specifies that storage autoscaling is enabled for historicals and middleManagers of topology cluster.
 - `spec.storage.historicals.usageThreshold/spec.storage.middleManagers.usageThreshold` specifies storage usage threshold, if storage usage exceeds `60%` then storage autoscaling will be triggered.
 - `spec.storage.historicals.scalingThreshold/spec.storage.historicals.scalingThreshold` specifies the scaling threshold. Storage will be scaled to `100%` of the current amount.
@@ -882,7 +886,7 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 kubectl delete druidopsrequests -n demo drops-druid-cluster-gq9huj drops-druid-cluster-kbw4fd
-kubectl delete druidutoscaler -n demo druid-storage-autoscaler
+kubectl delete druidautoscaler -n demo druid-storage-autoscaler
 kubectl delete dr -n demo druid-cluster
 ```
 

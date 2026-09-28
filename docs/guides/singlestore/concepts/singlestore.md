@@ -26,7 +26,7 @@ metadata:
   name: sdb-sample
   namespace: demo
 spec:
-  version: "8.7.10"
+  version: "8.9.3"
   topology:
     aggregator:
       replicas: 2
@@ -123,7 +123,8 @@ spec:
 
 - `8.1.32`
 - `8.5.7`, `8.5.30`
-- `8.7.10`
+- `8.7.10`, `8.7.21`
+- `8.9.3`
 
 ### spec.topology
 
@@ -243,7 +244,7 @@ metadata:
   name: sdb
   namespace: demo
 spec:
-  version: 8.7.10
+  version: 8.9.3
   init:
     script:
       configMap:

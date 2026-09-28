@@ -22,7 +22,13 @@ This guide will show you how to use `KubeDB` to autoscale the storage of an Solr
 
 - Install `KubeDB` Community, Enterprise and Autoscaler operator in your cluster following the steps [here](/docs/setup/README.md).
 
-- Install Prometheus from [here](https://github.com/prometheus-community/helm-charts/tree/main/charts/kube-prometheus-stack)
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
+
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - You must have a `StorageClass` that supports volume expansion.
 
@@ -58,7 +64,7 @@ Now, we are going to deploy a `Solr` combined cluster using a supported version 
 
 #### Deploy Solr Combined Cluster
 
-In this section, we are going to deploy a solr combined cluster with version `9.6.1`.  Then, in the next section we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
+In this section, we are going to deploy a solr combined cluster with version `9.8.0`.  Then, in the next section we will set up autoscaling for this database using `SolrAutoscaler` CRD. Below is the YAML of the `Solr` CR that we are going to create,
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -67,7 +73,7 @@ metadata:
   name: solr-combined
   namespace: demo
 spec:
-  version: 9.6.1
+  version: 9.8.0
   replicas: 2
   zookeeperRef:
     name: zoo
