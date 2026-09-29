@@ -85,6 +85,8 @@ The default value of this field is `false`. If `spec.deprecated` is set to `true
 - `KubeDB` (default) - kubedb's own image, built from the official Apache Kafka release.
 - `Confluent` - [Confluent Server](https://docs.confluent.io/platform/current/installation/docker/image-reference.html) (Enterprise), referenced directly from Confluent's own image registry rather than rehosted under KubeDB's registry, since Confluent Server's license is commercial and doesn't permit redistribution.
 
+`Confluent` distribution `KafkaVersion`s are named `confluent-<Confluent Platform version>`, for example `confluent-8.3.2`. KubeDB derives the Apache Kafka version from it (Confluent Platform 8.x ships Apache Kafka 4.x with the same minor version), so `confluent-8.3.2` is treated as Kafka `4.3`.
+
 A `Kafka` object using a `Confluent` distribution `KafkaVersion` must have `spec.license` set (see [Kafka CRD](/docs/guides/kafka/concepts/kafka.md#speclicense)) once Confluent's 30-day trial period expires.
 
 ```yaml

@@ -129,6 +129,28 @@ kafka-confluent    kubedb.com/v1   confluent-8.3.2   Provisioning   4s
 kafka-confluent    kubedb.com/v1   confluent-8.3.2   Ready          112s
 ```
 
+## How KubeDB runs Confluent Server
+
+KubeDB manages Confluent Server the same way it manages its own Kafka image. Each Kafka pod runs:
+
+- `kafka-init` init container: copies KubeDB's startup scripts, the Prometheus JMX exporter and the Cruise Control metrics reporter into the pod.
+- `kafka-setup` init container (Confluent Server image): builds the broker or controller configuration from the operator's config, your custom configuration and the pod's identity, and formats storage with the admin SCRAM credentials.
+- `kafka` container (Confluent Server image): starts Confluent Server through Confluent's own entrypoint scripts (`/etc/confluent/docker/configure`, `ensure` and `launch`).
+
+So the same features work as on KubeDB's own image: SASL authentication, TLS, custom configuration, broker rack awareness, monitoring and Cruise Control. Tiered storage isn't supported with the Confluent distribution.
+
+A few Confluent-specific defaults are set by KubeDB:
+
+- Confluent's Self-Balancing Clusters (`confluent.balancer.enable`) is turned off when `spec.cruiseControl` is set, so the two don't both move partitions.
+- Confluent's internal topics (license, cluster link metadata, balancer and telemetry) use a replication factor of `min(3, brokers)`.
+
+Inside the pod, Kafka tools are named without the `.sh` suffix (for example `kafka-topics`), and the client configuration is at `/etc/kafka/clientauth.properties`:
+
+```bash
+$ kubectl exec -it -n demo kafka-confluent-0 -c kafka -- \
+    kafka-topics --bootstrap-server localhost:9092 --command-config /etc/kafka/clientauth.properties --list
+```
+
 ## Cleanup
 
 To clean up the resources created by this tutorial, run the following commands:
