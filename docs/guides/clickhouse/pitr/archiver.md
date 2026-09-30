@@ -181,7 +181,7 @@ Here,
 - `spec.fullBackup.scheduler.schedule` specifies how often a new full backup is taken. In between full backups, KubeStash continuously archives incremental changes into the same repository.
 - `spec.backupStorage.ref` and `spec.retentionPolicy` reuse the `BackupStorage` and `RetentionPolicy` we created earlier.
 
-> The `KubeDB` provisioner uses `KubeStash` for the periodic full backup and a `sidekick` container for continuous incremental archiving of `ClickHouse` databases, both using the `ClickHouseBackup` driver ([clickhouse-backup](https://github.com/Altinity/clickhouse-backup)). Unlike some other KubeDB addons, these jobs run fine with the default (non-root) security context, so no `securityContext` override is required.
+> The `KubeDB` provisioner uses `KubeStash` for the periodic full backup and a `sidekick` container for continuous incremental archiving of `ClickHouse` databases, both using the `ClickHouseBackup` driver, which runs ClickHouse's native [`BACKUP`](https://clickhouse.com/docs/operations/backup) command. Incremental backups are taken with the native `BACKUP` command using the latest full backup as the `base_backup`, and the data is restored with the native `RESTORE` command.
 
 ### Deploy Sample ClickHouse Database
 

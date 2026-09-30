@@ -456,9 +456,7 @@ spec:
 
 - `.spec.target` refers to the targeted `sample-clickhouse` ClickHouse database that we created earlier.
 - `.spec.sessions[*].scheduler.schedule` specifies that we want to backup the database at `5 minutes` interval.
-- `.spec.sessions[*].addon` refers to the `clickhouse-addon` and the `logical-backup` task, which uses the `ClickHouseBackup` driver ([clickhouse-backup](https://github.com/Altinity/clickhouse-backup)) to take a logical backup of every shard.
-
-> **Note:** Unlike some other KubeDB addons, the `clickhouse-addon` backup and restore jobs run fine with the default (non-root) security context. You don't need to set `spec.sessions[*].addon.jobTemplate.spec.securityContext` (e.g. `runAsUser`/`runAsGroup`/`fsGroup`) for `ClickHouse` backup or restore.
+- `.spec.sessions[*].addon` refers to the `clickhouse-addon` and the `logical-backup` task, which uses the `ClickHouseBackup` driver to take a backup of every shard using ClickHouse's native [`BACKUP`](https://clickhouse.com/docs/operations/backup) command. The data is restored later using the native `RESTORE` command.
 
 Let's create the `BackupConfiguration` CR that we have shown above,
 
@@ -718,8 +716,6 @@ Here,
 - `.spec.dataSource.repository` specifies the Repository object that holds the backed up data.
 - `.spec.dataSource.snapshot` specifies to restore from the `latest` Snapshot.
 - `.spec.addon` refers to the `clickhouse-addon` and the `logical-backup-restore` task.
-
-> As noted earlier, the `clickhouse-addon` restore job also runs fine with the default security context, so `spec.addon.jobTemplate.spec.securityContext` is not required here either.
 
 Let's create the RestoreSession CR we have shown above,
 
