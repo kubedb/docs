@@ -125,17 +125,17 @@ The database is `Ready`. Verify that KubeDB has created a `Secret` and `Services
 
 ```bash
 $ kubectl get secret -n demo | grep sample-clickhouse
-sample-clickhouse-auth                  kubernetes.io/basic-auth   2      81s
-sample-clickhouse-fd9557                Opaque                     3      80s
-sample-clickhouse-internal-auth-token   kubernetes.io/basic-auth   1      80s
-sample-clickhouse-keeper-config         Opaque                     2      80s
+sample-clickhouse-2fdbb0                  Opaque                     3      7m31s
+sample-clickhouse-auth                    kubernetes.io/basic-auth   2      7m34s
+sample-clickhouse-internal-auth-token     kubernetes.io/basic-auth   1      7m33s
+sample-clickhouse-keeper-config           Opaque                     2      7m31s
 
 $ kubectl get service -n demo -l=app.kubernetes.io/instance=sample-clickhouse
 NAME                            TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)             AGE
-sample-clickhouse               ClusterIP   10.43.52.87     <none>        9000/TCP,8123/TCP   81s
-sample-clickhouse-keeper        ClusterIP   10.43.166.188   <none>        9181/TCP            80s
-sample-clickhouse-keeper-pods   ClusterIP   None            <none>        9234/TCP            80s
-sample-clickhouse-pods          ClusterIP   None            <none>        9000/TCP,8123/TCP   81s
+sample-clickhouse               ClusterIP   10.43.10.76     <none>        9000/TCP,8123/TCP   7m34s
+sample-clickhouse-keeper        ClusterIP   10.43.206.151   <none>        9181/TCP            7m31s
+sample-clickhouse-keeper-pods   ClusterIP   None            <none>        9234/TCP            7m31s
+sample-clickhouse-pods          ClusterIP   None            <none>        9000/TCP,8123/TCP   7m34s
 ```
 
 Here, we have to use service `sample-clickhouse` and secret `sample-clickhouse-auth` to connect with the database. `KubeDB` creates an `AppBinding` CR that holds the necessary information to connect with the database.
@@ -191,15 +191,18 @@ Here,
 
 **Insert Sample Data:**
 
-Now, we are going to exec into one of the database pod and create some sample data. At first, find out the database `Pod`s using the following command,
+Now, we are going to exec into the database pods and create some sample data. At first, find out the database `Pod`s using the following command,
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=sample-clickhouse"
-NAME                                            READY   STATUS    RESTARTS   AGE
-sample-clickhouse-appscode-cluster-shard-0-0   1/1     Running   0          119s
-sample-clickhouse-appscode-cluster-shard-0-1   1/1     Running   0          22s
-sample-clickhouse-appscode-cluster-shard-1-0   1/1     Running   0          116s
-sample-clickhouse-appscode-cluster-shard-1-1   1/1     Running   0          22s
+NAME                                           READY   STATUS    RESTARTS   AGE
+sample-clickhouse-appscode-cluster-shard-0-0   1/1     Running   0          7m26s
+sample-clickhouse-appscode-cluster-shard-0-1   1/1     Running   0          7m19s
+sample-clickhouse-appscode-cluster-shard-1-0   1/1     Running   0          7m23s
+sample-clickhouse-appscode-cluster-shard-1-1   1/1     Running   0          7m18s
+sample-clickhouse-keeper-0                     1/1     Running   0          7m28s
+sample-clickhouse-keeper-1                     1/1     Running   0          7m22s
+sample-clickhouse-keeper-2                     1/1     Running   0          7m17s
 ```
 
 And copy the username and password of the admin user to access the `clickhouse-client` shell.
@@ -209,88 +212,119 @@ $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.username
 admin⏎
 
 $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-fB9sH0(xeg3FBxs7⏎
+KdV~kyn9.weWXQdQ⏎
 ```
 
-Since `sample-clickhouse` is deployed with a `clusterTopology` (2 shards x 2 replicas), a plain `MergeTree` table would only live on a single node and would **not** be replicated or sharded. To properly use the cluster, we create a `ReplicatedMergeTree` table (for replication within a shard, coordinated through `ClickHouseKeeper`) on every node using `ON CLUSTER`, and a `Distributed` table on top of it (for transparently routing reads/writes across all shards).
+Since `sample-clickhouse` is deployed with a `clusterTopology` (2 shards x 2 replicas), a plain `MergeTree` table would only live on a single node and would **not** be replicated or sharded. To properly use the cluster, we create a `ReplicatedMergeTree` table (for replication within a shard, coordinated through `ClickHouseKeeper`) on every node using `ON CLUSTER`, and a `Distributed` table on top of it (for reading/writing across all shards through a single table).
 
 Now, let's exec into a `Pod` and create the database and tables,
 
 ```bash
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7"
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
 
-# create a database named "playground" on every node of the cluster
-:) CREATE DATABASE playground ON CLUSTER 'appscode-cluster';
+:) CREATE DATABASE IF NOT EXISTS demo_db ON CLUSTER '{cluster}';
 
-# create the underlying replicated table on every shard/replica
-:) CREATE TABLE playground.equipment_local ON CLUSTER 'appscode-cluster'
+:) CREATE TABLE demo_db.users ON CLUSTER '{cluster}'
    (
-       id UInt32,
-       type String,
-       quant UInt32,
-       color String
+       id UInt64,
+       name String,
+       shard_id UInt8
    )
-   ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
+   ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/demo_db/users', '{replica}')
    ORDER BY id;
 
-# create a Distributed table on top, so we can read/write across all shards through a single table
-:) CREATE TABLE playground.equipment ON CLUSTER 'appscode-cluster'
-   AS playground.equipment_local
-   ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand());
-
-# insert some rows through the Distributed table
-:) INSERT INTO playground.equipment VALUES (1,'Swing',10,'Red'),(2,'Slide',5,'Blue'),(3,'Monkey Bars',3,'Yellow');
-
-# verify that data has been inserted successfully
-:) SELECT * FROM playground.equipment ORDER BY id;
-
-┌─id─┬─type────────┬─quant─┬─color──┐
-│  1 │ Swing       │    10 │ Red    │
-│  2 │ Slide       │     5 │ Blue   │
-│  3 │ Monkey Bars │     3 │ Yellow │
-└────┴─────────────┴───────┴────────┘
+:) CREATE TABLE demo_db.users_dist ON CLUSTER '{cluster}' AS demo_db.users
+   ENGINE = Distributed('{cluster}', demo_db, users, rand());
 
 :) exit
 ```
 
 Here,
 
-- `{shard}` and `{replica}` are macros that KubeDB automatically configures on every `ClickHouse` pod (visible via `SELECT * FROM system.macros`), so the same `CREATE TABLE ... ON CLUSTER` statement creates a correctly-parameterized replica path on each node.
-- The `equipment_local` table on the two replicas of a shard (e.g. `shard-0-0` and `shard-0-1`) stays in sync via `ClickHouseKeeper`, while `rand()` in the `Distributed` engine definition spreads rows for the `equipment` table across the two shards.
+- `{cluster}`, `{shard}` and `{replica}` are macros that KubeDB automatically configures on every `ClickHouse` pod (visible via `SELECT * FROM system.macros`), so the same `ON CLUSTER` statement creates the database and a correctly-parameterized replicated table on every node.
+- `demo_db.users` is the local `ReplicatedMergeTree` table. The two replicas of a shard (e.g. `shard-0-0` and `shard-0-1`) stay in sync via `ClickHouseKeeper`.
+- `demo_db.users_dist` is a `Distributed` table on top of `demo_db.users` that reads from all shards.
 
-We can verify this by checking the local table on each shard directly. In this run, all 3 rows happened to land on shard `0` (and were replicated to both of its replicas), while shard `1` has none — this is expected: with a handful of rows, ClickHouse doesn't guarantee an even split across shards.
+Now, let's insert some rows. To control exactly which shard each row lives on, we insert directly into the local `demo_db.users` table of one replica of each shard; `ReplicatedMergeTree` then replicates the rows to the other replica of that shard.
 
-```bash
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-1	Swing	10	Red
-2	Slide	5	Blue
-3	Monkey Bars	3	Yellow
-
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-1	Swing	10	Red
-2	Slide	5	Blue
-3	Monkey Bars	3	Yellow
-
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-```
-
-Let's insert a few more rows through the `Distributed` table to see the sharding actually spread the data out,
+Let's exec into the first replica of shard `0` and insert the rows of shard `0`,
 
 ```bash
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q \
-  "INSERT INTO playground.equipment VALUES (4,'Item4',4,'Color4'),(5,'Item5',5,'Color5'),(6,'Item6',6,'Color6'),(7,'Item7',7,'Color7'),(8,'Item8',8,'Color8'),(9,'Item9',9,'Color9'),(10,'Item10',10,'Color10'),(11,'Item11',11,'Color11'),(12,'Item12',12,'Color12'),(13,'Item13',13,'Color13'),(14,'Item14',14,'Color14'),(15,'Item15',15,'Color15')"
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
 
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment_local"
-12
+:) INSERT INTO demo_db.users VALUES (1, 'Alice_shard0', 0), (2, 'Bob_shard0', 0);
 
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment_local"
-3
+:) SELECT * FROM demo_db.users ORDER BY id;
 
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "fB9sH0(xeg3FBxs7" -q "SELECT count() FROM playground.equipment"
-15
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
 ```
 
-Now the data is spread across both shards (12 rows on shard `0`, 3 rows on shard `1`), while the `Distributed` table transparently reports all 15 rows regardless of which shard a client happens to connect to.
+Now, exec into the first replica of shard `1` and insert the rows of shard `1`,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
+
+:) INSERT INTO demo_db.users VALUES (3, 'Charlie_shard1', 1), (4, 'David_shard1', 1);
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+Let's verify that the rows have been replicated to the second replica of each shard,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-1 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+And through the `Distributed` table, which returns the rows from both shards,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'KdV~kyn9.weWXQdQ'
+
+:) SELECT * FROM demo_db.users_dist ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  1 │ Alice_shard0   │        0 │
+2. │  2 │ Bob_shard0     │        0 │
+3. │  3 │ Charlie_shard1 │        1 │
+4. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
 
 Now, we are ready to backup the database.
 
@@ -465,12 +499,14 @@ trigger-sample-clickhouse-backup-frequent-backup   */5 * * * *   False     0    
 
 **Verify BackupSession:**
 
-KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are scheduled according to the specified schedule.
+KubeStash triggers an instant backup as soon as the `BackupConfiguration` is ready. After that, backups are taken periodically according to the specified schedule.
+
+> **Note:** You can also trigger a backup manually at any time (e.g. using the KubeStash `kubectl` plugin: `kubectl kubestash trigger`), but we are not doing that here. In this tutorial, we simply rely on the instant backup and the schedule of the `BackupConfiguration`.
 
 ```bash
 $ kubectl get backupsession -n demo
 NAME                                                 INVOKER-TYPE          INVOKER-NAME               PHASE       DURATION   AGE
-sample-clickhouse-backup-frequent-backup-1789709796   BackupConfiguration   sample-clickhouse-backup   Succeeded   26s        30s
+sample-clickhouse-backup-frequent-backup-1790744459   BackupConfiguration   sample-clickhouse-backup   Succeeded   25s        30s
 ```
 
 We can see from the above output that the backup session has succeeded. Now, we are going to verify whether the backed up data has been stored in the backend.
@@ -490,7 +526,7 @@ At this moment we have one `Snapshot`. Run the following command to check the re
 ```bash
 $ kubectl get snapshots -n demo -l=kubestash.com/repo-name=s3-clickhouse-repo
 NAME                                                              REPOSITORY           SESSION           SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-s3-clickhouse-repo-sample-clickhckup-frequent-backup-1789709796   s3-clickhouse-repo   frequent-backup   2026-09-18T05:36:37Z   Delete            Succeeded   2m28s
+s3-clickhouse-repo-sample-clickhckup-frequent-backup-1790744459   s3-clickhouse-repo   frequent-backup   2026-09-30T05:01:09Z   Delete            Succeeded   2m28s
 ```
 
 > Note: KubeStash creates a `Snapshot` with the following labels:
@@ -504,7 +540,7 @@ s3-clickhouse-repo-sample-clickhckup-frequent-backup-1789709796   s3-clickhouse-
 If we check the YAML of the `Snapshot`, we can find the information about the backed up components of the database. For a `ClickHouse` cluster, KubeStash records the backup result for the shared metadata as well as for each shard,
 
 ```bash
-$ kubectl get snapshots -n demo s3-clickhouse-repo-sample-clickhckup-frequent-backup-1789709796 -oyaml
+$ kubectl get snapshots -n demo s3-clickhouse-repo-sample-clickhckup-frequent-backup-1790744459 -oyaml
 ```
 
 ```yaml
@@ -518,7 +554,7 @@ metadata:
     kubestash.com/app-ref-name: sample-clickhouse
     kubestash.com/app-ref-namespace: demo
     kubestash.com/repo-name: s3-clickhouse-repo
-  name: s3-clickhouse-repo-sample-clickhckup-frequent-backup-1789709796
+  name: s3-clickhouse-repo-sample-clickhckup-frequent-backup-1790744459
   namespace: demo
 spec:
   appRef:
@@ -526,48 +562,48 @@ spec:
     kind: ClickHouse
     name: sample-clickhouse
     namespace: demo
-  backupSession: sample-clickhouse-backup-frequent-backup-1789709796
+  backupSession: sample-clickhouse-backup-frequent-backup-1790744459
   deletionPolicy: Delete
   repository: s3-clickhouse-repo
   session: frequent-backup
-  snapshotID: 01M2SG8J9WZV2R65W251ATEGPN
+  snapshotID: 01M3RB0865HMNGBWZ4RGP7323F
   type: FullBackup
   version: v1
 status:
   components:
     dump:
       clickHouseStats:
-      - finishTime: "2026-09-18T05:36:40Z"
+      - finishTime: "2026-09-30T05:01:11Z"
         host: dump-metadata
-        id: 94c88a90-e5f5-46bf-bf21-b389d5b8d626
-        startTime: "2026-09-18T05:36:39Z"
+        id: 969e0d5f-9fc9-4523-81ed-a2ecfd56104e
+        startTime: "2026-09-30T05:01:11Z"
         status: SUCCESS
-      - finishTime: "2026-09-18T05:36:50Z"
+      - finishTime: "2026-09-30T05:01:21Z"
         host: dump-shard-0
-        id: d0100062-d9d6-4ef1-bbab-3887137b6733
-        startTime: "2026-09-18T05:36:49Z"
+        id: 084df6df-bd33-48ff-9a32-4cd8c6765026
+        startTime: "2026-09-30T05:01:21Z"
         status: SUCCESS
-      - finishTime: "2026-09-18T05:36:50Z"
+      - finishTime: "2026-09-30T05:01:21Z"
         host: dump-shard-1
-        id: fa091258-5c37-4de8-8181-e73b94ceb85a
-        startTime: "2026-09-18T05:36:49Z"
+        id: 19c35fdb-fd63-430f-a028-59dbc5f39355
+        startTime: "2026-09-30T05:01:21Z"
         status: SUCCESS
       driver: ClickHouseBackup
-      path: repository/v1/frequent-backup/dump/full/1789709796
+      path: repository/v1/frequent-backup/dump/full/1790744459
       phase: Succeeded
   conditions:
-  - lastTransitionTime: "2026-09-18T05:36:37Z"
+  - lastTransitionTime: "2026-09-30T05:01:09Z"
     message: Recent snapshot list updated successfully
     reason: SuccessfullyUpdatedRecentSnapshotList
     status: "True"
     type: RecentSnapshotListUpdated
-  - lastTransitionTime: "2026-09-18T05:36:59Z"
+  - lastTransitionTime: "2026-09-30T05:01:31Z"
     message: Metadata uploaded to backend successfully
     reason: SuccessfullyUploadedSnapshotMetadata
     status: "True"
     type: SnapshotMetadataUploaded
   phase: Succeeded
-  snapshotTime: "2026-09-18T05:36:37Z"
+  snapshotTime: "2026-09-30T05:01:09Z"
   totalComponents: 1
   verificationStatus: NotVerified
 ```
@@ -697,32 +733,35 @@ Once you have created the `RestoreSession` object, KubeStash will create a resto
 ```bash
 $ watch kubectl get restoresession -n demo
 NAME                        REPOSITORY            PHASE       DURATION   AGE
-sample-clickhouse-restore   s3-clickhouse-repo    Succeeded   22s        30s
+sample-clickhouse-restore   s3-clickhouse-repo   Succeeded   22s        25s
 ```
 
 The `Succeeded` phase means that the restore process has been completed successfully.
 
 #### Verify Restored Data:
 
-In this section, we are going to verify whether the desired data has been restored successfully. We are going to connect to the database server and check whether the database and the table we created earlier in the original database are restored.
+In this section, we are going to verify whether the desired data has been restored successfully. We are going to connect to the database server and check whether the database and the tables we created earlier in the original database are restored, and whether every replica of each shard holds exactly the same rows as before.
 
 At first, check if the database has gone into `Ready` state by the following command,
 
 ```bash
 $ kubectl get clickhouse -n demo restored-clickhouse
 NAME                  VERSION   STATUS   AGE
-restored-clickhouse   25.7.1    Ready    6m
+restored-clickhouse   25.7.1    Ready    5m
 ```
 
 Now, find out the database `Pod`s using the following command,
 
 ```bash
 $ kubectl get pods -n demo --selector="app.kubernetes.io/instance=restored-clickhouse"
-NAME                                              READY   STATUS    RESTARTS   AGE
-restored-clickhouse-appscode-cluster-shard-0-0   1/1     Running   0          2m46s
-restored-clickhouse-appscode-cluster-shard-0-1   1/1     Running   0          2m41s
-restored-clickhouse-appscode-cluster-shard-1-0   1/1     Running   0          2m44s
-restored-clickhouse-appscode-cluster-shard-1-1   1/1     Running   0          2m40s
+NAME                                             READY   STATUS    RESTARTS   AGE
+restored-clickhouse-appscode-cluster-shard-0-0   1/1     Running   0          5m5s
+restored-clickhouse-appscode-cluster-shard-0-1   1/1     Running   0          5m
+restored-clickhouse-appscode-cluster-shard-1-0   1/1     Running   0          5m3s
+restored-clickhouse-appscode-cluster-shard-1-1   1/1     Running   0          4m59s
+restored-clickhouse-keeper-0                     1/1     Running   0          5m8s
+restored-clickhouse-keeper-1                     1/1     Running   0          5m2s
+restored-clickhouse-keeper-2                     1/1     Running   0          4m58s
 ```
 
 And copy the username and password of the admin user to access the `clickhouse-client` shell.
@@ -732,68 +771,123 @@ $ kubectl get secret -n demo restored-clickhouse-auth -o jsonpath='{.data.userna
 admin⏎
 
 $ kubectl get secret -n demo restored-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-1OfTqKc8IzNgoLMi⏎
+O22IoxkX5qhrA*(R⏎
 ```
 
-Now, let's exec into the `Pod` and verify the restored data. This time we check more than just the row values — since our `equipment` table is a `Distributed` table on top of a `ReplicatedMergeTree` table, we also verify that both the table engines and the per-shard data distribution were restored correctly.
+Now, let's exec into the `Pod` and verify that the database and both table definitions (`ReplicatedMergeTree` and `Distributed`) were restored,
 
 ```bash
-$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi'
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
 
 :) SHOW DATABASES;
 
-┌─name───────────────┐
-│ INFORMATION_SCHEMA  │
-│ default             │
-│ information_schema  │
-│ playground          │
-│ system              │
-└────────────────────┘
+   ┌─name───────────────┐
+1. │ INFORMATION_SCHEMA │
+2. │ default            │
+3. │ demo_db            │
+4. │ information_schema │
+5. │ system             │
+   └────────────────────┘
 
-:) SHOW CREATE TABLE playground.equipment_local;
+:) SHOW CREATE TABLE demo_db.users;
 
-CREATE TABLE playground.equipment_local
+CREATE TABLE demo_db.users
 (
-    `id` UInt32,
-    `type` String,
-    `quant` UInt32,
-    `color` String
+    `id` UInt64,
+    `name` String,
+    `shard_id` UInt8
 )
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/demo_db/users', '{replica}')
 ORDER BY id
+SETTINGS index_granularity = 8192
 
-:) SHOW CREATE TABLE playground.equipment;
+:) SHOW CREATE TABLE demo_db.users_dist;
 
-CREATE TABLE playground.equipment
+CREATE TABLE demo_db.users_dist
 (
-    `id` UInt32,
-    `type` String,
-    `quant` UInt32,
-    `color` String
+    `id` UInt64,
+    `name` String,
+    `shard_id` UInt8
 )
-ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand())
-
-:) SELECT count() FROM playground.equipment;
-
-15
+ENGINE = Distributed('{cluster}', 'demo_db', 'users', rand())
 
 :) exit
 ```
 
-The `ReplicatedMergeTree` and `Distributed` table definitions came back exactly as they were, and the `Distributed` table again reports all 15 rows. Let's also confirm the per-shard split survived the restore, matching the original 12/3 split,
+Now, let's check the data on every replica of each shard of the restored database,
 
 ```bash
-$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
-12
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
 
-$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
-3
+:) SELECT * FROM demo_db.users ORDER BY id;
 
-$ kubectl exec -n demo restored-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password '1OfTqKc8IzNgoLMi' -q "SELECT count() FROM playground.equipment_local"
-12
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
 ```
 
-So, from the above output, we can see that the `playground` database, the `equipment_local`/`equipment` tables, and the exact per-shard row distribution (including the shard-0 replica) from the original database are all restored successfully.
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-1-1 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+And through the `Distributed` table,
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'O22IoxkX5qhrA*(R'
+
+:) SELECT * FROM demo_db.users_dist ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  1 │ Alice_shard0   │        0 │
+2. │  2 │ Bob_shard0     │        0 │
+3. │  3 │ Charlie_shard1 │        1 │
+4. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+So, from the above output, we can see that the `demo_db` database, the `users`/`users_dist` table definitions, and the exact rows of every shard (on both of its replicas) are restored exactly as they were in the original `sample-clickhouse` database.
+
+> **Tip:** For larger datasets, instead of comparing rows by eye, you can compare an order-independent checksum of each replica on the original and the restored database, e.g. `SELECT count(), groupBitXor(cityHash64(id, name, shard_id)) FROM demo_db.users`. The values must be identical on both sides.
 
 ## Cleanup
 

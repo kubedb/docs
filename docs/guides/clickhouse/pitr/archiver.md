@@ -252,172 +252,349 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 clickhouse.kubedb.com/sample-clickhouse created
 ```
 
-Let's check the pods which are related to the backup,
+Wait until the database goes into `Ready` state,
 
 ```bash
-$ kubectl get pods -n demo
-NAME                                             READY   STATUS      RESTARTS   AGE
-sample-clickhouse-appscode-cluster-shard-0-0    1/1     Running     0          4m12s
-sample-clickhouse-appscode-cluster-shard-0-1    1/1     Running     0          4m7s
-sample-clickhouse-appscode-cluster-shard-1-0    1/1     Running     0          4m9s
-sample-clickhouse-appscode-cluster-shard-1-1    1/1     Running     0          4m4s
-sample-clickhouse-archiver-full-backup-1789714189-kps72   0/1   Completed   0   2m59s
-sample-clickhouse-keeper-0                       1/1     Running     0          4m14s
-sample-clickhouse-keeper-1                       1/1     Running     0          4m8s
-sample-clickhouse-keeper-2                       1/1     Running     0          4m3s
-sample-clickhouse-sidekick                       1/1     Running     0          44s
+$ kubectl get clickhouse -n demo sample-clickhouse
+NAME                VERSION   STATUS   AGE
+sample-clickhouse   25.7.1    Ready    61s
 ```
 
-Here,
-- Pod `sample-clickhouse-archiver-full-backup-1789714189-kps72` performed the initial full backup.
-- Pod `sample-clickhouse-sidekick` performs continuous incremental archiving. This pod always stays in `Running` phase; it periodically (roughly every minute) archives the changes made since the last full or incremental backup.
+### Insert Initial Data
 
-### Verify Backup Setup Successful
-
-If everything goes well, the KubeDB provisioner will create a `BackupConfiguration`, and its phase should be `Ready`. The `Ready` phase indicates that the backup setup is successful.
-
-Let's verify the phase of the `BackupConfiguration`,
-
-```bash
-$ kubectl get backupconfiguration -n demo
-NAME                          PHASE   PAUSED   AGE
-sample-clickhouse-archiver    Ready            48s
-```
-
-**Verify BackupSession:**
-
-KubeStash triggers an instant full backup as soon as the `BackupConfiguration` is ready. After that, full backups are scheduled according to `spec.fullBackup.scheduler.schedule`, while incremental backups run continuously in between.
-
-```bash
-$ kubectl get backupsession -n demo
-NAME                                                 INVOKER-TYPE          INVOKER-NAME                  PHASE       DURATION   AGE
-sample-clickhouse-archiver-full-backup-1789714189   BackupConfiguration   sample-clickhouse-archiver    Succeeded   33s        53s
-```
-
-**Verify Snapshot:**
-
-```bash
-$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=sample-clickhouse-full
-NAME                                                              REPOSITORY               SESSION       SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
-sample-clickhouse-full-sample-clarchiver-full-backup-1789714189   sample-clickhouse-full   full-backup   2026-09-18T06:50:00Z   Delete            Succeeded   3m
-```
-
-### Insert Some Data
-
-Every successful incremental archiving cycle records the changes made to the database since the last snapshot. To make it obvious that a point-in-time restore really lands on an *older* state (and not just the latest data), we insert data in two batches, separated by an incremental archiving cycle, and only restore up to the first batch.
-
-Since `sample-clickhouse` is deployed with a `clusterTopology`, we create a `ReplicatedMergeTree` table (replicated within a shard via `ClickHouseKeeper`) together with a `Distributed` table on top of it (to transparently read/write across both shards) — a plain `MergeTree` table would live on a single node only and wouldn't exercise the cluster at all.
+Since `sample-clickhouse` is deployed with a `clusterTopology`, we create a `ReplicatedMergeTree` table (replicated within a shard via `ClickHouseKeeper`) together with a `Distributed` table on top of it (to read across both shards) — a plain `MergeTree` table would live on a single node only and wouldn't exercise the cluster at all.
 
 ```bash
 $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎
 
 $ kubectl get secret -n demo sample-clickhouse-auth -o jsonpath='{.data.password}' | base64 -d
-pnOF1T7EeNgu6vHY⏎
+psL)PHO!)ryZEcoX⏎
 
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "pnOF1T7EeNgu6vHY"
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
 
-:) CREATE DATABASE playground ON CLUSTER 'appscode-cluster';
+:) CREATE DATABASE IF NOT EXISTS demo_db ON CLUSTER '{cluster}';
 
-:) CREATE TABLE playground.equipment_local ON CLUSTER 'appscode-cluster'
+:) CREATE TABLE demo_db.users ON CLUSTER '{cluster}'
    (
-       id UInt32,
-       type String,
-       quant UInt32,
-       color String
+       id UInt64,
+       name String,
+       shard_id UInt8
    )
-   ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
+   ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/demo_db/users', '{replica}')
    ORDER BY id;
 
-:) CREATE TABLE playground.equipment ON CLUSTER 'appscode-cluster'
-   AS playground.equipment_local
-   ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand());
-
-:) INSERT INTO playground.equipment VALUES (1,'Swing',10,'Red'),(2,'Slide',5,'Blue'),(3,'Monkey Bars',3,'Yellow');
-
-:) SELECT * FROM playground.equipment ORDER BY id;
-
-┌─id─┬─type────────┬─quant─┬─color──┐
-│  1 │ Swing       │    10 │ Red    │
-│  2 │ Slide       │     5 │ Blue   │
-│  3 │ Monkey Bars │     3 │ Yellow │
-└────┴─────────────┴───────┴────────┘
+:) CREATE TABLE demo_db.users_dist ON CLUSTER '{cluster}' AS demo_db.users
+   ENGINE = Distributed('{cluster}', demo_db, users, rand());
 
 :) exit
 ```
 
-In this run, all 3 rows landed on shard `1` (`rand()` doesn't guarantee an even split for a handful of rows) — we'll see this matters later.
+To control exactly which shard each row lives on, we insert directly into the local `demo_db.users` table of one replica of each shard; `ReplicatedMergeTree` then replicates the rows to the other replica of that shard.
 
-We wait for the `sidekick` pod to pick up this change in its next incremental archiving cycle,
+Let's exec into the first replica of shard `0` and insert the rows of shard `0`,
 
 ```bash
-$ kubectl logs -n demo sample-clickhouse-sidekick --tail=8
-...
-I0918 09:02:15.100603       1 archiver.go:274] Data incremental backup completed for shard 0
-...
-I0918 09:02:15.103251       1 archiver.go:274] Data incremental backup completed for shard 1
-I0918 09:02:15.103266       1 archiver.go:187] Cluster incremental backup completed successfully for all 2 shards
-...
-I0918 09:02:15.132261       1 incremental_backup.go:146] Incremental backup cycle completed in 20.227771146s
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (1, 'Alice_shard0', 0), (2, 'Bob_shard0', 0);
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
 ```
 
-This incremental backup (completed at `09:02:15`) now holds the 3-row state. **This is the point in time we are going to restore to.** Some time later, we insert two more rows into the *same, still-running* database — these rows must **not** appear in our restore:
+Now, exec into the first replica of shard `1` and insert the rows of shard `1`,
 
 ```bash
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "pnOF1T7EeNgu6vHY"
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
 
-:) INSERT INTO playground.equipment VALUES (4,'Seesaw',4,'Green'),(5,'Trampoline',2,'Orange');
-:) SELECT * FROM playground.equipment ORDER BY id;
+:) INSERT INTO demo_db.users VALUES (3, 'Charlie_shard1', 1), (4, 'David_shard1', 1);
 
-┌─id─┬─type────────┬─quant─┬─color──────┐
-│  1 │ Swing       │    10 │ Red        │
-│  2 │ Slide       │     5 │ Blue       │
-│  3 │ Monkey Bars │     3 │ Yellow     │
-│  4 │ Seesaw      │     4 │ Green      │
-│  5 │ Trampoline  │     2 │ Orange     │
-└────┴─────────────┴───────┴────────────┘
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+Let's verify that the rows have been replicated to the second replica of each shard,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+   └────┴──────────────┴──────────┘
 
 :) exit
 ```
 
 ```bash
-$ date -u +"%Y-%m-%dT%H:%M:%SZ"
-2026-09-18T09:02:59Z
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-1 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
 ```
 
-Checking the local tables confirms row `4` landed on shard `1` (alongside rows `1`-`3`) and row `5` landed on shard `0`:
+And through the `Distributed` table, which returns the rows from both shards,
 
 ```bash
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "pnOF1T7EeNgu6vHY" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-5	Trampoline	2	Orange
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
 
-$ kubectl exec -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "pnOF1T7EeNgu6vHY" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-1	Swing	10	Red
-2	Slide	5	Blue
-3	Monkey Bars	3	Yellow
-4	Seesaw	4	Green
+:) SELECT * FROM demo_db.users_dist ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  1 │ Alice_shard0   │        0 │
+2. │  2 │ Bob_shard0     │        0 │
+3. │  3 │ Charlie_shard1 │        1 │
+4. │  4 │ David_shard1   │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
 ```
 
-The `sidekick` pod archives this second change too, in the *next* incremental cycle (completed at `09:04:15`):
+### Verify Backup Setup Successful
+
+If everything goes well, the KubeDB provisioner will create a `BackupConfiguration` for the database, and its phase should be `Ready`. The `Ready` phase indicates that the backup setup is successful.
 
 ```bash
-$ kubectl logs -n demo sample-clickhouse-sidekick --tail=8
-...
-I0918 09:04:15.770123       1 archiver.go:274] Data incremental backup completed for shard 1
-...
-I0918 09:04:15.773368       1 archiver.go:274] Data incremental backup completed for shard 0
-I0918 09:04:15.773378       1 archiver.go:187] Cluster incremental backup completed successfully for all 2 shards
-...
-I0918 09:04:15.800960       1 incremental_backup.go:146] Incremental backup cycle completed in 20.896288467s
+$ kubectl get backupconfiguration -n demo
+NAME                         PHASE   PAUSED   AGE
+sample-clickhouse-archiver   Ready            15m
 ```
 
-Note that we are **not** touching or dropping anything in the original `sample-clickhouse` database — it keeps running with all 5 rows. This lets us prove, side-by-side, that the restored database ends up with the *older* 3-row state (still correctly split across shards) instead of silently picking up the latest data.
+**Verify BackupSession:**
+
+KubeStash triggers an instant full backup as soon as the `BackupConfiguration` is ready. After that, full backups are taken according to `spec.fullBackup.scheduler.schedule` (every 30 minutes here), while incremental backups are taken continuously in between.
+
+> **Note:** You can also trigger a full backup manually at any time, but we are not doing that here. In this tutorial, we simply rely on the instant backup, the full backup schedule and the continuous incremental backups.
+
+```bash
+$ kubectl get backupsession -n demo
+NAME                                                INVOKER-TYPE          INVOKER-NAME                 PHASE       DURATION   AGE
+sample-clickhouse-archiver-full-backup-1790745995   BackupConfiguration   sample-clickhouse-archiver   Succeeded   34s        14m
+sample-clickhouse-archiver-full-backup-1790746201   BackupConfiguration   sample-clickhouse-archiver   Succeeded   30s        11m
+```
+
+Here, the first `BackupSession` is the instant full backup taken right after the `BackupConfiguration` became ready, and the second one was taken by the `*/30 * * * *` schedule.
+
+**Verify Snapshot:**
+
+```bash
+$ kubectl get snapshots -n demo -l=kubestash.com/repo-name=sample-clickhouse-full
+NAME                                                              REPOSITORY               SESSION       SNAPSHOT-TIME          DELETION-POLICY   PHASE       AGE
+sample-clickhouse-full-sample-clarchiver-full-backup-1790745995   sample-clickhouse-full   full-backup   2026-09-30T05:26:46Z   Delete            Succeeded   14m
+sample-clickhouse-full-sample-clarchiver-full-backup-1790746201   sample-clickhouse-full   full-backup   2026-09-30T05:30:01Z   Delete            Succeeded   11m
+```
+
+**Verify Incremental Backup:**
+
+Let's check the pods which are related to the backup,
+
+```bash
+$ kubectl get pods -n demo
+NAME                                                              READY   STATUS      RESTARTS   AGE
+retention-policy-sample-clickhouse-archiver-full-bac-179079knjw   0/1     Completed   0          11m
+retention-policy-sample-clickhouse-archiver-full-bac-17907z92h8   0/1     Completed   0          14m
+sample-clickhouse-appscode-cluster-shard-0-0                      1/1     Running     0          16m
+sample-clickhouse-appscode-cluster-shard-0-1                      1/1     Running     0          16m
+sample-clickhouse-appscode-cluster-shard-1-0                      1/1     Running     0          16m
+sample-clickhouse-appscode-cluster-shard-1-1                      1/1     Running     0          16m
+sample-clickhouse-archiver-full-backup-1790745995-9lh4m           0/1     Completed   0          14m
+sample-clickhouse-archiver-full-backup-1790746201-ggjd9           0/1     Completed   0          11m
+sample-clickhouse-keeper-0                                        1/1     Running     0          16m
+sample-clickhouse-keeper-1                                        1/1     Running     0          16m
+sample-clickhouse-keeper-2                                        1/1     Running     0          16m
+sample-clickhouse-sidekick                                        1/1     Running     0          3m37s
+trigger-sample-clickhouse-archiver-full-backup-29845770-ff2nw     0/1     Completed   0          11m
+```
+
+Here,
+- Pods `sample-clickhouse-archiver-full-backup-*` performed the full backups.
+- Pod `sample-clickhouse-sidekick` performs continuous incremental archiving. It stays in `Running` phase and runs an incremental backup cycle roughly every minute, archiving the changes made since the latest full backup.
+
+Each incremental cycle backs up the metadata and every shard. You can follow the cycles in the `sidekick` logs,
+
+```bash
+$ kubectl logs -n demo sample-clickhouse-sidekick --tail=12
+I0930 05:41:08.574880       1 helpers.go:347] Latest successful snapshot:  sample-clickhouse-full-sample-clarchiver-full-backup-1790746201
+I0930 05:41:08.629451       1 output.go:290] Backup started with OperationID=dce60f64-7a38-4f87-9c10-3c01a5b0cd8d InitialStatus=CREATING_BACKUP
+I0930 05:41:18.704574       1 output.go:337] Backup daua1t1t3d5c73dcv5b0-metadata completed successfully!
+I0930 05:41:18.704594       1 archiver.go:225] Metadata incremental backup completed successfully
+I0930 05:41:18.758046       1 output.go:58] Backup started with OperationID=d697a0c8-497f-4a1c-af38-f8ea2d66b34d InitialStatus=CREATING_BACKUP
+I0930 05:41:18.758548       1 output.go:58] Backup started with OperationID=a2bf8757-8080-43be-810d-5db522f00d64 InitialStatus=CREATING_BACKUP
+I0930 05:41:28.815165       1 output.go:105] Backup daua1t1t3d5c73dcv5b0-shard-1 completed successfully!
+I0930 05:41:28.815189       1 archiver.go:274] Data incremental backup completed for shard 1
+I0930 05:41:28.815619       1 output.go:105] Backup daua1t1t3d5c73dcv5b0-shard-0 completed successfully!
+I0930 05:41:28.815643       1 archiver.go:274] Data incremental backup completed for shard 0
+I0930 05:41:28.815656       1 archiver.go:187] Cluster incremental backup completed successfully for all 2 shards
+I0930 05:41:28.838303       1 incremental_backup.go:146] Incremental backup cycle completed in 20.271855756s
+```
+
+### Insert Incremental Data
+
+Now, let's insert more data into the database over time. Each batch is picked up by the next incremental backup cycle of the `sidekick`.
+
+Insert the second batch,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (5, 'Eve_shard0', 0), (6, 'Frank_shard0', 0);
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (7, 'Grace_shard1', 1), (8, 'Henry_shard1', 1);
+
+:) exit
+```
+
+Insert the third batch,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (9, 'Ivy_shard0', 0), (10, 'Jack_shard0', 0), (11, 'Kate_shard0', 0);
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (12, 'Leo_shard1', 1), (13, 'Mia_shard1', 1);
+
+:) exit
+```
+
+At this point, shard `0` holds ids `1, 2, 5, 6, 9, 10, 11` and shard `1` holds ids `3, 4, 7, 8, 12, 13` (13 rows in total). **This is the state we are going to restore to later.** Wait for the next incremental backup cycle to complete (check the `sidekick` logs as shown above); any time after that cycle and before the next batch is inserted is a valid recovery point for this state. In this run, the third batch was inserted at `05:33:07Z` and was archived by the incremental cycle that started at `05:33:49Z` and completed at `05:34:09Z`.
+
+Some time later (the fourth batch was inserted at `05:35:09Z`), we insert two more batches into the *same, still-running* database — these rows must **not** appear in our restore.
+
+Insert the fourth batch,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (14, 'Noah_shard0', 0), (15, 'Olivia_shard0', 0);
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (16, 'Paul_shard1', 1), (17, 'Quinn_shard1', 1), (18, 'Riley_shard1', 1);
+
+:) exit
+```
+
+Insert the fifth batch,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (19, 'Sophia_shard0', 0), (20, 'Thomas_shard0', 0), (21, 'Uma_shard0', 0);
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) INSERT INTO demo_db.users VALUES (22, 'Victor_shard1', 1), (23, 'Willow_shard1', 1);
+
+:) exit
+```
+
+The original database now has all 23 rows,
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+    ┌─id─┬─name──────────┬─shard_id─┐
+ 1. │  1 │ Alice_shard0  │        0 │
+ 2. │  2 │ Bob_shard0    │        0 │
+ 3. │  5 │ Eve_shard0    │        0 │
+ 4. │  6 │ Frank_shard0  │        0 │
+ 5. │  9 │ Ivy_shard0    │        0 │
+ 6. │ 10 │ Jack_shard0   │        0 │
+ 7. │ 11 │ Kate_shard0   │        0 │
+ 8. │ 14 │ Noah_shard0   │        0 │
+ 9. │ 15 │ Olivia_shard0 │        0 │
+10. │ 19 │ Sophia_shard0 │        0 │
+11. │ 20 │ Thomas_shard0 │        0 │
+12. │ 21 │ Uma_shard0    │        0 │
+    └────┴───────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+    ┌─id─┬─name───────────┬─shard_id─┐
+ 1. │  3 │ Charlie_shard1 │        1 │
+ 2. │  4 │ David_shard1   │        1 │
+ 3. │  7 │ Grace_shard1   │        1 │
+ 4. │  8 │ Henry_shard1   │        1 │
+ 5. │ 12 │ Leo_shard1     │        1 │
+ 6. │ 13 │ Mia_shard1     │        1 │
+ 7. │ 16 │ Paul_shard1    │        1 │
+ 8. │ 17 │ Quinn_shard1   │        1 │
+ 9. │ 18 │ Riley_shard1   │        1 │
+10. │ 22 │ Victor_shard1  │        1 │
+11. │ 23 │ Willow_shard1  │        1 │
+    └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT count() FROM demo_db.users_dist;
+
+   ┌─count()─┐
+1. │      23 │
+   └─────────┘
+
+:) exit
+```
+
+Note that we are **not** touching or dropping anything in the original `sample-clickhouse` database — it keeps running with all 23 rows. This lets us prove, side-by-side, that the restored database ends up with the *older* 13-row state (still correctly split across shards) instead of the latest data.
 
 ## Point-in-time Recovery
 
 Point-In-Time Recovery allows you to restore a `ClickHouse` database to a specific point in time using the continuously archived incremental backups. This is particularly useful in scenarios where you need to recover to a state just before a specific error or unwanted change occurred — without necessarily touching the original database.
 
-We pick a recovery timestamp that falls **after** the first incremental backup (`09:02:15`, holding the 3-row state) but **before** the second one (`09:04:15`, holding the 5-row state). For this demo, we use `2026-09-18T09:02:40Z`.
+We use the recovery timestamp `2026-09-30T05:34:00Z`, which falls **after** the third batch was archived (incremental cycle started at `05:33:49Z`) and **before** the fourth batch was inserted (`05:35:09Z`).
 
 **Create Restored ClickHouse CR:**
 
@@ -436,7 +613,7 @@ spec:
       fullDBRepository:
         name: sample-clickhouse-full
         namespace: demo
-      recoveryTimestamp: "2026-09-18T09:02:40Z"
+      recoveryTimestamp: "2026-09-30T05:34:00Z"
   version: 25.7.1
   clusterTopology:
     clickHouseKeeper:
@@ -484,7 +661,7 @@ spec:
 
 Here,
 - `spec.init.archiver.fullDBRepository` refers to the `Repository` created by the `ClickHouseArchiver` (named `<ClickHouse-name>-full` by convention, i.e. `sample-clickhouse-full`).
-- `spec.init.archiver.recoveryTimestamp` specifies the exact point in time to recover to. KubeDB will restore the latest full backup taken before this timestamp and then replay the incremental backups up to it.
+- `spec.init.archiver.recoveryTimestamp` specifies the point in time to recover to. KubeDB will restore the latest full backup taken before this timestamp together with the latest incremental backup taken before it.
 - `spec.init.archiver.encryptionSecret` refers to the same encryption secret used by the `ClickHouseArchiver`.
 
 ```bash
@@ -495,33 +672,43 @@ clickhouse.kubedb.com/restored-clickhouse-pitr created
 Let's check the pods which are related to the restore,
 
 ```bash
-$ kubectl get pods -n demo
-NAME                                                  READY   STATUS      RESTARTS   AGE
-restored-clickhouse-pitr-appscode-cluster-shard-0-0   1/1     Running     0          3m10s
-restored-clickhouse-pitr-appscode-cluster-shard-0-1   1/1     Running     0          3m5s
-restored-clickhouse-pitr-appscode-cluster-shard-1-0   1/1     Running     0          3m7s
-restored-clickhouse-pitr-appscode-cluster-shard-1-1   1/1     Running     0          3m2s
-restored-clickhouse-pitr-inc-backup-restorer-xxxxx    0/1     Completed   0          1m50s
-restored-clickhouse-pitr-keeper-0                     1/1     Running     0          3m12s
-restored-clickhouse-pitr-keeper-1                     1/1     Running     0          3m6s
-restored-clickhouse-pitr-keeper-2                     1/1     Running     0          3m1s
-restored-clickhouse-pitr-manifest-restorer-xxxxx      0/1     Completed   0          3m23s
+$ kubectl get pods -n demo | grep restored-clickhouse-pitr
+restored-clickhouse-pitr-appscode-cluster-shard-0-0               1/1     Running     0          110s
+restored-clickhouse-pitr-appscode-cluster-shard-0-1               1/1     Running     0          106s
+restored-clickhouse-pitr-appscode-cluster-shard-1-0               1/1     Running     0          107s
+restored-clickhouse-pitr-appscode-cluster-shard-1-1               1/1     Running     0          102s
+restored-clickhouse-pitr-inc-backup-restorer-2fnpv                0/1     Completed   0          48s
+restored-clickhouse-pitr-keeper-0                                 1/1     Running     0          113s
+restored-clickhouse-pitr-keeper-1                                 1/1     Running     0          107s
+restored-clickhouse-pitr-keeper-2                                 1/1     Running     0          103s
+restored-clickhouse-pitr-manifest-restorer-hc6sp                  0/1     Completed   0          2m6s
 ```
 
 Here,
-- Pod `restored-clickhouse-pitr-manifest-restorer-xxxxx` is responsible for restoring the database manifest/metadata.
-- Pod `restored-clickhouse-pitr-inc-backup-restorer-xxxxx` restores the latest full backup and then replays the incremental backups up to (but not beyond) the requested `recoveryTimestamp`.
+- Pod `restored-clickhouse-pitr-manifest-restorer-*` is responsible for restoring the database manifest/metadata.
+- Pod `restored-clickhouse-pitr-inc-backup-restorer-*` restores the latest full backup taken before `recoveryTimestamp` together with the latest incremental backup taken before `recoveryTimestamp`.
 
 > Note: Restore process works sequentially. Manifest Restore --> Full-backup + Incremental Restore.
 
-You can also watch the underlying `RestoreSession` objects,
+Let's watch the underlying `RestoreSession` objects,
 
 ```bash
 $ kubectl get restoresession -n demo
-NAME                                            REPOSITORY               PHASE       DURATION   AGE
-restored-clickhouse-pitr-inc-backup-restorer   sample-clickhouse-full   Succeeded   23s        110s
-restored-clickhouse-pitr-manifest-restorer     sample-clickhouse-full   Succeeded   3s         3m23s
+NAME                                           REPOSITORY               PHASE       DURATION   AGE
+restored-clickhouse-pitr-inc-backup-restorer   sample-clickhouse-full   Succeeded   23s        49s
+restored-clickhouse-pitr-manifest-restorer     sample-clickhouse-full   Succeeded   2s         2m6s
 ```
+
+You can also see which backups were picked in the logs of the incremental restorer pod,
+
+```bash
+$ kubectl logs -n demo restored-clickhouse-pitr-inc-backup-restorer-2fnpv | grep -E "Starting restore|Selected Backup|completed successfully"
+I0930 05:40:56.162546       1 pitr_restorer.go:115] Starting restore for snapshot: sample-clickhouse-full-sample-clarchiver-full-backup-1790746201
+I0930 05:40:56.694446       1 helpers.go:495] Selected Backup For Restore: dau9uf9t3d5c73fgt720
+I0930 05:41:16.907283       1 pitr_restorer.go:130] Restore completed successfully for snapshot: sample-clickhouse-full-sample-clarchiver-full-backup-1790746201
+```
+
+Here, the full backup `sample-clickhouse-full-sample-clarchiver-full-backup-1790746201` (taken at `05:30:01Z`) was restored together with the incremental backup `dau9uf9t3d5c73fgt720`, which is the incremental backup cycle started at `05:33:49Z` — the last one before our recovery timestamp `05:34:00Z`.
 
 #### Verify Restored Data:
 
@@ -530,92 +717,138 @@ At first, check if the database has gone into `Ready` state by the following com
 ```bash
 $ kubectl get clickhouse -n demo restored-clickhouse-pitr
 NAME                       VERSION   STATUS   AGE
-restored-clickhouse-pitr   25.7.1    Ready    4m2s
+restored-clickhouse-pitr   25.7.1    Ready    2m7s
 ```
 
-Now, let's exec into the pod to verify the restored data. This is the important check: the **original** `sample-clickhouse` database (which we never touched) should still show all 5 rows, while the **restored** `restored-clickhouse-pitr` database — restored to `2026-09-18T09:02:40Z` — should only show the 3 rows that existed at that point in time. We also verify that the `ReplicatedMergeTree`/`Distributed` table definitions, and the per-shard split, came back correctly.
+Now, let's exec into the pods to verify the restored data. The **original** `sample-clickhouse` database (which we never touched) still has all 23 rows, while the **restored** `restored-clickhouse-pitr` database — restored to `2026-09-30T05:34:00Z` — should only have the 13 rows that existed at that point in time, on the same shards as before.
 
-```bash
-$ kubectl exec -it -n demo sample-clickhouse-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "pnOF1T7EeNgu6vHY"
-
-:) SELECT * FROM playground.equipment ORDER BY id;
-
-┌─id─┬─type────────┬─quant─┬─color──────┐
-│  1 │ Swing       │    10 │ Red        │
-│  2 │ Slide       │     5 │ Blue       │
-│  3 │ Monkey Bars │     3 │ Yellow     │
-│  4 │ Seesaw      │     4 │ Green      │
-│  5 │ Trampoline  │     2 │ Orange     │
-└────┴─────────────┴───────┴────────────┘
-
-:) exit
-```
+Since the manifest restorer also restores the auth secret of the original database, the restored database uses the same credentials as `sample-clickhouse`,
 
 ```bash
 $ kubectl get secret -n demo restored-clickhouse-pitr-auth -o jsonpath='{.data.username}' | base64 -d
 admin⏎
 
 $ kubectl get secret -n demo restored-clickhouse-pitr-auth -o jsonpath='{.data.password}' | base64 -d
-1OfTqKc8IzNgoLMi⏎
+psL)PHO!)ryZEcoX⏎
+```
 
-$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "1OfTqKc8IzNgoLMi"
+Let's check the data on every replica of each shard,
 
-:) SHOW DATABASES;
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
 
-┌─name───────────────┐
-│ INFORMATION_SCHEMA  │
-│ default             │
-│ information_schema  │
-│ playground          │
-│ system              │
-└────────────────────┘
+:) SELECT * FROM demo_db.users ORDER BY id;
 
-:) SHOW CREATE TABLE playground.equipment_local;
-
-CREATE TABLE playground.equipment_local
-(
-    `id` UInt32,
-    `type` String,
-    `quant` UInt32,
-    `color` String
-)
-ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/equipment_local', '{replica}')
-ORDER BY id
-
-:) SHOW CREATE TABLE playground.equipment;
-
-CREATE TABLE playground.equipment
-(
-    `id` UInt32,
-    `type` String,
-    `quant` UInt32,
-    `color` String
-)
-ENGINE = Distributed('appscode-cluster', 'playground', 'equipment_local', rand())
-
-:) SELECT * FROM playground.equipment ORDER BY id;
-
-┌─id─┬─type────────┬─quant─┬─color──────┐
-│  1 │ Swing       │    10 │ Red        │
-│  2 │ Slide       │     5 │ Blue       │
-│  3 │ Monkey Bars │     3 │ Yellow     │
-└────┴─────────────┴───────┴────────────┘
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+3. │  5 │ Eve_shard0   │        0 │
+4. │  6 │ Frank_shard0 │        0 │
+5. │  9 │ Ivy_shard0   │        0 │
+6. │ 10 │ Jack_shard0  │        0 │
+7. │ 11 │ Kate_shard0  │        0 │
+   └────┴──────────────┴──────────┘
 
 :) exit
 ```
 
-Recall that in the original database, rows `1`-`3` all landed on shard `1`, and shard `0` was still empty at our recovery timestamp (row `5` didn't exist yet, and row `4` was only added to shard `1` afterward). Checking the local tables in the restored database confirms the exact same per-shard state was reproduced:
-
 ```bash
-$ kubectl exec -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password "1OfTqKc8IzNgoLMi" -q "SELECT * FROM playground.equipment_local ORDER BY id"
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-1 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
 
-$ kubectl exec -n demo restored-clickhouse-pitr-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password "1OfTqKc8IzNgoLMi" -q "SELECT * FROM playground.equipment_local ORDER BY id"
-1	Swing	10	Red
-2	Slide	5	Blue
-3	Monkey Bars	3	Yellow
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name─────────┬─shard_id─┐
+1. │  1 │ Alice_shard0 │        0 │
+2. │  2 │ Bob_shard0   │        0 │
+3. │  5 │ Eve_shard0   │        0 │
+4. │  6 │ Frank_shard0 │        0 │
+5. │  9 │ Ivy_shard0   │        0 │
+6. │ 10 │ Jack_shard0  │        0 │
+7. │ 11 │ Kate_shard0  │        0 │
+   └────┴──────────────┴──────────┘
+
+:) exit
 ```
 
-As shown above, `restored-clickhouse-pitr` only has the 3 rows that existed at `2026-09-18T09:02:40Z`, correctly placed back on shard `1` with shard `0` empty — rows `4` (`Seesaw`) and `5` (`Trampoline`), which were inserted afterward at `09:02:59` and archived in the *second* incremental backup, are correctly **not** present. Meanwhile, the original `sample-clickhouse` database — which we never modified or restored — still has all 5 rows. This confirms that `spec.init.archiver.recoveryTimestamp` genuinely recovers both the schema (`ReplicatedMergeTree` + `Distributed` tables) and the exact per-shard data to the specified historical point, rather than simply reconstructing the latest available state.
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-1-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+3. │  7 │ Grace_shard1   │        1 │
+4. │  8 │ Henry_shard1   │        1 │
+5. │ 12 │ Leo_shard1     │        1 │
+6. │ 13 │ Mia_shard1     │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-1-1 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT * FROM demo_db.users ORDER BY id;
+
+   ┌─id─┬─name───────────┬─shard_id─┐
+1. │  3 │ Charlie_shard1 │        1 │
+2. │  4 │ David_shard1   │        1 │
+3. │  7 │ Grace_shard1   │        1 │
+4. │  8 │ Henry_shard1   │        1 │
+5. │ 12 │ Leo_shard1     │        1 │
+6. │ 13 │ Mia_shard1     │        1 │
+   └────┴────────────────┴──────────┘
+
+:) exit
+```
+
+And through the `Distributed` table,
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SELECT count() FROM demo_db.users_dist;
+
+   ┌─count()─┐
+1. │      13 │
+   └─────────┘
+
+:) exit
+```
+
+Let's also verify that both table definitions were restored,
+
+```bash
+$ kubectl exec -it -n demo restored-clickhouse-pitr-appscode-cluster-shard-0-0 -- clickhouse-client --user admin --password 'psL)PHO!)ryZEcoX'
+
+:) SHOW CREATE TABLE demo_db.users;
+
+CREATE TABLE demo_db.users
+(
+    `id` UInt64,
+    `name` String,
+    `shard_id` UInt8
+)
+ENGINE = ReplicatedMergeTree('/clickhouse/tables/{shard}/demo_db/users', '{replica}')
+ORDER BY id
+SETTINGS index_granularity = 8192
+
+:) SHOW CREATE TABLE demo_db.users_dist;
+
+CREATE TABLE demo_db.users_dist
+(
+    `id` UInt64,
+    `name` String,
+    `shard_id` UInt8
+)
+ENGINE = Distributed('{cluster}', 'demo_db', 'users', rand())
+
+:) exit
+```
+
+As shown above, `restored-clickhouse-pitr` has exactly the 13 rows that existed at `2026-09-30T05:34:00Z` — ids `1, 2, 5, 6, 9, 10, 11` on both replicas of shard `0` and ids `3, 4, 7, 8, 12, 13` on both replicas of shard `1`. The rows of the fourth and fifth batches (ids `14`-`23`), which were inserted after the recovery timestamp, are correctly **not** present, while the original `sample-clickhouse` database still has all 23 rows. This confirms that `spec.init.archiver.recoveryTimestamp` recovers both the schema (`ReplicatedMergeTree` + `Distributed` tables) and the exact per-shard data to the specified historical point, rather than the latest available state.
 
 ### Cleaning up
 
