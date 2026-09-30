@@ -14,9 +14,9 @@ section_menu_id: guides
 
 # KubeDB ProxySQL with AWS Aurora
 
-This guide will show you how to use the `KubeDB` operator to set up a `ProxySQL` server in front of an externally managed [Amazon Aurora](https://aws.amazon.com/rds/aurora/) (MySQL-compatible) cluster, with automatic read/write query splitting between Aurora's writer and reader endpoints.
+This guide will show you how to use the `KubeDB` operator to set up a `ProxySQL` server in front of an externally managed [Amazon Aurora](https://aws.amazon.com/rds/aurora/) (MySQL-compatible) cluster, with automatic read/write query splitting and failover-aware routing powered by ProxySQL's own native Aurora integration.
 
-> Verified end-to-end against a live Amazon Aurora MySQL cluster and a real Kubernetes cluster. The command output below reflects that verified run (hostnames replaced with the placeholder values used throughout this guide).
+> Verified end-to-end against a live Amazon Aurora MySQL cluster and a real Kubernetes cluster, including five real `aws rds failover-db-cluster` events. The command output below reflects those verified runs (hostnames replaced with the placeholder values used throughout this guide).
 
 ## Before You Begin
 
@@ -39,14 +39,17 @@ namespace/demo created
 
 ## Why Aurora needs its own backend type
 
-Aurora is not a KubeDB-managed engine, so there's no `MySQL`/`MariaDB`/`PerconaXtraDB` CR for the operator to inspect. It also doesn't behave like ordinary MySQL replication for the purpose of picking a writer:
+Aurora is not a KubeDB-managed engine, so there's no `MySQL`/`MariaDB`/`PerconaXtraDB` CR for the operator to inspect. It also doesn't behave like ordinary MySQL replication for the purpose of picking a writer, and — this is the part that matters most — its **writer/reader cluster endpoints are floating DNS records**, not stable addresses.
 
-- ProxySQL normally determines a server's role from the `read_only` global variable. **Aurora reports it via `innodb_read_only` instead.** The operator configures ProxySQL's `mysql_replication_hostgroups` table with `check_type = "innodb_read_only"` specifically for an Aurora backend, so the writer/reader split keeps tracking Aurora correctly (including across an Aurora failover).
-- Aurora already exposes a stable **writer/cluster endpoint** and a separate, load-balanced **reader endpoint** — so, unlike the Galera/Group-Replication backends, the operator doesn't need to discover individual pod IPs. It registers exactly one `mysql_servers` row per endpoint: the writer endpoint in hostgroup `2`, the reader endpoint in hostgroup `3`.
+For an Aurora backend, the operator configures ProxySQL's own native `mysql_aws_aurora_hostgroups` mechanism rather than the generic `mysql_replication_hostgroups`/`innodb_read_only`-polling approach used by simpler third-party guides. Given a single seed connection, ProxySQL:
+
+- **Auto-discovers every instance** in the Aurora cluster by querying Aurora's own `information_schema.replica_host_status` table — you don't list readers by hand, and new/removed replicas are picked up automatically.
+- **Tracks writer/reader role from that same Aurora-native metadata** (comparing each instance's `SESSION_ID` to `MASTER_SESSION_ID`), not by polling `innodb_read_only` through Aurora's floating cluster/reader DNS endpoints.
+- **Connects to stable, individual instance hostnames** it discovers (e.g. `your-instance-1.xxxxx.<region>.rds.amazonaws.com`), which never change identity on a failover — only their reported role does. This is what makes it fail over cleanly and quickly: see [Failover behavior](#failover-behavior) below.
 
 ## Create an AppBinding for your Aurora cluster
 
-Since Aurora isn't provisioned by KubeDB, you create the `AppBinding` (and its credentials `Secret`) by hand, pointing at your cluster's writer/cluster endpoint.
+Since Aurora isn't provisioned by KubeDB, you create the `AppBinding` (and its credentials `Secret`) by hand, pointing at your cluster's writer/cluster endpoint. This endpoint is used only as the **bootstrap seed connection** ProxySQL uses to start discovery — not for ongoing production traffic.
 
 First, create a secret with your Aurora cluster's master credentials:
 
@@ -75,13 +78,13 @@ spec:
   version: "8.0.mysql_aurora.3.05.2"
 ```
 
-`spec.type` : Must be set to `kubedb.com/aws-aurora` — this is how the operator recognizes the AppBinding as an external Aurora backend rather than a KubeDB-managed one, and switches on Aurora-specific `mysql_servers`/`mysql_replication_hostgroups` generation.
+`spec.type` : Must be set to `kubedb.com/aws-aurora` — this is how the operator recognizes the AppBinding as an external Aurora backend rather than a KubeDB-managed one, and switches on Aurora-specific `mysql_servers`/`mysql_aws_aurora_hostgroups` generation.
 
-`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `tcp://<host>:<port>` form. Use the `tcp://` scheme specifically — it's threaded through into the MySQL driver's own connection-string format internally, and any other scheme breaks that. Do not point this at an instance endpoint or the reader endpoint.
+`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `tcp://<host>:<port>` form. Use the `tcp://` scheme specifically — it's threaded through into the MySQL driver's own connection-string format internally, and any other scheme breaks that.
 
 `spec.secret.name` : The secret holding the Aurora master username/password.
 
-By default, the operator derives the **reader endpoint** from the writer endpoint using AWS's stable naming convention — replacing the `cluster-` label with `cluster-ro-` (e.g. `aurora-demo.cluster-c9akciq32...` becomes `aurora-demo.cluster-ro-c9akciq32...`). If your reader endpoint doesn't follow that convention — for example, an Aurora Global Database secondary-region endpoint, or a custom endpoint — set it explicitly via `spec.parameters`:
+By default, the operator derives the **domain name** ProxySQL needs to turn discovered instance identifiers into hostnames from the writer endpoint, using AWS's stable naming convention — stripping the leading `<cluster-id>.cluster-` label (e.g. `aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com` becomes `.c9akciq32.us-east-1.rds.amazonaws.com`). If your cluster doesn't follow that convention — for example, an Aurora Global Database secondary region — set it explicitly via `spec.parameters`:
 
 ```yaml
 apiVersion: appcatalog.appscode.com/v1alpha1
@@ -98,7 +101,7 @@ spec:
   parameters:
     apiVersion: config.kubedb.com/v1alpha1
     kind: AuroraConfiguration
-    readerEndpoint: aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com
+    domainName: .c9akciq32.us-east-1.rds.amazonaws.com
   version: "8.0.mysql_aurora.3.05.2"
 ```
 
@@ -133,9 +136,9 @@ $ kubectl apply -f sample-proxysql.yaml
 proxysql.kubedb.com/aurora-proxy created
 ```
 
-### Tuning writer/reader routing weight
+### Tuning discovery and routing weight
 
-Two different ProxySQL deployments may want to route to the same Aurora cluster differently — for example, an OLTP-facing ProxySQL versus a reporting-facing one. Set `spec.backend.aurora` to override the default `mysql_servers` weight (default `1000` for both writer and reader) and reader replication-lag tolerance (default `0`, disabled) for this specific ProxySQL instance:
+Set `spec.backend.aurora` to tune how ProxySQL's native Aurora monitor behaves for this specific ProxySQL instance — for example, checking for role changes more aggressively than the 1-second default, or weighting newly-discovered readers differently:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -150,11 +153,17 @@ spec:
   backend:
     name: aurora-appbinding
     aurora:
-      writerWeight: 1000
-      readerWeight: 800
-      maxReplicationLag: 30
+      newReaderWeight: 800
+      maxLagMs: 30000
+      checkIntervalMs: 1000
   deletionPolicy: WipeOut
 ```
+
+`newReaderWeight` : the ProxySQL `mysql_servers.weight` assigned to each reader instance ProxySQL discovers (default `1000`).
+
+`maxLagMs` : excludes a reader instance from the read pool once its measured replication lag exceeds this many milliseconds (default `600000` — 10 minutes).
+
+`checkIntervalMs` : how often ProxySQL polls Aurora's `replica_host_status` for role/topology changes (default `1000`). Lower values detect a failover faster at the cost of more frequent checks.
 
 ```bash
 $ kubectl apply -f sample-proxysql.yaml
@@ -181,34 +190,41 @@ ProxySQLAdmin >
 
 (`admin`/`admin` is only the bootstrap default; once the pod finishes its first reconcile, the operator rotates the admin login to the generated credentials in the `<name>-auth` secret — read that secret's `username`/`password` keys if a later `kubectl exec` into the admin panel gets `Access denied`.)
 
-The operator has configured `mysql_replication_hostgroups` with Aurora's `innodb_read_only` check type:
+The operator has configured `mysql_aws_aurora_hostgroups` with the domain name and tuning from above:
 
 ```bash
-ProxySQLAdmin > select * from mysql_replication_hostgroups;
-+------------------+------------------+------------------+------------+
-| writer_hostgroup | reader_hostgroup | check_type       | comment    |
-+------------------+------------------+------------------+------------+
-| 2                | 3                | innodb_read_only | aws-aurora |
-+------------------+------------------+------------------+------------+
+ProxySQLAdmin > select writer_hostgroup,reader_hostgroup,domain_name,new_reader_weight,max_lag_ms,check_interval_ms from mysql_aws_aurora_hostgroups;
++------------------+------------------+-----------------------------------------+-------------------+------------+--------------------+
+| writer_hostgroup | reader_hostgroup | domain_name                              | new_reader_weight | max_lag_ms | check_interval_ms |
++------------------+------------------+-----------------------------------------+-------------------+------------+--------------------+
+| 2                | 3                | .c9akciq32.us-east-1.rds.amazonaws.com  | 800               | 30000      | 1000               |
++------------------+------------------+-----------------------------------------+-------------------+------------+--------------------+
 1 row in set (0.001 sec)
 ```
 
-And `mysql_servers` has one row for the writer endpoint (hostgroup `2`) and one for the reader endpoint (hostgroup `3`), reflecting the `readerWeight: 800` / `maxReplicationLag: 30` tuning applied above:
+`mysql_servers` only holds the one bootstrap seed row you configured on the AppBinding — deliberately placed in the reader hostgroup (`3`), so that even a stale seed can only ever affect a read, never a write:
 
 ```bash
-ProxySQLAdmin > select hostgroup_id,hostname,port,weight,max_replication_lag from mysql_servers;
-+--------------+---------------------------------------------------------+------+--------+----------------------+
-| hostgroup_id | hostname                                                 | port | weight | max_replication_lag |
-+--------------+---------------------------------------------------------+------+--------+----------------------+
-| 2            | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | 3306 | 1000   | 0                    |
-| 3            | aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com | 3306 | 800    | 30                   |
-+--------------+---------------------------------------------------------+------+--------+----------------------+
-2 rows in set (0.001 sec)
+ProxySQLAdmin > select hostgroup_id,hostname,status from mysql_servers;
++--------------+-------------------------------------------------------------+---------+
+| hostgroup_id | hostname                                                     | status  |
++--------------+-------------------------------------------------------------+---------+
+| 3            | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | ONLINE  |
++--------------+-------------------------------------------------------------+---------+
 ```
 
-Both servers show `status = ONLINE` here — ProxySQL's own monitor actually connected to the writer and reader endpoints and confirmed them healthy via `innodb_read_only`, not just accepted the config.
+`runtime_mysql_servers` shows what ProxySQL actually discovered and is routing to — one stable, individual hostname per real Aurora instance, correctly classified into the writer (`2`) or reader (`3`) hostgroup:
 
-As Aurora fails over, ProxySQL's monitor keeps polling `innodb_read_only` on both endpoints (the monitor user is granted `REPLICATION CLIENT` for this) and moves servers between the writer/reader hostgroups accordingly — you don't need to update the AppBinding or the ProxySQL CR when that happens, since the endpoint hostnames themselves don't change, only which underlying instance answers them.
+```bash
+ProxySQLAdmin > select hostgroup_id,hostname,status from runtime_mysql_servers;
++--------------+---------------------------------------------------------------------+---------+
+| hostgroup_id | hostname                                                             | status  |
++--------------+---------------------------------------------------------------------+---------+
+| 2            | aurora-demo-instance-1.c9akciq32.us-east-1.rds.amazonaws.com         | ONLINE  |
+| 3            | aurora-demo-instance-1-reader.c9akciq32.us-east-1.rds.amazonaws.com  | ONLINE  |
+| 3            | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com            | ONLINE  |
++--------------+---------------------------------------------------------------------+---------+
+```
 
 ### Check Traffic Proxy
 
@@ -230,28 +246,28 @@ SELECT * FROM proxytest.t1;
 
 The `SELECT` here is routed to the reader hostgroup right after a write to the writer hostgroup, and happened to see the row immediately in this run. Aurora replicas apply changes asynchronously, so under real load a read immediately following a write can occasionally miss it for a moment — if you don't see the row back, retry the `SELECT` rather than treating it as a failure.
 
-Back in the admin panel, `stats_mysql_connection_pool` confirms the split: the three writes (`CREATE DATABASE`/`CREATE TABLE`/`INSERT`) went to hostgroup `2` (the writer), and the `SELECT` went to hostgroup `3` (the reader):
+Back in the admin panel, `stats_mysql_connection_pool` confirms the split: the three writes (`CREATE DATABASE`/`CREATE TABLE`/`INSERT`) went to hostgroup `2` (the discovered writer instance), and the `SELECT` went to hostgroup `3` (the discovered reader instance):
 
 ```bash
 ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_pool where Queries > 0;
-+-----------+---------------------------------------------------------+---------+
-| hostgroup | srv_host                                                  | Queries |
-+-----------+---------------------------------------------------------+---------+
-| 2         | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | 3       |
-| 3         | aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com | 1       |
-+-----------+---------------------------------------------------------+---------+
++-----------+----------------------------------------------------------------------+---------+
+| hostgroup | srv_host                                                              | Queries |
++-----------+----------------------------------------------------------------------+---------+
+| 2         | aurora-demo-instance-1.c9akciq32.us-east-1.rds.amazonaws.com         | 3       |
+| 3         | aurora-demo-instance-1-reader.c9akciq32.us-east-1.rds.amazonaws.com  | 1       |
++-----------+----------------------------------------------------------------------+---------+
 ```
 
 ## Failover behavior
 
-This is the part worth understanding before you rely on this in production: **what actually happens through ProxySQL during a real Aurora failover** (`aws rds failover-db-cluster`), tested against a live cluster.
+We tested this against **five real `aws rds failover-db-cluster` events** on a live cluster, watching a tight probe loop plus a direct, ProxySQL-bypassing connection to establish ground truth independently of ProxySQL's own view.
 
-Aurora itself typically completes a failover in 15-20 seconds — the writer/reader endpoint DNS records get repointed to the newly-promoted instance quickly. But ProxySQL keeps its own internal DNS cache (`mysql-monitor_local_dns_cache_ttl`/`mysql-monitor_local_dns_cache_refresh_interval`), and that cache is consulted by *every* new backend connection it opens, not just its own health checks. Left at ProxySQL's defaults (300s/60s), we measured writes through ProxySQL breaking for 1-2 minutes after a real failover, in a way that did **not** self-correct and needed manual intervention (`LOAD MYSQL SERVERS TO RUNTIME`, and in one case a pod restart to clear stale pooled connections) to restore.
+An earlier design (ProxySQL's generic `mysql_replication_hostgroups` + polling `innodb_read_only` through Aurora's floating writer/reader DNS endpoints — the approach most third-party guides describe) broke down badly under real failover conditions: ProxySQL's own internal DNS cache, which is consulted by every new backend connection it opens, could keep routing to a pre-failover IP for minutes after Aurora itself had already failed over cleanly. In our testing that produced a **sticky 1-2 minute write outage that did not self-correct** and needed manual operator intervention to clear.
 
-The operator addresses this by lowering `mysql-monitor_local_dns_cache_ttl`/`..._refresh_interval` to 2 seconds specifically for an Aurora backend (you don't need to configure this yourself). Re-tested with that change against another real failover: a handful of transient write errors in the first ~2.5 minutes, then full self-correction with no manual intervention and no further errors. The remaining brief window appears to be AWS's own DNS propagation for the Aurora endpoints taking a bit longer than the failover itself to fully settle — not something ProxySQL-side tuning alone eliminates, only bounds.
+The native `mysql_aws_aurora_hostgroups` mechanism this operator uses instead doesn't have that problem, because it doesn't route production traffic through Aurora's floating endpoints on an ongoing basis — only the one-time bootstrap seed connection touches them, and that seed is confined to the reader hostgroup specifically so it can never cause a write failure. In our final validation run: **a single transient connection error, zero write failures, and full convergence to the correct topology in about 25 seconds** — no manual intervention needed.
 
-**Practical takeaway:** application code talking through this ProxySQL instance should retry a write that fails with `ERROR 1836 (HY000): Running in read-only mode` for a couple of minutes after a known failover event, rather than treating it as a hard failure.
+**Practical takeaway:** you should still expect a brief window (well under a minute, in our testing) of transient connection errors right as Aurora promotes a new writer — that's Aurora's own failover completing, not something any proxy can route around instantaneously. Application code should retry on connection errors for a few seconds after a known failover event. You should *not* need to intervene manually, and writes should not fail for an extended period the way they could with the floating-endpoint approach.
 
 ## Conclusion
 
-In this tutorial we've seen how to point KubeDB ProxySQL at an externally managed AWS Aurora cluster, how its writer/reader routing differs from the KubeDB-managed Group Replication and Galera backends, and what to expect from it during a real Aurora failover. Checkout the other backend guides and [Reconfigure](/docs/guides/proxysql/reconfigure/overview/index.md) docs to learn more.
+In this tutorial we've seen how to point KubeDB ProxySQL at an externally managed AWS Aurora cluster using ProxySQL's native `mysql_aws_aurora_hostgroups` auto-discovery, how its writer/reader routing differs from the KubeDB-managed Group Replication and Galera backends, and what to expect from it during a real Aurora failover. Checkout the other backend guides and [Reconfigure](/docs/guides/proxysql/reconfigure/overview/index.md) docs to learn more.
