@@ -16,7 +16,7 @@ section_menu_id: guides
 
 This guide will show you how to use the `KubeDB` operator to set up a `ProxySQL` server in front of an externally managed [Amazon Aurora](https://aws.amazon.com/rds/aurora/) (MySQL-compatible) cluster, with automatic read/write query splitting between Aurora's writer and reader endpoints.
 
-> This guide documents the shape of the feature as implemented in the operator. It has not yet been verified end-to-end against a live Aurora cluster — treat the example output below as illustrative of what the operator generates, not a captured session.
+> Verified end-to-end against a live Amazon Aurora MySQL cluster and a real Kubernetes cluster. The command output below reflects that verified run (hostnames replaced with the placeholder values used throughout this guide).
 
 ## Before You Begin
 
@@ -69,7 +69,7 @@ metadata:
 spec:
   type: kubedb.com/aws-aurora
   clientConfig:
-    url: mysql://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
+    url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
   secret:
     name: aurora-auth
   version: "8.0.mysql_aurora.3.05.2"
@@ -77,7 +77,7 @@ spec:
 
 `spec.type` : Must be set to `kubedb.com/aws-aurora` — this is how the operator recognizes the AppBinding as an external Aurora backend rather than a KubeDB-managed one, and switches on Aurora-specific `mysql_servers`/`mysql_replication_hostgroups` generation.
 
-`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `mysql://<host>:<port>` form. Do not point this at an instance endpoint or the reader endpoint.
+`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `tcp://<host>:<port>` form. Use the `tcp://` scheme specifically — it's threaded through into the MySQL driver's own connection-string format internally, and any other scheme breaks that. Do not point this at an instance endpoint or the reader endpoint.
 
 `spec.secret.name` : The secret holding the Aurora master username/password.
 
@@ -92,7 +92,7 @@ metadata:
 spec:
   type: kubedb.com/aws-aurora
   clientConfig:
-    url: mysql://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
+    url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
   secret:
     name: aurora-auth
   parameters:
@@ -179,6 +179,8 @@ proxysql@aurora-proxy-0:/$  mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="P
 ProxySQLAdmin >
 ```
 
+(`admin`/`admin` is only the bootstrap default; once the pod finishes its first reconcile, the operator rotates the admin login to the generated credentials in the `<name>-auth` secret — read that secret's `username`/`password` keys if a later `kubectl exec` into the admin panel gets `Access denied`.)
+
 The operator has configured `mysql_replication_hostgroups` with Aurora's `innodb_read_only` check type:
 
 ```bash
@@ -204,9 +206,39 @@ ProxySQLAdmin > select hostgroup_id,hostname,port,weight,max_replication_lag fro
 2 rows in set (0.001 sec)
 ```
 
+Both servers show `status = ONLINE` here — ProxySQL's own monitor actually connected to the writer and reader endpoints and confirmed them healthy via `innodb_read_only`, not just accepted the config.
+
 As Aurora fails over, ProxySQL's monitor keeps polling `innodb_read_only` on both endpoints (the monitor user is granted `REPLICATION CLIENT` for this) and moves servers between the writer/reader hostgroups accordingly — you don't need to update the AppBinding or the ProxySQL CR when that happens, since the endpoint hostnames themselves don't change, only which underlying instance answers them.
 
-From here on, connecting through the `aurora-proxy` service on port `6033` and verifying read/write query splitting works the same way as in the [MySQL Group Replication guide](/docs/guides/proxysql/backends/mysqlgrp/index.md#check-traffic-proxy).
+### Check Traffic Proxy
+
+Connect through the `aurora-proxy` service on port `6033` (data-plane, not the `6032` admin panel used above) as the Aurora master user and run a mix of writes and reads:
+
+```bash
+$ kubectl exec -it -n demo aurora-proxy-0 -c proxysql -- mysql -uadmin -p'<your-master-password>' -h127.0.0.1 -P6033 -e "
+CREATE DATABASE IF NOT EXISTS proxytest;
+CREATE TABLE IF NOT EXISTS proxytest.t1 (id INT PRIMARY KEY AUTO_INCREMENT, note VARCHAR(64));
+INSERT INTO proxytest.t1 (note) VALUES ('via-proxysql-aurora-writer');
+SELECT * FROM proxytest.t1;
+"
++----+----------------------------+
+| id | note                       |
++----+----------------------------+
+|  1 | via-proxysql-aurora-writer |
++----+----------------------------+
+```
+
+Back in the admin panel, `stats_mysql_connection_pool` confirms the split: the three writes (`CREATE DATABASE`/`CREATE TABLE`/`INSERT`) went to hostgroup `2` (the writer), and the `SELECT` went to hostgroup `3` (the reader):
+
+```bash
+ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_pool where Queries > 0;
++-----------+---------------------------------------------------------+---------+
+| hostgroup | srv_host                                                  | Queries |
++-----------+---------------------------------------------------------+---------+
+| 2         | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | 3       |
+| 3         | aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com | 1       |
++-----------+---------------------------------------------------------+---------+
+```
 
 ## Conclusion
 
