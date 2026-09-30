@@ -212,10 +212,10 @@ As Aurora fails over, ProxySQL's monitor keeps polling `innodb_read_only` on bot
 
 ### Check Traffic Proxy
 
-Connect through the `aurora-proxy` service on port `6033` (data-plane, not the `6032` admin panel used above) as the Aurora master user and run a mix of writes and reads:
+Connect through the `aurora-proxy` service on port `6033` (data-plane, not the `6032` admin panel used above) as the Aurora master user and run a mix of writes and reads. Pass the password via the `MYSQL_PWD` environment variable rather than `-p` directly, so it doesn't end up in shell history or show up in `ps` output inside the container:
 
 ```bash
-$ kubectl exec -it -n demo aurora-proxy-0 -c proxysql -- mysql -uadmin -p'<your-master-password>' -h127.0.0.1 -P6033 -e "
+$ kubectl exec -it -n demo aurora-proxy-0 -c proxysql -- env MYSQL_PWD='<your-master-password>' mysql -uadmin -h127.0.0.1 -P6033 -e "
 CREATE DATABASE IF NOT EXISTS proxytest;
 CREATE TABLE IF NOT EXISTS proxytest.t1 (id INT PRIMARY KEY AUTO_INCREMENT, note VARCHAR(64));
 INSERT INTO proxytest.t1 (note) VALUES ('via-proxysql-aurora-writer');
@@ -227,6 +227,8 @@ SELECT * FROM proxytest.t1;
 |  1 | via-proxysql-aurora-writer |
 +----+----------------------------+
 ```
+
+The `SELECT` here is routed to the reader hostgroup right after a write to the writer hostgroup, and happened to see the row immediately in this run. Aurora replicas apply changes asynchronously, so under real load a read immediately following a write can occasionally miss it for a moment — if you don't see the row back, retry the `SELECT` rather than treating it as a failure.
 
 Back in the admin panel, `stats_mysql_connection_pool` confirms the split: the three writes (`CREATE DATABASE`/`CREATE TABLE`/`INSERT`) went to hostgroup `2` (the writer), and the `SELECT` went to hostgroup `3` (the reader):
 
