@@ -16,7 +16,7 @@ section_menu_id: guides
 
 # ClickHouse Backup & Restore Overview
 
-KubeDB uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes a `ClickHouseBackup` driver (based on [clickhouse-backup](https://github.com/Altinity/clickhouse-backup)) to securely backup `ClickHouse` databases to any cloud or on-prem storage backend (for example, S3, GCS, Azure Blob storage, Minio, NetApp, Dell EMC etc.).
+KubeDB uses [KubeStash](https://kubestash.com) to backup and restore databases. KubeStash by AppsCode is a cloud native data backup and recovery solution for Kubernetes workloads and databases. KubeStash utilizes a `ClickHouseBackup` driver to securely backup `ClickHouse` databases.
 
 <figure align="center">
   <img alt="KubeDB + KubeStash" src="/docs/guides/clickhouse/backup/overview/images/kubedb_plus_kubestash.svg">
@@ -63,7 +63,7 @@ The backup process consists of the following steps:
 
 14. The backup `Job` reads necessary information (e.g. auth secret, port) to connect with the database from the `AppBinding` CR. It also reads backend information and access credentials from `BackupStorage` CR, Storage Secret and `Repository` path respectively.
 
-15. Then, the `Job` runs `clickhouse-backup` against the targeted `ClickHouse` database and uploads the output to the backend.
+15. Then, the `Job` runs ClickHouse backup query against the targeted `ClickHouse` database and uploads the output to the backend.
 
 16. After the backup process is completed, the backup `Job` updates the `status.components[dump]` field of the `Snapshot` resource with backup information of the target `ClickHouse` database.
 
@@ -90,7 +90,7 @@ The restore process consists of the following steps:
 
 6. The `Job` reads necessary information to connect with the database from the respective `AppBinding` CR. It also reads backend information and access credentials from `Repository` CR and storage `Secret` respectively.
 
-7. Then, the `Job` downloads the backed up data from the backend and restores it into the desired `ClickHouse` database using `clickhouse-backup`.
+7. Then, the `Job` downloads the backed up data from the backend and restores it into the desired `ClickHouse` database using ClickHouse restore query.
 
 8. Finally, when the restore process is completed, the `Job` updates the `status.components[*]` field of the `RestoreSession` with restore information of the target database.
 

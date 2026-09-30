@@ -13,7 +13,7 @@ section_menu_id: guides
 
 # Backup and Restore ClickHouse database using KubeStash
 
-KubeStash allows you to backup and restore `ClickHouse` databases. It supports backups for `ClickHouse` instances running in both Standalone and `clusterTopology` (sharded, replicated clusters with `ClickHouseKeeper`) configurations. KubeStash makes managing your `ClickHouse` backups and restorations more straightforward and efficient.
+KubeStash allows you to backup and restore `ClickHouse` databases. It supports backups for `ClickHouse` instances running in both `Standalone` and `ClusterTopology` (sharded, replicated clusters with `ClickHouseKeeper`) configurations. KubeStash makes managing your `ClickHouse` backups and restorations more straightforward and efficient.
 
 This guide will give you an overview how you can take backup and restore your `ClickHouse` databases using `KubeStash`. Here, we are going to demonstrate the backup and restore process for a `ClickHouse` database using `clusterTopology`. The process is similar for Standalone configuration.
 
