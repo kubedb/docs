@@ -242,6 +242,16 @@ ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_po
 +-----------+---------------------------------------------------------+---------+
 ```
 
+## Failover behavior
+
+This is the part worth understanding before you rely on this in production: **what actually happens through ProxySQL during a real Aurora failover** (`aws rds failover-db-cluster`), tested against a live cluster.
+
+Aurora itself typically completes a failover in 15-20 seconds — the writer/reader endpoint DNS records get repointed to the newly-promoted instance quickly. But ProxySQL keeps its own internal DNS cache (`mysql-monitor_local_dns_cache_ttl`/`mysql-monitor_local_dns_cache_refresh_interval`), and that cache is consulted by *every* new backend connection it opens, not just its own health checks. Left at ProxySQL's defaults (300s/60s), we measured writes through ProxySQL breaking for 1-2 minutes after a real failover, in a way that did **not** self-correct and needed manual intervention (`LOAD MYSQL SERVERS TO RUNTIME`, and in one case a pod restart to clear stale pooled connections) to restore.
+
+The operator addresses this by lowering `mysql-monitor_local_dns_cache_ttl`/`..._refresh_interval` to 2 seconds specifically for an Aurora backend (you don't need to configure this yourself). Re-tested with that change against another real failover: a handful of transient write errors in the first ~2.5 minutes, then full self-correction with no manual intervention and no further errors. The remaining brief window appears to be AWS's own DNS propagation for the Aurora endpoints taking a bit longer than the failover itself to fully settle — not something ProxySQL-side tuning alone eliminates, only bounds.
+
+**Practical takeaway:** application code talking through this ProxySQL instance should retry a write that fails with `ERROR 1836 (HY000): Running in read-only mode` for a couple of minutes after a known failover event, rather than treating it as a hard failure.
+
 ## Conclusion
 
-In this tutorial we've seen how to point KubeDB ProxySQL at an externally managed AWS Aurora cluster, and how its writer/reader routing differs from the KubeDB-managed Group Replication and Galera backends. Checkout the other backend guides and [Reconfigure](/docs/guides/proxysql/reconfigure/overview/index.md) docs to learn more.
+In this tutorial we've seen how to point KubeDB ProxySQL at an externally managed AWS Aurora cluster, how its writer/reader routing differs from the KubeDB-managed Group Replication and Galera backends, and what to expect from it during a real Aurora failover. Checkout the other backend guides and [Reconfigure](/docs/guides/proxysql/reconfigure/overview/index.md) docs to learn more.
