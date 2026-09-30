@@ -156,6 +156,11 @@ spec:
   deletionPolicy: WipeOut
 ```
 
+```bash
+$ kubectl apply -f sample-proxysql.yaml
+proxysql.kubedb.com/aurora-proxy configured
+```
+
 Let's wait for the ProxySQL to be Ready.
 
 ```bash
@@ -186,7 +191,7 @@ ProxySQLAdmin > select * from mysql_replication_hostgroups;
 1 row in set (0.001 sec)
 ```
 
-And `mysql_servers` has one row for the writer endpoint (hostgroup `2`) and one for the reader endpoint (hostgroup `3`):
+And `mysql_servers` has one row for the writer endpoint (hostgroup `2`) and one for the reader endpoint (hostgroup `3`), reflecting the `readerWeight: 800` / `maxReplicationLag: 30` tuning applied above:
 
 ```bash
 ProxySQLAdmin > select hostgroup_id,hostname,port,weight,max_replication_lag from mysql_servers;
@@ -194,7 +199,7 @@ ProxySQLAdmin > select hostgroup_id,hostname,port,weight,max_replication_lag fro
 | hostgroup_id | hostname                                                 | port | weight | max_replication_lag |
 +--------------+---------------------------------------------------------+------+--------+----------------------+
 | 2            | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | 3306 | 1000   | 0                    |
-| 3            | aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com | 3306 | 1000   | 0                    |
+| 3            | aurora-demo.cluster-ro-c9akciq32.us-east-1.rds.amazonaws.com | 3306 | 800    | 30                   |
 +--------------+---------------------------------------------------------+------+--------+----------------------+
 2 rows in set (0.001 sec)
 ```
