@@ -84,6 +84,8 @@ spec:
 
 `spec.secret.name` : The secret holding the Aurora master username/password.
 
+> **Note (TLS):** To connect to a TLS-enabled Aurora cluster (e.g. `require_secure_transport=ON`), set `spec.clientConfig.caBundle` to the base64-encoded RDS CA bundle (`https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem` or your region's bundle).
+
 By default, the operator derives the **domain name** ProxySQL needs to turn discovered instance identifiers into hostnames from the writer endpoint, using AWS's stable naming convention — stripping the leading `<cluster-id>.cluster-` label (e.g. `aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com` becomes `.c9akciq32.us-east-1.rds.amazonaws.com`). If your cluster doesn't follow that convention — for example, an Aurora Global Database secondary region — set it explicitly via `spec.parameters`:
 
 ```yaml
