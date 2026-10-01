@@ -84,7 +84,7 @@ spec:
 
 `spec.secret.name` : The secret holding the Aurora master username/password.
 
-> **Note (TLS):** To connect to a TLS-enabled Aurora cluster (e.g. `require_secure_transport=ON`), set `spec.clientConfig.caBundle` to the base64-encoded RDS CA bundle (`https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem` or your region's bundle).
+> **Note (TLS):** If your Aurora cluster enforces `require_secure_transport=ON`, see [Connecting over TLS](#connecting-over-tls) below before applying the AppBinding.
 
 By default, the operator derives the **domain name** ProxySQL needs to turn discovered instance identifiers into hostnames from the writer endpoint, using AWS's stable naming convention — stripping the leading `<cluster-id>.cluster-` label (e.g. `aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com` becomes `.c9akciq32.us-east-1.rds.amazonaws.com`). If your cluster doesn't follow that convention — for example, an Aurora Global Database secondary region — set it explicitly via `spec.parameters`:
 
@@ -113,6 +113,48 @@ Apply the AppBinding:
 $ kubectl apply -f aurora-appbinding.yaml
 appbinding.appcatalog.appscode.com/aurora-appbinding created
 ```
+
+### Connecting over TLS
+
+If your Aurora cluster enforces `require_secure_transport=ON` (or you simply want proxy-to-backend traffic encrypted), download the RDS CA bundle and put it on the AppBinding's `spec.clientConfig.caBundle` field — the operator takes care of the rest.
+
+Download the bundle covering all AWS regions (swap in your region-specific bundle if you'd rather pin to one):
+
+```bash
+$ curl -s -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
+```
+
+`spec.clientConfig.caBundle` is a `[]byte` field, so it has to be base64-encoded in the manifest. The easiest way is to inline the encoding when you apply:
+
+```bash
+$ kubectl apply -f - <<EOF
+apiVersion: appcatalog.appscode.com/v1alpha1
+kind: AppBinding
+metadata:
+  name: aurora-appbinding
+  namespace: demo
+spec:
+  type: kubedb.com/aws-aurora
+  clientConfig:
+    url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
+    caBundle: $(base64 -w0 global-bundle.pem)
+  secret:
+    name: aurora-auth
+  version: "8.0.mysql_aurora.3.05.2"
+EOF
+appbinding.appcatalog.appscode.com/aurora-appbinding configured
+```
+
+> `base64 -w0` is GNU coreutils syntax (Linux). On macOS, `base64` has no `-w0` flag and already wraps output at 76 characters — use `base64 global-bundle.pem | tr -d '\n'` instead to get a single unbroken line.
+
+With `caBundle` set (and no `spec.tlsSecret`), the operator automatically:
+
+- Materializes the CA bundle as a `<proxysql-name>-backend-ca` secret, owned by the ProxySQL object, and mounts it into the pod — you never create this secret yourself.
+- Configures ProxySQL's backend TLS variables using only that CA. Aurora validates the proxy's trust in *its* server certificate, not a client certificate, so `ssl_p2s_cert`/`ssl_p2s_key` are intentionally left unset.
+- Creates a **dedicated ProxySQL monitor user** for health checks and instance discovery, rather than reusing the Aurora master account — the same as every other ProxySQL backend type (Aurora was special-cased out of this before this fix).
+- At every config regeneration, queries Aurora's `information_schema.replica_host_status` once up front and pre-populates `mysql_servers` with **every currently-live Aurora instance** (the writer and all readers) with `use_ssl=1`. This is necessary because ProxySQL's native Aurora auto-discovery otherwise adds newly-found instances with `use_ssl=0` by default — under `require_secure_transport=ON`, Aurora rejects those plaintext connection attempts outright, so a freshly discovered instance would never come `ONLINE`. Pre-defining it with `use_ssl=1` avoids that race entirely.
+
+> Because of that last point, once TLS is enabled `mysql_servers` is **not** limited to the single bootstrap seed row shown in [Check Internal Configuration](#check-internal-configuration) below — expect one row per live instance, all `use_ssl=1`, with the current writer in hostgroup `2` and every reader in hostgroup `3`.
 
 ## Deploy ProxySQL Server
 
@@ -204,7 +246,7 @@ ProxySQLAdmin > select writer_hostgroup,reader_hostgroup,domain_name,new_reader_
 1 row in set (0.001 sec)
 ```
 
-`mysql_servers` only holds the one bootstrap seed row you configured on the AppBinding — deliberately placed in the reader hostgroup (`3`), so that even a stale seed can only ever affect a read, never a write:
+`mysql_servers` only holds the one bootstrap seed row you configured on the AppBinding — deliberately placed in the reader hostgroup (`3`), so that even a stale seed can only ever affect a read, never a write. (This is the non-TLS case; see [Connecting over TLS](#connecting-over-tls) above for how this differs once `spec.clientConfig.caBundle` is set.)
 
 ```bash
 ProxySQLAdmin > select hostgroup_id,hostname,status from mysql_servers;
