@@ -182,7 +182,7 @@ proxysql.kubedb.com/aurora-proxy created
 
 ### Tuning discovery and routing weight
 
-Set `spec.backend.aurora` to tune how ProxySQL's native Aurora monitor behaves for this specific ProxySQL instance — for example, checking for role changes more aggressively than the 1-second default, or weighting newly-discovered readers differently:
+Set `spec.configuration.init.inline.mysqlAWSAuroraHostgroups` to tune how ProxySQL's native Aurora monitor behaves for this specific ProxySQL instance. The keys are the column names of ProxySQL's `mysql_aws_aurora_hostgroups` table — for example, checking for role changes more aggressively than the 1-second default, or weighting newly-discovered readers differently:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -196,18 +196,21 @@ spec:
   syncUsers: true
   backend:
     name: aurora-appbinding
-    aurora:
-      newReaderWeight: 800
-      maxLagMs: 30000
-      checkIntervalMs: 1000
+  configuration:
+    init:
+      inline:
+        mysqlAWSAuroraHostgroups:
+          new_reader_weight: 800
+          max_lag_ms: 30000
+          check_interval_ms: 1000
   deletionPolicy: WipeOut
 ```
 
-`newReaderWeight` : the ProxySQL `mysql_servers.weight` assigned to each reader instance ProxySQL discovers (default `1000`).
+`new_reader_weight` : the ProxySQL `mysql_servers.weight` assigned to each reader instance ProxySQL discovers (default `1000`).
 
-`maxLagMs` : excludes a reader instance from the read pool once its measured replication lag exceeds this many milliseconds (default `600000` — 10 minutes).
+`max_lag_ms` : excludes a reader instance from the read pool once its measured replication lag exceeds this many milliseconds (default `600000` — 10 minutes).
 
-`checkIntervalMs` : how often ProxySQL polls Aurora's `replica_host_status` for role/topology changes (default `1000`). Lower values detect a failover faster at the cost of more frequent checks.
+`check_interval_ms` : how often ProxySQL polls Aurora's `replica_host_status` for role/topology changes (default `1000`). Lower values detect a failover faster at the cost of more frequent checks.
 
 ```bash
 $ kubectl apply -f sample-proxysql.yaml
