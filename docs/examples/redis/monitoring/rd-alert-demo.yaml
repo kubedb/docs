@@ -1,15 +1,13 @@
 apiVersion: kubedb.com/v1
-kind: Postgres
+kind: Redis
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: rd-alert-demo
+  namespace: alert-redis
 spec:
-  version: "13.13"
-  replicas: 3
+  version: "6.0.20"
   deletionPolicy: WipeOut
   storage:
     storageClassName: "local-path"
-
     accessModes:
     - ReadWriteOnce
     resources:
@@ -19,6 +17,6 @@ spec:
     agent: prometheus.io/operator
     prometheus:
       serviceMonitor:
+        interval: 10s
         labels:
           release: prometheus
-        interval: 10s
