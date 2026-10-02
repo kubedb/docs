@@ -16,8 +16,6 @@ section_menu_id: guides
 
 This guide will show you how to use the `KubeDB` operator to set up a `ProxySQL` server in front of an externally managed [Amazon Aurora](https://aws.amazon.com/rds/aurora/) (MySQL-compatible) cluster, with automatic read/write query splitting and failover-aware routing powered by ProxySQL's own native Aurora integration.
 
-> Verified end-to-end against a live Amazon Aurora MySQL cluster and a real Kubernetes cluster, including five real `aws rds failover-db-cluster` events. The command output below reflects those verified runs (hostnames replaced with the placeholder values used throughout this guide).
-
 ## Before You Begin
 
 - You need to have a Kubernetes cluster, and the kubectl command-line tool must be configured to communicate with your cluster. If you do not already have a cluster, you can create one by using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
@@ -28,7 +26,7 @@ This guide will show you how to use the `KubeDB` operator to set up a `ProxySQL`
   - [ProxySQL](/docs/guides/proxysql/concepts/proxysql/index.md)
   - [AppBinding](/docs/guides/proxysql/concepts/appbinding/index.md)
 
-- You need an existing Amazon Aurora (MySQL-compatible) DB cluster, reachable from your Kubernetes cluster, along with its master username/password. Unlike the [MySQL Group Replication](/docs/guides/proxysql/backends/mysqlgrp/index.md), [MariaDB Galera](/docs/guides/proxysql/backends/mariadb-galera/index.md), and [Percona XtraDB Galera](/docs/guides/proxysql/backends/xtradb-galera/external/index.md) backends, Aurora is never a KubeDB-managed database — KubeDB only knows how to point ProxySQL at it.
+- You need an existing Amazon Aurora (MySQL-compatible) DB cluster, reachable from your Kubernetes cluster, along with its master username/password.
 
 - To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial. Run the following command to prepare your cluster for this tutorial:
 
@@ -37,19 +35,9 @@ $ kubectl create ns demo
 namespace/demo created
 ```
 
-## Why Aurora needs its own backend type
-
-Aurora is not a KubeDB-managed engine, so there's no `MySQL`/`MariaDB`/`PerconaXtraDB` CR for the operator to inspect. It also doesn't behave like ordinary MySQL replication for the purpose of picking a writer, and — this is the part that matters most — its **writer/reader cluster endpoints are floating DNS records**, not stable addresses.
-
-For an Aurora backend, the operator configures ProxySQL's own native `mysql_aws_aurora_hostgroups` mechanism rather than the generic `mysql_replication_hostgroups`/`innodb_read_only`-polling approach used by simpler third-party guides. Given a single seed connection, ProxySQL:
-
-- **Auto-discovers every instance** in the Aurora cluster by querying Aurora's own `information_schema.replica_host_status` table — you don't list readers by hand, and new/removed replicas are picked up automatically.
-- **Tracks writer/reader role from that same Aurora-native metadata** (comparing each instance's `SESSION_ID` to `MASTER_SESSION_ID`), not by polling `innodb_read_only` through Aurora's floating cluster/reader DNS endpoints.
-- **Connects to stable, individual instance hostnames** it discovers (e.g. `your-instance-1.xxxxx.<region>.rds.amazonaws.com`), which never change identity on a failover — only their reported role does. This is what makes it fail over cleanly and quickly: see [Failover behavior](#failover-behavior) below.
-
 ## Create an AppBinding for your Aurora cluster
 
-Since Aurora isn't provisioned by KubeDB, you create the `AppBinding` (and its credentials `Secret`) by hand, pointing at your cluster's writer/cluster endpoint. This endpoint is used only as the **bootstrap seed connection** ProxySQL uses to start discovery — not for ongoing production traffic.
+Since Aurora isn't provisioned by KubeDB, you create the `AppBinding` (and its credentials `Secret`) by hand, pointing at your cluster's writer/cluster endpoint.
 
 First, create a secret with your Aurora cluster's master credentials:
 
@@ -73,31 +61,7 @@ spec:
   type: kubedb.com/aws-aurora
   clientConfig:
     url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
-  secret:
-    name: aurora-auth
-  version: "8.0.mysql_aurora.3.05.2"
-```
-
-`spec.type` : Must be set to `kubedb.com/aws-aurora` — this is how the operator recognizes the AppBinding as an external Aurora backend rather than a KubeDB-managed one, and switches on Aurora-specific `mysql_servers`/`mysql_aws_aurora_hostgroups` generation.
-
-`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `tcp://<host>:<port>` form. Use the `tcp://` scheme specifically — it's threaded through into the MySQL driver's own connection-string format internally, and any other scheme breaks that.
-
-`spec.secret.name` : The secret holding the Aurora master username/password.
-
-> **Note (TLS):** If your Aurora cluster enforces `require_secure_transport=ON`, see [Connecting over TLS](#connecting-over-tls) below before applying the AppBinding.
-
-By default, the operator derives the **domain name** ProxySQL needs to turn discovered instance identifiers into hostnames from the writer endpoint, using AWS's stable naming convention — stripping the leading `<cluster-id>.cluster-` label (e.g. `aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com` becomes `.c9akciq32.us-east-1.rds.amazonaws.com`). If your cluster doesn't follow that convention — for example, an Aurora Global Database secondary region — set it explicitly via `spec.parameters`:
-
-```yaml
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: aurora-appbinding
-  namespace: demo
-spec:
-  type: kubedb.com/aws-aurora
-  clientConfig:
-    url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
+    caBundle: <base64-encoded-ca-bundle>
   secret:
     name: aurora-auth
   parameters:
@@ -107,54 +71,26 @@ spec:
   version: "8.0.mysql_aurora.3.05.2"
 ```
 
+`spec.type` : Must be set to `kubedb.com/aws-aurora`.
+
+`spec.clientConfig.url` : Your Aurora cluster's **writer (cluster) endpoint**, in `tcp://<host>:<port>` form.
+
+`spec.clientConfig.caBundle` : The base64-encoded RDS CA bundle, used for TLS between ProxySQL and Aurora. You can get it with the following command. If you don't want backend TLS, remove this field.
+
+```bash
+$ curl -s https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem | base64 -w0
+```
+
+`spec.secret.name` : The secret holding the Aurora master username/password.
+
+`spec.parameters.domainName` : The domain suffix of your Aurora instance endpoints, starting with a dot. An instance endpoint is `<instance-id><domainName>`, for example `aurora-demo-instance-1.c9akciq32.us-east-1.rds.amazonaws.com`. This field is optional. If it is not set, it is taken from the writer endpoint by removing the leading `<cluster-id>.cluster-` part.
+
 Apply the AppBinding:
 
 ```bash
 $ kubectl apply -f aurora-appbinding.yaml
 appbinding.appcatalog.appscode.com/aurora-appbinding created
 ```
-
-### Connecting over TLS
-
-If your Aurora cluster enforces `require_secure_transport=ON` (or you simply want proxy-to-backend traffic encrypted), download the RDS CA bundle and put it on the AppBinding's `spec.clientConfig.caBundle` field — the operator takes care of the rest.
-
-Download the bundle covering all AWS regions (swap in your region-specific bundle if you'd rather pin to one):
-
-```bash
-$ curl -s -o global-bundle.pem https://truststore.pki.rds.amazonaws.com/global/global-bundle.pem
-```
-
-`spec.clientConfig.caBundle` is a `[]byte` field, so it has to be base64-encoded in the manifest. The easiest way is to inline the encoding when you apply:
-
-```bash
-$ kubectl apply -f - <<EOF
-apiVersion: appcatalog.appscode.com/v1alpha1
-kind: AppBinding
-metadata:
-  name: aurora-appbinding
-  namespace: demo
-spec:
-  type: kubedb.com/aws-aurora
-  clientConfig:
-    url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
-    caBundle: $(base64 -w0 global-bundle.pem)
-  secret:
-    name: aurora-auth
-  version: "8.0.mysql_aurora.3.05.2"
-EOF
-appbinding.appcatalog.appscode.com/aurora-appbinding configured
-```
-
-> `base64 -w0` is GNU coreutils syntax (Linux). On macOS, `base64` has no `-w0` flag and already wraps output at 76 characters — use `base64 global-bundle.pem | tr -d '\n'` instead to get a single unbroken line.
-
-With `caBundle` set (and no `spec.tlsSecret`), the operator automatically:
-
-- Materializes the CA bundle as a `<proxysql-name>-backend-ca` secret, owned by the ProxySQL object, and mounts it into the pod — you never create this secret yourself.
-- Configures ProxySQL's backend TLS variables using only that CA. Aurora validates the proxy's trust in *its* server certificate, not a client certificate, so `ssl_p2s_cert`/`ssl_p2s_key` are intentionally left unset.
-- Creates a **dedicated ProxySQL monitor user** for health checks and instance discovery, rather than reusing the Aurora master account — the same as every other ProxySQL backend type (Aurora was special-cased out of this before this fix).
-- At every config regeneration, queries Aurora's `information_schema.replica_host_status` once up front and pre-populates `mysql_servers` with **every currently-live Aurora instance** (the writer and all readers) with `use_ssl=1`. This is necessary because ProxySQL's native Aurora auto-discovery otherwise adds newly-found instances with `use_ssl=0` by default — under `require_secure_transport=ON`, Aurora rejects those plaintext connection attempts outright, so a freshly discovered instance would never come `ONLINE`. Pre-defining it with `use_ssl=1` avoids that race entirely.
-
-> Because of that last point, once TLS is enabled `mysql_servers` is **not** limited to the single bootstrap seed row shown in [Check Internal Configuration](#check-internal-configuration) below — expect one row per live instance, all `use_ssl=1`, with the current writer in hostgroup `2` and every reader in hostgroup `3`.
 
 ## Deploy ProxySQL Server
 
@@ -214,7 +150,7 @@ spec:
 
 ```bash
 $ kubectl apply -f sample-proxysql.yaml
-proxysql.kubedb.com/aurora-proxy configured
+proxysql.kubedb.com/aurora-proxy created
 ```
 
 Let's wait for the ProxySQL to be Ready.
@@ -227,15 +163,14 @@ aurora-proxy   3.0.1-debian   Ready    2m
 
 ### Check Internal Configuration
 
-Let's exec into the ProxySQL server pod and get into the admin panel.
+Let's get the admin credentials from the `aurora-proxy-auth` secret and get into the admin panel.
 
 ```bash
-$ kubectl exec -it -n demo aurora-proxy-0 -- bash
-proxysql@aurora-proxy-0:/$  mysql -uadmin -padmin -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > "
+$ ADMIN_USER=$(kubectl get secret -n demo aurora-proxy-auth -o jsonpath='{.data.username}' | base64 -d)
+$ ADMIN_PASS=$(kubectl get secret -n demo aurora-proxy-auth -o jsonpath='{.data.password}' | base64 -d)
+$ kubectl exec -it -n demo aurora-proxy-0 -- mysql -u"$ADMIN_USER" -p"$ADMIN_PASS" -h127.0.0.1 -P6032 --prompt="ProxySQLAdmin > "
 ProxySQLAdmin >
 ```
-
-(`admin`/`admin` is only the bootstrap default; once the pod finishes its first reconcile, the operator rotates the admin login to the generated credentials in the `<name>-auth` secret — read that secret's `username`/`password` keys if a later `kubectl exec` into the admin panel gets `Access denied`.)
 
 The operator has configured `mysql_aws_aurora_hostgroups` with the domain name and tuning from above:
 
@@ -249,18 +184,7 @@ ProxySQLAdmin > select writer_hostgroup,reader_hostgroup,domain_name,new_reader_
 1 row in set (0.001 sec)
 ```
 
-`mysql_servers` only holds the one bootstrap seed row you configured on the AppBinding — deliberately placed in the reader hostgroup (`3`), so that even a stale seed can only ever affect a read, never a write. (This is the non-TLS case; see [Connecting over TLS](#connecting-over-tls) above for how this differs once `spec.clientConfig.caBundle` is set.)
-
-```bash
-ProxySQLAdmin > select hostgroup_id,hostname,status from mysql_servers;
-+--------------+-------------------------------------------------------------+---------+
-| hostgroup_id | hostname                                                     | status  |
-+--------------+-------------------------------------------------------------+---------+
-| 3            | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com    | ONLINE  |
-+--------------+-------------------------------------------------------------+---------+
-```
-
-`runtime_mysql_servers` shows what ProxySQL actually discovered and is routing to — one stable, individual hostname per real Aurora instance, correctly classified into the writer (`2`) or reader (`3`) hostgroup:
+`runtime_mysql_servers` shows the Aurora instances ProxySQL discovered. The writer is in hostgroup `2` and the readers are in hostgroup `3`.
 
 ```bash
 ProxySQLAdmin > select hostgroup_id,hostname,status from runtime_mysql_servers;
@@ -275,46 +199,95 @@ ProxySQLAdmin > select hostgroup_id,hostname,status from runtime_mysql_servers;
 
 ### Check Traffic Proxy
 
-Connect through the `aurora-proxy` service on port `6033` (data-plane, not the `6032` admin panel used above) as the Aurora master user and run a mix of writes and reads. Pass the password via the `MYSQL_PWD` environment variable rather than `-p` directly, so it doesn't end up in shell history or show up in `ps` output inside the container:
+To test the traffic routing through the ProxySQL server let's first create a pod with ubuntu base image in it. We will use the following yaml.
 
-```bash
-$ kubectl exec -it -n demo aurora-proxy-0 -c proxysql -- env MYSQL_PWD='<your-master-password>' mysql -uadmin -h127.0.0.1 -P6033 -e "
-CREATE DATABASE IF NOT EXISTS proxytest;
-CREATE TABLE IF NOT EXISTS proxytest.t1 (id INT PRIMARY KEY AUTO_INCREMENT, note VARCHAR(64));
-INSERT INTO proxytest.t1 (note) VALUES ('via-proxysql-aurora-writer');
-SELECT * FROM proxytest.t1;
-"
-+----+----------------------------+
-| id | note                       |
-+----+----------------------------+
-|  1 | via-proxysql-aurora-writer |
-+----+----------------------------+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ubuntu
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ubuntu
+  template:
+    metadata:
+      labels:
+        app: ubuntu
+    spec:
+      containers:
+        - image: ubuntu
+          imagePullPolicy: IfNotPresent
+          name: ubuntu
+          command: ["/bin/sleep", "3650d"]
 ```
 
-The `SELECT` here is routed to the reader hostgroup right after a write to the writer hostgroup, and happened to see the row immediately in this run. Aurora replicas apply changes asynchronously, so under real load a read immediately following a write can occasionally miss it for a moment — if you don't see the row back, retry the `SELECT` rather than treating it as a failure.
-
-Back in the admin panel, `stats_mysql_connection_pool` confirms the split: the three writes (`CREATE DATABASE`/`CREATE TABLE`/`INSERT`) went to hostgroup `2` (the discovered writer instance), and the `SELECT` went to hostgroup `3` (the discovered reader instance):
+Let's apply the yaml.
 
 ```bash
-ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_pool where Queries > 0;
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/proxysql/backends/aurora/examples/ubuntu.yaml
+deployment.apps/ubuntu created
+```
+
+Let's exec into the pod and install mysql-client.
+
+```bash
+$ kubectl exec -it -n demo ubuntu-bb47d8d6c-7wndq -- bash
+root@ubuntu-bb47d8d6c-7wndq:/# apt update
+... ... ..
+root@ubuntu-bb47d8d6c-7wndq:/# apt install mysql-client -y
+Reading package lists... Done
+... .. ...
+```
+
+Now let's connect with the ProxySQL server through the `aurora-proxy` service as the Aurora master user.
+
+```bash
+root@ubuntu-bb47d8d6c-7wndq:/# mysql -uadmin -p'<your-master-password>' -haurora-proxy.demo.svc -P6033
+mysql: [Warning] Using a password on the command line interface can be insecure.
+Welcome to the MySQL monitor.  Commands end with ; or \g.
+
+mysql> create database proxytest;
+Query OK, 1 row affected (0.03 sec)
+
+mysql> create table proxytest.testtb(name varchar(103), primary key(name));
+Query OK, 0 rows affected (0.05 sec)
+
+mysql> insert into proxytest.testtb(name) values("Kim Torres");
+Query OK, 1 row affected (0.02 sec)
+
+mysql> insert into proxytest.testtb(name) values("Tony SoFua");
+Query OK, 1 row affected (0.02 sec)
+
+mysql> select * from proxytest.testtb;
++------------+
+| name       |
++------------+
+| Kim Torres |
+| Tony SoFua |
++------------+
+2 rows in set (0.01 sec)
+```
+
+We can see the queries are successfully executed through the ProxySQL server.
+
+Let's check the query splits inside the ProxySQL server by going back to the ProxySQLAdmin panel.
+
+```bash
+ProxySQLAdmin > select hostgroup,srv_host,Queries from stats_mysql_connection_pool;
 +-----------+----------------------------------------------------------------------+---------+
-| hostgroup | srv_host                                                              | Queries |
+| hostgroup | srv_host                                                             | Queries |
 +-----------+----------------------------------------------------------------------+---------+
-| 2         | aurora-demo-instance-1.c9akciq32.us-east-1.rds.amazonaws.com         | 3       |
+| 2         | aurora-demo-instance-1.c9akciq32.us-east-1.rds.amazonaws.com         | 4       |
 | 3         | aurora-demo-instance-1-reader.c9akciq32.us-east-1.rds.amazonaws.com  | 1       |
+| 3         | aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com            | 0       |
 +-----------+----------------------------------------------------------------------+---------+
 ```
 
-## Failover behavior
-
-We tested this against **five real `aws rds failover-db-cluster` events** on a live cluster, watching a tight probe loop plus a direct, ProxySQL-bypassing connection to establish ground truth independently of ProxySQL's own view.
-
-An earlier design (ProxySQL's generic `mysql_replication_hostgroups` + polling `innodb_read_only` through Aurora's floating writer/reader DNS endpoints — the approach most third-party guides describe) broke down badly under real failover conditions: ProxySQL's own internal DNS cache, which is consulted by every new backend connection it opens, could keep routing to a pre-failover IP for minutes after Aurora itself had already failed over cleanly. In our testing that produced a **sticky 1-2 minute write outage that did not self-correct** and needed manual operator intervention to clear.
-
-The native `mysql_aws_aurora_hostgroups` mechanism this operator uses instead doesn't have that problem, because it doesn't route production traffic through Aurora's floating endpoints on an ongoing basis — only the one-time bootstrap seed connection touches them, and that seed is confined to the reader hostgroup specifically so it can never cause a write failure. In our final validation run: **a single transient connection error, zero write failures, and full convergence to the correct topology in about 25 seconds** — no manual intervention needed.
-
-**Practical takeaway:** you should still expect a brief window (well under a minute, in our testing) of transient connection errors right as Aurora promotes a new writer — that's Aurora's own failover completing, not something any proxy can route around instantaneously. Application code should retry on connection errors for a few seconds after a known failover event. You should *not* need to intervene manually, and writes should not fail for an extended period the way they could with the floating-endpoint approach.
+We can see that the write queries went to the writer instance and the read query went to the reader instance. So the ProxySQL server is ready to use.
 
 ## Conclusion
 
-In this tutorial we've seen how to point KubeDB ProxySQL at an externally managed AWS Aurora cluster using ProxySQL's native `mysql_aws_aurora_hostgroups` auto-discovery, how its writer/reader routing differs from the KubeDB-managed Group Replication and Galera backends, and what to expect from it during a real Aurora failover. Checkout the other backend guides and [Reconfigure](/docs/guides/proxysql/reconfigure/overview/index.md) docs to learn more.
+In this tutorial, we have seen how to set up KubeDB ProxySQL for an AWS Aurora cluster and how it splits the read and write queries. Checkout the other docs to learn more.
