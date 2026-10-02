@@ -2,9 +2,9 @@
 title: Continuous Archiving and Point-in-time Recovery Using Restic Driver
 menu:
   docs_{{ .version }}:
-    identifier: restic
-    name: Restic
-    parent: pitr-mysql
+    identifier: restic-different-db
+    name: Restore in a Different Database
+    parent: pitr-restic-mysql
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -32,7 +32,7 @@ To keep things isolated, this tutorial uses a separate namespace called `demo` t
 $ kubectl create ns demo
 namespace/demo created
 ```
-> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/pitr/restic/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+> Note: The yaml files used in this tutorial are stored in [docs/guides/mysql/pitr/restic/different-db/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Continuous Archiving
 Continuous archiving involves making regular copies (or "archives") of the MySQL transaction log files.To ensure continuous archiving to a remote location we need prepare `BackupStorage`,`RetentionPolicy`,`MySQLArchiver` for the KubeDB Managed MySQL Databases.
@@ -103,7 +103,7 @@ spec:
     last: 2
 ```
 ```bash
-$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/retention-policy.yaml 
+$ kubectl apply -f  https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls/retention-policy.yaml 
 retentionpolicy.storage.kubestash.com/mysql-retention-policy created
 ```
 
@@ -171,10 +171,10 @@ stringData:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/encryptionSecret.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls/encryptionSecret.yaml
  secret/encrypt-secret created
  
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysqlarchiver.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls/mysqlarchiver.yaml
  mysqlarchiver.archiver.kubedb.com/mysqlarchiver-sample created
 ```
 
@@ -205,7 +205,7 @@ spec:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysql.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls/mysql.yaml
  mysql.kubedb.com/mysql created
  ```
 
@@ -400,7 +400,7 @@ spec:
 ```
 
 ```bash 
- $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/yamls/mysql-restore.yaml
+ $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/pitr/restic/different-db/yamls/mysql-restore.yaml
  mysql.kubedb.com/restore-mysql created
  ```
 
@@ -461,6 +461,8 @@ $ kubectl delete ns demo
 ```
 
 ## Next Steps
+
+- [Restore in the same database using Restic](/docs/guides/mysql/pitr/restic/same-db/archiver.md)
 
 - Learn about [backup and restore](/docs/guides/mysql/backup/stash/overview/index.md) MySQL database using Stash.
 - Learn about initializing [MySQL with Script](/docs/guides/mysql/initialization/script_source.md).
