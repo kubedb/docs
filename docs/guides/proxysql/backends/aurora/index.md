@@ -61,7 +61,7 @@ spec:
   type: kubedb.com/aws-aurora
   clientConfig:
     url: tcp://aurora-demo.cluster-c9akciq32.us-east-1.rds.amazonaws.com:3306
-    caBundle: <base64-encoded-ca-bundle>
+    caBundle: dGhpcyBpcyBub3QgYSBjZXJ0
   secret:
     name: aurora-auth
   parameters:
