@@ -1,0 +1,103 @@
+<svg version="1.1" viewBox="0 0 960 560" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" font-family="Roboto, Helvetica, Arial, sans-serif">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6b7c"/>
+    </marker>
+  </defs>
+
+  <rect x="0" y="0" width="960" height="560" fill="#ffffff"/>
+
+  <!-- ============ control plane row ============ -->
+  <rect x="36" y="30" width="130" height="56" rx="8" fill="#e8eaed" stroke="#9aa0a6" stroke-width="1.5"/>
+  <text x="101" y="64" text-anchor="middle" font-size="16" fill="#202124">User</text>
+
+  <rect x="236" y="30" width="170" height="56" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="321" y="54" text-anchor="middle" font-size="15" fill="#1a1a1a">Branch</text>
+  <text x="321" y="73" text-anchor="middle" font-size="12" fill="#5f6368">courier.kubedb.com</text>
+
+  <rect x="476" y="24" width="200" height="68" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="576" y="52" text-anchor="middle" font-size="15" fill="#1a1a1a">KubeDB Courier</text>
+  <text x="576" y="72" text-anchor="middle" font-size="12" fill="#5f6368">branch controller</text>
+
+  <rect x="746" y="24" width="180" height="68" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="836" y="52" text-anchor="middle" font-size="15" fill="#1a1a1a">KubeDB</text>
+  <text x="836" y="72" text-anchor="middle" font-size="15" fill="#1a1a1a">Provisioner</text>
+
+  <line x1="166" y1="58" x2="228" y2="58" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="197" cy="42" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="197" y="47" text-anchor="middle" font-size="12" fill="#5b6b7c">1</text>
+
+  <line x1="406" y1="58" x2="468" y2="58" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="437" cy="42" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="437" y="47" text-anchor="middle" font-size="12" fill="#5b6b7c">2</text>
+
+  <line x1="676" y1="58" x2="738" y2="58" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="707" cy="42" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="707" y="47" text-anchor="middle" font-size="12" fill="#5b6b7c">5</text>
+
+  <!-- ============ source group ============ -->
+  <rect x="36" y="150" width="320" height="330" rx="10" fill="#f6f8fc" stroke="#b7c6e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="56" y="176" font-size="14" font-weight="bold" fill="#3c4858">Source database</text>
+
+  <rect x="60" y="192" width="272" height="52" rx="6" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="196" y="213" text-anchor="middle" font-size="14" fill="#1a1a1a">Postgres/sample-postgres</text>
+  <text x="196" y="232" text-anchor="middle" font-size="12" fill="#5f6368">keeps serving traffic</text>
+
+  <rect x="60" y="264" width="272" height="44" rx="6" fill="#ffffff" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="196" y="291" text-anchor="middle" font-size="13" fill="#1a1a1a">Pod sample-postgres-0</text>
+
+  <rect x="60" y="336" width="272" height="60" rx="6" fill="#fce5cd" stroke="#e69138" stroke-width="1.5"/>
+  <text x="196" y="360" text-anchor="middle" font-size="13" fill="#1a1a1a">PVC data-sample-postgres-0</text>
+  <text x="196" y="380" text-anchor="middle" font-size="12" fill="#7a5217">live data volume</text>
+
+  <text x="196" y="432" text-anchor="middle" font-size="12" fill="#5f6368">never paused, never modified</text>
+
+  <!-- ============ snapshot ============ -->
+  <rect x="392" y="320" width="176" height="92" rx="8" fill="#d9ead3" stroke="#6aa84f" stroke-width="1.5"/>
+  <text x="480" y="348" text-anchor="middle" font-size="14" fill="#1a1a1a">VolumeSnapshot</text>
+  <text x="480" y="368" text-anchor="middle" font-size="12" fill="#38761d">br-dev-branch-…</text>
+  <text x="480" y="392" text-anchor="middle" font-size="12" fill="#5f6368">CSI, copy-on-write</text>
+
+  <line x1="332" y1="366" x2="384" y2="366" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="358" cy="344" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="358" y="349" text-anchor="middle" font-size="12" fill="#5b6b7c">3</text>
+
+  <line x1="568" y1="366" x2="620" y2="366" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="594" cy="344" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="594" y="349" text-anchor="middle" font-size="12" fill="#5b6b7c">4</text>
+
+  <!-- courier drives the snapshot + clone -->
+  <path d="M 576 92 L 576 300 L 480 300 L 480 312" fill="none" stroke="#8e7cc3" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="566" y="206" text-anchor="end" font-size="12" fill="#7a63b8">snapshots + clones</text>
+
+  <!-- ============ branch group ============ -->
+  <rect x="628" y="150" width="296" height="330" rx="10" fill="#f6f8fc" stroke="#b7c6e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="648" y="176" font-size="14" font-weight="bold" fill="#3c4858">Branched database</text>
+
+  <rect x="652" y="192" width="248" height="52" rx="6" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="776" y="213" text-anchor="middle" font-size="14" fill="#1a1a1a">Postgres/dev-postgres</text>
+  <text x="776" y="232" text-anchor="middle" font-size="12" fill="#5f6368">spec copied from source</text>
+
+  <rect x="652" y="264" width="248" height="44" rx="6" fill="#ffffff" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="776" y="291" text-anchor="middle" font-size="13" fill="#1a1a1a">Pod dev-postgres-0</text>
+
+  <rect x="652" y="336" width="248" height="60" rx="6" fill="#fce5cd" stroke="#e69138" stroke-width="1.5"/>
+  <text x="776" y="360" text-anchor="middle" font-size="13" fill="#1a1a1a">PVC data-dev-postgres-0</text>
+  <text x="776" y="380" text-anchor="middle" font-size="12" fill="#7a5217">cloned from the snapshot</text>
+
+  <path d="M 836 92 L 836 186" fill="none" stroke="#8e7cc3" stroke-width="1.6" stroke-dasharray="5 4" marker-end="url(#arrow)"/>
+  <text x="814" y="126" text-anchor="end" font-size="12" fill="#7a63b8">adopts the cloned PVC</text>
+  <circle cx="836" cy="121" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="836" y="126" text-anchor="middle" font-size="12" fill="#5b6b7c">6</text>
+
+  <text x="776" y="432" text-anchor="middle" font-size="12" fill="#5f6368">writes diverge from the source</text>
+
+  <!-- ============ post actions ============ -->
+  <rect x="336" y="486" width="288" height="50" rx="8" fill="#fff2cc" stroke="#f1c232" stroke-width="1.5"/>
+  <text x="480" y="506" text-anchor="middle" font-size="13" fill="#1a1a1a">Optional post-action Jobs</text>
+  <text x="480" y="524" text-anchor="middle" font-size="12" fill="#7f6000">mask / anonymize / trim the clone</text>
+
+  <path d="M 776 480 L 776 511 L 632 511" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="700" cy="493" r="11" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="700" y="498" text-anchor="middle" font-size="12" fill="#5b6b7c">7</text>
+</svg>
