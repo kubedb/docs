@@ -53,6 +53,7 @@ aliases:
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` builtin-Prometheus](/docs/guides/postgres/monitoring/using-builtin-prometheus.md).
 - Monitor your PostgreSQL database with KubeDB using [`out-of-the-box` Prometheus operator](/docs/guides/postgres/monitoring/using-prometheus-operator.md).
 - Use [private Docker registry](/docs/guides/postgres/private-registry/using-private-registry.md) to deploy PostgreSQL with KubeDB.
+- Meet audit compliance requirements with [pgAudit audit logging](/docs/guides/postgres/audit-logging/pgaudit.md).
 - Detail concepts of [Postgres object](/docs/guides/postgres/concepts/postgres.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
 
