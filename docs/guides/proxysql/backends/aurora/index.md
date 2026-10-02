@@ -182,7 +182,7 @@ proxysql.kubedb.com/aurora-proxy created
 
 ### Tuning discovery and routing weight
 
-Set `spec.configuration.init.inline.mysqlAWSAuroraHostgroups` to tune how ProxySQL's native Aurora monitor behaves for this specific ProxySQL instance. The keys are the column names of ProxySQL's `mysql_aws_aurora_hostgroups` table — for example, checking for role changes more aggressively than the 1-second default, or weighting newly-discovered readers differently:
+Set `spec.configuration.init.inline.mysqlAWSAuroraHostgroups` to tune how ProxySQL's native Aurora monitor behaves for this specific ProxySQL instance — for example, checking for role changes more aggressively than the 1-second default, or weighting newly-discovered readers differently. The keys are the column names of ProxySQL's `mysql_aws_aurora_hostgroups` table:
 
 ```yaml
 apiVersion: kubedb.com/v1
