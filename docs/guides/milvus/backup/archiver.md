@@ -17,8 +17,8 @@ section_menu_id: guides
 KubeDB backs up a running Milvus physically: it captures the metadata etcd and the object storage bucket
 under one short write fence, and keeps recording every later metadata change and new object version. A
 `MilvusArchiver` ties the pieces together. A new `Milvus` can be restored from the archive to the time of any
-full backup or, for a Milvus that keeps its write-ahead log on the object storage, to **any point in time**
-inside the recorded window.
+full backup or to **any point in time** inside the recorded window. This works for Standalone and Distributed
+Milvus alike: KubeDB always runs Milvus with the Woodpecker write-ahead log, which lives in the object storage.
 
 ## How it works
 
@@ -32,17 +32,30 @@ The archive lives in the `BackupStorage` of the archiver (S3 compatible storage)
 `<subDir>/<namespace>/<db>`. The change log and the base dumps are encrypted with a key derived from the
 archiver's `encryptionSecret`.
 
-## Point-in-time recovery needs the Woodpecker WAL
+## The write-ahead log
 
-| Milvus | WAL | Base backup | Point-in-time recovery |
-|--------|-----|:-----------:|:----------------------:|
-| Standalone (default) | RocksMQ on the data PVC | yes | no (only the time of a full backup) |
-| Standalone with `spec.wal.type: Woodpecker` | objects in the bucket | yes | yes |
-| Distributed | Woodpecker | yes | yes |
+Every Milvus that KubeDB creates uses the Woodpecker write-ahead log, stored as objects in the Milvus bucket
+(`mq.type: woodpecker`, `woodpecker.storage.type: minio`). There is no option to choose another one, and a
+configuration that sets a different `mq.type` or `woodpecker.storage.type: local` is refused, because the
+archive must see the write-ahead log in the object storage.
 
-For a RocksMQ standalone Milvus the RocksMQ directories are captured inside the write fence together with
-the metadata (tar stream by the `physical-backup` task, or a CSI `VolumeSnapshot` with the `volume-snapshot`
-task). The archiver records the condition `PITRUnsupported` on such a database.
+| Milvus | Full backup | Point-in-time recovery | VolumeSnapshot (warm cache) |
+|--------|:-----------:|:----------------------:|:---------------------------:|
+| Standalone | yes | yes | yes |
+| Distributed | yes | yes | no (use the Restic driver) |
+| Standalone created by an older KubeDB (RocksMQ) | no | no | no |
+
+### Existing Standalone Milvus (RocksMQ)
+
+A Standalone Milvus created by a KubeDB release before the archiver keeps its write-ahead log in RocksMQ on its
+data PVC. Milvus cannot switch the write-ahead log of a running instance without losing data that is not yet
+flushed, so KubeDB leaves such a database exactly as it is. The operator marks it with the annotation
+`kubedb.com/milvus-wal: rocksmq` (every other Milvus gets `woodpecker`); the annotation cannot be changed.
+
+Such a database cannot be archived: `spec.archiver` is rejected, and if an archiver is attached anyway the Milvus
+reports the condition `ArchiverUnsupported` and no backup is configured. To move it to the Woodpecker write-ahead log, take a
+logical backup (KubeStash `milvus-addon`, task `logical-backup`) and restore it into a new Milvus
+(task `logical-backup-restore`), then switch the clients.
 
 ## Before you begin
 
@@ -73,7 +86,7 @@ spec:
     subDir: milvus
   deletionPolicy: WipeOut
   fullBackup:
-    driver: Restic          # or VolumeSnapshotter for the data PVC of a RocksMQ standalone Milvus
+    driver: Restic          # or VolumeSnapshotter (Standalone): also snapshots the data PVC as a warm cache
     task:
       params:
         quiesce: DenyWrites # DenyWrites | Flush | None
@@ -101,8 +114,7 @@ If `quotaAndLimits.enabled` is `false` the full backup fails with an explanatory
 
 ## Opt a Milvus in
 
-A database opts in by carrying the archiver's label (double opt-in). For point-in-time recovery of a
-standalone Milvus set the WAL type at creation; it cannot be changed later.
+A database opts in by carrying the archiver's label (double opt-in).
 
 ```yaml
 apiVersion: kubedb.com/v1alpha2
@@ -116,8 +128,6 @@ spec:
   version: "2.6.11"
   topology:
     mode: Standalone
-  wal:
-    type: Woodpecker
   objectStorage:
     configSecret:
       name: milvus-storage
@@ -149,6 +159,20 @@ be restored. `lsn` is the last archived etcd revision. The Milvus conditions `Lo
 Changes to the archive policy do not interrupt the database: `spec.archiver.pause: true` on the Milvus (or
 `spec.pause` on the archiver) stops the sidekick and pauses the schedules.
 
+To stop archiving, remove the archiver label and `spec.archiver` from the Milvus. KubeDB then deletes the sidekick
+and the retention CronJob and pauses the `BackupConfiguration`; the repositories and Snapshots stay, so the existing
+backups can still be restored. Attaching an archiver again resumes the schedules. Deleting the `MilvusArchiver`
+itself instead removes the `BackupConfiguration`, and the archiver's `deletionPolicy` then decides whether the
+backups are deleted.
+
+## Write fence safety
+
+A full backup briefly denies writes (the fence). The backup lifts it itself, also when its pod is terminated
+(SIGTERM) or when `fenceTimeout` expires. If the pod is killed without a chance to clean up, the fence keeps a
+marker with a deadline (`fenceTimeout` plus one minute): the sidekick lifts an expired fence within 30 seconds, and
+the next backup lifts it before it starts. Databases without a sidekick (VolumeSnapshotter archivers) recover at
+the next scheduled backup.
+
 ## Restore
 
 Create a new Milvus from the archive. The object storage of the new Milvus must be **empty** and use the same
@@ -164,8 +188,6 @@ spec:
   version: "2.6.11"
   topology:
     mode: Standalone
-  wal:
-    type: Woodpecker
   objectStorage:
     configSecret:
       name: milvus-restore-storage   # empty bucket, same rootPath as the source
@@ -174,6 +196,7 @@ spec:
       recoveryTimestamp: "2026-09-30T16:22:29Z"
       encryptionSecret: {name: encrypt-secret, namespace: demo}
       fullDBRepository: {name: milvus-full, namespace: demo}
+      manifestRepository: {name: milvus-manifest, namespace: demo}   # optional: keep the source's credentials
   storageType: Durable
   storage:
     accessModes: [ReadWriteOnce]
@@ -187,6 +210,13 @@ KubeDB picks the newest full backup at or before `recoveryTimestamp`, replays th
 and starts Milvus on the result. The condition `ArchiverRecoveryPlanned` names the chosen base. Distributed
 targets use `topology.mode: Distributed` with the same sizes of the source.
 
+With `manifestRepository`, KubeDB first restores the source's auth secret as the new Milvus's own auth secret
+(`milvus-restored-auth` above, or the name set in `spec.authSecret.name`), before it would generate one. The
+restored Milvus therefore accepts the source's credentials, and the source's secret is left untouched, so the
+restore can run in the source's namespace. If that auth secret already exists when the restore starts, it is
+kept and the source's credentials are not restored. Only the auth secret is restored. The rendered configuration is
+generated for the new Milvus, and a custom configuration secret must be referenced in the new Milvus's spec.
+
 What the operator refuses, with a clear message on the `SuccessfullyDataRestored` condition:
 
 | Situation | Behaviour |
@@ -197,6 +227,7 @@ What the operator refuses, with a clear message on the `SuccessfullyDataRestored
 | target bucket or etcd not empty | rejected, nothing is overwritten |
 | target `rootPath`, `dmlChannelNum` or channel prefix differs from the source | rejected |
 | target Milvus of another minor version, or an older patch, than the backup | rejected |
+| target Milvus runs another Woodpecker version than the backup | rejected |
 
 Restored Milvus nodes register themselves again: the session keys of the source are not carried over and the
 streaming node assignment of every channel is reset, so the restored Milvus never talks to the old pods.
@@ -218,10 +249,24 @@ gap cannot be restored. Increase the archiver resources or etcd's `--auto-compac
 
 ## VolumeSnapshot backups
 
-Set `fullBackup.driver: VolumeSnapshotter` and `fullBackup.task.params.volumeSnapshotClassName` to snapshot
-the data PVC of a RocksMQ standalone Milvus inside the write fence, instead of copying the RocksMQ directories.
-Metadata and objects are archived exactly as with the Restic driver. A restore creates the data PVC from the
-VolumeSnapshot.
+Set `fullBackup.driver: VolumeSnapshotter` and `fullBackup.task.params.volumeSnapshotClassName` to also take a
+CSI `VolumeSnapshot` of the data PVC of a **Standalone** Milvus. The snapshot is taken inside the same write
+fence, right after the metadata dump. Metadata and objects are archived exactly as with the Restic driver, so
+the archive alone is a complete backup.
+
+The data PVC holds only the local cache of Milvus (loaded segments, mmap files and disk indexes). A restore from
+such a backup creates the data PVC of the new Milvus from the VolumeSnapshot, so it starts with a **warm cache**
+instead of downloading everything again. The condition `WarmCacheRestored` reports whether the snapshot was used.
+If it cannot be used (deleted, not ready, or in another namespace than the restored Milvus) the restore still
+succeeds and Milvus starts with a cold cache.
+
+Requirements:
+
+- the Milvus data PVC uses a CSI `StorageClass` (`spec.storage.storageClassName`) and a matching
+  `VolumeSnapshotClass` exists;
+- a failed snapshot fails the full backup session, so the backup you asked for is never silently incomplete;
+- a Distributed Milvus has no PVC worth snapshotting: attached to an archiver with the VolumeSnapshotter driver it
+  reports the condition `ArchiverUnsupported` and is not backed up; use the Restic driver.
 
 ## Limitations
 
@@ -231,6 +276,8 @@ VolumeSnapshot.
 - Backing up a Milvus that uses an external etcd with TLS/authentication requires the client secrets to be
   readable by the archiver service account.
 - The write fence denies writes for about ten seconds per full backup.
+- A Standalone Milvus created by a KubeDB release before the archiver (RocksMQ write-ahead log) cannot be
+  archived; migrate it with a logical backup.
 
 ## Cleanup
 
