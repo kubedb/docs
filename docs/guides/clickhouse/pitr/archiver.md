@@ -22,7 +22,7 @@ At first, you need to have a Kubernetes cluster, and the `kubectl` command-line 
 
 Now,
 - install `KubeDB` operator in your cluster following the steps [here](/docs/setup/README.md).
-- install `KubeStash` operator in your cluster following the steps [here](https://github.com/kubestash/installer/tree/master/charts/kubestash).
+- install `KubeStash` operator in your cluster following the steps [here](https://kubestash.com/docs/latest/setup/install/kubestash).
 
 To keep things isolated, this tutorial uses a separate namespace called `demo` throughout this tutorial.
 
