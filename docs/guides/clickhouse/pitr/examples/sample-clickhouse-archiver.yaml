@@ -18,7 +18,7 @@ spec:
     name: demo-retention
     namespace: demo
   encryptionSecret:
-    name: encrypt-secret
+    name: "encrypt-secret"
     namespace: demo
   fullBackup:
     driver: "ClickHouseBackup"
