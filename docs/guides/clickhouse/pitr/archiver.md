@@ -431,7 +431,7 @@ Here,
 - Pods `sample-clickhouse-archiver-full-backup-*` performed the full backups.
 - Pod `sample-clickhouse-sidekick` performs continuous incremental archiving. It stays in `Running` phase and runs an incremental backup cycle roughly every minute, archiving the changes made since the latest full backup.
 
-Each incremental cycle backs up the metadata and every shard. You can follow the cycles in the `sidekick` logs,
+Each incremental cycle backs up the metadata and data. You can follow the cycles in the `sidekick` logs,
 
 ```bash
 $ kubectl logs -n demo sample-clickhouse-sidekick --tail=12
@@ -685,7 +685,7 @@ restored-clickhouse-pitr-manifest-restorer-hc6sp                  0/1     Comple
 ```
 
 Here,
-- Pod `restored-clickhouse-pitr-manifest-restorer-*` is responsible for restoring the database manifest/metadata.
+- Pod `restored-clickhouse-pitr-manifest-restorer-*` is responsible for restoring the database manifest.
 - Pod `restored-clickhouse-pitr-inc-backup-restorer-*` restores the latest full backup taken before `recoveryTimestamp` together with the latest incremental backup taken before `recoveryTimestamp`.
 
 > Note: Restore process works sequentially. Manifest Restore --> Full-backup + Incremental Restore.
