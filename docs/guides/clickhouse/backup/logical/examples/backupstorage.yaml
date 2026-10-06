@@ -10,8 +10,8 @@ spec:
       bucket: kubestash
       prefix: clickhouse-backup
       secretName: s3-secret
-      region: us-east-1
-      endpoint: http://minio.demo.svc.cluster.local:80
+      region: us-east-2
+      endpoint: https://s3.us-east-2.amazonaws.com
   usagePolicy:
     allowedNamespaces:
       from: All
