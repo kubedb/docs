@@ -1,0 +1,22 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: dev-branch-vsc
+  namespace: demo
+spec:
+  volumeSnapshotClassName: topolvm-vsc-explicit
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: sample-postgres
+    namespace: demo
+  target:
+    namespace: demo
+    name: dev-postgres-vsc
+    storageClassName: topolvm-provisioner-thin
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  deletionPolicy: Delete
