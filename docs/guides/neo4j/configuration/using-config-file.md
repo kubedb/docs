@@ -29,7 +29,7 @@ namespace/demo created
 
 Neo4j supports configuration via key-value pairs. KubeDB uses `spec.configuration.secretName` to allow users to provide a custom configuration Secret. The operator merges these key-value entries into the Neo4j configuration and restarts the cluster automatically.
 
-In this tutorial, we will configure `dbms.logs.query.enabled`, `dbms.logs.query.parameter_logging`, and JVM options via `server.jvm.additional`.
+In this tutorial, we will configure `db.logs.query.enabled`, `db.logs.query.parameter_logging_enabled`, and JVM options via `server.jvm.additional`.
 
 ## Custom Configuration
 
@@ -38,8 +38,8 @@ KubeDB expects the custom configuration Secret to use `stringData` where each ke
 ```yaml
 apiVersion: v1
 stringData:
-  dbms.logs.query.enabled: "INFO"
-  dbms.logs.query.parameter_logging: "true"
+  db.logs.query.enabled: "INFO"
+  db.logs.query.parameter_logging_enabled: "true"
   server.jvm.additional: |-
     -XX:+UseG1GC
     -XX:-OmitStackTraceInFastThrow
@@ -131,7 +131,7 @@ $ kubectl exec -it -n demo custom-neo4j-0 -- \
     cypher-shell -u neo4j -p <your-password> \
     "SHOW SETTINGS
      YIELD name, value
-     WHERE name STARTS WITH 'dbms.logs.query'
+     WHERE name STARTS WITH 'db.logs.query'
      RETURN name, value
      ORDER BY name;"
 ```
@@ -142,8 +142,8 @@ Expected output:
 +-----------------------------------------------------------+
 | name                                   | value            |
 +-----------------------------------------------------------+
-| "dbms.logs.query.enabled"              | "INFO"           |
-| "dbms.logs.query.parameter_logging"    | "true"           |
+| "db.logs.query.enabled"                    | "INFO"           |
+| "db.logs.query.parameter_logging_enabled"  | "true"           |
 +-----------------------------------------------------------+
 
 2 rows

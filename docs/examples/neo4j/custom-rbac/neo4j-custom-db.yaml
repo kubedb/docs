@@ -1,0 +1,20 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: quick-neo4j
+  namespace: demo
+spec:
+  version: "2025.12.1"
+  replicas: 3
+  storageType: Durable
+  podTemplate:
+    spec:
+      serviceAccountName: my-custom-serviceaccount
+  storage:
+    storageClassName: standard
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut

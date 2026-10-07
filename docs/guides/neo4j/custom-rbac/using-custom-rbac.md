@@ -48,7 +48,7 @@ metadata:
   namespace: demo
 rules:
 - apiGroups:
-  - apps
+  - apps.k8s.appscode.com
   resourceNames:
   - quick-neo4j
   resources:

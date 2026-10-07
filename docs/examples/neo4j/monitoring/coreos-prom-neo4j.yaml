@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: coreos-prom-neo4j
+  namespace: demo
+spec:
+  replicas: 3
+  deletionPolicy: WipeOut
+  version: "2025.12.1"
+  storage:
+    storageClassName: local-path
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

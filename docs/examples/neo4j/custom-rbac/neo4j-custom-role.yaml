@@ -1,0 +1,43 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: my-custom-role
+  namespace: demo
+rules:
+- apiGroups:
+  - apps.k8s.appscode.com
+  resourceNames:
+  - quick-neo4j
+  resources:
+  - petsets
+  verbs:
+  - get
+- apiGroups:
+  - kubedb.com
+  resourceNames:
+  - quick-neo4j
+  resources:
+  - neo4js
+  verbs:
+  - get
+- apiGroups:
+  - ""
+  resources:
+  - pods
+  verbs:
+  - list
+  - patch
+- apiGroups:
+  - ""
+  resources:
+  - pods/exec
+  verbs:
+  - create
+- apiGroups:
+  - ""
+  resources:
+  - secrets
+  verbs:
+  - get
+  - create
+  - update
