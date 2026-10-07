@@ -174,8 +174,6 @@ spec:
       port: 9000
       scheme: http
   secret:
-    apiGroup: ""
-    kind: Secret
     name: sample-clickhouse-auth
   type: kubedb.com/clickhouse
   version: 25.7.1
