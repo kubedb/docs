@@ -1,20 +1,21 @@
-apiVersion: kubedb.com/v1
-kind: Postgres
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
 metadata:
-  name: pg-grafana-demo
-  namespace: demo
+  name: hazelcast-alert-demo
+  namespace: alert-hazelcast
 spec:
-  version: "13.13"
-  replicas: 3
-  deletionPolicy: WipeOut
+  version: "5.5.2"
+  replicas: 1
+  licenseSecret:
+    name: hz-license-key
   storage:
     storageClassName: "local-path"
-
     accessModes:
-    - ReadWriteOnce
+      - ReadWriteOnce
     resources:
       requests:
         storage: 1Gi
+  deletionPolicy: WipeOut
   monitor:
     agent: prometheus.io/operator
     prometheus:
