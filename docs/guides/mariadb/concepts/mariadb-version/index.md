@@ -65,6 +65,7 @@ spec:
     image: ghcr.io/kubedb/mariadb-coordinator:v0.29.0
   db:
     image: ghcr.io/appscode-images/mariadb:11.8.5-focal
+  distribution: Official
   exporter:
     image: prom/mysqld-exporter:v0.13.0
   initContainer:
@@ -111,6 +112,10 @@ We modify original MariaDB docker image to support additional features. An image
 `spec.deprecated` is an optional field that specifies whether the docker images specified here is supported by the current KubeDB operator.
 
 The default value of this field is `false`. If `spec.deprecated` is set `true`, KubeDB operator will not create the database and other respective resources for this version.
+
+### spec.distribution
+
+`spec.distribution` is an optional field that specifies the vendor/type of the MariaDB database image referenced by `spec.db.image`. Supported values are `Official` (the default community build) and `Enterprise` (MariaDB Corporation's commercially-supported [MariaDB Enterprise Server](/docs/guides/mariadb/private-registry/enterprise-server/index.md)). This field is descriptive only; it does not change how the operator manages the database.
 
 ### spec.db.image
 
