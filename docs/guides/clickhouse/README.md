@@ -27,6 +27,7 @@ aliases:
 | Authentication & Authorization (TLS)                          |   &#10003;   |
 | Externally manageable Auth Secret                             |   &#10003;   |
 | Reconfigurable TLS Certificates (Add, Remove, Rotate, Update) |   &#10003;   |
+| Instant and Scheduled Backup ([KubeStash](https://kubestash.com/)) |   &#10003;   |
 
 ## Supported ClickHouse Versions
 
@@ -45,4 +46,5 @@ KubeDB supports the following ClickHouse Versions.
 ## User Guide
 
 - [Quickstart ClickHouse](/docs/guides/clickhouse/quickstart/guide/quickstart.md) with KubeDB Operator.
+- How to [Backup & Restore](/docs/guides/clickhouse/backup/overview/index.md) ClickHouse using [KubeStash](https://kubestash.com/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
