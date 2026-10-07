@@ -274,8 +274,8 @@ spec:
       database: master
     schema:
       enabled: true
-      database:
-        - RestaurantMigrationDB
+      databases:
+        - name: RestaurantMigrationDB
     snapshot:
       enabled: true
       pipeline:
@@ -309,7 +309,7 @@ Here,
 
 **`spec.source.schema` — schema migration:**
 - `enabled: true` — enables the schema migration phase.
-- `database` — list of databases to migrate. The schema (tables, indexes, stored procedures, etc.) is copied from source to target.
+- `databases` — list of databases to migrate, each entry with a required `name`. The schema (tables, indexes, stored procedures, etc.) is copied from source to target.
 
 **`spec.source.snapshot` — bulk data copy:**
 - `enabled: true` — enables the snapshot phase.
