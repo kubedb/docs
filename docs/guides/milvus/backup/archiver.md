@@ -112,6 +112,21 @@ spec:
 If `quotaAndLimits.enabled` is `false` the full backup fails with an explanatory message unless
 `allowQuiesceDowngrade: "true"` is set, which falls back to `Flush`.
 
+## Supported Milvus versions
+
+| Milvus | Status |
+|--------|--------|
+| 2.6.11 | Verified: Standalone, Distributed, VolumeSnapshotter, point-in-time recovery, manifest restore |
+| 2.6.9 | Verified: Standalone and Distributed (one replica per role), point-in-time recovery |
+| 2.6.7 | Verified: Standalone, point-in-time recovery. VolumeSnapshotter and Distributed were not tested |
+| 3.x | Not supported: the webhook rejects an archiver on Milvus 3.x until it is validated |
+
+A backup restores into a Milvus of the same minor version and the same or a newer patch, and only into a Milvus that
+runs the same Woodpecker library (the metadata layout in etcd belongs to it). Milvus 2.6.7 ships Woodpecker v0.1.12,
+2.6.9 and later ship v0.1.13, so a 2.6.7 backup cannot be restored into 2.6.9 or later and the restore is refused with
+that message. A version that is missing from the table in `milvus-archiver` (`pkg/physical/meta/woodpecker.go`) can
+only be restored into the same Milvus version.
+
 ## Opt a Milvus in
 
 A database opts in by carrying the archiver's label (double opt-in).
