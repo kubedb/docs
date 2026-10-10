@@ -95,4 +95,4 @@ The restore process consists of the following steps:
 
 ## Next Steps
 
-- Backup a `Neo4j` database using KubeStash by the following guides from [here](/docs/guides/neo4j/backup/kubestash/logical/index.md).
+- Backup a `Neo4j` database using KubeStash by the following guides from [here](/docs/guides/neo4j/backup/kubestash/logical/_index.md).
