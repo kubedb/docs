@@ -138,6 +138,10 @@ data-milvus-standalone-0   Bound    pvc-a6333ee2-f0ab-4ec2-8437-599d270b9ed0   1
 
 The internal etcd metadata store provisions its own PVCs (`etcd-data-<milvus-name>-etcd-*`), and MinIO has separate PVCs as well.
 
+The data PVC holds Milvus' local cache (loaded segments, mmap files, disk indexes). The write-ahead log is not on
+it: KubeDB runs every Milvus with the Woodpecker write-ahead log, which is stored in the object storage bucket
+together with the data files.
+
 ### Auth Secret
 
 Milvus authentication is enabled by default. Because `spec.authSecret` was not provided, KubeDB auto-generates a basic-auth secret named `<db-name>-auth` with a `root` user and a random password:
