@@ -1,0 +1,48 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: dev-branch-masked
+  namespace: demo
+spec:
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: sample-postgres
+    namespace: demo
+  target:
+    namespace: demo
+    name: dev-postgres-masked
+    storageClassName: topolvm-provisioner-thin
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+  resetRootPassword: true
+  postActions:
+    - image: ghcr.io/appscode-images/postgres:16.1-alpine
+      jobDefaults:
+        backoffLimit: 3
+        ttlSecondsAfterFinished: 600
+        activeDeadlineSeconds: 900
+        imagePullPolicy: IfNotPresent
+      jobTemplate:
+        metadata:
+          labels:
+            purpose: anonymize
+        spec:
+          args:
+            - psql
+            - -v
+            - ON_ERROR_STOP=1
+            - -c
+            - |
+              UPDATE customers
+                 SET full_name = 'Masked Customer',
+                     email = 'user' || id || '@example.invalid',
+                     phone = '+1-555-0000';
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+  deletionPolicy: Delete
