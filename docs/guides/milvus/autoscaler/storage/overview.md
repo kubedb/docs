@@ -52,10 +52,10 @@ spec:
 The flow is:
 
 1. A user creates a `MilvusAutoscaler` with `spec.storage`.
-2. The autoscaler reads PVC usage from Prometheus.
+2. The autoscaler reads PVC usage from the `custom.metrics.k8s.io` API backed by the KubeDB storage-metrics apiserver.
 3. When usage exceeds `usageThreshold`, the autoscaler creates a `VolumeExpansion` `MilvusOpsRequest` sized per `scalingRules`.
 4. The Ops-manager operator performs the volume expansion as usual.
 
-> **Prerequisites:** Prometheus must be collecting volume metrics, and the PVC's `StorageClass` must have `allowVolumeExpansion: true`.
+> **Prerequisites:** The KubeDB storage metrics server must be enabled and serving the `custom.metrics.k8s.io` API, and the PVC's `StorageClass` must have `allowVolumeExpansion: true`.
 
 In the next doc, we will see a step-by-step guide on storage autoscaling of a Milvus database.

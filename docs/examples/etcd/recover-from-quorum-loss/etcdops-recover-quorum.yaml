@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-recover-quorum
+  namespace: demo
+spec:
+  type: RecoverFromQuorumLoss
+  databaseRef:
+    name: etcd-cluster
+  recoverFromQuorumLoss: {}
+  timeout: 30m
+  apply: Always

@@ -22,7 +22,7 @@ jobs:
 
       - name: Install kubectl
         run: |
-          curl -LO https://dl.k8s.io/release/v1.32.1/bin/linux/amd64/kubectl
+          curl -LO https://dl.k8s.io/release/v1.37.0/bin/linux/amd64/kubectl
           chmod +x ./kubectl
           sudo mv ./kubectl /usr/local/bin/kubectl
 
@@ -44,7 +44,7 @@ jobs:
         id: kind
         uses: helm/kind-action@ef37e7f390d99f746eb8b610417061a60e82a6cc # v1.14.0
         with:
-          version: v0.31.0
+          version: v0.33.0
 
       - name: Prepare cluster for testing
         id: local-path
@@ -119,11 +119,11 @@ jobs:
 
       - name: Check links
         run: |
-          lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'
+          lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*sap.com.*|.*milvus.io.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'
           max_retries=5
           retry_count=0
           while [ $retry_count -lt $max_retries ]; do
-            if lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'; then
+            if lychee --root-dir $(pwd) --max-concurrency 10 --exclude-all-private --exclude '^(.*golang.org.*|.*github.com.*|.*api.slack.com.*|.*twitter.com.*|.*linode.com.*|.*helm.sh.*|.*k8s.io.*|.*percona.com.*|.*sap.com.*|.*milvus.io.*|.*kubernetes.io.*|.*search-guard.com.*|.*hub.docker.com.*|.*appscode.com.*|.*mongodb.com.*|.*community.arm.com.*|.*cluster.com.*|.*proxysql.com.*|.*postgresql.org.*|.*kafka.com.*|.*stackoverflow.com.*|.*redis.io.*|.*elastic.co.*|.*mysql.*|.*developer.hashicorp.com.*|.*pgpool.net.*|.*clickhouse.com.*|.*localhost.*|.*\.svc.*|.*github.io.*|.*kubedb.com.*|.*kubestash.com.*|.*stash.run.*)$' 'docs/**/*.md'; then
               echo "Link check passed"
               exit 0
             fi

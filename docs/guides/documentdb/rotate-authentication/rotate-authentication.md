@@ -159,4 +159,4 @@ kubectl delete ns demo
 ## Next Steps
 
 - [Restart](/docs/guides/documentdb/restart/) a DocumentDB database.
-- Provision a database with [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file/).
+- Provision a database with [Custom Configuration](/docs/guides/documentdb/configuration/using-config-file.md).

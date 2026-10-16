@@ -1,0 +1,12 @@
+apiVersion: kubedb.com/v1
+kind: ProxySQL
+metadata:
+  name: proxy-server
+  namespace: demo
+spec:
+  version: "3.0.1-debian"
+  replicas: 3
+  syncUsers: true
+  backend:
+    name: mysql-server
+  deletionPolicy: WipeOut

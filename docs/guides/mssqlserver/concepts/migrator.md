@@ -48,8 +48,8 @@ spec:
       database: master
     schema:
       enabled: true
-      database:
-        - RestaurantMigrationDB
+      databases:
+        - name: RestaurantMigrationDB
     snapshot:
       enabled: true
       pipeline:
@@ -108,12 +108,15 @@ spec:
 `schema` configures the schema migration phase. All fields are optional unless noted.
 
 - `enabled` — enables or disables the schema migration phase. Defaults to `true`.
-- `database` — list of database names to include in the schema migration. When empty, all user
-  databases are included.
+- `databases` — list of databases to include in the schema migration. When omitted, all user
+  databases are included. Each entry supports per-database table filters:
+  - `name` — name of the source database to migrate. Required.
+  - `table` — list of schema-qualified tables (e.g. `dbo.Users`) to include. An empty list selects
+    every eligible table after the global `schema` and `excludeSchema` filters are applied.
+  - `excludeTable` — list of schema-qualified tables (e.g. `dbo.Audit`) to exclude. Takes precedence
+    over `table`.
 - `schema` — list of SQL Server schemas (e.g. `dbo`) to include.
 - `excludeSchema` — list of SQL Server schemas to exclude.
-- `table` — list of schema-qualified tables (e.g. `dbo.Users`) to include.
-- `excludeTable` — list of schema-qualified tables to exclude.
 
 ### spec.source.snapshot
 

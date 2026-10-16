@@ -1,0 +1,15 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: EtcdAutoscaler
+metadata:
+  name: etcd-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: etcd-autoscale
+  storage:
+    etcd:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50
+      expansionMode: "Online"
+      upperBound: 100Gi

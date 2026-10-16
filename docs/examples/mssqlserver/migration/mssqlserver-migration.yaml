@@ -12,8 +12,8 @@ spec:
       database: master
     schema:
       enabled: true
-      database:
-        - RestaurantMigrationDB
+      databases:
+        - name: RestaurantMigrationDB
     snapshot:
       enabled: true
       pipeline:

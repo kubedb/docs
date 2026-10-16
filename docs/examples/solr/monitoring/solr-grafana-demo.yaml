@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Solr
+metadata:
+  name: solr-grafana-demo
+  namespace: demo
+spec:
+  version: "9.8.0"
+  replicas: 3
+  solrModules:
+    - prometheus-exporter
+  zookeeperRef:
+    name: zk-grafana-demo
+    namespace: demo
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

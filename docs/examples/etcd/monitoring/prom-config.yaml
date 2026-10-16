@@ -1,0 +1,75 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  labels:
+    app: prometheus-demo
+  namespace: monitoring
+data:
+  prometheus.yml: |-
+    global:
+      scrape_interval: 5s
+      evaluation_interval: 5s
+    scrape_configs:
+    - job_name: 'kubedb-databases'
+      honor_labels: true
+      scheme: http
+      kubernetes_sd_configs:
+      - role: endpoints
+      # by default Prometheus server selects all Kubernetes services as possible targets.
+      # relabel_config is used to filter only the desired endpoints
+      relabel_configs:
+      # keep only those services that have the "prometheus.io/scrape" and "prometheus.io/port" annotations
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scrape, __meta_kubernetes_service_annotation_prometheus_io_port]
+        separator: ;
+        regex: true;(.*)
+        action: keep
+      # KubeDB stats services use the "http" scheme, so drop any service that uses "https".
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_scheme]
+        action: drop
+        regex: https
+      # only keep the stats services created by KubeDB for monitoring purposes, which have a "-stats" suffix
+      - source_labels: [__meta_kubernetes_service_name]
+        separator: ;
+        regex: (.*-stats)
+        action: keep
+      # services created by KubeDB have the "app.kubernetes.io/name" label. keep only those services.
+      - source_labels: [__meta_kubernetes_service_label_app_kubernetes_io_name]
+        separator: ;
+        regex: (.*)
+        action: keep
+      # read the metric path from the "prometheus.io/path: <path>" annotation
+      - source_labels: [__meta_kubernetes_service_annotation_prometheus_io_path]
+        action: replace
+        target_label: __metrics_path__
+        regex: (.+)
+      # read the port from the "prometheus.io/port: <port>" annotation and update the scraping address accordingly
+      - source_labels: [__address__, __meta_kubernetes_service_annotation_prometheus_io_port]
+        action: replace
+        target_label: __address__
+        regex: ([^:]+)(?::\d+)?;(\d+)
+        replacement: $1:$2
+      # add the service namespace as a label on the scraped metrics
+      - source_labels: [__meta_kubernetes_namespace]
+        separator: ;
+        regex: (.*)
+        target_label: namespace
+        replacement: $1
+        action: replace
+      # add the service name as a label on the scraped metrics
+      - source_labels: [__meta_kubernetes_service_name]
+        separator: ;
+        regex: (.*)
+        target_label: service
+        replacement: $1
+        action: replace
+      # add the pod name as a label, so you can tell which etcd member a sample came from
+      - source_labels: [__meta_kubernetes_pod_name]
+        separator: ;
+        regex: (.*)
+        target_label: pod
+        replacement: $1
+        action: replace
+      # add the stats service's labels to the scraped metrics
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
