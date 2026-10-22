@@ -1,0 +1,19 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: neo4j-pitr-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: kubestash
+      endpoint: http://minio.demo.svc.cluster.local:80
+      region: us-east-1
+      prefix: neo4j-pitr-demo
+      secretName: minio-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: Same
+  default: false
+  deletionPolicy: Delete
