@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-alert-demo
+  namespace: alert-neo4j
+spec:
+  replicas: 3
+  version: "2025.12.1"
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus

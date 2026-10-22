@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Ignite
+metadata:
+  name: ignite-alert-demo
+  namespace: alert-ignite
+spec:
+  replicas: 1
+  version: "2.17.0"
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
