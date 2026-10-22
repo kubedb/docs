@@ -16,7 +16,7 @@ Print the data center that currently holds the primary role
 
 Reads the primary-DC Lease from the coordination control plane, the authority for which data center is active.
 
- Given a database name, its failover scope is resolved first (the PlacementPolicy's failoverPolicy trigger, exactly as the operator resolves it) and the matching Lease is read. Given --lease, that Lease is read directly, which also works for a scope whose database is gone.
+ Given a database name, its failover scope is resolved first (the PlacementPolicy's failoverPolicy failoverGroupRef, exactly as the operator resolves it) and the matching Lease is read. Given --lease, that Lease is read directly, which also works for a scope whose database is gone.
 
  KUBECONFIG: the hub cluster (to read the Postgres and its PlacementPolicy, and by default to read the coordination kubeconfig Secret). The coordination plane itself is reached with the --coord-* flags.
 
