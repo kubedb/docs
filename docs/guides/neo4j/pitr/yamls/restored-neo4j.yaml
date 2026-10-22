@@ -1,0 +1,30 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-pitr-restored
+  namespace: demo
+spec:
+  version: "2026.06.0"
+  replicas: 1
+  init:
+    archiver:
+      fullDBRepository:
+        name: neo4j-pitr-source-full
+        namespace: demo
+      manifestRepository:
+        name: neo4j-pitr-source-manifest
+        namespace: demo
+      encryptionSecret:
+        name: neo4j-pitr-encryption
+        namespace: demo
+      # Replace with the UTC cutoff recorded in your own run.
+      recoveryTimestamp: "2026-09-10T13:32:30Z"
+  storageType: Durable
+  storage:
+    storageClassName: local-path
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut
