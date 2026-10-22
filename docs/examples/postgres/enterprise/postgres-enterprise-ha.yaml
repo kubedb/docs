@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-enterprise-ha
+  namespace: demo
+spec:
+  version: "16.9-appscode"
+  replicas: 3
+  standbyMode: Hot
+  license:
+    secretRef:
+      name: pg-enterprise-license
+      key: license.pem
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: local-path
+  deletionPolicy: WipeOut
