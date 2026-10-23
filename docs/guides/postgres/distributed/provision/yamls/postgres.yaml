@@ -1,0 +1,51 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-docs
+  namespace: demo
+  annotations:
+    dr.kubedb.com/enabled: "true"
+spec:
+  version: "17.2"
+  distributed: true
+  replicas: 4
+  standbyMode: Hot
+  storageType: Durable
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  replication:
+    walLimitPolicy: WALKeepSize
+    walKeepSize: 1536
+    maxSlotWALKeepSize: 8192
+  arbiter:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 192Mi
+        storage: 1Gi
+      limits:
+        memory: 256Mi
+  podTemplate:
+    spec:
+      podPlacementPolicy:
+        name: pg-docs
+      containers:
+      - name: postgres
+        resources:
+          requests:
+            cpu: 250m
+            memory: 512Mi
+          limits:
+            memory: 1Gi
+      - name: pg-coordinator
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            memory: 256Mi
+  deletionPolicy: WipeOut

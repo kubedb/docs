@@ -1,0 +1,7 @@
+# Apply on the SPOKE of the data center that must not become primary.
+# Name: <scope Lease name>-standby-hold, for example primary-dc-pg-docs-standby-hold.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: primary-dc-pg-docs-standby-hold
+  namespace: dc-failover
