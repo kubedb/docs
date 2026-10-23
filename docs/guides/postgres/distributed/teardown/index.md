@@ -16,6 +16,11 @@ section_menu_id: guides
 
 This page removes, from smallest to largest: one DC-DR database, the hub add-ons, and finally the clusters.
 
+## Before You Begin
+
+- This page assumes the installation built in this guide, from [Build the stretched hub](/docs/guides/postgres/distributed/stretched-hub/index.md) to [Provision a DC-DR Postgres](/docs/guides/postgres/distributed/provision/index.md), with the database `pg-docs` in the namespace `demo`.
+- Stop the applications that use the database, and take a backup of any data you want to keep.
+
 ```bash
 export HUB=~/dcdr/hub.kubeconfig S1=~/dcdr/spoke-1.kubeconfig S2=~/dcdr/spoke-2.kubeconfig
 ```
@@ -24,9 +29,12 @@ export HUB=~/dcdr/hub.kubeconfig S1=~/dcdr/spoke-1.kubeconfig S2=~/dcdr/spoke-2.
 
 What happens to the data depends on `spec.deletionPolicy`:
 
-- `Halt` keeps the PVCs and the auth Secret;
-- `Delete` removes the PVCs and keeps backups;
-- `WipeOut` removes everything.
+- `DoNotTerminate` blocks the deletion;
+- `Halt` keeps the PVCs and the Secrets;
+- `Delete` removes the PVCs and keeps the Secrets;
+- `WipeOut` removes everything, the Secrets included.
+
+See [spec.deletionPolicy](/docs/guides/postgres/concepts/postgres.md#specdeletionpolicy) for details.
 
 To keep the data, change the policy first:
 
@@ -53,15 +61,33 @@ The per data center PlacementPolicies (`pg-docs-spoke-1`, `pg-docs-spoke-2`) are
 
 ### Remove the group's Lease and markers
 
-When you delete the last database of a failover group, dr-controlplane `v0.1.0` keeps renewing the group's `primary-dc-<group>` Lease, and the marker ConfigMaps stay on every cluster. A group created later with the same name would start from the old holder. Once no PlacementPolicy references the group, delete them by hand:
+Deleting a database does not remove its failover group's Lease and marker ConfigMaps. dr-controlplane `v0.1.0` never deletes them: the agent that holds the `primary-dc-<group>` Lease keeps renewing it, and every agent keeps refreshing its marker ConfigMap of the same name. A group created later with the same name would start from the old holder. They are:
+
+| Object | Cluster | Namespace |
+|---|---|---|
+| Lease `primary-dc-<group>` | hub | `dc-failover` |
+| ConfigMap `primary-dc-<group>` (marker) | every cluster with an agent: `hub`, `spoke-1`, `spoke-2` | `dc-failover` |
+| ConfigMaps `primary-dc-<group>-standby-hold` and `primary-dc-<group>-override`, if you created them | the spoke you created them on | `dc-failover` |
+
+Once no PlacementPolicy references the group any more, check that, then delete the Lease first and the markers after it. The agents stop refreshing a marker once its Lease is gone:
 
 ```bash
-G=pg-docs
-kubectl --kubeconfig $HUB -n dc-failover delete lease primary-dc-$G
-for k in $HUB $S1 $S2; do kubectl --kubeconfig $k -n dc-failover delete cm primary-dc-$G --ignore-not-found; done
+$ G=pg-docs
+$ kubectl --kubeconfig $HUB get placementpolicy -o jsonpath='{range .items[*]}{.metadata.name} {.spec.clusterSpreadConstraint.failoverPolicy.failoverGroupRef.name}{"\n"}{end}' | awk -v g="$G" '$2 == g'
+$ kubectl --kubeconfig $HUB -n dc-failover delete lease primary-dc-$G
+lease.coordination.k8s.io "primary-dc-pg-docs" deleted
+$ sleep 10
+$ for k in $HUB $S1 $S2; do
+    kubectl --kubeconfig $k -n dc-failover delete cm primary-dc-$G primary-dc-$G-standby-hold primary-dc-$G-override --ignore-not-found
+  done
+configmap "primary-dc-pg-docs" deleted
+configmap "primary-dc-pg-docs" deleted
+configmap "primary-dc-pg-docs" deleted
 ```
 
-Never delete a Lease that a running database still follows: its marker goes stale, and the database is fenced read-only.
+The `get placementpolicy` command must print nothing. For databases without a failover group, the shared scope is `primary-dc`; remove the Lease `primary-dc` and the ConfigMaps `primary-dc`, `primary-dc-standby-hold` and `primary-dc-override` the same way, but only after the last database without a group is gone.
+
+> **Warning:** Never delete a Lease that a running database still follows: its markers go stale, and the database is fenced read-only.
 
 ## Remove the hub add-ons and keep the clusters
 

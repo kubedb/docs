@@ -38,7 +38,9 @@ $ kubectl --kubeconfig $HUB get postgresversion 17.2
 
 ### FailoverGroup
 
-Every database follows one primary-DC Lease, its *failover scope*, and all databases in a scope fail over together. Give each database its own group unless you want several databases to move as one. The `FailoverGroup` object itself is optional: the Lease is derived from the PlacementPolicy's `failoverGroupRef` alone, and the object adds ordering between groups (`spec.dependsOn`) and a status view.
+Every database follows one primary-DC Lease, its *failover scope*, and all databases in a scope fail over together. The `FailoverGroup` object itself is optional: the Lease is derived from the PlacementPolicy's `failoverGroupRef` alone, and the object adds ordering between groups (`spec.dependsOn`) and a status view.
+
+> **Warning:** Databases whose PlacementPolicy has no `failoverPolicy.failoverGroupRef` all share the default scope, the Lease `primary-dc`. A switchover or failover of any one of them moves **all** of them to the other data center together, including a switchover you request on only one database. Use one FailoverGroup per database, or per group of databases that must always move together (for example an application's databases that must stay in the same data center). KubeDB sets the condition `DCDRFailoverScopeShared=True` on every database whose scope is shared.
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1
@@ -164,7 +166,7 @@ postgres.kubedb.com/pg-docs created
 
 ## Step 3: Wait for Ready, Steady and protected
 
-Provisioning takes several minutes: KubeDB creates the per data center PetSets on the hub, the PetSet controller delivers the pods to the spokes, the first data center bootstraps a primary, and the other data center clones it and starts streaming across the slice. In this guide's test it took about 14 minutes, including a restart of one spoke VM along the way; an uninterrupted run took about 7 minutes.
+Provisioning takes several minutes: KubeDB creates the per data center PetSets on the hub, the PetSet controller delivers the pods to the spokes, the first data center bootstraps a primary, and the other data center clones it and starts streaming across the slice. Expect about 7 to 15 minutes.
 
 ```bash
 $ kubectl --kubeconfig $HUB -n demo get pg pg-docs -w
@@ -231,7 +233,7 @@ $ kubectl --kubeconfig $HUB -n demo get pg pg-docs -o jsonpath='{.status.disaste
 
 ## Step 4: Inspect what was created
 
-On the hub, KubeDB created one PetSet and one PlacementPolicy per data center, plus an arbiter PetSet for each data center with an even node count:
+On the hub, KubeDB created one PetSet per data center (`pg-docs-<dc>`), one PlacementPolicy per data center (`<policy>-<dc>`, here `pg-docs-<dc>`), plus an arbiter PetSet for each data center with an even node count:
 
 ```bash
 $ kubectl --kubeconfig $HUB -n demo get petset
@@ -268,7 +270,7 @@ pg-docs-spoke-2-1           3/3     Running   3 (3m3s ago)   10m     primary
 pg-docs-spoke-2-arbiter-0   2/2     Running   2 (3m3s ago)   8m42s   arbiter
 ```
 
-Exactly one pod in all clusters carries `kubedb.com/role=primary`. (The restarts on `spoke-2` come from the VM restart during this test, not from provisioning.)
+Exactly one pod in all clusters carries `kubedb.com/role=primary`. (The restarts shown on `spoke-2` come from a restart of that spoke VM while this example was recorded, not from provisioning.)
 
 The objects reach each spoke as OCM ManifestWorks, which live in that cluster's namespace on the hub:
 

@@ -58,7 +58,7 @@ A data center is identified everywhere by **one name: its OCM ManagedCluster nam
 
 A Postgres becomes a DC-DR database when it has `spec.distributed: true`, the annotation `dr.kubedb.com/enabled: "true"`, and a PlacementPolicy with a `failoverPolicy`. KubeDB expands it on the hub into:
 
-- one PetSet per data-bearing data center, named `<db>-<dc>` (for example `pg-docs-spoke-1`), with its own per-DC PlacementPolicy `<db>-<dc>`;
+- one PetSet per data-bearing data center, named `<db>-<dc>` (for example `pg-docs-spoke-1`), with its own PlacementPolicy `<policy>-<dc>`, derived from the PlacementPolicy `<policy>` that you create;
 - an arbiter PetSet `<db>-<dc>-arbiter` in a data center whose replica count is even, so that the data center's own Raft group always has an odd number of voters.
 
 Each data center runs its **own Raft group** in the `pg-coordinator` sidecar of its pods. Raft never stretches across data centers:
@@ -137,7 +137,7 @@ So the isolated primary stops accepting writes before the other data center can 
 
 **Nothing at the database level moves the Lease.** A crashed Postgres, replication lag or failed health checks do not move the Lease; only a data center that stops renewing (or a planned switchover or handoff) does. A failed primary inside a healthy data center is replaced by that data center's own Raft.
 
-**A third site breaks ties.** The Lease lives in the three-site etcd. During a network partition, only the side that still has an etcd majority can renew or acquire it. The etcd members use Pre-Vote (`--pre-vote=true`): before disrupting the cluster with a real election, a member asks the others whether they can still see the leader, and only an unopposed candidate starts the election. Raft prevents a stale or isolated leader with CheckQuorum, which the etcd server always enables: a leader that loses the majority steps down, and members ignore vote requests while their leader lease is still valid. See [etcd and Raft settings](/docs/guides/postgres/distributed/stretched-hub/index.md).
+**A third site breaks ties.** The Lease lives in the three-site etcd. During a network partition, only the side that still has an etcd majority can renew or acquire it. The etcd members use Pre-Vote (`--pre-vote=true`): before disrupting the cluster with a real election, a member asks the others whether they can still see the leader, and only an unopposed candidate starts the election. Raft prevents a stale or isolated leader with CheckQuorum, which the etcd server always enables: a leader that loses the majority steps down, and members ignore vote requests while their leader lease is still valid. See [etcd and Raft settings](/docs/guides/postgres/distributed/stretched-hub/index.md#step-3-run-etcd-on-the-three-sites).
 
 ## Data loss (RPO) and recovery time (RTO)
 
@@ -175,6 +175,7 @@ The Postgres object reports the DC-DR state in `status.disasterRecovery`:
 - **Switchover target.** A switchover to a data center that is not a Member (for example the Arbiter) is not rejected up front; it stays `FailingOver` until you abort it.
 - **Leftover group Leases.** When you delete the last database of a failover group, its `primary-dc-<group>` Lease and marker ConfigMaps stay behind. See [Teardown](/docs/guides/postgres/distributed/teardown/index.md).
 - **Backup.** Backup and restore of a DC-DR database with KubeStash is not covered by this guide.
+- **Monitoring is not supported.** Do not set `spec.monitor` on a DC-DR Postgres in `v2026.10.12`. The provisioner in this release has no RBAC for `discovery.k8s.io` EndpointSlices, which it needs to build the stats endpoints of a DC-DR database, so a DC-DR Postgres with `spec.monitor` set stays in `Provisioning`. The stats endpoints are also derived from non-DC-DR pod names (`<db>-<ordinal>` instead of `<db>-<dc>-<ordinal>`), so they would not point at the DC-DR pods even with that permission.
 
 ## Next Steps
 

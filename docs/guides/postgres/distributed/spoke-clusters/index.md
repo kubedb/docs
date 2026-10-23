@@ -34,7 +34,7 @@ Set these variables on the workstation:
 
 ```bash
 export HUB=~/dcdr/hub.kubeconfig S1=~/dcdr/spoke-1.kubeconfig S2=~/dcdr/spoke-2.kubeconfig
-export HUB_A_IP=10.2.1.161 SPOKE_1_IP=10.2.0.233 SPOKE_2_IP=10.2.0.236
+export HUB_A_IP=10.10.1.11 SPOKE_1_IP=10.10.1.21 SPOKE_2_IP=10.10.2.21
 ```
 
 ## Step 1: Create the spoke clusters
@@ -44,7 +44,7 @@ Any conformant Kubernetes cluster can be a spoke. This guide uses a single-node 
 ```bash
 curl -sfL https://get.k3s.io | INSTALL_K3S_VERSION=v1.37.1+k3s1 sh -s - server \
   --disable traefik --disable metrics-server \
-  --node-name spoke-1 --tls-san 10.2.0.233
+  --node-name spoke-1 --tls-san $SPOKE_1_IP
 ```
 
 Copy each spoke's `/etc/rancher/k3s/k3s.yaml` to the workstation, replacing `127.0.0.1` with the spoke's IP:
@@ -58,11 +58,11 @@ chmod 600 $S1 $S2
 ```bash
 $ kubectl --kubeconfig $S1 get nodes -o wide
 NAME      STATUS   ROLES           AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION              CONTAINER-RUNTIME
-spoke-1   Ready    control-plane   17d   v1.37.1+k3s1   10.2.0.233    <none>        Ubuntu 24.04.1 LTS   6.8.0-147-generic (amd64)   containerd://2.3.4-k3s1
+spoke-1   Ready    control-plane   17d   v1.37.1+k3s1   10.10.1.21    <none>        Ubuntu 24.04.1 LTS   6.8.0-147-generic (amd64)   containerd://2.3.4-k3s1
 
 $ kubectl --kubeconfig $S2 get nodes -o wide
 NAME      STATUS   ROLES           AGE   VERSION        INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION              CONTAINER-RUNTIME
-spoke-2   Ready    control-plane   17d   v1.37.1+k3s1   10.2.0.236    <none>        Ubuntu 24.04.1 LTS   6.8.0-146-generic (amd64)   containerd://2.3.4-k3s1
+spoke-2   Ready    control-plane   17d   v1.37.1+k3s1   10.10.2.21    <none>        Ubuntu 24.04.1 LTS   6.8.0-146-generic (amd64)   containerd://2.3.4-k3s1
 ```
 
 ## Step 2: Give every cluster a path to the hub API

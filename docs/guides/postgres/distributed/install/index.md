@@ -94,7 +94,7 @@ done
 
 ## Step 2: Apply the PetSet v0.2.0 CRDs
 
-The `v2026.10.12` KubeDB chart bundles an older PlacementPolicy CRD (without `failoverPolicy.failoverGroupRef`) and no FailoverGroup CRD. Apply the PetSet `v0.2.0` CRDs over them. Helm never updates CRDs on upgrade, so also run this once on an existing KubeDB installation that you enable DC-DR on:
+The `v2026.10.12` KubeDB chart runs the PetSet controller `v0.2.0`, but the PetSet chart it bundles (`v2026.9.18`) can install an older PlacementPolicy CRD (without `failoverPolicy.failoverGroupRef`) and no FailoverGroup CRD. Apply the PetSet `v0.2.0` CRDs over them. Helm never updates CRDs on upgrade, so also run this once on an existing KubeDB installation that you enable DC-DR on:
 
 ```bash
 $ kubectl --kubeconfig $HUB apply --server-side --force-conflicts \
@@ -137,7 +137,7 @@ $ kubectl --kubeconfig $HUB -n kubedb logs kubedb-kubedb-provisioner-0 -c operat
 
 The last command must print one line, with `localDC="hub"`.
 
-> **Troubleshooting:** The `ghcr.io/kubedb/kubedb-provisioner:v0.68.0` image was rebuilt on 2026-10-13 to include the DC-DR orchestrator. A node that pulled that tag earlier keeps the old image, and the provisioner then exits with `unknown flag: --dc-dr-enabled`. On that node run `sudo crictl rmi ghcr.io/kubedb/kubedb-provisioner:v0.68.0`, then delete the pod `kubedb/kubedb-kubedb-provisioner-0`.
+> **Troubleshooting:** If the provisioner exits with `unknown flag: --dc-dr-enabled`, the node runs a cached provisioner image without the DC-DR orchestrator. Remove the cached image on that node (`sudo crictl rmi ghcr.io/kubedb/kubedb-provisioner:v0.68.0`), then delete the pod `kubedb/kubedb-kubedb-provisioner-0` so that the image is pulled again.
 
 Check that the provisioner has the RBAC that DC-DR needs. Every line must end in `yes`; a missing permission freezes the DR status:
 

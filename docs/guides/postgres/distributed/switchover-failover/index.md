@@ -58,7 +58,7 @@ Ready Steady active=spoke-2 protected=true
 
 The status fields are not enough on their own. Also check the pods: exactly one pod with `kubedb.com/role=primary` in all clusters, and every standby streaming (see [Provision, Step 5](/docs/guides/postgres/distributed/provision/index.md#step-5-write-data-and-see-it-in-the-other-data-center)).
 
-To see what clients experience, the runs on this page used a writer in `psql-client` on spoke-1 that inserts into a `ledger` table through `pg-docs.demo.svc.slice.local` every half second and records every acknowledged id. After each run, every acknowledged id was compared with the table.
+The example outputs on this page were recorded with a test client in `psql-client` on spoke-1 that inserted a row through `pg-docs.demo.svc.slice.local` every half second and recorded every acknowledged id. After each operation, every acknowledged id was checked against the table. Your timings will differ with your network and write load.
 
 ## Planned switchover
 
@@ -122,7 +122,7 @@ pg-docs-spoke-2-arbiter-0   2/2     Running   2 (8m45s ago)   14m   arbiter
 
 What the writer saw: the last write before the switchover was acknowledged at 04:09:09, writes failed from 04:09:09 to 04:09:52, and succeeded again from 04:09:53. **All 412 acknowledged writes were present** afterwards. The database was writable on spoke-1 at about 04:09:21; most of the 44 s gap seen by the client is the time `pg-docs.demo.svc.slice.local` takes to point to the new primary (about 30 s). Configure applications to retry.
 
-In the release tests, planned switchovers reached `Steady` in 11-15 s, and no acknowledged write was lost in any run.
+In repeated tests, planned switchovers reached `Steady` in 11-15 s, and no acknowledged write was lost.
 
 ### Abort a switchover
 
@@ -132,7 +132,7 @@ A switchover waits until the target has caught up. If the target cannot catch up
 $ kubectl --kubeconfig $HUB -n demo annotate pg pg-docs dr.kubedb.com/switchover-abort=true --overwrite
 ```
 
-Presence of the annotation aborts, whatever its value. Do not just remove `switchover-to`. The orchestrator lifts the quiesce, writes resume on the original data center, the Lease does not move, and all switchover annotations are removed. In a release test with the target's replay paused, the switchover held at the catch-up gate with the active data center write-locked, and the abort restored writes 6 s later, with no acknowledged write lost:
+Presence of the annotation aborts, whatever its value. Do not just remove `switchover-to`. The orchestrator lifts the quiesce, writes resume on the original data center, the Lease does not move, and all switchover annotations are removed. In an example with the target's replay paused, the switchover held at the catch-up gate with the active data center write-locked, and the abort restored writes 6 s later, with no acknowledged write lost:
 
 ```
 05:07:48 request switchover-to=spoke-2
@@ -214,7 +214,7 @@ Nothing needs to be done: when the active data center stops renewing its Lease, 
 3. The markers flip, and the orchestrator promotes the surviving data center's cross-DC streamer (if needed through a `<db>-dcdr-failover-<suffix>` `ForceFailOver` PostgresOpsRequest).
 4. When the lost data center comes back, its pods rejoin as standbys of the new primary; a diverged old primary is rewound with `pg_rewind`.
 
-The following status sequence was recorded in a release test where the VM of the active data center, `spoke-2`, was rebooted, with a writer in `spoke-1` (Postgres phase, DR phase, active data center, `protected`, Lease holder and transition count):
+The following status sequence was recorded in an example where the VM of the active data center, `spoke-2`, was rebooted, with a writer in `spoke-1` (Postgres phase, DR phase, active data center, `protected`, Lease holder and transition count):
 
 ```
 10:02:51 Ready     Steady      active=spoke-2 protected=true   lease=spoke-2/t4
@@ -236,7 +236,7 @@ While the lost data center is down there is no second copy of the data: the stat
 
 ### A cut-off active data center
 
-If the active data center keeps running but loses its connection to the hub and the other data center, it fences itself before the other data center can take over (see [Split-brain protection](/docs/guides/postgres/distributed/concepts/index.md#split-brain-protection)). In a release test where the active data center `spoke-1` was isolated by a firewall rule for 360 s:
+If the active data center keeps running but loses its connection to the hub and the other data center, it fences itself before the other data center can take over (see [Split-brain protection](/docs/guides/postgres/distributed/concepts/index.md#split-brain-protection)). In an example where the active data center `spoke-1` was isolated by a firewall rule for 360 s:
 
 ```
 09:54:26  network cut
@@ -300,6 +300,7 @@ metadata:
 
 ```bash
 $ kubectl --kubeconfig $S1 apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/distributed/switchover-failover/yamls/standby-hold.yaml
+configmap/primary-dc-pg-docs-standby-hold created
 ```
 
 - The data center's agent stops contending for the Lease and logs `DC-DR standby-hold ConfigMap present, this DC will not contend for the primary DC Lease while it exists`. Its `pg-coordinator` keeps the data center's leader a read-only standby. The data center still replicates and still rejoins after a failover.
@@ -325,12 +326,17 @@ metadata:
   namespace: dc-failover
 ```
 
+```bash
+$ kubectl --kubeconfig <active-dc-spoke-kubeconfig> apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/distributed/switchover-failover/yamls/break-glass-override.yaml
+configmap/primary-dc-pg-docs-override created
+```
+
 > **Warning:** While the override exists, split-brain protection for the scope is bypassed. Use it only when you know the state of the other data center, and never on two data centers.
 
 - `pg-coordinator` reads it from its own spoke, so it works without the hub: the local leader stays writable regardless of the marker, and both `pg-coordinator` and the agent log `DC-DR BREAK GLASS OVERRIDE ACTIVE` continuously.
 - The data center's agent marks the Lease with `dr.open-cluster-management.io/override-hold=<dc>`, and every other Member stops contending. The scope cannot fail over while the override stands, even if the pinned data center dies.
 - It does not promote anyone. The agent pins the Lease only for the data center that last held it; on any other spoke the agent ignores it and logs that it refuses to pin the Lease to a data center that never held it.
-- Remove it as soon as the hub is back and the Lease is held by the right data center. Before a data center that carried an override returns after an outage, delete its override ConfigMap, or its old primary comes back writable while the other data center holds the Lease.
+- Remove it (`kubectl --kubeconfig <active-dc-spoke-kubeconfig> -n dc-failover delete cm primary-dc-pg-docs-override`) as soon as the hub is back and the Lease is held by the right data center. Before a data center that carried an override returns after an outage, delete its override ConfigMap, or its old primary comes back writable while the other data center holds the Lease.
 
 ## Troubleshooting
 

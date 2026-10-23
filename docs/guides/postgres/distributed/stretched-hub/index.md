@@ -28,11 +28,11 @@ This guide uses five Ubuntu 24.04 (amd64) VMs with internet access. The names an
 
 | VM | Site | Role | Example IP | Size used for this guide |
 |---|---|---|---|---|
-| `hub-a` | DC A | hub control plane, worker and etcd member | `10.2.1.161` | 16 vCPU, 32 GiB |
-| `hub-b` | DC B | hub control plane, worker and etcd member | `10.2.1.162` | 16 vCPU, 32 GiB |
-| `etcd-w` | DC W | etcd member only, never a Kubernetes node | `10.2.0.239` | 16 vCPU, 16 GiB |
-| `spoke-1` | DC A | database cluster (next page) | `10.2.0.233` | 16 vCPU, 24 GiB |
-| `spoke-2` | DC B | database cluster (next page) | `10.2.0.236` | 16 vCPU, 24 GiB |
+| `hub-a` | DC A | hub control plane, worker and etcd member | `10.10.1.11` | 16 vCPU, 32 GiB |
+| `hub-b` | DC B | hub control plane, worker and etcd member | `10.10.2.11` | 16 vCPU, 32 GiB |
+| `etcd-w` | DC W | etcd member only, never a Kubernetes node | `10.10.3.11` | 16 vCPU, 16 GiB |
+| `spoke-1` | DC A | database cluster (next page) | `10.10.1.21` | 16 vCPU, 24 GiB |
+| `spoke-2` | DC B | database cluster (next page) | `10.10.2.21` | 16 vCPU, 24 GiB |
 
 These sizes are the tested configuration, not measured minimums. For more resilience, add hub VMs: keep the etcd member count odd and spread over the three sites.
 
@@ -59,7 +59,7 @@ Run the `kubectl`, `helm` and `clusteradm` commands of this section from one wor
 Run this on every VM and on the workstation before the commands below, with your values:
 
 ```bash
-export HUB_A_IP=10.2.1.161 HUB_B_IP=10.2.1.162 ETCD_W_IP=10.2.0.239
+export HUB_A_IP=10.10.1.11 HUB_B_IP=10.10.2.11 ETCD_W_IP=10.10.3.11
 export K8S_VERSION=1.37.1 K8S_APT_CHANNEL=v1.37 ETCD_VERSION=v3.7.2
 export POD_CIDR=10.244.0.0/16 SERVICE_CIDR=10.96.0.0/12
 ```
@@ -246,16 +246,16 @@ $ sudo bash -c 'set -a; . /etc/etcd/etcdctl.env; set +a; etcdctl member list -w 
 ┌──────────────────┬─────────┬────────┬─────────────────────────┬─────────────────────────┬────────────┐
 │        ID        │ STATUS  │  NAME  │       PEER ADDRS        │      CLIENT ADDRS       │ IS LEARNER │
 ├──────────────────┼─────────┼────────┼─────────────────────────┼─────────────────────────┼────────────┤
-│ 47d89c878be9b774 │ started │  hub-a │ https://10.2.1.161:2380 │ https://10.2.1.161:2379 │      false │
-│ 50a8c7f04bb4b032 │ started │  hub-b │ https://10.2.1.162:2380 │ https://10.2.1.162:2379 │      false │
-│ 81ab7f316ba60954 │ started │ etcd-w │ https://10.2.0.239:2380 │ https://10.2.0.239:2379 │      false │
+│ 47d89c878be9b774 │ started │  hub-a │ https://10.10.1.11:2380 │ https://10.10.1.11:2379 │      false │
+│ 50a8c7f04bb4b032 │ started │  hub-b │ https://10.10.2.11:2380 │ https://10.10.2.11:2379 │      false │
+│ 81ab7f316ba60954 │ started │ etcd-w │ https://10.10.3.11:2380 │ https://10.10.3.11:2379 │      false │
 └──────────────────┴─────────┴────────┴─────────────────────────┴─────────────────────────┴────────────┘
 ┌─────────────────────────┬────────┬─────────────┬───────┐
 │        ENDPOINT         │ HEALTH │    TOOK     │ ERROR │
 ├─────────────────────────┼────────┼─────────────┼───────┤
-│ https://10.2.0.239:2379 │   true │  8.189269ms │       │
-│ https://10.2.1.162:2379 │   true │  9.534072ms │       │
-│ https://10.2.1.161:2379 │   true │ 11.744404ms │       │
+│ https://10.10.3.11:2379 │   true │  8.189269ms │       │
+│ https://10.10.2.11:2379 │   true │  9.534072ms │       │
+│ https://10.10.1.11:2379 │   true │ 11.744404ms │       │
 └─────────────────────────┴────────┴─────────────┴───────┘
 ```
 
@@ -461,8 +461,8 @@ export HUB=~/dcdr/hub.kubeconfig
 ```bash
 $ kubectl --kubeconfig $HUB get nodes -o wide
 NAME    STATUS   ROLES           AGE   VERSION   INTERNAL-IP   EXTERNAL-IP   OS-IMAGE             KERNEL-VERSION              CONTAINER-RUNTIME
-hub-a   Ready    control-plane   17d   v1.37.1   10.2.1.161    <none>        Ubuntu 24.04.1 LTS   6.8.0-142-generic (amd64)   containerd://2.2.1
-hub-b   Ready    control-plane   17d   v1.37.1   10.2.1.162    <none>        Ubuntu 24.04.1 LTS   6.8.0-147-generic (amd64)   containerd://2.2.1
+hub-a   Ready    control-plane   17d   v1.37.1   10.10.1.11    <none>        Ubuntu 24.04.1 LTS   6.8.0-142-generic (amd64)   containerd://2.2.1
+hub-b   Ready    control-plane   17d   v1.37.1   10.10.2.11    <none>        Ubuntu 24.04.1 LTS   6.8.0-147-generic (amd64)   containerd://2.2.1
 
 $ kubectl --kubeconfig $HUB describe nodes | grep -i taints
 Taints:             <none>

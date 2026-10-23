@@ -1,9 +1,9 @@
 # kubeadm configuration for hub-a, rendered for the example addresses of this guide:
-# hub-a 10.2.1.161, hub-b 10.2.1.162, etcd-w 10.2.0.239.
+# hub-a 10.10.1.11, hub-b 10.10.2.11, etcd-w 10.10.3.11.
 apiVersion: kubeadm.k8s.io/v1beta4
 kind: InitConfiguration
 localAPIEndpoint:
-  advertiseAddress: 10.2.1.161
+  advertiseAddress: 10.10.1.11
   bindPort: 6443
 nodeRegistration:
   name: hub-a
@@ -20,9 +20,9 @@ networking:
 etcd:
   external:
     endpoints:
-    - https://10.2.1.161:2379
-    - https://10.2.1.162:2379
-    - https://10.2.0.239:2379
+    - https://10.10.1.11:2379
+    - https://10.10.2.11:2379
+    - https://10.10.3.11:2379
     caFile: /etc/kubernetes/pki/etcd/ca.crt
     certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
     keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
@@ -30,9 +30,9 @@ apiServer:
   certSANs:
   - kube-hub-api
   - 127.0.0.1
-  - 10.2.1.161
+  - 10.10.1.11
   - hub-a
-  - 10.2.1.162
+  - 10.10.2.11
   - hub-b
   - hub-api.hub-api-proxy.svc
   - hub-api.hub-api-proxy.svc.cluster.local
