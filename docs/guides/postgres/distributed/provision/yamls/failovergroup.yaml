@@ -1,0 +1,5 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: FailoverGroup
+metadata:
+  name: pg-docs
+spec: {}
