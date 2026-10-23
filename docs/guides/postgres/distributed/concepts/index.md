@@ -137,7 +137,7 @@ So the isolated primary stops accepting writes before the other data center can 
 
 **Nothing at the database level moves the Lease.** A crashed Postgres, replication lag or failed health checks do not move the Lease; only a data center that stops renewing (or a planned switchover or handoff) does. A failed primary inside a healthy data center is replaced by that data center's own Raft.
 
-**A third site breaks ties.** The Lease lives in the three-site etcd. During a network partition, only the side that still has an etcd majority can renew or acquire it. The etcd members run with Pre-Vote enabled (`--pre-vote=true`), and the etcd server always enables CheckQuorum, so an etcd leader that loses the majority steps down and a member returning from a partition does not disrupt the healthy majority.
+**A third site breaks ties.** The Lease lives in the three-site etcd. During a network partition, only the side that still has an etcd majority can renew or acquire it. The etcd members use Pre-Vote (`--pre-vote=true`): before disrupting the cluster with a real election, a member asks the others whether they can still see the leader, and only an unopposed candidate starts the election. Raft prevents a stale or isolated leader with CheckQuorum, which the etcd server always enables: a leader that loses the majority steps down, and members ignore vote requests while their leader lease is still valid. See [etcd and Raft settings](/docs/guides/postgres/distributed/stretched-hub/index.md).
 
 ## Data loss (RPO) and recovery time (RTO)
 

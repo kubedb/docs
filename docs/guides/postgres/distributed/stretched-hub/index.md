@@ -224,7 +224,12 @@ sudo systemctl daemon-reload
 sudo systemctl enable etcd
 ```
 
-`--pre-vote=true` enables Raft's Pre-Vote phase in etcd. It has been the default since etcd 3.4; the unit sets it explicitly so that it cannot be turned off by accident. With Pre-Vote, an etcd member that was cut off (for example the member of a partitioned site) first asks the others whether it could win an election, and does not raise the Raft term when it cannot, so it does not depose a healthy leader when it reconnects. The etcd server also always runs Raft with CheckQuorum, so a leader that loses contact with the majority steps down. Together they keep the three-site quorum, and with it the failover Leases, stable through partitions.
+The etcd members protect the three-site quorum with two Raft mechanisms, Pre-Vote and CheckQuorum:
+
+- **Pre-Vote** (`--pre-vote=true`). Before a member disrupts the cluster with a real election, it runs a Pre-Vote phase: it asks the other members whether they would vote for it, without raising the Raft term. A member that still sees the leader refuses. So a member returning from a partition, for example the member of an isolated site, cannot depose a healthy leader when it reconnects. Pre-Vote has been the default since etcd 3.4. The unit sets it explicitly so it cannot be turned off by accident.
+- **CheckQuorum** (always on in the etcd server; there is no flag). A leader that cannot hear from a majority of members within an election timeout steps down, so a leader stranded on the minority side of a partition stops acting as leader. While a member has heard from the leader within the election timeout, its leader lease is still valid, and it ignores vote and pre-vote requests.
+
+Together they keep the etcd quorum, and with it the failover Leases stored in it, stable through partitions.
 
 > **Important:** The data directory is `/var/lib/etcd-hub`, not kubeadm's default `/var/lib/etcd`. A plain `kubeadm reset` deletes the contents of `/var/lib/etcd` even for an etcd that kubeadm does not manage. Never run plain `kubeadm reset` on a hub VM; see [Teardown](/docs/guides/postgres/distributed/teardown/index.md).
 
