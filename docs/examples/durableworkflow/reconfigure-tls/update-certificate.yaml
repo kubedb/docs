@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-update-cert
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: temporal-tls
+  tls:
+    certificates:
+    - alias: frontend
+      duration: 4320h
+      renewBefore: 720h
