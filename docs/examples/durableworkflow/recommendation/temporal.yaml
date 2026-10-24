@@ -1,0 +1,37 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-reco
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+      authSecret:
+        kind: Secret
+        name: temporal-reco-default-auth
+        rotateAfter: 15m
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: dw-ca-issuer
+    certificates:
+    - alias: internode
+      duration: 61m
+    - alias: frontend
+      duration: 61m
+    - alias: client
+      duration: 61m
+  deletionPolicy: WipeOut

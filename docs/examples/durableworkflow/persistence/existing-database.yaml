@@ -1,0 +1,44 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: temporal-existing-auth
+  namespace: demo
+type: kubernetes.io/basic-auth
+stringData:
+  username: temporal_app
+  password: change-me
+---
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-existing
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+      databaseName: temporal_existing
+      createDatabase: false
+      authSecret:
+        kind: Secret
+        name: temporal-existing-auth
+    visibility:
+      name: pg
+      namespace: demo
+      databaseName: temporal_existing_visibility
+      createDatabase: false
+      authSecret:
+        kind: Secret
+        name: temporal-existing-auth
+  deletionPolicy: Delete

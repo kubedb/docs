@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: temporal
+  apply: Always

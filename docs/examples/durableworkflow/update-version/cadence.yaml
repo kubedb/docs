@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-update-cadence
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: cadence
+  updateVersion:
+    targetVersion: cadence-1.4.3
