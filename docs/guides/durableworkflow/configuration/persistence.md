@@ -16,6 +16,8 @@ section_menu_id: guides
 
 A `DurableWorkflow` has no volumes. Every workflow, timer and task queue lives in the databases that `spec.persistence` refers to, so the availability and the backup of your data are the availability and the backup of those databases.
 
+You either refer to a database that exists (`default`, and optionally `visibility`), or let the operator create a Postgres or MySQL for you, see [Managed Persistence](/docs/guides/durableworkflow/configuration/managed-persistence.md). The rest of this page is about references.
+
 ## Which database for which store
 
 | Engine                         | Default store    | Visibility store | Notes                                                         |
@@ -23,7 +25,7 @@ A `DurableWorkflow` has no volumes. Every workflow, timer and task queue lives i
 | KubeDB Postgres (or external)  | Temporal, Cadence | Temporal, Cadence | Verified, used in all guides                                  |
 | KubeDB MySQL (or external)     | Temporal, Cadence | Temporal, Cadence | Verified                                                      |
 | KubeDB Cassandra               | Temporal, Cadence | Cadence only      | Temporal does not accept Cassandra for visibility. Not yet verified on a cluster. |
-| KubeDB Elasticsearch / OpenSearch | no             | Temporal only     | Not yet verified on a cluster. Cadence needs Kafka for it and is not supported yet. |
+| KubeDB Elasticsearch / OpenSearch | no             | Temporal, Cadence (with Kafka) | Not yet verified on a cluster, see [Advanced Visibility](/docs/guides/durableworkflow/configuration/advanced-visibility.md). |
 
 The `DurableWorkflowVersion` lists the supported engines, and the webhook rejects the others.
 
@@ -39,7 +41,7 @@ With the default `createDatabase: true`, the operator uses the admin credentials
 
 Dashes and dots in the name become underscores in user names and in Cassandra keyspaces. `spec.persistence.<store>.databaseName` overrides the database name. The servers connect with this dedicated user and do not use the admin credentials. The schema is applied by a Job before any server pod is created.
 
-For Elasticsearch and OpenSearch the operator creates the index (from `databaseName`, default `<name>_visibility`), but it does not create a user. The servers use the account of the `AppBinding`.
+For Elasticsearch and OpenSearch the operator creates the index (from `databaseName`, default `<name>_visibility`) and, through the security API of the server, a role limited to that index and a user with only that role. If the server has no security API, the servers use the account of the `AppBinding`. See [Advanced Visibility](/docs/guides/durableworkflow/configuration/advanced-visibility.md).
 
 ## Use a database you prepared
 
@@ -151,11 +153,11 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-Cadence with Elasticsearch or OpenSearch visibility is **not supported**. The webhook rejects it, as it needs Kafka and a visibility consumer that the operator does not set up.
+Cadence with Elasticsearch or OpenSearch visibility also needs Kafka (`spec.persistence.kafkaRef`). See [Advanced Visibility](/docs/guides/durableworkflow/configuration/advanced-visibility.md).
 
 ## Deletion and backup
 
-`deletionPolicy: WipeOut` drops the databases, keyspaces, indices and users that the operator created. `Delete` and `Halt` keep them. The database server is never deleted by the operator.
+`deletionPolicy: WipeOut` drops the databases, keyspaces, indices and users that the operator created. `Delete` and `Halt` keep them. The database server of a reference is never deleted by the operator. A [managed](/docs/guides/durableworkflow/configuration/managed-persistence.md) database is, under its own copy of the policy.
 
 KubeDB does not back up a `DurableWorkflow`. To protect the data, back up the default store and the visibility store with the backup of their own KubeDB database. They are not snapshotted together. Restore into a new `DurableWorkflow` of the same engine, the same version line and the same `numHistoryShards`.
 

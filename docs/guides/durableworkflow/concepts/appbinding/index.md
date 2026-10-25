@@ -38,7 +38,7 @@ spec:
       namespace: demo
 ```
 
-The operator uses the address and the admin credentials of the `AppBinding` for two things only: to create the databases and the application user, and to drop them under `WipeOut`. The servers connect with the application user, whose credentials are in a Secret of the `DurableWorkflow` namespace (`<name>-default-auth` and `<name>-visibility-auth`). An exception is Elasticsearch and OpenSearch: the servers use the account of the `AppBinding` as it is, because the security API differs between those servers.
+The operator uses the address and the admin credentials of the `AppBinding` for two things only: to create the databases and the application user, and to drop them under `WipeOut`. The servers connect with the application user, whose credentials are in a Secret of the `DurableWorkflow` namespace (`<name>-default-auth` and `<name>-visibility-auth`). For Elasticsearch and OpenSearch, the operator creates a role limited to the index and a user with only that role through the security API, and the servers use it. Only when the server has no usable security API do the servers use the account of the `AppBinding`. For OpenSearch, set `type: OpenSearch` on the store. For Cadence's Kafka, the `AppBinding` of the `Kafka` in `spec.persistence.kafkaRef` carries the bootstrap servers in `clientConfig.url` and the SASL PLAIN credentials. See [Advanced Visibility](/docs/guides/durableworkflow/configuration/advanced-visibility.md).
 
 ## The AppBinding that a DurableWorkflow publishes
 

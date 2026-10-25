@@ -26,7 +26,7 @@ The new password is generated, or taken from the `password` key of the Secret in
 
 On a highly available cluster this has no downtime. It was verified with 0 failed calls for Temporal on Postgres. It has **not** been verified for Cadence, and not for MySQL or Cassandra.
 
-The Elasticsearch and OpenSearch visibility store uses the account of its `AppBinding`, which the operator does not own, so it is not rotated by this request.
+The per-index user that the operator creates on an Elasticsearch or OpenSearch visibility store is rotated too. If the server has no security API, the servers use the account of the `AppBinding`, which the operator does not own, and that account is not rotated by this request.
 
 The username changes after a rotation. Anything else that connects to the same database with `dw_<name>` must read the new Secret.
 

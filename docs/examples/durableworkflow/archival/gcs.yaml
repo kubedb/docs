@@ -1,0 +1,42 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: archival-gcs
+  namespace: demo
+type: Opaque
+stringData:
+  credentials.json: |
+    {"type": "service_account", "project_id": "<project>", "private_key": "<key>", "client_email": "<service account>"}
+---
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: cadence-archival
+  namespace: demo
+spec:
+  version: cadence-1.4.2
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  archival:
+    history:
+      provider: gcs
+      uri: gs://my-archive/history
+      configSecret:
+        name: archival-gcs
+    visibility:
+      provider: gcs
+      uri: gs://my-archive/visibility
+      configSecret:
+        name: archival-gcs
+  deletionPolicy: WipeOut

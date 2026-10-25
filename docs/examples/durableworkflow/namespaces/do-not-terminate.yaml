@@ -1,0 +1,10 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: payments
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal
+  retention: 720h
+  deletionPolicy: DoNotTerminate

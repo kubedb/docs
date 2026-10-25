@@ -72,9 +72,10 @@ The number of history shards. If you omit it, the default of the `DurableWorkflo
 
 `spec.persistence` references the stores that hold all state.
 
-- `default` is required. It is the store for workflow state: Postgres, MySQL or Cassandra.
-- `visibility` is optional. When omitted, the server of the default store is used with a separate database. Postgres and MySQL work for both engines. Elasticsearch and OpenSearch work for Temporal only. Temporal does not accept Cassandra for visibility.
-- `kafkaRef` is for Cadence with a search visibility store. That combination is **not supported yet**, and the field is rejected for Temporal. In practice, do not set it.
+- `default` is the store for workflow state: Postgres, MySQL or Cassandra. It is required unless `managed` is set.
+- `visibility` is optional. When omitted, the server of the default store is used with a separate database. Postgres and MySQL work for both engines. Elasticsearch and OpenSearch work for both engines. Temporal does not accept Cassandra for visibility. It cannot be set together with `managed`.
+- `managed` makes the operator create the database: `engine` (`Postgres` or `MySQL`), `version`, `replicas`, `storage` and `podTemplate`. The database is a Postgres or MySQL named `<name>-db`, owned by the `DurableWorkflow`. It is exclusive with `default.name` and `visibility`, and immutable. See [Managed Persistence](/docs/guides/durableworkflow/configuration/managed-persistence.md).
+- `kafkaRef` is the `AppBinding` of a KubeDB Kafka. Cadence requires it when the visibility store is Elasticsearch or OpenSearch, and the operator creates the topics. It is rejected otherwise, and for Temporal. See [Advanced Visibility](/docs/guides/durableworkflow/configuration/advanced-visibility.md).
 
 Every store has these fields:
 
@@ -88,6 +89,10 @@ Every store has these fields:
 | `cassandra`      | `replicationFactor` (default `1`) and `datacenter`, used when the operator creates a keyspace.                                       |
 
 See [Persistence](/docs/guides/durableworkflow/configuration/persistence.md).
+
+### spec.archival
+
+`history` and `visibility` archival targets: `provider` (`s3`, `gcs` or `filestore`), `uri` and `configSecret`. A change rolls the pods. Namespaces and domains opt in with a [WorkflowNamespace](/docs/guides/durableworkflow/concepts/workflownamespace/index.md). See [Archival](/docs/guides/durableworkflow/configuration/archival.md).
 
 ### spec.configuration
 
@@ -122,6 +127,8 @@ Monitoring with Prometheus, see [Monitoring](/docs/guides/durableworkflow/monito
 | `Delete` (default) | Removed                              | Kept, with the user                                                                            |
 | `WipeOut`        | Removed                                | The databases, keyspaces, indices and users that the operator created are dropped. A database the operator did not create (`createDatabase: false`) and the database server itself are never touched. |
 
+With `spec.persistence.managed`, the policy is also copied to the managed database, which is deleted before the `DurableWorkflow` is released: `Halt` keeps its volumes and secrets, `Delete` keeps its secrets and `WipeOut` removes everything.
+
 ### spec.halted
 
 `spec.halted: true` removes all server pods and keeps the configuration, the Secrets and the databases. Set it back to `false` to start again.
@@ -132,10 +139,10 @@ Attributes of the KubeDB health checker. The defaults are `periodSeconds: 10`, `
 
 ## DurableWorkflow Status
 
-`status.phase` is `Provisioning`, `Ready`, `NotReady` and so on, like for the other databases. `status.distribution` is the resolved engine. `status.conditions` holds the conditions of the cluster, like `Ready`. `status.persistence.default` and `status.persistence.visibility` report whether the database was created (`created`), its `schemaVersion` and the server version whose schema was applied (`schemaServerVersion`).
+`status.phase` is `Provisioning`, `Ready`, `NotReady` and so on, like for the other databases. `status.distribution` is the resolved engine. `status.conditions` holds the conditions of the cluster, like `Ready`, and `ManagedStoreReady` while a managed database is provisioned. `status.persistence.default` and `status.persistence.visibility` report whether the database was created (`created`), its `schemaVersion` and the server version whose schema was applied (`schemaServerVersion`).
 
 ## Next Steps
 
-- Learn about the [DurableWorkflowVersion](/docs/guides/durableworkflow/concepts/catalog/index.md) and [DurableWorkflowOpsRequest](/docs/guides/durableworkflow/concepts/durableworkflow-ops-request/index.md) CRDs.
+- Learn about the [DurableWorkflowVersion](/docs/guides/durableworkflow/concepts/catalog/index.md), [DurableWorkflowOpsRequest](/docs/guides/durableworkflow/concepts/durableworkflow-ops-request/index.md) and [WorkflowNamespace](/docs/guides/durableworkflow/concepts/workflownamespace/index.md) CRDs.
 - Run a cluster with the [quickstart](/docs/guides/durableworkflow/quickstart/prerequisites.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

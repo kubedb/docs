@@ -102,10 +102,41 @@ $ kubectl patch dw -n demo temporal --type merge -p '{"spec":{"adminTools":{"ena
 durableworkflow.kubedb.com/temporal patched
 ```
 
-The operator does not register a Temporal namespace. Create one, then start a workflow (a worker is needed to run it):
+Create a Temporal namespace with a [WorkflowNamespace](/docs/guides/durableworkflow/concepts/workflownamespace/index.md) object:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: default
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal
+  description: Default namespace
+  retention: 72h
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/durableworkflow/quickstart/temporal-namespace.yaml
+workflownamespace.kubedb.com/default created
+
+$ kubectl get wfns -n demo
+NAME      DATABASE   NAME      RETENTION   STATUS   AGE
+default   temporal   default   72h         Ready    15s
+```
+
+The operator waits for the cluster to be `Ready` and registers the namespace. See [Manage Namespaces and Domains](/docs/guides/durableworkflow/namespaces/workflownamespace.md) to update the retention, enable archival or delete it.
+
+Alternatively, create the namespace by hand with the CLI instead of the object (do not do both for the same name):
 
 ```bash
 $ kubectl exec -n demo temporal-admin-tools-0 -- temporal operator namespace create --namespace default --retention 72h
+```
+
+Then start a workflow (a worker is needed to run it):
+
+```bash
 $ kubectl exec -n demo temporal-admin-tools-0 -- temporal workflow start --namespace default --task-queue hello --type HelloWorkflow --workflow-id hello-1
 $ kubectl exec -n demo temporal-admin-tools-0 -- temporal workflow list --namespace default
 ```
@@ -126,6 +157,7 @@ kubectl delete ns demo
 
 - Run [Cadence](/docs/guides/durableworkflow/quickstart/cadence.md).
 - Understand the [roles and high availability](/docs/guides/durableworkflow/clustering/roles-and-ha.md).
-- Use [MySQL, Cassandra or an existing database](/docs/guides/durableworkflow/configuration/persistence.md).
+- Use [MySQL, Cassandra or an existing database](/docs/guides/durableworkflow/configuration/persistence.md), or let the operator create the database with [managed persistence](/docs/guides/durableworkflow/configuration/managed-persistence.md).
+- Manage [namespaces and domains](/docs/guides/durableworkflow/namespaces/workflownamespace.md) and [archival](/docs/guides/durableworkflow/configuration/archival.md).
 - Secure it with [TLS](/docs/guides/durableworkflow/tls/tls.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

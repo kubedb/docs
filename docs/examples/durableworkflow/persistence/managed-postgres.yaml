@@ -1,0 +1,27 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-managed
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    managed:
+      engine: Postgres
+      replicas: 3
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 20Gi
+  deletionPolicy: WipeOut
