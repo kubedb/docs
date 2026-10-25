@@ -79,7 +79,7 @@ spec:
 
 - `persistence.default.authSecret.rotateAfter` makes the credential due 15 minutes after it became active. Use a realistic value in production, such as `2160h`.
 - `tls.certificates[].duration` sets short-lived certificates, so a rotation shows up quickly in a test. Use the default in production.
-- A version recommendation appears when a newer `DurableWorkflowVersion` that the current one may be updated to exists. The catalog has no such version for `temporal-1.32.1` and `cadence-1.4.2` today.
+- A version recommendation appears when a newer `DurableWorkflowVersion` that the current one may be updated to exists. If the schema update of that version cannot run online, the recommendation sets `allowDowntime: true` and its description says so: approving it accepts that the cluster is unavailable while the schema is updated. The catalog has no such version for `temporal-1.32.1` and `cadence-1.4.2` today.
 
 > Note: YAML files used in this tutorial are stored in [docs/examples/durableworkflow](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/durableworkflow) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
