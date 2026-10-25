@@ -26,6 +26,8 @@ Conditions, in order:
 6. `Soak`: watches the universe for `spec.updateVersion.soakDuration` (default 10m). Until the upgrade is finalized it can still be rolled back.
 7. `FinalizeUpgrade`: finalizes automatically after the soak.
 
+With `spec.updateVersion.finalize: Manual` the request stops after the soak with the `UpgradePendingFinalize` condition on the database, and a `FinalizeUpgrade` or `RollbackUpgrade` request completes the upgrade either way. See [Finalize a YugabyteDB Upgrade](/docs/guides/yugabytedb/update-version/manual-finalize/finalize-upgrade.md) and [Roll Back a YugabyteDB Upgrade](/docs/guides/yugabytedb/update-version/manual-finalize/rollback-upgrade.md). Both are not verified on a cluster.
+
 ## Next Step
 
 [Upgrade YugabyteDB version](/docs/guides/yugabytedb/update-version/versionupgrading/).

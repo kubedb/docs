@@ -33,6 +33,13 @@ KubeDB supports distributed SQL database deployment with YugabyteDB using the `Y
 | YCQL                                       | off by default, not run in a cluster |
 | VolumeExpansion                            | implemented, not verified end to end |
 | Backup and restore (KubeStash)             | not verified |
+| Read replicas                              | not verified on a cluster |
+| YSQL Connection Manager                    | not verified on a cluster |
+| Webserver TLS                              | not verified on a cluster |
+| StorageMigration                           | not verified on a cluster |
+| Point in time recovery (Rewind, Clone)     | not verified on a cluster |
+| Autoscaler (compute, storage)              | not verified on a cluster |
+| GitOps                                     | not verified on a cluster |
 
 ## Supported Ops Requests
 
@@ -44,6 +51,10 @@ KubeDB supports distributed SQL database deployment with YugabyteDB using the `Y
 - ReconfigureTLS
 - RotateAuth
 - UpdateVersion
+- FinalizeUpgrade and RollbackUpgrade (not verified on a cluster)
+- StorageMigration (not verified on a cluster)
+- Rewind and Clone (not verified on a cluster)
+- VerticalScaling in `InPlace` mode, CPU only (not verified on a cluster)
 
 ## Example YugabyteDB Manifest
 
@@ -131,3 +142,15 @@ The guides in this section state, for each operation, what was measured on a thr
 - [Rotate Auth](/docs/guides/yugabytedb/rotate-auth/rotateauth.md)
 - [Update Version](/docs/guides/yugabytedb/update-version/versionupgrading/)
 - [Backup and Restore](/docs/guides/yugabytedb/backup/kubestash/logical/standalone-and-ha/) (not verified)
+- [Finalize an upgrade](/docs/guides/yugabytedb/update-version/manual-finalize/finalize-upgrade.md) and [Roll back an upgrade](/docs/guides/yugabytedb/update-version/manual-finalize/rollback-upgrade.md) (not verified on a cluster)
+- [In-place vertical scaling](/docs/guides/yugabytedb/scaling/vertical-scaling/in-place.md) (not verified on a cluster)
+- [Webserver TLS](/docs/guides/yugabytedb/reconfigure-tls/webserver-tls.md) (not verified on a cluster)
+- [Storage Migration](/docs/guides/yugabytedb/storage-migration/storage-migration.md) (not verified on a cluster)
+
+### Phase 2 Features (none of these has been run on a cluster)
+
+- [Read replicas](/docs/guides/yugabytedb/clustering/read-replicas.md)
+- [YSQL Connection Manager](/docs/guides/yugabytedb/connection-manager/connection-manager.md)
+- [Point in time recovery: Rewind and Clone](/docs/guides/yugabytedb/pitr/pitr.md)
+- [Autoscaler](/docs/guides/yugabytedb/autoscaler/overview.md)
+- [GitOps](/docs/guides/yugabytedb/gitops/gitops.md)

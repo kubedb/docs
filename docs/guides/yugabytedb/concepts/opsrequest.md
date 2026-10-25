@@ -30,7 +30,7 @@ The name of the `YugabyteDB` in the same namespace.
 
 ### spec.type
 
-One of `Restart`, `ReconfigureTLS`, `RotateAuth`, `Reconfigure`, `HorizontalScaling`, `VerticalScaling`, `VolumeExpansion`, `UpdateVersion`. The matching field below must be set.
+One of `Restart`, `ReconfigureTLS`, `RotateAuth`, `Reconfigure`, `HorizontalScaling`, `VerticalScaling`, `VolumeExpansion`, `UpdateVersion`, and the phase 2 types `FinalizeUpgrade`, `RollbackUpgrade`, `StorageMigration`, `Rewind`, `Clone` (not verified on a cluster). The matching field below must be set.
 
 ### spec.apply
 
@@ -53,13 +53,18 @@ Tunes operations that restart pods one at a time:
 | Type | Field | Notes |
 |------|-------|-------|
 | Restart | `restart` | no fields needed |
-| VerticalScaling | `verticalScaling.master`, `verticalScaling.tserver` (resources), `mode` (default `Restart`) | |
-| HorizontalScaling | `horizontalScaling.tserver` (number of tservers, min 1) | masters cannot be scaled, their number is the replication factor |
-| VolumeExpansion | `volumeExpansion.mode` (`Online` or `Offline`), `master`, `tserver` (new size) | not verified end to end |
-| Reconfigure | `configuration.configSecret`, `configuration.applyConfig`, `configuration.removeCustomConfig`, `configuration.restart` (`auto`, `true`, `false`) | keys: `master.flags`, `tserver.flags`, `ysql_pg.conf`, `ysql_hba.conf` |
-| ReconfigureTLS | `tls.issuerRef`, `tls.nodeToNode`, `tls.clientToNode`, `tls.rotateCertificates`, `tls.remove` | |
+| VerticalScaling | `verticalScaling.master`, `verticalScaling.tserver`, `verticalScaling.readReplica` (resources), `mode` (`Restart` default, or `InPlace`: CPU only) | [in-place](/docs/guides/yugabytedb/scaling/vertical-scaling/in-place.md) is not verified |
+| HorizontalScaling | `horizontalScaling.tserver` (number of tservers, min 1), `horizontalScaling.readReplica` (min 0) | masters cannot be scaled, their number is the replication factor |
+| VolumeExpansion | `volumeExpansion.mode` (`Online` or `Offline`), `master`, `tserver`, `readReplica` (new size) | not verified end to end |
+| Reconfigure | `configuration.configSecret`, `configuration.applyConfig`, `configuration.removeCustomConfig`, `configuration.restart` (`auto`, `true`, `false`) | keys: `master.flags`, `tserver.flags`, `ysql_pg.conf`, `ysql_hba.conf`. `connectionManager` ([guide](/docs/guides/yugabytedb/connection-manager/connection-manager.md), not verified) |
+| ReconfigureTLS | `tls.issuerRef`, `tls.nodeToNode`, `tls.clientToNode`, `tls.webserver`, `tls.rotateCertificates`, `tls.remove` | [webserver](/docs/guides/yugabytedb/reconfigure-tls/webserver-tls.md) is not verified |
 | RotateAuth | `authentication.secretRef` | the username must stay `yugabyte` |
-| UpdateVersion | `updateVersion.targetVersion`, `updateVersion.soakDuration` (default 10m) | |
+| UpdateVersion | `updateVersion.targetVersion`, `updateVersion.soakDuration` (default 10m), `updateVersion.finalize` (`Auto` default, or `Manual`) | |
+| FinalizeUpgrade | `finalizeUpgrade: {}` | [guide](/docs/guides/yugabytedb/update-version/manual-finalize/finalize-upgrade.md), not verified |
+| RollbackUpgrade | `rollbackUpgrade: {}` | [guide](/docs/guides/yugabytedb/update-version/manual-finalize/rollback-upgrade.md), not verified |
+| StorageMigration | `migration.storageClassName`, `migration.oldPVReclaimPolicy`; `spec.timeout` is required | [guide](/docs/guides/yugabytedb/storage-migration/storage-migration.md), not verified |
+| Rewind | `rewind.database`, one of `rewind.restoreTime` and `rewind.minus` | [guide](/docs/guides/yugabytedb/pitr/pitr.md), not verified |
+| Clone | `clone.sourceDatabase`, `clone.targetDatabase`, `clone.asOf` | [guide](/docs/guides/yugabytedb/pitr/pitr.md), not verified |
 
 ## Sample manifests
 
