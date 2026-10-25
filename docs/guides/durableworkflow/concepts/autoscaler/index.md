@@ -64,7 +64,6 @@ One entry for each of `frontend`, `history`, `matching`, `worker` and `internalF
 - `containerControlledValues`: `RequestsAndLimits` (the default) or `RequestsOnly`.
 - `resourceDiffPercentage`: the smallest difference, in percent, between the current and the recommended resources that triggers a change.
 - `podLifeTimeThreshold`: the minimum age of a pod before it is changed, 15 minutes by default.
-- `nodeTopology`: the node topology to use, as in the other KubeDB autoscalers.
 
 ### spec.opsRequestOptions
 
