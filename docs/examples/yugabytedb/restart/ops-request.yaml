@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: yb-demo
+  apply: IfReady
+  rolling:
+    masterWait: 20s
+    tserverWait: 20s
