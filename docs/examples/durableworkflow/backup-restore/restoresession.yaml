@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: dw-restore-1
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: DurableWorkflow
+    name: dw
+    namespace: demo
+  dataSource:
+    repository: dw-repo
+    snapshot: dw-repo-dw-backup-manual-1792926588
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: durableworkflow-addon
+    tasks:
+    - name: coordinated-restore

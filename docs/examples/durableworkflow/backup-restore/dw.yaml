@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: dw
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  numHistoryShards: 16
+  persistence:
+    managed:
+      engine: Postgres
+      replicas: 1
+      version: "18.3-bookworm"
+      storage:
+        accessModes: [ReadWriteOnce]
+        resources:
+          requests:
+            storage: 2Gi
+  adminTools:
+    enabled: true
+  deletionPolicy: WipeOut

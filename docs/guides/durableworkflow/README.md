@@ -45,6 +45,7 @@ The server roles (frontend, history, matching, worker, and the Temporal-only int
 | Recommendations: rotate TLS, rotate auth, version update                                           |   &#10003;   |
 | Monitoring with Prometheus                                                                         |   &#10003;   |
 | GitOps: UpdateVersion, HorizontalScaling, VerticalScaling, Reconfigure, ReconfigureTLS              |   &#10003;   |
+| Backup and restore with KubeStash (PostgreSQL stores verified)                                       |   &#10003;   |
 
 ## Verification status
 
@@ -53,7 +54,7 @@ Be aware of what has been exercised on a real cluster.
 - **Verified** on a kind cluster, with a load generator that started and signaled a workflow every 0.3 seconds against a highly available cluster (2 replicas per role) on KubeDB Postgres, with **0 failed calls** during: Restart, UpdateVersion (Temporal and Cadence), HorizontalScaling up and down, VerticalScaling, dynamic and static Reconfigure, certificate rotation (Temporal and Cadence with TLS) and RotateAuth (Temporal).
 - **Verified**: Temporal and Cadence both also run on KubeDB MySQL. JWT authorization works for both engines: a call without a token and a call with a reader token are denied, and a call with an admin token is allowed.
 - **Verified** on a kind cluster: managed persistence (Temporal on a managed Postgres, Cadence on a managed MySQL, both `Ready`), and `WorkflowNamespace` (create, retention update, delete, archival enabled on a namespace, and a Cadence domain with the retention rounded up to whole days).
-- **Implemented, not yet verified on a cluster**: Cassandra as a store, Elasticsearch and OpenSearch as the visibility store (with Kafka for Cadence, and the per-index user), archival to a real bucket, GitOps (it depends on kubedb/gitops#97), the autoscaler and the recommendations. The pages that cover them say so.
+- **Implemented, not yet verified on a cluster**: backup and restore of MySQL and Cassandra stores, Elasticsearch and OpenSearch as the visibility store (with Kafka for Cadence, and the per-index user), archival to a real bucket, GitOps (it depends on kubedb/gitops#97), the autoscaler and the recommendations. The pages that cover them say so.
 
 ## Supported Versions
 
@@ -68,7 +69,6 @@ KubeDB supports the following `DurableWorkflowVersion` objects:
 
 The following are **not** implemented. There are no guides for them.
 
-- Backup and restore. All state is in the databases, so back up the databases with their own KubeDB backup. See [Persistence](/docs/guides/durableworkflow/configuration/persistence.md).
 - Multi-cluster replication.
 - Volume expansion and storage migration. The servers have no PVCs. Run them on the database.
 - Grafana dashboards.
@@ -85,6 +85,6 @@ Also note: a Cadence server (1.4.2) cannot delete a domain, so deleting a `Workf
 - [Custom configuration](/docs/guides/durableworkflow/configuration/custom-config.md), [UI and admin tools](/docs/guides/durableworkflow/configuration/ui-and-admin-tools.md).
 - [TLS](/docs/guides/durableworkflow/tls/tls.md) and [JWT authorization](/docs/guides/durableworkflow/authorization/authorization.md).
 - Day-2 operations: [Restart](/docs/guides/durableworkflow/restart/restart.md), [Reconfigure](/docs/guides/durableworkflow/reconfigure/overview.md), [Reconfigure TLS](/docs/guides/durableworkflow/reconfigure_tls/overview.md), [Rotate Authentication](/docs/guides/durableworkflow/rotateauth/overview.md), [Scaling](/docs/guides/durableworkflow/scaling/overview.md) and [Update Version](/docs/guides/durableworkflow/update-version/overview.md).
-- [GitOps](/docs/guides/durableworkflow/gitops/gitops.md), [Autoscaler](/docs/guides/durableworkflow/autoscaler/autoscaler.md), [Monitoring](/docs/guides/durableworkflow/monitoring/overview.md) and [Recommendation](/docs/guides/durableworkflow/recommendation/recommendation.md).
+- [Backup and restore](/docs/guides/durableworkflow/backup-restore/backup-restore.md), [GitOps](/docs/guides/durableworkflow/gitops/gitops.md), [Autoscaler](/docs/guides/durableworkflow/autoscaler/autoscaler.md), [Monitoring](/docs/guides/durableworkflow/monitoring/overview.md) and [Recommendation](/docs/guides/durableworkflow/recommendation/recommendation.md).
 - Detailed [concepts](/docs/guides/durableworkflow/concepts/durableworkflow/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
