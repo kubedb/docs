@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: nats-custom-config
+  namespace: demo
+stringData:
+  nats.conf: |
+    ping_interval: "30s"
+    max_connections: 5000
+  accounts.conf: |
+    ORDERS {
+      jetstream: enabled
+      users: [{user: orders, password: orders-secret}]
+    }
