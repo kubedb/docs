@@ -1,0 +1,21 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: etcd-cluster
+  verticalScaling:
+    mode: Restart
+    etcd:
+      resources:
+        requests:
+          cpu: "1"
+          memory: "2Gi"
+        limits:
+          cpu: "1"
+          memory: "2Gi"
+  timeout: 10m
+  apply: IfReady

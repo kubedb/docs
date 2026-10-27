@@ -21,6 +21,8 @@ This guide shows how to migrate the `StorageClass` of a KubeDB-managed Neo4j clu
 - You need a Kubernetes cluster and `kubectl` configured.
 - Install KubeDB operator following [setup guide](/docs/setup/README.md).
 - Ensure at least two `StorageClass` resources are available in your cluster.
+- Ensure the destination `StorageClass` uses `WaitForFirstConsumer`. The
+  admission webhook rejects migration to an `Immediate` binding class.
 
 Use a dedicated namespace for this walkthrough:
 
@@ -31,7 +33,15 @@ namespace/demo created
 
 ## Prepare Neo4j Database
 
-First, verify available storage classes:
+This example migrates to Longhorn. Create a destination class with the required
+binding mode, adjusting the Longhorn parameters for your cluster:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/neo4j/migration/custom-longhorn.yaml
+storageclass.storage.k8s.io/custom-longhorn created
+```
+
+Then verify the available storage classes:
 
 ```bash
 $ kubectl get sc
@@ -44,7 +54,9 @@ longhorn-static        driver.longhorn.io      Delete          Immediate        
 
 We will deploy Neo4j with `local-path`, then migrate to `custom-longhorn`.
 
-> Both old and new PVCs should stay on the same node. If the old class uses `WaitForFirstConsumer`, use a new class with `WaitForFirstConsumer` as well.
+> Both old and new PVCs should stay on the same node. The destination class must
+> use `WaitForFirstConsumer` so the migration helper pod and new PVC are
+> scheduled together.
 
 Apply the Neo4j database manifest:
 

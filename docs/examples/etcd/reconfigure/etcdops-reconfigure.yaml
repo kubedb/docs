@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: etcd-quickstart
+  configuration:
+    tuning:
+      quotaBackendBytes: 8589934592
+      autoCompactionMode: revision
+      autoCompactionRetention: "1000"
+  timeout: 5m
+  apply: IfReady

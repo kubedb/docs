@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Etcd
+metadata:
+  name: etcd-extra-args
+  namespace: demo
+spec:
+  version: 3.6.4
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  podTemplate:
+    spec:
+      containers:
+        - name: etcd
+          args:
+            - --heartbeat-interval=250
+            - --election-timeout=2500
+            - --max-request-bytes=3145728
+  deletionPolicy: WipeOut

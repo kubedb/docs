@@ -113,7 +113,7 @@ metadata:
   name: vault
   namespace: demo
 spec:
-  version: 1.8.2
+  version: 1.18.4
   replicas: 3
   allowedSecretEngines:
     namespaces:

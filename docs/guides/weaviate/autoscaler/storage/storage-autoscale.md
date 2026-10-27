@@ -22,9 +22,15 @@ This guide will show you how to use `KubeDB` to auto-scale the storage of a Weav
 
 - Install `KubeDB` Provisioner, Ops-Manager, and Autoscaler operators in your cluster following the steps [here](/docs/setup/README.md).
 
-- You must have a `StorageClass` that supports **volume expansion** (`allowVolumeExpansion: true`). Storage autoscaling expands the existing PVCs in place.
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
 
-- Storage autoscaling reacts to the volume-usage metric (`volume_used_percentage`) exposed through KubeDB's metrics API. Make sure the KubeDB metrics stack is installed and serving this metric in your cluster.
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
+
+- You must have a `StorageClass` that supports **volume expansion** (`allowVolumeExpansion: true`). Storage autoscaling expands the existing PVCs in place.
 
 - You should be familiar with the following `KubeDB` concepts:
   - [Weaviate](/docs/guides/weaviate/concepts/weaviate.md)

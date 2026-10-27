@@ -44,6 +44,7 @@ KubeDB supports the following Milvus Versions.
 - `2.6.7`
 - `2.6.9`
 - `2.6.11`
+- `3.0.0`
 
 ## User Guide
 

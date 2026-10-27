@@ -23,7 +23,15 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
   - [MilvusAutoscaler](/docs/guides/milvus/concepts/milvusautoscaler.md)
   - [Storage Autoscaling Overview](/docs/guides/milvus/autoscaler/storage/overview.md)
 
-- Install the **KubeDB Autoscaler** operator and **Prometheus** (storage autoscaling reads PVC usage from Prometheus).
+- Install the **KubeDB Autoscaler** operator.
+
+- During KubeDB installation, enable the KubeDB storage metrics server by passing the following Helm flag:
+
+  ```bash
+  --set kubedb-autoscaler.storage-metrics-server.enabled=true
+  ```
+
+  It provides the **custom metrics API** (`custom.metrics.k8s.io`) backed by the KubeDB storage-metrics apiserver. The storage autoscaler reads PVC usage from this API.
 
 - The PVC's `StorageClass` must support volume expansion (`allowVolumeExpansion: true`) — e.g. `longhorn-custom`.
 
@@ -73,7 +81,7 @@ milvus-standalone-compute-autoscaler   94s
 milvus-storage-autoscaler              93s
 ```
 
-The storage autoscaler watches the `streamingnode`/`node` PVC usage (read from Prometheus). When usage crosses `usageThreshold`, it creates a `VolumeExpansion` `MilvusOpsRequest`. In this walkthrough the volume stayed well below the threshold (a freshly-created, near-empty `1Gi` volume), so no expansion was triggered:
+The storage autoscaler watches the `streamingnode`/`node` PVC usage through the `custom.metrics.k8s.io` API backed by the KubeDB storage-metrics apiserver. When usage crosses `usageThreshold`, it creates a `VolumeExpansion` `MilvusOpsRequest`. In this walkthrough the volume stayed well below the threshold (a freshly-created, near-empty `1Gi` volume), so no expansion was triggered:
 
 ```bash
 $ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage

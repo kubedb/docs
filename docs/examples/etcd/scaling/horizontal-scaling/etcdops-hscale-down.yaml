@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: EtcdOpsRequest
+metadata:
+  name: etcd-hscale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: etcd-cluster
+  horizontalScaling:
+    replicas: 3
+  timeout: 20m
+  apply: IfReady
