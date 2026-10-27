@@ -1,0 +1,480 @@
+---
+title: RabbitMQ Alerting with Prometheus
+menu:
+  docs_{{ .version }}:
+    identifier: rm-monitoring-alerting
+    name: Alerting
+    parent: rm-monitoring-guides
+    weight: 40
+menu_name: docs_{{ .version }}
+section_menu_id: guides
+---
+
+> New to KubeDB? Please start [here](/docs/README.md).
+
+# RabbitMQ Alerting with Prometheus
+
+This tutorial shows you how to configure Prometheus-based alerting for a KubeDB-managed RabbitMQ instance using the `rabbitmq-alerts` Helm chart. This chart also bundles a Grafana dashboard that it imports automatically through a post-install Job — no separate dashboard chart is required.
+
+## Before You Begin
+
+* Ensure you have a Kubernetes cluster and that `kubectl` is configured to communicate with it. If you do not already have a cluster, you can create one using [kind](https://kind.sigs.k8s.io/docs/user/quick-start/).
+
+* KubeDB must be installed in your cluster with `kubedb-metrics` enabled. Follow the setup guide [here](/docs/setup/README.md) and make sure to include the flag below during installation:
+
+  ```bash
+  --set kubedb-metrics.enabled=true
+  ```
+
+  `kubedb-metrics` creates `MetricsConfiguration` objects for each database type, which Panopticon (see [Configuration](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md#configuration)) uses to expose metrics to Prometheus.
+
+* Deploy the database in the `alert-rabbitmq` namespace:
+
+  ```bash
+  $ kubectl create ns alert-rabbitmq
+  namespace/alert-rabbitmq created
+  ```
+
+* To learn more about how Prometheus monitoring works with KubeDB, see the overview [here](/docs/guides/rabbitmq/monitoring/overview.md).
+
+* You will also need a Grafana API key / token with **Editor** permission so the chart's dashboard-import Job can push the dashboard. See [Step 1](#step-1--create-a-grafana-api-key) below.
+
+* Before proceeding, complete the [Configuration](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md#configuration) steps to deploy **kube-prometheus-stack** and **Panopticon** — Panopticon is required for the **Provisioner Group** alerts below (`KubeDBRabbitMQPhase...`); skip it if you only need the exporter-based **Database Group** alerts.
+
+> Note: YAML files used in this tutorial are stored in [docs/examples/rabbitmq](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/examples/rabbitmq) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Overview
+
+<p align="center">
+  <img alt="RabbitMQ Alerting Architecture" src="/docs/images/rabbitmq/monitoring/rmq-alerting-overview.svg">
+</p>
+
+- **KubeDB** deploys RabbitMQ with the built-in `rabbitmq_prometheus` plugin enabled, which serves metrics directly from the `rabbitmq` container on port `15692` — unlike some other databases, RabbitMQ needs no separate exporter sidecar.
+- **ServiceMonitor** (named `{rabbitmq-name}-stats`) is created automatically by KubeDB and tells Prometheus to scrape the metrics endpoint every 10 seconds.
+- **KubeDB operator (panopticon)** also exposes the CR's own status as a metric, `kubedb_com_rabbitmq_status_phase`. The `RabbitMQDown` and provisioner-group alerts key off this metric instead of the database's own stats endpoint, so they fire purely based on what KubeDB itself observes about the resource — even if the metrics scrape target is otherwise healthy.
+- **PrometheusRule** is created by the `rabbitmq-alerts` chart and contains RabbitMQ alert definitions grouped by concern: database health and provisioner.
+- **Dashboard-import Job** — when `grafana.enabled` is `true`, the chart also creates a one-shot `Job` that `POST`s a bundled dashboard JSON straight to your Grafana instance's `/api/dashboards/import` endpoint.
+- **Prometheus Operator** evaluates every rule expression every 30 seconds and fires matching alerts to AlertManager.
+- **AlertManager** groups, inhibits, and silences alerts, then routes them to configured receivers (Slack, email, PagerDuty, webhook, etc.).
+
+---
+
+## Deploy RabbitMQ with Monitoring Enabled
+
+At first, let's deploy a RabbitMQ database with monitoring enabled. Below is the RabbitMQ object we are going to create.
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: RabbitMQ
+metadata:
+  name: rmq-alert-demo
+  namespace: alert-rabbitmq
+spec:
+  version: "4.2.4"
+  replicas: 3
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
+```
+
+Here,
+
+- `spec.monitor.agent: prometheus.io/operator` tells KubeDB to create a `ServiceMonitor` resource managed by the Prometheus operator.
+- `spec.monitor.prometheus.serviceMonitor.labels.release: prometheus` adds the `release: prometheus` label to the created `ServiceMonitor`, matching the Prometheus `serviceMonitorSelector` so the target is discovered automatically.
+
+Let's create the RabbitMQ resource.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/rabbitmq/monitoring/rmq-alert-demo.yaml
+rabbitmq.kubedb.com/rmq-alert-demo created
+```
+
+Now, wait for the database to go into `Ready` state.
+
+```bash
+$ kubectl get rabbitmq -n alert-rabbitmq rmq-alert-demo
+NAME             VERSION   STATUS   AGE
+rmq-alert-demo   4.2.4     Ready    5m
+```
+
+KubeDB brings up 3 pods, one per RabbitMQ node:
+
+```bash
+$ kubectl get pods -n alert-rabbitmq
+NAME               READY   STATUS    RESTARTS   AGE
+rmq-alert-demo-0   1/1     Running   0          5m
+rmq-alert-demo-1   1/1     Running   0          4m
+rmq-alert-demo-2   1/1     Running   0          4m
+```
+
+KubeDB creates a dedicated stats service with the `-stats` suffix for monitoring.
+
+```bash
+$ kubectl get svc -n alert-rabbitmq --selector="app.kubernetes.io/instance=rmq-alert-demo"
+NAME                         TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                           AGE
+rmq-alert-demo               ClusterIP   10.43.174.187   <none>        5672/TCP,1883/TCP,61613/TCP,15675/TCP,15674/TCP   59s
+rmq-alert-demo-dashboard     ClusterIP   10.43.236.58    <none>        15672/TCP                                         59s
+rmq-alert-demo-pods          ClusterIP   None            <none>        4369/TCP,25672/TCP                                59s
+rmq-alert-demo-stats         ClusterIP   10.43.128.229   <none>        15692/TCP                                         59s
+```
+
+KubeDB also creates a `ServiceMonitor` that tells Prometheus where to scrape.
+
+```bash
+$ kubectl get servicemonitor -n alert-rabbitmq
+NAME                    AGE
+rmq-alert-demo-stats    55s
+```
+
+Verify that the `ServiceMonitor` carries the `release: prometheus` label so Prometheus discovers it.
+
+```bash
+$ kubectl get servicemonitor -n alert-rabbitmq rmq-alert-demo-stats \
+    -o jsonpath='{.metadata.labels.release}'
+prometheus
+```
+
+---
+
+## Step 1 — Create a Grafana API Key
+
+The chart's dashboard-import Job authenticates to Grafana with a bearer token, so create one first.
+
+* **Grafana 9+**: **Administration → Service accounts → Add service account** → role **Editor** → **Add token**. Copy the token.
+* **Grafana 8.x and earlier** (no Service Accounts UI, e.g. the bundled `kube-prometheus-stack` Grafana 7.5.5): use the legacy **API Keys** endpoint instead:
+
+  ```bash
+  # Port-forward Grafana
+  $ kubectl port-forward -n monitoring svc/prometheus-grafana 3000:80&
+
+  # Retrieve the admin password
+  $ kubectl get secret -n monitoring prometheus-grafana \
+      -o jsonpath='{.data.admin-password}' | base64 -d && echo
+
+  # Create an API key with Editor role
+  $ curl -s -X POST -H "Content-Type: application/json" \
+      -u admin:<grafana_password> \
+      http://localhost:3000/api/auth/keys \
+      -d '{"name":"rabbitmq-alerts-demo","role":"Editor"}'
+  # Note the returned "key"
+
+  # Stop the port-forward
+  $ kill %1
+  ```
+
+Either way, you end up with a bearer token to use as `grafana.apikey` below.
+
+## Step 2 — Install rabbitmq-alerts
+
+The `rabbitmq-alerts` chart creates a `PrometheusRule` resource containing RabbitMQ alert definitions grouped by concern: database health and provisioner.
+
+### Why the Helm release name matters
+
+The chart derives the PromQL `job`/instance scoping (and the `PrometheusRule` name) from the **Helm release name**, not from a values field — so the release name must match the RabbitMQ object's name (`rmq-alert-demo`) for the rules to be correctly scoped to this instance.
+
+The chart's default label is `release: kube-prometheus-stack`, so we must also override it at install time to match the Prometheus `ruleSelector`.
+
+### Install
+
+```bash
+$ helm upgrade -i rmq-alert-demo appscode/rabbitmq-alerts \
+    -n alert-rabbitmq \
+    --create-namespace \
+    --version=v2026.7.14 \
+    --set form.alert.labels.release=prometheus \
+    --set grafana.enabled=true \
+    --set grafana.url="http://prometheus-grafana.monitoring.svc:80" \
+    --set grafana.apikey="<token-from-above>" \
+    --set grafana.jobName=rmq-alert-demo-stats \
+    --set form.alert.appSuffix=rmq-grafana-demo
+```
+
+| Flag | Value | Purpose |
+|------|-------|---------|
+| `rmq-alert-demo` (release name) | — | Scopes every PromQL expression to this instance (`job="rmq-alert-demo-stats"`, `app="rmq-alert-demo"`) |
+| `-n alert-rabbitmq` | `alert-rabbitmq` | Installs the `PrometheusRule` in the same namespace as the database |
+| `form.alert.labels.release` | `prometheus` | Matches the Prometheus `ruleSelector` so the rules are loaded |
+| `grafana.url` | in-cluster Grafana URL | The dashboard-import Job runs **inside the cluster**, so this must be a cluster-internal address, not `localhost` |
+| `grafana.apikey` | token from Step 1 | Authenticates the dashboard-import `POST` request |
+| `grafana.jobName` | `rmq-alert-demo-stats` | **Required** — the chart's default (`kubedb-databases`) doesn't match any real Prometheus job, so most of the dashboard's panels show "No data" unless you override it to your instance's actual stats-service name |
+
+> To install **alerts only, without the dashboard**, omit the `grafana.*` flags (or set `--set grafana.enabled=false`).
+
+### Verify the PrometheusRule is created
+
+```bash
+$ kubectl get prometheusrule -n alert-rabbitmq
+NAME             AGE
+rmq-alert-demo   30s
+```
+
+Confirm the `release: prometheus` label is present.
+
+```bash
+$ kubectl get prometheusrule -n alert-rabbitmq rmq-alert-demo \
+    -o jsonpath='{.metadata.labels.release}'
+prometheus
+```
+
+### Verify the dashboard-import Job
+
+```bash
+$ kubectl get job -n alert-rabbitmq
+NAME                     STATUS     COMPLETIONS   AGE
+rmq-alert-demo-post-job  Complete   1/1           17s
+
+$ kubectl logs -n alert-rabbitmq job/rmq-alert-demo-post-job
+{"pluginId":"","title":"kubedb.com / RabbitMQ / alert-rabbitmq / rmq-alert-demo","imported":true, ...}
+```
+
+A `"imported":true` response confirms the dashboard `kubedb.com / RabbitMQ / alert-rabbitmq / rmq-alert-demo` now exists in Grafana.
+
+### Confirm Prometheus loaded the rules
+
+Port-forward the Prometheus UI and open the **Status → Rule health** page.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Open `http://localhost:9090/rules?search=rabbitmq`.
+
+<p align="center">
+  <img alt="Prometheus Rule Health" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-rules.png" style="padding:10px">
+</p>
+
+The `rabbitmq.database.alert-rabbitmq.rmq-alert-demo.rules` group is visible with all rules showing **OK**, confirming that Prometheus has loaded and is evaluating the RabbitMQ alert definitions every 30 seconds.
+
+---
+
+## Verify End-to-End
+
+### 1. Check the metrics endpoint
+
+Because RabbitMQ's Prometheus plugin runs inside the `rabbitmq` container itself, there is no separate `exporter` container to check — query the plugin's own endpoint directly.
+
+```bash
+$ kubectl exec -n alert-rabbitmq rmq-alert-demo-0 -c rabbitmq -- \
+
+                                      wget -qO- http://127.0.0.1:15692/metrics | grep rabbitmq_identity_info
+# TYPE rabbitmq_identity_info untyped
+# HELP rabbitmq_identity_info RabbitMQ node & cluster identity info
+rabbitmq_identity_info{rabbitmq_node="rabbit@rmq-alert-demo-0.rmq-alert-demo-pods.alert-rabbitmq",rabbitmq_cluster="rmq-alert-demo",rabbitmq_cluster_permanent_id="rabbitmq-cluster-id-lcFtUYEzj3-MLTpL-uEbcg",rabbitmq_endpoint="aggregated"} 1
+```
+
+### 2. Check the Prometheus target is UP
+
+Open `http://localhost:9090/targets`.
+
+<p align="center">
+  <img alt="Prometheus Target UP" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-target.png" style="padding:10px">
+</p>
+
+The target `serviceMonitor/alert-rabbitmq/rmq-alert-demo-stats/0` shows **3 / 3 up**, confirming metrics are being scraped from all three pods — `rmq-alert-demo-0`, `rmq-alert-demo-1`, and `rmq-alert-demo-2` — in the `alert-rabbitmq` namespace.
+
+### 3. Confirm the RabbitMQ alerts are inactive
+
+Open `http://localhost:9090/alerts?search=rabbitmq` to see the RabbitMQ alert groups.
+
+<p align="center">
+  <img alt="Prometheus Alerts" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-alerts.png" style="padding:10px">
+</p>
+
+All 11 rules in the `rabbitmq.database` group and both rules in the `rabbitmq.provisioner` group show **INACTIVE**, meaning the 3-node cluster is healthy and no thresholds are breached.
+
+> Note: this cluster uses the `local-path` storage class, whose PVCs are just directories on the node's root filesystem rather than isolated volumes — so `DiskUsageHigh`/`DiskAlmostFull` (`kubelet_volume_stats_used_bytes`) can occasionally read the **node's actual disk usage** instead of the small demo volume's own usage, showing PENDING/FIRING even though the RabbitMQ data volume itself is nearly empty. Not observed in this run, but worth knowing if your own result differs from the screenshot above.
+
+### 4. Check AlertManager
+
+Port-forward AlertManager to view any currently firing alerts.
+
+```bash
+$ kubectl port-forward -n monitoring \
+    svc/prometheus-kube-prometheus-alertmanager 9093:9093
+```
+
+Open `http://localhost:9093`. **PENDING** rules have not yet fired — only alerts that cross into **FIRING** are forwarded to AlertManager — so with a healthy RabbitMQ instance no alerts for `rmq-alert-demo` are listed here yet.
+
+---
+
+## Simulating a Firing Alert
+
+The previous section confirmed that the RabbitMQ alerts are healthy. This section walks through deliberately triggering the `RabbitMQPhaseCritical` alert so you can observe the full alert lifecycle — from firing in Prometheus through to the AlertManager dashboard — and then resolve it.
+
+On a 3-node cluster, crashing a single pod degrades the cluster rather than taking it fully down — the KubeDB operator moves the resource's `status.phase` to `Critical` (one or more nodes unhealthy, but the remaining nodes keep serving) rather than `NotReady` (which needs a majority/all of the nodes down). `RabbitMQPhaseCritical` is therefore the realistic alert to demonstrate here; `RabbitMQDown`/`KubeDBRabbitMQPhaseNotReady` would need all 3 nodes crashed simultaneously and held down.
+
+### 1. Crash one RabbitMQ node repeatedly
+
+Kill the RabbitMQ process inside `rmq-alert-demo-0`. A lone `kill 1` restarts fast enough that the container becomes `Ready` again before KubeDB's health check can even observe the outage, and `RabbitMQPhaseCritical` needs the phase held at `Critical` for a full `for: 3m` — so keep the pod crash-looping for several minutes, not just a handful of kills.
+
+```bash
+$ end=$(( $(date +%s) + 240 ))
+  while [ $(date +%s) -lt $end ]; do
+    kubectl exec -n alert-rabbitmq rmq-alert-demo-0 -c rabbitmq -- kill 1 >/dev/null 2>&1
+    sleep 5
+  done
+```
+
+Watch the CR phase move from `Ready` to `Critical`:
+
+```bash
+$ kubectl get rabbitmq -n alert-rabbitmq rmq-alert-demo -o jsonpath='{.status.phase}'
+Critical
+```
+
+`RabbitMQPhaseCritical` keys off `kubedb_com_rabbitmq_status_phase` (a metric emitted by the KubeDB operator itself), so what matters is the CR's `status.phase` staying at `Critical` continuously, not the exporter's own scrape health — if the pod recovers even briefly between kills, the `for: 3m` timer resets and you'll see the rule flip back to **PENDING**. Let the loop run for the full 4 minutes above before checking.
+
+### 2. Watch the alert fire in Prometheus
+
+Open `http://localhost:9090/alerts?search=rabbitmq`.
+
+<p align="center">
+  <img alt="Prometheus Alerts — RabbitMQPhaseCritical Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-prom-alerts-firing.png" style="padding:10px">
+</p>
+
+`RabbitMQPhaseCritical` moves from **INACTIVE** to **FIRING** once its `for: 3m` window elapses with the phase held at `Critical`, while the rest of the `rabbitmq.database` group stays **INACTIVE**. The provisioner-group `KubeDBRabbitMQPhaseNotReady` alert only reaches **PENDING** in this scenario — it needs the operator to view the resource as fully `NotReady`, which a single crashed node in a 3-node cluster doesn't trigger.
+
+### 3. Check the AlertManager dashboard
+
+Open `http://localhost:9093/#/alerts?filter=%7Bnamespace%3D%22alert-rabbitmq%22%7D`.
+
+<p align="center">
+  <img alt="AlertManager — RabbitMQPhaseCritical Firing" src="/docs/images/rabbitmq/monitoring/rmq-alerting-alertmanager-firing.png" style="padding:10px">
+</p>
+
+AlertManager shows the `RabbitMQPhaseCritical` alert. The alert card displays labels including:
+
+- **alertname**: `RabbitMQPhaseCritical`
+- **severity**: `warning`
+- **app**: `rmq-alert-demo`, **app_namespace**: `alert-rabbitmq`
+- **phase**: `Critical`
+- **k8s_kind**: `RabbitMQ`
+
+Note that the `instance`/`pod`/`job` labels on this alert point at the KubeDB operator's **panopticon** component (`job="panopticon"`), not at the RabbitMQ pod itself — because this alert is derived from the operator's own status metric rather than from the database's stats endpoint.
+
+AlertManager routes this alert to every receiver configured in your `alertmanagerConfig` (Slack, email, PagerDuty, webhook, etc.) based on your routing tree. If no receiver is configured, the alert is visible here but silently dropped.
+
+### 4. Restore RabbitMQ
+
+Delete the pod so KubeDB recreates it cleanly.
+
+```bash
+$ kubectl delete pod -n alert-rabbitmq rmq-alert-demo-0
+pod "rmq-alert-demo-0" deleted
+```
+
+Once `status.phase` returns to `Ready`, Prometheus marks both alerts **INACTIVE** again and AlertManager sends a **resolved** notification to all receivers.
+
+---
+
+## Alert Reference
+
+All alerts are scoped to the `rmq-alert-demo` instance in the `alert-rabbitmq` namespace via the PromQL label filters `job="rmq-alert-demo-stats"` / `app="rmq-alert-demo"` and `namespace="alert-rabbitmq"`.
+
+### Database Group
+
+Fired based on live metrics from RabbitMQ's `rabbitmq_prometheus` plugin, plus the two persistent-volume rules and the two KubeDB status-phase rules.
+
+| Alert | Severity | For | What It Means |
+|-------|----------|-----|---------------|
+| `RabbitmqFileDescriptorsNearLimit` | warning | 30s | More than 80% of the node's file descriptor limit is in use — at 100%, new connections will be refused and disk writes may fail. |
+| `RabbitmqQueueIsGrowing` | warning | 30s | A queue's message count has been steadily increasing over the last 10 minutes — consumers may not be keeping up with publishers. |
+| `RabbitmqUnroutableMessages` | warning | 30s | Messages published to an exchange could not be routed to any queue in the last 5 minutes — check your exchange/queue bindings. |
+| `RabbitmqTCPSocketsNearLimit` | warning | 30s | More than 80% of the node's TCP socket limit is in use — at 100%, new connections will be refused. |
+| `RabbitmqLowDiskWatermarkPredicted` | warning | 30s | Based on the last 24h trend, free disk space is predicted to drop below the configured watermark within 24 hours, which would block all publishers cluster-wide. |
+| `RabbitmqInsufficientEstablishedErlangDistributionLinks` | warning | 30s | Fewer Erlang distribution links than expected for a full-mesh cluster are established — indicates partial inter-node connectivity issues. |
+| `RabbitmqHighConnectionChurn` | warning | 30s | More than 10% of total connections were opened/closed per second over the last 5 minutes — client connections are short-lived instead of long-lived. |
+| `RabbitMQPhaseCritical` | warning | 3m | KubeDB reports the database in Critical phase — one or more nodes are down, but read/write is not yet hampered. |
+| `RabbitMQDown` | critical | 30s | KubeDB reports the database in NotReady phase — the cluster is not accepting connections and read/write is failing. |
+| `DiskUsageHigh` | warning | 1m | The RabbitMQ data volume (PVC) is more than 80% full. |
+| `DiskAlmostFull` | critical | 1m | The RabbitMQ data volume (PVC) is more than 95% full. |
+
+### Provisioner Group
+
+Monitors the KubeDB operator's view of the RabbitMQ resource phase.
+
+| Alert | Severity | For | What It Means |
+|-------|----------|-----|---------------|
+| `KubeDBRabbitMQPhaseNotReady` | critical | 1m | KubeDB marked the RabbitMQ resource `NotReady` — operator cannot reach the database. |
+| `KubeDBRabbitMQPhaseCritical` | warning | 15m | The instance is in a degraded/critical phase. |
+
+---
+
+## Customising Alerts
+
+To override thresholds or disable specific alert groups, create a custom values file and upgrade the chart.
+
+```yaml
+# custom-alerts.yaml
+form:
+  alert:
+    labels:
+      release: prometheus
+    groups:
+      database:
+        enabled: warning
+        rules:
+          rabbitmqHighConnectionChurn:
+            enabled: true
+            duration: "2m"
+            severity: warning
+          diskUsageHigh:
+            enabled: true
+            val: 90        # fire at 90% disk usage instead of the default 80%
+            duration: "5m"
+            severity: warning
+      provisioner:
+        enabled: "none"    # disable all provisioner alerts
+```
+
+```bash
+$ helm upgrade rmq-alert-demo appscode/rabbitmq-alerts \
+    -n alert-rabbitmq \
+    --version=v2026.7.14 \
+    -f custom-alerts.yaml
+```
+
+---
+
+## Cleaning up
+
+To remove all resources created in this tutorial, run the following commands.
+
+```bash
+# Remove the rabbitmq-alerts release (PrometheusRule + dashboard-import Job)
+$ helm uninstall rmq-alert-demo -n alert-rabbitmq
+
+# Remove the imported Grafana dashboard (it is not removed by helm uninstall)
+$ curl -s -X DELETE -H "Authorization: Bearer <grafana-token>" \
+    http://localhost:3000/api/dashboards/uid/<uid>
+
+# Remove the RabbitMQ instance
+$ kubectl delete rabbitmq -n alert-rabbitmq rmq-alert-demo
+
+# Delete namespace
+$ kubectl delete ns alert-rabbitmq
+
+# Uninstall monitoring stack (optional — skip if other tutorials on this cluster still need them)
+$ helm uninstall panopticon -n kubeops
+$ helm uninstall prometheus -n monitoring
+```
+
+## Next Steps
+
+- Monitor your RabbitMQ database with KubeDB using [builtin Prometheus](/docs/guides/rabbitmq/monitoring/using-builtin-prometheus.md).
+- Monitor your RabbitMQ database with KubeDB using [Prometheus operator](/docs/guides/rabbitmq/monitoring/using-prometheus-operator.md).
+- Detail concepts of [RabbitMQ object](/docs/guides/rabbitmq/concepts/rabbitmq.md).
+- Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

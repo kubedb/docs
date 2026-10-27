@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Pgpool
+metadata:
+  name: pgpool-alert
+  namespace: alert-pgpool
+spec:
+  version: "4.5.3"
+  postgresRef:
+    name: pg-backend-alert
+    namespace: alert-pgpool
+  configuration:
+    inline:
+      pgpool.conf: |
+        num_init_children=5
+        max_pool=15
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

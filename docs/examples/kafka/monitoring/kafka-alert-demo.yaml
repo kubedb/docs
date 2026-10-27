@@ -1,0 +1,24 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-alert-demo
+  namespace: alert-kafka
+spec:
+  replicas: 1
+  version: "3.9.0"
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
