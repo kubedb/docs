@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-confluent-license
+  namespace: demo
+stringData:
+  license: <your-confluent-enterprise-license-key>
