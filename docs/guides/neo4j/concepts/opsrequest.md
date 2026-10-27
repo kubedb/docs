@@ -49,7 +49,7 @@ spec:
   databaseRef:
     name: neo4j-test
   updateVersion:
-    targetVersion: 2025.12.1
+    targetVersion: 2026.08.1
 ```
 
 **Sample `Neo4jOpsRequest` for vertical scaling:**
