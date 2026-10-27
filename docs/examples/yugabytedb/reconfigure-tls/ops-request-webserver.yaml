@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-webserver-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: yb-demo
+  tls:
+    # Serve the web UIs (7000, 9000) and the metrics endpoints over HTTPS.
+    webserver: true

@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-storage-migration
+  namespace: demo
+spec:
+  type: StorageMigration
+  databaseRef:
+    name: yb-demo
+  migration:
+    storageClassName: fast-ssd
+    oldPVReclaimPolicy: Delete
+  # every pod moves its data, size the timeout for the whole database
+  timeout: 2h

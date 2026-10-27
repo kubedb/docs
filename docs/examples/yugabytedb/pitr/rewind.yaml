@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-rewind
+  namespace: demo
+spec:
+  type: Rewind
+  databaseRef:
+    name: yb-demo
+  rewind:
+    database: yugabyte
+    # Set exactly one of minus and restoreTime.
+    minus: 15m

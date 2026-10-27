@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-finalize-upgrade
+  namespace: demo
+spec:
+  type: FinalizeUpgrade
+  databaseRef:
+    name: yb-demo
+  finalizeUpgrade: {}
