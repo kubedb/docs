@@ -64,3 +64,7 @@ aliases:
 - Detail concepts of [MongoDB object](/docs/guides/mongodb/concepts/mongodb.md).
 - Detail concepts of [MongoDBVersion object](/docs/guides/mongodb/concepts/catalog.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+## Cross-DC Disaster Recovery (DC-DR)
+
+Do you want to run your MongoDB database across multiple data centers and recover from a full data center failure with a single, automatically failing-over endpoint? KubeDB runs one replica set across the data centers, spreads the voting members 3-site so no single data center holds a majority, writes with `w:majority`, and lets MongoDB's own election promote a surviving data center. Follow [here](/docs/guides/mongodb/dr/overview/index.md).
