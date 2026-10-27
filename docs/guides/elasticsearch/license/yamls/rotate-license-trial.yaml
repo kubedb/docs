@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: esops-rotate-license-trial
+  namespace: demo
+spec:
+  type: RotateLicense
+  databaseRef:
+    name: sample-es
+  license:
+    trial: true
+  timeout: 5m
+  apply: IfReady
