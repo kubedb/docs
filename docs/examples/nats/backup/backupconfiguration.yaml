@@ -1,0 +1,39 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: nats-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: NATS
+    namespace: demo
+    name: nats-cluster
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/30 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-nats-repo
+          backend: s3-backend
+          directory: /nats
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      addon:
+        name: nats-addon
+        tasks:
+          - name: logical-backup
+            params:
+              includeConsumers: "true"
+          - name: manifest-backup

@@ -1,0 +1,40 @@
+apiVersion: kubedb.com/v1alpha2
+kind: NATS
+metadata:
+  name: nats-cluster
+  namespace: demo
+spec:
+  version: "2.15.1"
+  replicas: 3
+  jetStream:
+    storageType: Durable
+    storage:
+      accessModes:
+        - ReadWriteOnce
+      resources:
+        requests:
+          storage: 10Gi
+      storageClassName: standard
+    memoryStoreSize: 256Mi
+  serverConfig:
+    maxConnections: 10000
+    maxPayload: 1048576
+  lameDuck:
+    gracePeriod: 10s
+    duration: 30s
+  podTemplate:
+    spec:
+      containers:
+        - name: nats
+          resources:
+            requests:
+              cpu: "500m"
+              memory: 1Gi
+            limits:
+              cpu: "1"
+              memory: 1Gi
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+  deletionPolicy: WipeOut
