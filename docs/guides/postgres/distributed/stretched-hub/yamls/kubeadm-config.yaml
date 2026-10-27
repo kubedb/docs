@@ -1,0 +1,47 @@
+# kubeadm configuration for hub-a, rendered for the example addresses of this guide:
+# hub-a 10.10.1.11, hub-b 10.10.2.11, etcd-w 10.10.3.11.
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: InitConfiguration
+localAPIEndpoint:
+  advertiseAddress: 10.10.1.11
+  bindPort: 6443
+nodeRegistration:
+  name: hub-a
+  criSocket: unix:///var/run/containerd/containerd.sock
+  taints: []
+---
+apiVersion: kubeadm.k8s.io/v1beta4
+kind: ClusterConfiguration
+kubernetesVersion: v1.37.1
+controlPlaneEndpoint: kube-hub-api:8443
+networking:
+  podSubnet: 10.244.0.0/16
+  serviceSubnet: 10.96.0.0/12
+etcd:
+  external:
+    endpoints:
+    - https://10.10.1.11:2379
+    - https://10.10.2.11:2379
+    - https://10.10.3.11:2379
+    caFile: /etc/kubernetes/pki/etcd/ca.crt
+    certFile: /etc/kubernetes/pki/apiserver-etcd-client.crt
+    keyFile: /etc/kubernetes/pki/apiserver-etcd-client.key
+apiServer:
+  certSANs:
+  - kube-hub-api
+  - 127.0.0.1
+  - 10.10.1.11
+  - hub-a
+  - 10.10.2.11
+  - hub-b
+  - hub-api.hub-api-proxy.svc
+  - hub-api.hub-api-proxy.svc.cluster.local
+  extraArgs:
+  - name: encryption-provider-config
+    value: /etc/kubernetes/enc/encryption-config.yaml
+  extraVolumes:
+  - name: encryption-config
+    hostPath: /etc/kubernetes/enc
+    mountPath: /etc/kubernetes/enc
+    readOnly: true
+    pathType: DirectoryOrCreate

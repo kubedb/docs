@@ -1,0 +1,38 @@
+# An echo server exported on the slice. Apply it on spoke-2; every other cluster
+# must reach it at http://slice-check.demo.svc.slice.local:8080/.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: slice-check
+  namespace: demo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: slice-check
+  template:
+    metadata:
+      labels:
+        app: slice-check
+    spec:
+      containers:
+      - name: echo
+        image: hashicorp/http-echo:1.0
+        args: ["-listen=:8080", "-text=hello-from-spoke-2"]
+        ports:
+        - containerPort: 8080
+---
+apiVersion: networking.kubeslice.io/v1beta1
+kind: ServiceExport
+metadata:
+  name: slice-check
+  namespace: demo
+spec:
+  slice: demo-slice
+  selector:
+    matchLabels:
+      app: slice-check
+  ports:
+  - name: http
+    containerPort: 8080
+    protocol: TCP

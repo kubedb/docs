@@ -1,0 +1,25 @@
+# A long-running client in a slice namespace. The KubeSlice sidecar is injected
+# into it, so it can reach <db>.<namespace>.svc.slice.local from any cluster.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: psql-client
+  namespace: demo
+spec:
+  containers:
+  - name: psql
+    image: postgres:17.2-alpine
+    command: ["sleep", "infinity"]
+    env:
+    - name: PGHOST
+      value: pg-docs.demo.svc.slice.local
+    - name: PGUSER
+      valueFrom:
+        secretKeyRef:
+          name: pg-docs-auth
+          key: username
+    - name: PGPASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: pg-docs-auth
+          key: password

@@ -1,0 +1,26 @@
+# dr-controlplane in "hub mode": the hub's own (three-site) etcd stores the Leases,
+# so no separate coordination control plane or etcd is deployed.
+namespace: dc-failover
+createNamespace: false
+etcd:
+  deploy: false
+controlplane:
+  enabled: false
+agent:
+  enabled: false          # agents arrive on every cluster as an OCM add-on instead
+topology:
+  enabled: true
+  requireSpread: false
+addon:
+  autoInstall:
+    enabled: true
+  coordKubeconfigMirrorNamespaces: []
+  placement:
+    labelSelector:
+      matchLabels:
+        dr-controlplane.io/enabled: "true"
+  agent:
+    installNamespace: dc-failover
+    createNamespace: false
+    coordKubeconfigSourceSecret: hub-agent-kubeconfig
+    coordExternalEndpoint: https://hub-api.hub-api-proxy.svc:6443

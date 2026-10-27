@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-docs-hscale-spoke-2-up
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: pg-docs
+  horizontalScaling:
+    dataCenters:
+    - clusterName: spoke-2
+      replicas: 3
