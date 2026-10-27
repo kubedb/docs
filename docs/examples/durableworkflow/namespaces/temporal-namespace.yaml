@@ -1,0 +1,11 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: orders
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal
+  description: Order processing
+  retention: 168h
+  deletionPolicy: Delete

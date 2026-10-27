@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg
+  namespace: demo
+spec:
+  version: "18.3"
+  replicas: 3
+  configuration:
+    tuning:
+      profile: web
+      maxConnections: 300
+      storageType: ssd
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 5Gi
+  deletionPolicy: WipeOut

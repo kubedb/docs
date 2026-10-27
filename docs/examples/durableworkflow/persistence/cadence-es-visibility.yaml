@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: cadence-es
+  namespace: demo
+spec:
+  version: cadence-1.4.2
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+    visibility:
+      name: es
+      namespace: demo
+      type: Elasticsearch
+    kafkaRef:
+      name: kafka
+      namespace: demo
+  deletionPolicy: WipeOut
