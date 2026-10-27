@@ -86,7 +86,7 @@ metadata:
   name: custom-neo4j
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   configuration:
     secretName: neo4j-configuration
@@ -111,7 +111,7 @@ Now, wait for the Neo4j cluster to be ready:
 ```bash
 $ kubectl get neo4j -n demo custom-neo4j -w
 NAME           VERSION     STATUS   AGE
-custom-neo4j   2025.12.1   Ready    3m
+custom-neo4j   2026.08.1   Ready    3m
 ```
 
 ## Verify the Applied Configuration

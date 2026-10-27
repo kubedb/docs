@@ -48,7 +48,7 @@ metadata:
   name: sample-neo4j
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   deletionPolicy: WipeOut
   storage:

@@ -19,7 +19,7 @@ This guide shows you how to back up and restore physical databases, composite da
 
 - Prepare a Kubernetes cluster and configure `kubectl` to access it.
 - Install [KubeDB](/docs/setup/README.md), [KubeStash](https://kubestash.com/docs/latest/setup/install/kubestash), and the [KubeStash kubectl plugin](https://kubestash.com/docs/latest/setup/install/kubectl-plugin/).
-- Use a KubeDB-supported Neo4j Enterprise version that supports composite databases. This guide uses `2025.12.1`.
+- Use a KubeDB-supported Neo4j Enterprise version that supports composite databases. This guide uses `2026.08.1`.
 - Prepare an S3-compatible bucket and its access credentials.
 - Install a Java Development Kit that provides `keytool` on the machine where you run the setup commands.
 - Make sure the source and restore-target Neo4j deployments can reach the remote Neo4j Bolt endpoint.
@@ -114,7 +114,7 @@ metadata:
   name: source-neo4j
   namespace: demo
 spec:
-  version: 2025.12.1
+  version: 2026.08.1
   replicas: 3
   configuration:
     remoteAliasKeystore:
@@ -150,7 +150,7 @@ metadata:
   name: remote-neo4j
   namespace: demo
 spec:
-  version: 2025.12.1
+  version: 2026.08.1
   replicas: 3
   storageType: Durable
   storage:
@@ -414,7 +414,7 @@ metadata:
   name: restored-neo4j
   namespace: demo
 spec:
-  version: 2025.12.1
+  version: 2026.08.1
   replicas: 3
   configuration:
     remoteAliasKeystore:
