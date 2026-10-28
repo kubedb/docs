@@ -11,7 +11,6 @@ spec:
       trigger: "On"
       usageThreshold: 34
       expansionMode: "Online"
-
       scalingRules:
         - appliesUpto: "100Ti"
           threshold: "50%"

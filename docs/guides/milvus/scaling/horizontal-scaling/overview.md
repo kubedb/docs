@@ -35,9 +35,9 @@ spec:
   type: HorizontalScaling
   horizontalScaling:
     topology:
-      proxy: 1
-      streamingnode: 1
-      # mixcoord / querynode / datanode are also supported by the API
+      proxy: 2
+      streamingnode: 2
+      # mixcoord / querynode / dataNode are also supported by the API
 ```
 
 The flow is:
@@ -48,6 +48,6 @@ The flow is:
 4. The operator waits for the affected roles to become healthy.
 5. The operator resumes the database and marks the `MilvusOpsRequest` as `Successful`.
 
-The `spec.horizontalScaling.topology` API accepts `proxy`, `mixcoord`, `querynode`, `streamingnode` and `dataNode`. The sample used in the guide only scales `proxy` and `streamingnode`; the other roles are scaled the same way.
+The `spec.horizontalScaling.topology` API accepts `proxy`, `mixcoord`, `querynode`, `streamingnode` and `dataNode`. Note the camelCase `dataNode`: vertical scaling uses `datanode` for the same role. The sample used in the guide only scales `proxy` and `streamingnode`; the other roles are scaled the same way.
 
 In the next doc, we will see a step-by-step guide on horizontally scaling a distributed Milvus database.

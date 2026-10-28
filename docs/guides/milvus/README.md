@@ -26,7 +26,7 @@ Milvus is an open-source vector database built to power embedding similarity sea
 | External object storage support                               |   &#10003;   |
 | KubeDB-managed or externally managed etcd metadata storage    |   &#10003;   |
 | Custom Configuration                                          |   &#10003;   |
-| Monitoring using Prometheus and Grafana                       |   &#10003;   |
+| Monitoring using Prometheus                                   |   &#10003;   |
 | Authentication & Authorization (TLS)                          |   &#10003;   |
 | Externally manageable Auth Secret (Rotate Auth)               |   &#10003;   |
 | Persistent volume                                             |   &#10003;   |
@@ -44,7 +44,10 @@ KubeDB supports the following Milvus Versions.
 - `2.6.7`
 - `2.6.9`
 - `2.6.11`
+- `2.6.15`
+- `2.6.15-gpu`
 - `3.0.0`
+- `3.0.0-gpu`
 
 ## User Guide
 

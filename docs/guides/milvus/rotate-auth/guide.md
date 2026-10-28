@@ -23,9 +23,22 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to rotate 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Rotate Authentication Overview](/docs/guides/milvus/rotate-auth/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/rotate-auth/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/rotate-auth/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Deploy Milvus
+
+This guide rotates the credentials of the databases from the quickstarts. Deploy the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest, which does not set `spec.authSecret`, and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+```
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ## Auth Secret Basics
 
@@ -121,14 +134,48 @@ The database now references the new secret:
 ```bash
 $ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.authSecret.name}'
 milvus-new-auth1
+```
 
-$ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.metadata.annotations.kubedb\.com/auth-active-from}'
+The new activation time is recorded in `spec.authSecret.activeFrom` and in the `kubedb.com/auth-active-from` annotation of the **new** secret. (The old `milvus-standalone-auth` secret keeps its original annotation, from when the database was created.)
+
+```bash
+$ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.authSecret.activeFrom}'
+2026-06-30T17:19:33Z
+
+$ kubectl get secret milvus-new-auth1 -n demo -o jsonpath='{.metadata.annotations.kubedb\.com/auth-active-from}'
 2026-06-30T17:19:33Z
 ```
+
+Finally, check the credentials against Milvus itself. Port-forward the REST port in a separate terminal (`kubectl port-forward svc/milvus-standalone -n demo 8080:8080`), then try the old password, which is still stored in `milvus-standalone-auth`:
+
+```bash
+$ OLD_PASSWORD=$(kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password}' | base64 -d)
+$ curl -s -X POST "http://localhost:8080/v2/vectordb/collections/list" \
+    -H "Authorization: Bearer root:${OLD_PASSWORD}" \
+    -H "Content-Type: application/json" -d '{}'
+{"code":1800,"message":"user hasn't authenticated"}
+```
+
+The same request with `Bearer root:NewPassword1` succeeds (`"code":0`) and lists the collections.
 
 ## Rotate Distributed Milvus
 
 For a distributed Milvus, point `spec.databaseRef.name` at the distributed database (`milvus-cluster`). The credential is updated dynamically inside every distributed role.
+
+Deploy the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+```
+
+The distributed sample reuses the OpsRequest name of the standalone one, so delete the standalone OpsRequest first. If the `milvus-new-auth1` secret from the standalone section still exists, `kubectl apply` reports it as `unchanged` instead of `created`.
+
+```bash
+$ kubectl delete milvusopsrequest -n demo milvus-rotate-auth-user-secret
+```
 
 `rotate-auth-distributed.yaml`
 
@@ -204,8 +251,10 @@ See the [Recommendation Engine guide](/docs/guides/milvus/recommendation/guide.m
 
 ```bash
 $ kubectl delete milvusopsrequest -n demo milvus-rotate-auth-user-secret
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete secret -n demo milvus-new-auth1
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
 $ kubectl delete ns demo
 ```
 

@@ -22,7 +22,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to migrate
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 - You need **at least two** `StorageClass`es — the current one and the target one. This guide migrates from `local-path` to `longhorn-custom`:
 
@@ -37,9 +37,16 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to migrate
 
 ## Storage Migration — Standalone Milvus
 
-Deploy a standalone Milvus on `local-path` and wait until it is `Ready`:
+Deploy the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest, which uses `local-path`, and wait until it is `Ready`:
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+
 $ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone
 NAME                       STATUS   VOLUME      CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 data-milvus-standalone-0   Bound    pvc-...     1Gi        RWO            local-path     14m
@@ -99,7 +106,7 @@ Status:
   Phase:      Successful
 ```
 
-During migration, the operator runs a migrator job to copy the data, recreates the PVC on the new `StorageClass`, and recreates the pod.
+During migration, the operator runs a migrator job to copy the data, recreates the PVC on the new `StorageClass`, and recreates the pod. A standalone Milvus has a single pod, so the database is unavailable while it is migrated (about a minute and a half in our test).
 
 ### Verify the Migration
 
@@ -116,7 +123,22 @@ longhorn-custom
 
 ## Storage Migration — Distributed Milvus
 
-For a distributed Milvus, migration targets the workloads that carry persistent storage — i.e. `streamingnode`. Point `spec.databaseRef.name` at `milvus-cluster`:
+For a distributed Milvus, migration targets the workloads that carry persistent storage — i.e. `streamingnode`. Point `spec.databaseRef.name` at `milvus-cluster`.
+
+This example uses two `streamingnode` replicas on `local-path`. `storage-migration/yamls/milvus-distributed.yaml` is the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest with `streamingnode.replicas: 2`. Deploy it and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/storage-migration/yamls/milvus-distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+```
+
+The distributed OpsRequest reuses the name of the standalone one, so delete the standalone OpsRequest first:
+
+```bash
+$ kubectl delete milvusopsrequest -n demo storage-migration
+```
 
 `storage-migration-distributed.yaml`
 
@@ -145,6 +167,13 @@ data-milvus-cluster-streamingnode-0   1Gi    local-path
 data-milvus-cluster-streamingnode-1   1Gi    local-path
 ```
 
+Apply the OpsRequest. The `streamingnode` replicas are migrated one at a time, so one of them keeps running throughout; the other roles are not restarted:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/storage-migration/yamls/storage-migration-distributed.yaml
+milvusopsrequest.ops.kubedb.com/storage-migration created
+```
+
 After the migration completes:
 
 ```bash
@@ -161,13 +190,15 @@ $ kubectl get milvuses.kubedb.com milvus-cluster -n demo -o jsonpath='{.spec.top
 longhorn-custom
 ```
 
-(This example was run with `streamingnode` scaled to two replicas; both PVCs are migrated.)
+Both `streamingnode` PVCs are migrated.
 
 ## Cleaning up
 
 ```bash
 $ kubectl delete milvusopsrequest -n demo storage-migration
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 

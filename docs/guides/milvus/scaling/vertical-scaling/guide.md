@@ -23,15 +23,22 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to update 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Vertical Scaling Overview](/docs/guides/milvus/scaling/vertical-scaling/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/scaling/vertical-scaling/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Vertical Scaling Standalone Milvus
 
-Deploy a standalone Milvus and wait until it is `Ready`. By default the standalone workload requests `cpu: 500m` / `memory: 1Gi`:
+Deploy the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest and wait until it is `Ready`. By default the standalone workload requests `cpu: 500m` / `memory: 1Gi`:
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+
 $ kubectl get petset milvus-standalone -n demo -o jsonpath='{.spec.template.spec.containers[0].resources}'
 {"limits":{"memory":"1Gi"},"requests":{"cpu":"500m","memory":"1Gi"}}
 ```
@@ -121,6 +128,12 @@ To resize the Pods **without a restart**, set `spec.verticalScaling.mode` to `In
 `MilvusOpsRequest`. The operator resizes the running containers via the Kubernetes `pods/resize`
 subresource and only restarts a Pod if its Node cannot accommodate the new resources.
 
+This sample continues from the previous step and raises the standalone workload from `1` CPU / `2Gi` to `2` CPU / `3Gi`. Before applying it, record the Pod's UID, restart count and current resources:
+
+```bash
+$ kubectl get pod milvus-standalone-0 -n demo -o jsonpath='{.metadata.uid} {.status.containerStatuses[0].restartCount} {.status.containerStatuses[0].resources}{"\n"}'
+```
+
 `vertical-scaling-standalone-inplace.yaml`
 
 ```yaml
@@ -138,11 +151,11 @@ spec:
     node:
       resources:
         requests:
-          memory: "2Gi"
-          cpu: "1"
+          memory: "3Gi"
+          cpu: "2"
         limits:
-          memory: "2Gi"
-          cpu: "1"
+          memory: "3Gi"
+          cpu: "2"
   timeout: 5m
   apply: IfReady
 ```
@@ -152,11 +165,26 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 milvusopsrequest.ops.kubedb.com/vertical-scaling-standalone-inplace created
 ```
 
-Apply it the same way as above; the resources update in place with no Pod restart.
+Once the OpsRequest is `Successful`, run the same command again. The Pod UID and restart count are unchanged, which shows the Pod was neither recreated nor restarted, while its resources now report `2` CPU / `3Gi`:
+
+```bash
+$ kubectl get milvusopsrequest vertical-scaling-standalone-inplace -n demo
+
+$ kubectl get pod milvus-standalone-0 -n demo -o jsonpath='{.metadata.uid} {.status.containerStatuses[0].restartCount} {.status.containerStatuses[0].resources}{"\n"}'
+```
 
 ## Vertical Scaling Distributed Milvus
 
-For a distributed Milvus, set the resources per role under `spec.verticalScaling`. You can scale several roles in a single OpsRequest. The sample below scales `mixcoord` and `proxy`:
+For a distributed Milvus, set the resources per role under `spec.verticalScaling`. You can scale several roles in a single OpsRequest. The sample below scales `mixcoord` and `proxy`.
+
+Deploy the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+```
 
 `vertical-scaling-distributed.yaml`
 
@@ -191,7 +219,7 @@ spec:
   apply: IfReady
 ```
 
-The same approach applies to `datanode`, `querynode` and `streamingnode`.
+The same approach applies to `datanode`, `querynode` and `streamingnode`. (In `spec.verticalScaling` the key is `datanode`; horizontal scaling uses `dataNode` for the same role.)
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/vertical-scaling/yamls/vertical-scaling-distributed.yaml
@@ -215,8 +243,10 @@ $ kubectl get petset milvus-cluster-proxy -n demo -o jsonpath='{.spec.template.s
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo vertical-scaling-standalone
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl delete milvusopsrequest -n demo vertical-scaling-standalone vertical-scaling-standalone-inplace vertical-scaling
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 
