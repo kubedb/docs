@@ -19,8 +19,8 @@ This tutorial shows how to use KubeDB to provision a **standalone** [Milvus](htt
 ## Before You Begin
 
 - You need a Kubernetes cluster and `kubectl` configured to talk to it.
-- Install KubeDB with `--set global.featureGates.Milvus=true`.
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Install KubeDB with `--set global.featureGates.Milvus=true --set global.featureGates.Etcd=true` (the internal metadata store is a KubeDB `Etcd`).
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 - This quickstart intentionally uses the smallest working manifest. It does **not** require Prometheus Operator or cert-manager.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -31,10 +31,14 @@ When you install the KubeDB operator, it registers a CRD named `MilvusVersion`. 
 
 ```bash
 $ kubectl get milvusversions
-NAME     VERSION   DB_IMAGE                                DEPRECATED   AGE
-2.6.11   2.6.11    ghcr.io/appscode-images/milvus:2.6.11                11h
-2.6.7    2.6.7     ghcr.io/appscode-images/milvus:2.6.7                 11h
-2.6.9    2.6.9     ghcr.io/appscode-images/milvus:2.6.9                 11h
+NAME         VERSION   DB_IMAGE                                    DEPRECATED   AGE
+2.6.11       2.6.11    ghcr.io/appscode-images/milvus:2.6.11                    21h
+2.6.15       2.6.15    ghcr.io/appscode-images/milvus:2.6.15                    21h
+2.6.15-gpu   2.6.15    ghcr.io/appscode-images/milvus:2.6.15-gpu                21h
+2.6.7        2.6.7     ghcr.io/appscode-images/milvus:2.6.7                     21h
+2.6.9        2.6.9     ghcr.io/appscode-images/milvus:2.6.9                     21h
+3.0.0        3.0.0     ghcr.io/appscode-images/milvus:3.0.0                     21h
+3.0.0-gpu    3.0.0     ghcr.io/appscode-images/milvus:3.0.0-gpu                 21h
 ```
 
 ## Create a Standalone Milvus
@@ -71,7 +75,8 @@ Here,
 - `spec.version` is the name of a `MilvusVersion` object.
 - `spec.topology.mode: Standalone` deploys Milvus as a single all-in-one workload.
 - `spec.objectStorage.configSecret` points to the required MinIO/object-storage secret.
-- `spec.metaStorage` is omitted, so KubeDB creates and manages an internal etcd cluster through the installed etcd operator.
+- `spec.metaStorage` is omitted, so KubeDB creates and manages an internal etcd cluster as a KubeDB `Etcd` object named `milvus-standalone-etcd`.
+- `spec.objectStorage.configSecret` uses `milvus-storage-config`, whose `rootPath` must not be shared with any other Milvus instance (see [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#3-create-the-storage-config-secrets)).
 - `spec.storageType: Durable` tells KubeDB to provision persistent storage for the standalone workload.
 
 Create the database:
@@ -91,10 +96,10 @@ Watch the `Milvus` object until its `STATUS` becomes `Ready`:
 $ kubectl get milvuses.kubedb.com -n demo -w
 NAME                VERSION   STATUS         AGE
 milvus-standalone   2.6.11    Provisioning   24s
-milvus-standalone   2.6.11    Ready          39s
+milvus-standalone   2.6.11    Ready          4m
 ```
 
-Standalone Milvus typically becomes ready within a few minutes.
+KubeDB first brings up the internal etcd (`milvus-standalone-etcd`, three pods), then starts Milvus. Expect the database to take a few minutes to become `Ready`, longer on the first run while images are pulled.
 
 ## Verify the Created Resources
 
@@ -136,7 +141,7 @@ NAME                       STATUS   VOLUME                                     C
 data-milvus-standalone-0   Bound    pvc-a6333ee2-f0ab-4ec2-8437-599d270b9ed0   1Gi        RWO            local-path     90s
 ```
 
-The internal etcd metadata store provisions its own PVCs (`etcd-data-<milvus-name>-etcd-*`), and MinIO has separate PVCs as well.
+The internal etcd metadata store provisions its own PVCs (`data-milvus-standalone-etcd-0`, `-1`, `-2`), which do not carry the `app.kubernetes.io/instance=milvus-standalone` label, and MinIO has separate PVCs as well.
 
 ### Auth Secret
 
@@ -144,8 +149,9 @@ Milvus authentication is enabled by default. Because `spec.authSecret` was not p
 
 ```bash
 $ kubectl get secret -n demo | grep milvus-standalone
-milvus-standalone-42559a   Opaque                     2      92s
-milvus-standalone-auth     kubernetes.io/basic-auth   2      92s
+milvus-standalone-42559a      Opaque                     2      92s
+milvus-standalone-auth        kubernetes.io/basic-auth   2      92s
+milvus-standalone-etcd-auth   kubernetes.io/basic-auth   2      92s
 
 $ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.username}' | base64 -d
 root
@@ -154,7 +160,7 @@ $ kubectl get secret milvus-standalone-auth -n demo -o jsonpath='{.data.password
 <generated-password>
 ```
 
-The other secret (`milvus-standalone-42559a`) is the rendered configuration secret holding `milvus.yaml` and `glog.conf`.
+The `milvus-standalone-42559a` secret is the rendered configuration secret holding `milvus.yaml` and `glog.conf`; its suffix is random. `milvus-standalone-etcd-auth` holds the credentials of the internal etcd. It is kept when the database is deleted, see [Cleaning up](#cleaning-up).
 
 ### AppBinding
 
@@ -291,16 +297,20 @@ $ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
 
 The default quickstart omits `spec.metaStorage`, so KubeDB manages etcd for you. If you want Milvus to use an external etcd cluster instead:
 
-1. Install the etcd operator.
-2. Manage your etcd cluster yourself.
-3. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-use-external-etcd).
+1. Manage your etcd cluster yourself.
+2. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-use-external-etcd).
 
 ## Cleaning up
 
 ```bash
 $ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete milvus.kubedb.com milvus-standalone -n demo
+$ kubectl delete secret -n demo milvus-standalone-etcd-auth
 ```
+
+The internal etcd's auth secret is not removed by `WipeOut`, so the last command deletes it.
+
+KubeDB does not delete the database's data in object storage (`mlv-release/milvus-standalone/` in this guide). If you will create a new Milvus on the same `rootPath` later, for example by following another guide, delete that prefix first, as shown in [Delete a Milvus Instance's Object-Storage Data](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 If you want to remove the dependencies too, either delete the whole `demo` namespace or follow the cleanup steps in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#cleanup).
 
