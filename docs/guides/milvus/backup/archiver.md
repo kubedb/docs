@@ -63,6 +63,98 @@ logical backup (KubeStash `milvus-addon`, task `logical-backup`) and restore it 
 - The Milvus must run with `quotaAndLimits.enabled: true` (KubeDB renders this by default): the write fence relies on it.
 - `kubectl create ns demo`
 
+## Prepare the backend
+
+The archiver needs an S3 compatible `BackupStorage` for the archive, a `RetentionPolicy` and an encryption key. The
+Milvus itself reads its own object storage (bucket and credentials) from a secret. This guide uses the MinIO of
+the [quickstart](/docs/guides/milvus/quickstart/standalone.md); replace the endpoint, bucket names and credentials
+with yours. Create three buckets first (any S3 client works): `kubestash` for the archive, `milvus-src` for the
+Milvus and `milvus-restore` for the restored Milvus. The restore bucket must be **empty**.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: s3-secret
+  namespace: demo
+stringData:
+  AWS_ACCESS_KEY_ID: minio
+  AWS_SECRET_ACCESS_KEY: minio123
+---
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      bucket: kubestash
+      endpoint: http://minio.demo.svc.cluster.local:80
+      region: us-east-1
+      prefix: milvus-backup
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: Same
+  default: false
+  deletionPolicy: WipeOut
+---
+apiVersion: storage.kubestash.com/v1alpha1
+kind: RetentionPolicy
+metadata:
+  name: milvus-retention
+  namespace: demo
+spec:
+  maxRetentionPeriod: 7d
+  successfulSnapshots:
+    last: 5
+  failedSnapshots:
+    last: 2
+  usagePolicy:
+    allowedNamespaces:
+      from: Same
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: encrypt-secret
+  namespace: demo
+stringData:
+  RESTIC_PASSWORD: changeme-restic-password
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: milvus-storage
+  namespace: demo
+stringData:
+  address: minio.demo.svc.cluster.local
+  port: "80"
+  accessKeyID: minio
+  secretAccessKey: minio123
+  useSSL: "false"
+  bucketName: milvus-src
+  rootPath: milvus
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: milvus-restore-storage
+  namespace: demo
+stringData:
+  address: minio.demo.svc.cluster.local
+  port: "80"
+  accessKeyID: minio
+  secretAccessKey: minio123
+  useSSL: "false"
+  bucketName: milvus-restore
+  rootPath: milvus
+```
+
+`rootPath` is the prefix inside the Milvus bucket; the restored Milvus must use the same one.
+
 ## Deploy the archiver
 
 ```yaml
@@ -116,10 +208,11 @@ If `quotaAndLimits.enabled` is `false` the full backup fails with an explanatory
 
 | Milvus | Status |
 |--------|--------|
+| 3.0.0 | Verified: Standalone, point-in-time recovery, manifest restore |
+| 2.6.15 | Verified: Standalone, point-in-time recovery, manifest restore |
 | 2.6.11 | Verified: Standalone, Distributed, VolumeSnapshotter, point-in-time recovery, manifest restore |
 | 2.6.9 | Verified: Standalone and Distributed (one replica per role), point-in-time recovery |
 | 2.6.7 | Verified: Standalone, point-in-time recovery. VolumeSnapshotter and Distributed were not tested |
-| 3.x | Not supported: the webhook rejects an archiver on Milvus 3.x until it is validated |
 
 A backup restores into a Milvus of the same minor version and the same or a newer patch, and only into a Milvus that
 runs the same Woodpecker library (the metadata layout in etcd belongs to it). Milvus 2.6.7 ships Woodpecker v0.1.12,
@@ -162,6 +255,15 @@ backup**, the `Sidekick` and the incremental Snapshot:
 $ kubectl get backupconfiguration,sidekick,snapshot -n demo
 ```
 
+The incremental Snapshot stays in phase `Running` for as long as the archiver ships the change log, and turns
+`Succeeded` once the archiving is stopped:
+
+```bash
+$ kubectl get snapshot -n demo milvus-incremental-snapshot
+NAME                          REPOSITORY    SESSION   SNAPSHOT-TIME   DELETION-POLICY   PHASE     AGE
+milvus-incremental-snapshot   milvus-full                             Delete            Running   2m
+```
+
 ```bash
 $ kubectl get snapshot -n demo milvus-incremental-snapshot -o jsonpath='{.status.components.wal.logStats}'
 {"end":"2026-09-30T16:23:04Z","lsn":"rev:552","start":"2026-09-30T16:17:37Z"}
@@ -190,7 +292,8 @@ the next scheduled backup.
 
 ## Restore
 
-Create a new Milvus from the archive. The object storage of the new Milvus must be **empty** and use the same
+Create a new Milvus from the archive. Pick `recoveryTimestamp` inside the recoverable window of
+`milvus-incremental-snapshot` (`logStats.start` to `logStats.end`, UTC). The object storage of the new Milvus must be **empty** and use the same
 `rootPath` as the source (the statistics of text indexes embed full object keys); a different bucket is fine.
 
 ```yaml
