@@ -67,7 +67,7 @@ Also check:
 Name the Milvus after the Service your clients use. KubeDB then takes that Service over instead of creating a new one:
 
 - The Service keeps its name and cluster IP, so DNS and IP-based clients are unaffected.
-- Its selector moves to the KubeDB proxies, and it gets no owner reference, so it is not deleted with the Milvus.
+- Its selector moves to the KubeDB proxies only once at least one of them is Ready. Until then it keeps serving from the old proxies, so new connections are never left without endpoints. It gets no owner reference, so it is not deleted with the Milvus.
 - KubeDB sets three ports: `proxy` (19530), `metrics` (9091) and `http` (8080). A port that shares a name, or a number and protocol, with one of these is replaced. Every other port is kept as it is.
 - Labels, annotations and the Service type come from KubeDB and `spec.serviceTemplates`.
 
@@ -91,6 +91,12 @@ spec:
 Inside the pods the proxy always listens on 19530; the template only changes the Service side. So do not carry a different `proxy.port` in the `milvus.yaml` you give KubeDB.
 
 When you later retire the chart, do not run `helm uninstall`: Helm deletes every object in its release, including the Service KubeDB now uses. Delete the chart's other objects one by one, then remove the release record with `kubectl delete secret -l owner=helm,name=<release>`.
+
+## Before you create the Milvus
+
+- Check the write-ahead log the cluster really uses: `mq.type` (or `messageQueue`) in its effective `milvus.yaml` must be `woodpecker`, and the StreamingNode logs must show `walName=woodpecker`. Some charts default cluster mode to Pulsar even when `woodpecker.storage` settings are present; the upstream Milvus Helm chart needs `woodpecker.enabled: true`.
+- KubeDB creates headless Services named `<name>-mixcoord`, `<name>-datanode`, `<name>-querynode` and `<name>-streamingnode`. A Service of one of these names left by the chart that is **not** headless cannot be converted (a Service's cluster IP is immutable), and KubeDB reports it. Milvus components reach each other through their etcd sessions, not through these Services, so delete such a Service before you create the Milvus.
+- If you rehearse with a second, temporary Milvus object, give it its own copy of the auth Secret. KubeDB records on an auth Secret which Milvus uses it, and a second Milvus is then refused that Secret.
 
 ## Prepare the Secrets
 
