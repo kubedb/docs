@@ -24,7 +24,7 @@ Milvus alike: KubeDB always runs Milvus with the Woodpecker write-ahead log, whi
 
 | Step | What happens |
 |------|--------------|
-| Full backup | KubeStash runs the `physical-backup` task. The plugin pauses Milvus garbage collection, denies writes (`forceDeny` in the etcd dynamic config, for at most `fenceTimeout`), flushes, dumps the whole etcd keyspace at **one revision** and copies every new object version into the archive. The write fence is lifted right after the dump. |
+| Full backup | KubeStash runs the `physical-backup` task. The plugin pauses Milvus garbage collection, denies writes (`forceDeny` in the etcd dynamic config, for at most `fenceTimeout`), flushes, dumps the whole etcd keyspace at **one revision** and copies the new write-ahead log objects (`wp/`) into the archive. The write fence is lifted after that copy; the data objects are copied afterwards, with writes allowed again. |
 | Continuous archiving | A `Sidekick` runs `milvus-archiver archive` next to the database. It records every etcd change and every new object version (versioned object pool, tombstones for deletions) and publishes the recoverable window on the `<db>-incremental-snapshot` Snapshot (`status.components.wal.logStats.start/end`). |
 | Restore | A new Milvus with `spec.init.archiver` is created. Before any Milvus process starts, a `RestoreSession` rebuilds the etcd image (base dump plus replay to the requested revision) and the objects as of that time. |
 
@@ -197,7 +197,7 @@ spec:
 
 `quiesce` selects how writes are frozen for the crash-consistent capture:
 
-- `DenyWrites` (default): writes and DDL are rejected for the length of the dump (about ten seconds including the settle time).
+- `DenyWrites` (default): writes and DDL are rejected from the settle time until the metadata dump and the copy of the write-ahead log objects are done. That is about ten seconds for a small database and grows with the amount of write-ahead log that is not yet in the archive (see [Large databases](#large-databases)).
 - `Flush`: no fence. The capture is only as consistent as a flush; choose it when `quotaAndLimits` cannot be enabled.
 - `None`: no quiescing at all. Not recommended.
 
@@ -350,6 +350,34 @@ What the operator refuses, with a clear message on the `SuccessfullyDataRestored
 Restored Milvus nodes register themselves again: the session keys of the source are not carried over and the
 streaming node assignment of every channel is reset, so the restored Milvus never talks to the old pods.
 
+## Large databases
+
+The write fence is held until the new write-ahead log objects are copied into the archive. After a big ingest the
+write-ahead log can be several GiB, so the fence lasts as long as that copy takes. If `fenceTimeout` (default `60s`)
+expires first, the full backup aborts, lifts the fence and fails, and nothing is archived. In a test with about 1.3
+million 768-dimensional vectors (about 3.7 GiB of vectors, several GiB of write-ahead log) the default aborted the
+backup, while `fenceTimeout: 10m` let it finish (the whole full backup took about three minutes).
+
+For databases that take in a lot of data, set a larger timeout on the archiver before the first full backup:
+
+```yaml
+spec:
+  fullBackup:
+    task:
+      params:
+        fenceTimeout: 10m
+```
+
+Writes are rejected while the fence is up, so clients see errors such as `quota exceeded ... force deny writing`
+until the backup lifts it; retry them or schedule full backups for quiet hours. Changing `fenceTimeout` on an
+archiver that already created its `BackupConfiguration` did not update that `BackupConfiguration` in our test; edit
+the `fenceTimeout` parameter of the `full-backup` session in the `BackupConfiguration` as well.
+
+Plan the object storage too. The archive holds the objects of the database plus its write-ahead log, and a restore
+writes them again into the new bucket, so the free space needed is several times the size of the vectors. In the
+test above, about 4.3 GB of vectors used 23 GB in the Milvus bucket, 24 GB in the archive and 23 GB in the restored
+bucket.
+
 ## Retention
 
 `logBackup.retentionPeriod` (`<n>[dwmy]`) bounds the archive. KubeDB runs it as the CronJob `<db>-log-retention` on `logBackup.retentionSchedule`. The retention job keeps the newest full backup
@@ -393,7 +421,7 @@ Requirements:
 - Collections, indexes and users, roles and privileges are restored as they were; nothing is selectable.
 - Backing up a Milvus that uses an external etcd with TLS/authentication requires the client secrets to be
   readable by the archiver service account.
-- The write fence denies writes for about ten seconds per full backup.
+- The write fence denies writes for the length of the metadata dump and the copy of the write-ahead log, about ten seconds for a small database and longer for a large one (see [Large databases](#large-databases)).
 - A Standalone Milvus created by a KubeDB release before the archiver (RocksMQ write-ahead log) cannot be
   archived; migrate it with a logical backup.
 
