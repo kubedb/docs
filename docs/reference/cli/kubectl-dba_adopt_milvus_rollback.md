@@ -21,19 +21,21 @@ Deletes the Milvus object with kubedb.com/milvus-orphan-on-delete, so its PetSet
  For a Milvus adopted by hand (no state ConfigMap), give its --name: the chart's replicas are then taken from the PetSets, and the client Service gets the chart proxies' selector.
 
 ```
-kubectl-dba adopt milvus rollback RELEASE [flags]
+kubectl-dba adopt milvus rollback [RELEASE] [flags]
 ```
 
 ### Examples
 
 ```
   kubectl dba adopt milvus rollback my-release -n milvus --yes --cleanup
+  kubectl dba adopt milvus rollback -f ./adopt/adopt.yaml --yes
 ```
 
 ### Options
 
 ```
       --cleanup                    Delete what KubeDB left behind once the chart serves again (PVCs are kept)
+  -f, --filename string            File with the adoption options (kind MilvusAdoption; "plan --output-dir" writes one). Flags given on the command line win
   -h, --help                       help for rollback
       --name string                Name of the Milvus, for an adoption done by hand (no state ConfigMap)
       --querynode-delay duration   Overlap: time a new QueryNode serves before an old one stops (raise it for large collections) (default 1m0s)

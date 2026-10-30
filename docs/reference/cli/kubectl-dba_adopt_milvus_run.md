@@ -26,7 +26,7 @@ Runs the checks of "plan", creates the Secrets, the state ConfigMap NAME-adopt (
  Do not remove the chart with "helm uninstall" afterwards: it would delete the client Service that KubeDB now uses.
 
 ```
-kubectl-dba adopt milvus run RELEASE [flags]
+kubectl-dba adopt milvus run [RELEASE] [flags]
 ```
 
 ### Examples
@@ -34,6 +34,7 @@ kubectl-dba adopt milvus run RELEASE [flags]
 ```
   kubectl dba adopt milvus run my-release -n milvus --yes
   kubectl dba adopt milvus run my-release -n milvus --method stop-start --yes
+  kubectl dba adopt milvus run -f ./adopt/adopt.yaml --yes
 ```
 
 ### Options
@@ -42,6 +43,7 @@ kubectl-dba adopt milvus run RELEASE [flags]
       --auth-secret string          Existing basic-auth Secret with the current root user and password
       --config-file string          The effective milvus.yaml, when it is not mounted from a ConfigMap or Secret
       --etcd-auth-secret string     Basic-auth Secret for an etcd that uses authentication
+  -f, --filename string             File with the adoption options (kind MilvusAdoption; "plan --output-dir" writes one). Flags given on the command line win
   -h, --help                        help for run
       --method string               Handover method: overlap or stop-start (default "overlap")
       --name string                 Name of the Milvus object (default: the name of the Service clients use, which KubeDB then takes over)

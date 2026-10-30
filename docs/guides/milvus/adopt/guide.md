@@ -79,6 +79,8 @@ Two methods:
 
 `kubectl dba adopt milvus status my-release -n demo` shows where each role runs.
 
+After the adoption, leave the Helm release alone: `helm upgrade` would start the chart's workloads again next to KubeDB's, and `helm uninstall` would delete the client Service KubeDB now uses. To retire the chart, see [Keep the client endpoint](#keep-the-client-endpoint).
+
 ### 3. Give it back, if needed: `rollback`
 
 ```bash
@@ -86,6 +88,70 @@ $ kubectl dba adopt milvus rollback my-release -n demo --yes --cleanup
 ```
 
 `rollback` deletes the Milvus with `kubedb.com/milvus-orphan-on-delete`, so its pods keep serving, then moves each role back to the chart's workloads, starting the chart's pods before it stops KubeDB's. Once the chart's proxies are Ready, the client Service gets back its original selector, labels and ports. `--cleanup` then deletes the PetSets (at 0 replicas), the Services and the rendered config KubeDB left, and recreates the chart Services the adoption removed. PVCs and the credential Secrets are kept. It works on a partly adopted cluster too, and for a Milvus adopted by hand (pass `--name`). Expect a short pause in writes while the StreamingNodes move back: the chart's StreamingNodes take write-ahead log channels as soon as they start, before their readiness probe passes (about 30 s on the test cluster).
+
+### Options in a file
+
+Instead of repeating flags on every command, put the options of an adoption in one file and pass it with `-f`. `plan --output-dir DIR` writes one, `DIR/adopt.yaml`, with everything it found; review it, adjust it, and use it for the rest:
+
+```bash
+$ kubectl dba adopt milvus plan my-release -n demo --output-dir ./adopt
+$ kubectl dba adopt milvus run      -f ./adopt/adopt.yaml --yes
+$ kubectl dba adopt milvus status   -f ./adopt/adopt.yaml
+$ kubectl dba adopt milvus rollback -f ./adopt/adopt.yaml --yes
+```
+
+A complete file, for a cluster whose chart does not set the upstream labels and runs QueryNodes on two GPU pools:
+
+```yaml
+apiVersion: cli.kubedb.com/v1alpha1
+kind: MilvusAdoption
+release: milvus-prod              # replaces the RELEASE argument
+namespace: milvus                 # used unless -n is given
+name: ""                          # default: the name of the client Service
+version: ""                       # default: the MilvusVersion matching the running image
+source:
+  workloads:                      # or selector / roleLabel for labelled workloads
+  - {role: proxy,         kind: Deployment, name: milvus-proxy}
+  - {role: mixcoord,      kind: Deployment, name: milvus-mixcoord}
+  - {role: datanode,      kind: Deployment, name: milvus-datanode}
+  - {role: querynode, group: l40s, kind: Deployment, name: milvus-querynode-l40s}
+  - {role: querynode, group: h200, kind: Deployment, name: milvus-querynode-h200}
+  - {role: streamingnode, kind: Deployment, name: milvus-streamingnode}
+  configFile: ""                  # the effective milvus.yaml, only if it is not mounted
+auth:
+  authSecret: milvus-root         # basic-auth Secret with the current root password
+  rootPasswordFile: ""            # or a file with the password
+  etcdAuthSecret: ""              # only if the etcd uses authentication
+  skipCredentialCheck: false
+restrictedSCC: false              # true on OpenShift
+handover:
+  method: overlap                 # or stop-start
+  querynodeDelay: 10m             # about the time one QueryNode takes to load its data
+  settle: 20s
+  timeout: 30m
+  readyTimeout: 30m
+  skipConfigCheck: false
+rollback:
+  cleanup: true
+```
+
+A flag given on the command line wins over the same option in the file. An unknown key is an error, so a misspelt option is never ignored. `--yes` is never read from the file: a file alone does not start a handover.
+
+### What you must give
+
+| Option (flag / file) | Needed |
+|---|---|
+| `RELEASE` / `release` | Always |
+| `-n` / `namespace` | Unless the kubeconfig context already points at the namespace |
+| `--yes` | For `run` and `rollback` to act; without it they only show what they would do |
+| `--auth-secret` or `--root-password-file` / `auth` | When the root password is not the chart's `defaultRootPassword`; `plan` tells you |
+| `--etcd-auth-secret` / `auth.etcdAuthSecret` | When the etcd uses authentication |
+| `--workload` / `source.workloads` (or `--selector`, `--role-label`) | When the workloads do not carry `app.kubernetes.io/instance=RELEASE` and a `component` label |
+| `--config-file` / `source.configFile` | When the Milvus config is not mounted from a ConfigMap or Secret |
+
+Everything else has a default. The version is not needed: it is read from the running image (`milvusdb/milvus:v2.6.15-gpu` selects MilvusVersion `2.6.15-gpu`); give `--version` only for an image pinned by digest or with a custom tag. Neither is the Helm chart version: the command reads the workloads, ConfigMap and Service the chart created, not Helm.
+
+`kubectl dba` is a kubectl plugin that runs on your machine, with your kubeconfig; installing KubeDB in the cluster does not install it. See [Setup](/docs/setup/README.md).
 
 ## The contract
 

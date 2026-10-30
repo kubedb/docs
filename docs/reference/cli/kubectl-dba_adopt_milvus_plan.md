@@ -16,10 +16,10 @@ Check a running Milvus and show what adopting it creates
 
 Read-only. Finds the workloads, effective configuration, image and client Service of the running cluster, checks everything an in-place adoption depends on (Woodpecker WAL, etcd root path, object storage, a matching MilvusVersion, the current root password), and shows the Secrets, the state ConfigMap and the staged Milvus that "run" would create.
 
- With --output-dir the objects are written there, unredacted. Edit them if needed and apply them; "run" then uses what exists.
+ With --output-dir the objects are written there, unredacted, together with adopt.yaml: every option of this adoption as plan found it. Review it and pass it to run, status and rollback with -f instead of repeating the flags. Edit the objects if needed and apply them; "run" then uses what exists.
 
 ```
-kubectl-dba adopt milvus plan RELEASE [flags]
+kubectl-dba adopt milvus plan [RELEASE] [flags]
 ```
 
 ### Examples
@@ -27,6 +27,7 @@ kubectl-dba adopt milvus plan RELEASE [flags]
 ```
   kubectl dba adopt milvus plan my-release -n milvus
   kubectl dba adopt milvus plan my-release -n milvus --output-dir ./adopt
+  kubectl dba adopt milvus plan -f ./adopt/adopt.yaml
 ```
 
 ### Options
@@ -35,6 +36,7 @@ kubectl-dba adopt milvus plan RELEASE [flags]
       --auth-secret string          Existing basic-auth Secret with the current root user and password
       --config-file string          The effective milvus.yaml, when it is not mounted from a ConfigMap or Secret
       --etcd-auth-secret string     Basic-auth Secret for an etcd that uses authentication
+  -f, --filename string             File with the adoption options (kind MilvusAdoption; "plan --output-dir" writes one). Flags given on the command line win
   -h, --help                        help for plan
       --name string                 Name of the Milvus object (default: the name of the Service clients use, which KubeDB then takes over)
       --output-dir string           Write the objects to this directory (Secrets unredacted, mode 0600)

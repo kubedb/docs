@@ -13,7 +13,7 @@ section_menu_id: reference
 Show where each role of an adoption runs
 
 ```
-kubectl-dba adopt milvus status RELEASE [flags]
+kubectl-dba adopt milvus status [RELEASE] [flags]
 ```
 
 ### Examples
@@ -25,7 +25,8 @@ kubectl-dba adopt milvus status RELEASE [flags]
 ### Options
 
 ```
-  -h, --help   help for status
+  -f, --filename string   File with the adoption options (kind MilvusAdoption; "plan --output-dir" writes one). Flags given on the command line win
+  -h, --help              help for status
 ```
 
 ### Options inherited from parent commands
