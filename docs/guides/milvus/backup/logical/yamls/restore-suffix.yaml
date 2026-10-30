@@ -1,0 +1,22 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: milvus-restore-check
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Milvus
+    namespace: restore-check
+    name: milvus-check
+  dataSource:
+    repository: milvus-logical-repo
+    namespace: demo
+    snapshot: latest
+  addon:
+    name: milvus-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          restoreSuffix: "_restored"
+          restoreTimeout: "6h"

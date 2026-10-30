@@ -1,0 +1,14 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  name: milvus-querynode-gpu-pools
+spec:
+  affinity:
+    nodeAffinity:
+      - topologyKey: nvidia.com/gpu.product
+        whenUnsatisfiable: DoNotSchedule
+        domains:
+          - values: ["NVIDIA-L40S"]
+            replicas: "2"
+          - values: ["NVIDIA-H200"]
+            replicas: "4"

@@ -1,0 +1,38 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  # the Service of the same name becomes the client endpoint
+  name: milvus
+  namespace: demo
+  annotations:
+    kubedb.com/milvus-orphan-on-delete: "true"
+spec:
+  version: "2.6.15"
+  deletionPolicy: DoNotTerminate
+  authSecret:
+    name: milvus-root
+  healthChecker:
+    disableWriteCheck: true
+  metaStorage:
+    externallyManaged: true
+    endpoints:
+      - http://milvus-etcd.demo.svc:2379
+    rootPath: by-dev
+  objectStorage:
+    configSecret:
+      name: milvus-object-storage
+  configuration:
+    secretName: milvus-current-config
+  topology:
+    mode: Distributed
+    distributed:
+      mixcoord:
+        replicas: 0
+      datanode:
+        replicas: 0
+      querynode:
+        replicas: 0
+      streamingnode:
+        replicas: 0
+      proxy:
+        replicas: 0
