@@ -57,6 +57,7 @@ kubectl-dba [flags]
 
 ### SEE ALSO
 
+* [kubectl-dba adopt](/docs/reference/cli/kubectl-dba_adopt.md)	 - Bring a running database under KubeDB in place, without moving its data
 * [kubectl-dba completion](/docs/reference/cli/kubectl-dba_completion.md)	 - Generate completion script
 * [kubectl-dba connect](/docs/reference/cli/kubectl-dba_connect.md)	 - Connect to a database.
 * [kubectl-dba data](/docs/reference/cli/kubectl-dba_data.md)	 - Insert, Drop or Verify data in a database

@@ -16,7 +16,7 @@ section_menu_id: guides
 
 This guide moves a Distributed Milvus that already runs in Kubernetes (for example from a Helm chart) under KubeDB management **in place**. The metadata stays in the existing etcd, the segments, indexes and write-ahead log stay in the existing bucket, and the credentials stay the same. Only the workloads change hands: the chart's Deployments and StatefulSets are replaced by KubeDB PetSets that run the same Milvus version against the same data.
 
-There is no automatic takeover. Adoption is a short, ordered handover that you run, and this guide gives the contract the Milvus object must meet so that the new pods see the existing data.
+Adoption is a short, ordered handover. `kubectl dba adopt milvus` runs it for you: it reads the running cluster, checks it, creates the Milvus object and moves the roles one at a time, and it can give the cluster back. The rest of this guide is the contract that command follows, and the way to do the same by hand.
 
 ## Before You Begin
 
@@ -33,6 +33,59 @@ There is no automatic takeover. Adoption is a short, ordered handover that you r
 | Milvus 2.6 with a matching KubeDB `MilvusVersion` (use the `-gpu` entry for a GPU build) | Adoption keeps the version; it is not an upgrade |
 | Write-ahead log is Woodpecker on object storage (`mq.type: woodpecker`, `woodpecker.storage.type: minio`) | KubeDB always runs Woodpecker on object storage and rejects any other WAL. Changing the WAL on a live cluster is a migration, not an adoption |
 | An etcd used only by this Milvus | KubeDB connects to it as an externally managed meta store and never changes it |
+
+## Adopt with kubectl dba
+
+The [`kubectl dba`](/docs/setup/README.md) plugin adopts a cluster in three commands. `RELEASE` names the running cluster: its workloads are those with `app.kubernetes.io/instance=RELEASE`, and the `component` label names each workload's role, as the upstream Milvus Helm chart sets them. For other charts, select the workloads with `--selector` and `--role-label`, or map each one with `--workload role[/group]=Kind/name`.
+
+### 1. Check: `plan`
+
+```bash
+$ kubectl dba adopt milvus plan my-release -n demo
+Pre-flight checks for my-release in namespace demo:
+  [OK   ] proxy         Deployment my-release-milvus-proxy, 3 replicas
+  [OK   ] mixcoord      Deployment my-release-milvus-mixcoord, 2 replicas
+  ...
+  [OK   ] config read from ConfigMap my-release-milvus key default.yaml as default.yaml; ConfigMap my-release-milvus key user.yaml as user.yaml
+  [OK   ] client Service my-release-milvus (10.43.248.56) is taken over: same name, IP and ports
+  [OK   ] write-ahead log: woodpecker
+  [OK   ] etcd http://my-release-etcd-0...:2379,..., root path "by-dev" (kept)
+  [OK   ] object storage minio.storage.svc, bucket milvus-data, root path "prod" (kept)
+  [OK   ] image milvusdb/milvus:v2.6.15 -> MilvusVersion 2.6.15
+  [OK   ] root credentials from common.security.defaultRootPassword log in to my-release-milvus-proxy-...
+  [OK   ] Service my-release-milvus-mixcoord is not headless; run deletes it (KubeDB recreates it headless; Milvus does not use it)
+```
+
+`plan` changes nothing. It finds the workloads, the effective `milvus.yaml` (the chart's ConfigMap files, merged in the order Milvus reads them), the image and the Service clients use, and checks every row of [the contract](#the-contract). It logs in to a running proxy with the root credentials, because Milvus applies a root password only on its first start: a `defaultRootPassword` that was changed since is rejected here, and you give the current one with `--auth-secret` (an existing basic-auth Secret) or `--root-password-file`. An `ERROR` blocks the adoption; a `WARN` (an init container, environment variables, affinity or secondary networks that are not carried over) needs a look before you continue. With `--output-dir` it writes the objects it would create, so you can review or edit them and `kubectl apply` them yourself; `run` then uses what exists.
+
+### 2. Adopt: `run`
+
+```bash
+$ kubectl dba adopt milvus run my-release -n demo --yes
+```
+
+`run` repeats the checks, then:
+
+1. Creates the Secrets (`<name>-auth`, `<name>-object-storage`, `<name>-adopt-config` with the carried `milvus.yaml`), a ConfigMap `<name>-adopt` that records the adoption, and the Milvus with every role at 0 replicas. It deletes a chart Service that sits on a name KubeDB needs headless, and records it.
+2. Waits for the operator to render the config and create the PetSets, and compares the rendered config with the running one on every setting that decides where data is read from: object storage, etcd root path, write-ahead log, security and ports. On any difference it stops before a pod moves.
+3. Hands the roles over one at a time, waiting for each pod to be Ready, and records each role in the ConfigMap. If the command stops, run it again and it continues where it was.
+
+Two methods:
+
+| `--method` | How | Client impact | Capacity |
+|---|---|---|---|
+| `overlap` (default) | Proxy, MixCoord, DataNode, StreamingNode, QueryNode. Start KubeDB's pods of a role, wait until they are Ready, then stop the chart's. QueryNodes move one at a time: one starts, serves for `--querynode-delay` (default 1m; raise it for large collections), then one old QueryNode stops | No role stops serving. On a test cluster (single-replica collections) clients saw one 3 s insert timeout while the StreamingNodes moved, and one 30 to 60 s stall of searches and inserts at the first or last QueryNode swap, while chart and KubeDB QueryNodes ran side by side. No acknowledged write was lost | One extra set of pods of a role at a time (one extra QueryNode) |
+| `stop-start` | MixCoord, DataNode, QueryNode, StreamingNode, Proxy. Stop the chart's pods of a role, then start KubeDB's | Each role is briefly unavailable (searches while QueryNodes reload, writes while StreamingNodes restart) | None |
+
+`kubectl dba adopt milvus status my-release -n demo` shows where each role runs.
+
+### 3. Give it back, if needed: `rollback`
+
+```bash
+$ kubectl dba adopt milvus rollback my-release -n demo --yes --cleanup
+```
+
+`rollback` deletes the Milvus with `kubedb.com/milvus-orphan-on-delete`, so its pods keep serving, then moves each role back to the chart's workloads, starting the chart's pods before it stops KubeDB's. Once the chart's proxies are Ready, the client Service gets back its original selector, labels and ports. `--cleanup` then deletes the PetSets (at 0 replicas), the Services and the rendered config KubeDB left, and recreates the chart Services the adoption removed. PVCs and the credential Secrets are kept. It works on a partly adopted cluster too, and for a Milvus adopted by hand (pass `--name`). Expect a short pause in writes while the StreamingNodes move back: the chart's StreamingNodes take write-ahead log channels as soon as they start, before their readiness probe passes (about 30 s on the test cluster).
 
 ## The contract
 
@@ -106,9 +159,11 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 $ kubectl create secret generic -n demo milvus-current-config --from-file=milvus.yaml=./current-milvus.yaml
 ```
 
-## Hand over the workloads
+## Hand over the workloads by hand
 
-Two copies of a role must never run at the same time: both would register in the same etcd. The handover therefore always stops the old workload of a role before KubeDB starts its own.
+This is what `kubectl dba adopt milvus run` does; follow it only if you cannot use the command.
+
+The pods of one role, old and new, can run side by side for the length of a handover: every Milvus 2.6 component registers its own session in etcd, MixCoord runs active-standby, and the other roles share work across their pods. So a role can move either by starting the KubeDB pods before stopping the old ones (overlap, no client impact, needs room for the extra pods), or by stopping the old ones first (stop-start, a short gap per role).
 
 ### Staged, one role at a time
 
@@ -129,18 +184,19 @@ Two copies of a role must never run at the same time: both would register in the
 
    Every difference in `etcd`, `minio`, `common.security` and the role sections must be explained before you continue.
 
-3. For each role, in the order MixCoord, DataNode, QueryNode, StreamingNode, Proxy:
+3. Overlap: for each role, in the order Proxy, MixCoord, DataNode, StreamingNode, QueryNode, start the KubeDB pods, wait until they are Ready, then stop the old ones. Move QueryNodes one at a time (KubeDB to 1, wait Ready and let it serve a while, old to N-1, and so on), so at most one extra QueryNode runs:
 
    ```bash
-   # stop the old workload of the role; its PVCs are kept
+   $ kubectl patch milvus -n demo milvus --type=merge -p '{"spec":{"topology":{"distributed":{"mixcoord":{"replicas":2}}}}}'
+   $ kubectl wait -n demo --for=condition=Ready pod -l app.kubernetes.io/instance=milvus,kubedb.com/role=mixcoord --timeout=15m
+   # then stop the old workload of the role; its PVCs are kept
    $ kubectl scale -n demo deployment/<old-mixcoord> --replicas=0
    $ kubectl wait -n demo --for=delete pod -l <old-mixcoord-selector> --timeout=10m
-   # start the KubeDB one
-   $ kubectl patch milvus -n demo milvus --type=merge -p '{"spec":{"topology":{"distributed":{"mixcoord":{"replicas":2}}}}}'
-   $ kubectl get pods -n demo -l app.kubernetes.io/instance=milvus,kubedb.com/role=mixcoord -w
    ```
 
-   Move to the next role once the new pods are Ready. While the proxies are at 0 the Milvus reports `NotReady`; that is expected.
+   Stop-start: for each role, in the order MixCoord, DataNode, QueryNode, StreamingNode, Proxy, stop the old workload first, wait until its pods are gone, then raise the KubeDB role.
+
+   Move to the next role once the new pods are Ready. While the KubeDB proxies are at 0 the Milvus reports `NotReady`; that is expected.
 
 ### Single window
 
@@ -157,12 +213,11 @@ Then, from a client, check the collection count against the number taken before 
 
 ## Roll back
 
-The data never moved, so a rollback only changes who runs the pods:
+The data never moved, so a rollback only changes who runs the pods. `kubectl dba adopt milvus rollback` does it; by hand:
 
-1. Make sure the annotation `kubedb.com/milvus-orphan-on-delete: "true"` is set, and set `spec.deletionPolicy` to `Halt`.
-2. Scale the KubeDB roles to 0, in the reverse order.
-3. Scale the old workloads back up.
-4. Delete the Milvus once the old workloads serve.
+1. Make sure the annotation `kubedb.com/milvus-orphan-on-delete: "true"` is set, set `spec.deletionPolicy` to `Halt`, and delete the Milvus. Its pods keep serving under their PetSets, and the operator no longer moves the client Service.
+2. For each role, in the order QueryNode, StreamingNode, DataNode, MixCoord, Proxy: scale the old workload back up, wait until its pods are Ready, then scale the KubeDB PetSet to 0.
+3. Before the proxy PetSet goes to 0, point the client Service back at the old proxies: its original selector, and ports whose `targetPort` the old proxy pods define (KubeDB's ports target the port names `proxy`, `metrics` and `http` of its own pods).
 
 ## Hand the cluster back
 
