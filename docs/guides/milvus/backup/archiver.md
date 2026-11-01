@@ -378,6 +378,39 @@ writes them again into the new bucket, so the free space needed is several times
 test above, about 4.3 GB of vectors used 23 GB in the Milvus bucket, 24 GB in the archive and 23 GB in the restored
 bucket.
 
+## External etcd
+
+By default KubeDB creates the metadata etcd of a Milvus itself. A Milvus with `spec.metaStorage.externallyManaged: true`
+can use the archiver too, if the etcd is **dedicated to that Milvus**: the backup dumps the whole etcd keyspace,
+Woodpecker keeps its metadata at the etcd root, and a restore needs a completely empty etcd. An etcd that other
+applications or other Milvus instances use cannot be backed up or restored; the operator cannot detect this, so it is up to you.
+
+```yaml
+spec:
+  metaStorage:
+    externallyManaged: true
+    endpoints:                       # list every member: the operator checks the member count against the endpoints
+      - http://etcd-a-0.etcd-a-pods.demo.svc.cluster.local:2379
+      - http://etcd-a-1.etcd-a-pods.demo.svc.cluster.local:2379
+      - http://etcd-a-2.etcd-a-pods.demo.svc.cluster.local:2379
+    rootPath: milvus-etcd            # optional, the etcd key prefix of Milvus
+    authSecret: {name: etcd-a-auth}  # optional basic-auth Secret (username, password) in the Milvus namespace
+    clientTLSSecret: {name: etcd-a-client-tls}   # optional ca.crt, tls.crt, tls.key
+```
+
+The archiver reads `authSecret` and `clientTLSSecret` from the Milvus namespace, like Milvus does. Two things the
+operator does for its own etcd must be done by you on an external one:
+
+- Keep revision history for the change-log archiver: set periodic auto-compaction with a retention of about one hour
+  (`--auto-compaction-mode=periodic --auto-compaction-retention=1h`; for a KubeDB `Etcd`,
+  `spec.configuration.tuning.autoCompactionMode: periodic` and `autoCompactionRetention: "1h"`).
+- Give a restore its own, empty etcd: the restored Milvus points `spec.metaStorage` at a second dedicated etcd (its
+  etcd `rootPath` may differ from the source's; the object storage `rootPath` may not). Restoring into the etcd of a running Milvus is refused.
+
+This was verified with a password-protected 3-member KubeDB `Etcd` created separately from the Milvus (Milvus 2.6.15,
+point-in-time restore into a second empty etcd, manifest restore included). Client TLS to an external etcd is
+implemented but has not been tested.
+
 ## Retention
 
 `logBackup.retentionPeriod` (`<n>[dwmy]`) bounds the archive. KubeDB runs it as the CronJob `<db>-log-retention` on `logBackup.retentionSchedule`. The retention job keeps the newest full backup
@@ -419,8 +452,7 @@ Requirements:
 - Only S3 compatible `BackupStorage` providers can hold the archive.
 - The restored Milvus must use the same `rootPath` and an empty bucket.
 - Collections, indexes and users, roles and privileges are restored as they were; nothing is selectable.
-- Backing up a Milvus that uses an external etcd with TLS/authentication requires the client secrets to be
-  readable by the archiver service account.
+- An external etcd must be dedicated to one Milvus (see [External etcd](#external-etcd)); a shared etcd cannot be backed up or restored.
 - The write fence denies writes for the length of the metadata dump and the copy of the write-ahead log, about ten seconds for a small database and longer for a large one (see [Large databases](#large-databases)).
 - A Standalone Milvus created by a KubeDB release before the archiver (RocksMQ write-ahead log) cannot be
   archived; migrate it with a logical backup.
