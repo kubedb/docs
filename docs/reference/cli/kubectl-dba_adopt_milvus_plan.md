@@ -45,6 +45,8 @@ kubectl-dba adopt milvus plan [RELEASE] [flags]
       --root-password-file string   File holding the current root password (default: common.security.defaultRootPassword of the running config)
       --selector string             Label selector of the cluster's workloads (default app.kubernetes.io/instance=RELEASE)
       --skip-credential-check       Do not log in to the running cluster to check the root credentials
+      --tls-client-secret string    Existing Secret (tls.crt, tls.key, ca.crt) with the client certificate KubeDB presents when client mTLS is on
+      --tls-issuer string           cert-manager issuer for a certificate the cluster does not have, as name, Issuer/name or ClusterIssuer/name
       --version string              MilvusVersion to use (default: the one matching the running image)
       --workload stringArray        Map a workload to a role, as role[/group]=Kind/name (repeat for each workload; replaces --selector)
 ```
