@@ -57,8 +57,9 @@ kubectl-dba adopt milvus run [RELEASE] [flags]
       --skip-config-check           Do not stop when the rendered config differs from the running one
       --skip-credential-check       Do not log in to the running cluster to check the root credentials
       --timeout duration            Longest wait for one step (pods Ready or gone) (default 15m0s)
+      --tls-ca-secret string        Secret (tls.crt, tls.key) with the CA clients trust; an Issuer is created from it and KubeDB issues and renews the certificates
       --tls-client-secret string    Existing Secret (tls.crt, tls.key, ca.crt) with the client certificate KubeDB presents when client mTLS is on
-      --tls-issuer string           cert-manager issuer for a certificate the cluster does not have, as name, Issuer/name or ClusterIssuer/name
+      --tls-issuer string           cert-manager issuer on the CA clients trust, as name, Issuer/name or ClusterIssuer/name; KubeDB then issues and renews the certificates (found by itself if the running certificate came from cert-manager)
       --version string              MilvusVersion to use (default: the one matching the running image)
       --workload stringArray        Map a workload to a role, as role[/group]=Kind/name (repeat for each workload; replaces --selector)
       --yes                         Proceed; without it, run only shows what it would do

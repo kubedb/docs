@@ -123,9 +123,10 @@ auth:
   rootPasswordFile: ""            # or a file with the password
   etcdAuthSecret: ""              # only if the etcd uses authentication
   skipCredentialCheck: false
-tls:                              # only needed when client mTLS is on
-  clientSecret: ""                # Secret with the client certificate KubeDB presents
-  issuer: ""                      # or a cert-manager issuer that signs with the CA Milvus trusts
+tls:                              # see "Keep the TLS of the cluster"
+  caSecret: ""                    # Secret with the CA and its private key; KubeDB takes over TLS
+  issuer: ""                      # or a cert-manager issuer on that CA
+  clientSecret: ""                # client certificate for KubeDB, for mTLS with neither of the above
 restrictedSCC: false              # true on OpenShift
 handover:
   method: overlap                 # or stop-start
@@ -149,7 +150,7 @@ A flag given on the command line wins over the same option in the file. An unkno
 | `--yes` | For `run` and `rollback` to act; without it they only show what they would do |
 | `--auth-secret` or `--root-password-file` / `auth` | When the root password is not the chart's `defaultRootPassword`; `plan` tells you |
 | `--etcd-auth-secret` / `auth.etcdAuthSecret` | When the etcd uses authentication |
-| `--tls-client-secret` or `--tls-issuer` / `tls` | When client mTLS is on; see [Keep the TLS of the cluster](#keep-the-tls-of-the-cluster) |
+| `--tls-ca-secret`, `--tls-issuer` or `--tls-client-secret` / `tls` | For KubeDB to take over TLS, or when client mTLS is on; see [Keep the TLS of the cluster](#keep-the-tls-of-the-cluster) |
 | `--workload` / `source.workloads` (or `--selector`, `--role-label`) | When the workloads do not carry `app.kubernetes.io/instance=RELEASE` and a `component` label |
 | `--config-file` / `source.configFile` | When the Milvus config is not mounted from a ConfigMap or Secret |
 
@@ -159,63 +160,60 @@ Everything else has a default. The version is not needed: it is read from the ru
 
 ## Keep the TLS of the cluster
 
-An adoption keeps the TLS the cluster runs with. Clients keep trusting the same CA and see the same certificate, so they need no change. `plan` reads the running config, finds each certificate, and applies these rules:
+Clients keep working through an adoption: they trust the same CA and connect to the same name. When KubeDB can issue from that CA, it takes over TLS completely, including renewal and `ReconfigureTLS`. `plan` reads the running config and picks one of three cases:
 
 | The cluster has | What the adoption does |
 |---|---|
-| A server certificate in a Secret with the keys `tls.crt`, `tls.key` and `ca.crt` | Uses that Secret as it is, through `spec.tls.existingSecrets.server`. KubeDB does not reissue it or take ownership of it, so your renewal keeps working |
-| A server certificate in a Secret with other keys | Copies it to `<name>-tls-server`. Renewing the copy is up to you. `rollback --cleanup` removes it |
-| Client mTLS | KubeDB needs a client certificate of its own: give it with `--tls-client-secret`, or give `--tls-issuer` and KubeDB issues one |
-| An etcd that uses TLS | Reads the client certificate from the running config and sets `spec.metaStorage.clientTLSSecret` |
-| TLS switched off on a connection | Leaves it off. Switching it on during a handover would split the old pods from the new ones; do that afterwards with a `ReconfigureTLS` request |
+| A cert-manager issuer on the CA clients trust | Sets `spec.tls.issuerRef` to it. KubeDB issues and renews the server and client certificates. `plan` finds the issuer by itself when the running certificate came from cert-manager; otherwise give `--tls-issuer` |
+| The CA Secret, with its private key, and no issuer | Give `--tls-ca-secret`. `run` creates the Issuer `<name>-ca` from that Secret, then as above. `rollback --cleanup` removes the Issuer and leaves the Secret |
+| Neither | Uses the running certificate as it is, through `spec.tls.existingSecrets.server`. If its Secret does not have the keys `tls.crt`, `tls.key` and `ca.crt`, it is copied to `<name>-tls-server`, which `rollback --cleanup` removes. Renewing it stays with you, and a `ReconfigureTLS` rotation is refused |
 
-`plan` stops before anything is changed when:
-
-- the server certificate does not cover the client Service name in all three forms (`<name>`, `<name>.<namespace>.svc` and `<name>.<namespace>.svc.cluster.local`), which KubeDB connects to,
-- the certificate and key do not form a pair, or the certificate does not verify against its CA,
-- a certificate file does not come from a Secret or ConfigMap, for example a `hostPath`,
-- client and internal TLS use different certificates: KubeDB mounts one for both,
-- the issuer from `--tls-issuer` signs with a different CA than the one Milvus trusts, because Milvus would reject its client certificates.
-
-It warns when a certificate expires within 30 days, and when it cannot confirm the CA of a `ClusterIssuer` or of an issuer that is not a CA issuer.
-
-To issue the client certificate from the CA the cluster already trusts, create a cert-manager `Issuer` from that CA. This needs the private key of the CA:
-
-```yaml
-apiVersion: cert-manager.io/v1
-kind: Issuer
-metadata:
-  name: milvus-ca
-  namespace: demo
-spec:
-  ca:
-    secretName: milvus-ca   # a Secret with the keys tls.crt and tls.key
-```
+TLS that is off on a connection stays off: switching it on during a handover would split the old pods from the new ones. Do that afterwards with a `ReconfigureTLS` request. An etcd that uses TLS keeps its client certificate, through `spec.metaStorage.clientTLSSecret`, because KubeDB does not manage that etcd.
 
 ```bash
-$ kubectl dba adopt milvus plan my-release -n demo --tls-issuer Issuer/milvus-ca --output-dir ./adopt
+# Create the Issuer from the CA Secret
+$ kubectl dba adopt milvus plan my-release -n demo --tls-ca-secret milvus-ca --output-dir ./adopt
+# Or use an issuer that exists
+$ kubectl dba adopt milvus plan my-release -n demo --tls-issuer ClusterIssuer/corporate-ca --output-dir ./adopt
 ```
 
-Two things to know:
+KubeDB's certificates cover the client Service name. Any other name in the running certificate, such as an ingress host, is carried over to `spec.tls.certificates`, and `plan` lists them.
 
+The new certificate must chain to the CA clients already trust, so this is checked twice:
+
+- `plan` stops if a CA issuer or `--tls-ca-secret` is not the CA that signed the running certificate. It cannot read the CA of a `ClusterIssuer` or of an issuer that is not a CA issuer, so it warns.
+- `run` waits for the certificates and checks them **before any pod moves**. It stops if they do not verify against the running CA, or if the issuer does not fill `ca.crt`, which KubeDB needs to reach Milvus. An ACME issuer does not, so use the third case there.
+
+When KubeDB does not issue the certificates, `plan` also stops if:
+
+- the running certificate does not cover the client Service name in all three forms (`<name>`, `<name>.<namespace>.svc` and `<name>.<namespace>.svc.cluster.local`), which KubeDB connects to,
+- client and internal TLS use different certificates, because KubeDB mounts one for both,
+- client mTLS is on and no client certificate is given with `--tls-client-secret`.
+
+In every case `plan` stops if a certificate and key do not form a pair, a certificate does not verify against its CA, or a certificate file does not come from a Secret or ConfigMap, for example a `hostPath`. It warns when a certificate expires within 30 days.
+
+Three things to know:
+
+- A client that pins the server certificate itself, rather than trusting the CA, breaks when KubeDB issues a new one. Use the third case for it.
 - Milvus refuses to serve the RESTful API on the gRPC port when TLS is on, and the proxy exits with `tls mode must be 0`. A cluster with TLS therefore already sets `proxy.http.port`, and the adoption keeps it.
-- With client mTLS and `--tls-issuer`, `plan` has no client certificate yet, so it cannot log in to check the root credentials and warns instead. Make sure of them yourself.
+- With client mTLS, `plan` has no client certificate to log in with, so it cannot check the root credentials and warns instead. Make sure of them yourself.
 
 Without `kubectl dba`, set the same fields on the Milvus object:
 
 ```yaml
 spec:
   tls:
-    existingSecrets:
-      server:
-        name: my-milvus-tls     # keys tls.crt, tls.key, ca.crt
+    issuerRef:                  # or existingSecrets.server.name, with the keys tls.crt, tls.key, ca.crt
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: milvus-ca
     external:
       mode: TLS                 # the running common.security.tlsMode: 1 is TLS, 2 is mTLS
     internal:
       mode: TLS                 # only if common.security.internaltlsEnabled is true
 ```
 
-`spec.tls.issuerRef` is needed only if KubeDB has to issue a certificate. Remove `tls`, `internaltls`, `common.security.tlsMode` and `common.security.internaltlsEnabled` from the carried `milvus.yaml`: it wins over what the operator renders, so the old paths would point at files the new pods do not have. A `ReconfigureTLS` request cannot rotate certificates listed in `spec.tls.existingSecrets`; renew those yourself and restart the pods.
+Remove `tls`, `internaltls`, `common.security.tlsMode` and `common.security.internaltlsEnabled` from the carried `milvus.yaml`: it wins over what the operator renders, so the old paths would point at files the new pods do not have.
 
 ## The contract
 
