@@ -65,6 +65,7 @@ spec:
     nodeAffinity:
       - topologyKey: nvidia.com/gpu.product
         whenUnsatisfiable: DoNotSchedule
+        weight: 100
         domains:
           - values: ["NVIDIA-L40S"]
             replicas: "2"
