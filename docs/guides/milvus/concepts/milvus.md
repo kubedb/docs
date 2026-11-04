@@ -144,7 +144,7 @@ spec:
       name: milvus-s3
     tls:
       caConfigMap:
-        name: openshift-service-ca.crt   # created in every OpenShift namespace
+        name: openshift-service-ca.crt   # an injected service CA ConfigMap in this namespace
         key: service-ca.crt
 ```
 
@@ -152,7 +152,11 @@ KubeDB mounts the CA at `/milvus/object-storage-ca/ca.crt` in every Milvus pod a
 
 If the same `minio` key is set in more than one place, the last one in this order wins: KubeDB defaults, the object storage secret, `spec.objectStorage.tls`, then `spec.configuration`.
 
-> Backup and restore jobs that read the object storage directly do not use this CA yet.
+The matching Milvus archiver, backup-plugin and CSI-plugin images also use this CA. They read the effective storage settings from the generated configuration Secret, so inline overrides apply consistently to Milvus and its backup workers. An arbitrary CA path mounted only through `podTemplate` is not accessible to these workers; use `spec.objectStorage.tls` for backup-compatible private-CA configuration.
+
+This is independent of `spec.tls`: Milvus listener TLS can be disabled while HTTPS to object storage remains enabled. A backup destination has its own TLS settings in KubeStash `BackupStorage`; supply that endpoint's CA in the credential Secret under `CA_CERT_DATA`. The two endpoints can use different CAs.
+
+Before restoring into another namespace, create that target's object-storage credential Secret and selected CA Secret or ConfigMap there. Restore uses the target's configuration and does not replace its CA with the source database's CA.
 
 ### spec.metaStorage
 
