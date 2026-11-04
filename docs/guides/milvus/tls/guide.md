@@ -307,6 +307,70 @@ $ kubectl exec -it milvus-cluster-proxy-0 -n demo -- \
 
 You should see a successful TLS handshake.
 
+## TLS to the Object Storage
+
+The TLS above secures connections to Milvus. Milvus also connects to the object storage, and if that serves a certificate signed by a private CA, Milvus must trust the CA. Give KubeDB the CA with `spec.objectStorage.tls`.
+
+Create a Secret with the CA certificate (use a ConfigMap and `caConfigMap` if the CA is published that way):
+
+```bash
+$ kubectl create secret generic -n demo s3-ca --from-file=ca.crt=./ca.crt
+```
+
+Create the object storage secret for the TLS endpoint and the Milvus object:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-s3-tls
+  namespace: demo
+spec:
+  version: "2.6.15"
+  topology:
+    mode: Standalone
+  objectStorage:
+    configSecret:
+      name: milvus-s3
+    tls:
+      caSecret:
+        name: s3-ca
+        key: ca.crt
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut
+```
+
+The full manifest, with the `milvus-s3` secret, is in [object-storage-tls.yaml](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/object-storage-tls.yaml).
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/object-storage-tls.yaml
+```
+
+### Verify
+
+The CA is mounted in the pod and the rendered configuration enables TLS to the object storage:
+
+```bash
+$ kubectl exec -n demo milvus-s3-tls-0 -- ls /milvus/object-storage-ca
+ca.crt
+
+$ CS=$(kubectl get petset -n demo milvus-s3-tls -o jsonpath='{.spec.template.spec.volumes[?(@.name=="milvus-config")].secret.secretName}')
+$ kubectl get secret -n demo $CS -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A12 '^minio:'
+minio:
+  ...
+  ssl:
+    tlsCACert: /milvus/object-storage-ca/ca.crt
+  useSSL: true
+```
+
+The Milvus pod log has no `x509` errors, and the database becomes `Ready`.
+
 ## Cleaning up
 
 ```bash

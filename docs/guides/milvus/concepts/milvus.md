@@ -131,6 +131,29 @@ spec:
       name: milvus-storage-config
 ```
 
+### spec.objectStorage.tls
+
+Set `spec.objectStorage.tls` when the object storage serves a certificate signed by a private CA, for example Ceph RGW behind an OpenShift service CA. Without it, Milvus fails with `x509: certificate signed by unknown authority`. This field only configures how Milvus verifies the object storage server. It is separate from [`spec.tls`](/docs/guides/milvus/tls/overview.md), which secures Milvus's own listeners.
+
+Name the CA bundle in exactly one of `caSecret` or `caConfigMap`. Both need a `name` and a `key` that holds the PEM CA certificate, in the same namespace as the Milvus object:
+
+```yaml
+spec:
+  objectStorage:
+    configSecret:
+      name: milvus-s3
+    tls:
+      caConfigMap:
+        name: openshift-service-ca.crt   # created in every OpenShift namespace
+        key: service-ca.crt
+```
+
+KubeDB mounts the CA at `/milvus/object-storage-ca/ca.crt` in every Milvus pod and sets `minio.useSSL: true` and `minio.ssl.tlsCACert` in the rendered `milvus.yaml`. The endpoint still comes from the object storage secret, so set its `address` and `port` (usually `443`) for the TLS endpoint.
+
+If the same `minio` key is set in more than one place, the last one in this order wins: KubeDB defaults, the object storage secret, `spec.objectStorage.tls`, then `spec.configuration`.
+
+> Backup and restore jobs that read the object storage directly do not use this CA yet.
+
 ### spec.metaStorage
 
 Milvus uses etcd as its metadata store.
