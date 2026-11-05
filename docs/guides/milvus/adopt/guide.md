@@ -87,7 +87,7 @@ After the adoption, leave the Helm release alone: `helm upgrade` would start the
 $ kubectl dba adopt milvus rollback my-release -n demo --yes --cleanup
 ```
 
-`rollback` deletes the Milvus with `kubedb.com/milvus-orphan-on-delete`, so its pods keep serving, then moves each role back to the chart's workloads, starting the chart's pods before it stops KubeDB's. Once the chart's proxies are Ready, the client Service gets back its original selector, labels and ports. `--cleanup` then deletes the PetSets (at 0 replicas), the Services and the rendered config KubeDB left, and recreates the chart Services the adoption removed. PVCs and the credential Secrets are kept. It works on a partly adopted cluster too, and for a Milvus adopted by hand (pass `--name`). Expect a short pause in writes while the StreamingNodes move back: the chart's StreamingNodes take write-ahead log channels as soon as they start, before their readiness probe passes (about 30 s on the test cluster).
+`rollback` deletes the Milvus with `kubedb.com/milvus-orphan-on-delete`, so its pods keep serving, then moves each role back to the chart's workloads, starting the chart's pods before it stops KubeDB's. Once the chart's proxies are Ready, the client Service gets back its original selector, labels and ports. `--cleanup` then deletes the PetSets (at 0 replicas), the Services and the rendered config KubeDB left, and recreates the chart Services the adoption removed. PVCs and the credential Secrets are kept. It works on a partly adopted cluster too, and for a Milvus adopted by hand (pass `--name`). Expect a short pause in writes while the StreamingNodes move back: the chart's StreamingNodes take write-ahead log channels as soon as they start, before their readiness probe passes (about 30 s on the test cluster). A rollback takes longer than the adoption because each role waits for the chart's pods to be Ready and settle; on the test cluster with the default delays it took 15 to 25 minutes, mostly in the QueryNode step. `--querynode-delay` and `--settle` shorten it, at the price of a shorter wait between steps.
 
 ### Options in a file
 
@@ -99,6 +99,8 @@ $ kubectl dba adopt milvus run      -f ./adopt/adopt.yaml --yes
 $ kubectl dba adopt milvus status   -f ./adopt/adopt.yaml
 $ kubectl dba adopt milvus rollback -f ./adopt/adopt.yaml --yes
 ```
+
+`--yes` is a flag only; it is not a field of the file.
 
 A complete file, for a cluster whose chart does not set the upstream labels and runs QueryNodes on two GPU pools:
 
@@ -278,7 +280,8 @@ When you later retire the chart, do not run `helm uninstall`: Helm deletes every
 
 - Check the write-ahead log the cluster really uses: `mq.type` (or `messageQueue`) in its effective `milvus.yaml` must be `woodpecker`, and the StreamingNode logs must show `walName=woodpecker`. Some charts default cluster mode to Pulsar even when `woodpecker.storage` settings are present; the upstream Milvus Helm chart needs `woodpecker.enabled: true`.
 - KubeDB creates headless Services named `<name>-mixcoord`, `<name>-datanode`, `<name>-querynode` and `<name>-streamingnode`. A Service of one of these names left by the chart that is **not** headless cannot be converted (a Service's cluster IP is immutable), and KubeDB reports it. Milvus components reach each other through their etcd sessions, not through these Services, so delete such a Service before you create the Milvus.
-- If you rehearse with a second, temporary Milvus object, give it its own copy of the auth Secret. KubeDB records on an auth Secret which Milvus uses it, and a second Milvus is then refused that Secret.
+- Remove leftover pods in phase `Failed` or `Succeeded` (for example `Error`, `Completed` or `ContainerStatusUnknown` pods from an earlier run) that match the chart's selectors before `run` or `rollback`. The command waits for "at most 0 pods" of a role and otherwise runs into its 15-minute timeout.
+- If you rehearse with a second, temporary Milvus object, give it its own copy of the auth Secret. KubeDB records on an auth Secret which Milvus uses it, and a second Milvus on the same Secret is not supported: it can stay `Provisioning` without an event.
 
 ## Prepare the Secrets
 
@@ -306,7 +309,7 @@ The pods of one role, old and new, can run side by side for the length of a hand
 
    ```bash
    # the rendered config Secret is named <name>-<last six characters of the Milvus UID>
-   $ MV_UID=$(kubectl get milvus -n demo milvus -o jsonpath='{.metadata.uid}')
+   $ MV_UID=$(kubectl get milvuses.kubedb.com -n demo milvus -o jsonpath='{.metadata.uid}')
    $ kubectl get secret -n demo milvus-${MV_UID: -6} -o jsonpath='{.data.milvus\.yaml}' | base64 -d > rendered.yaml
    $ diff <(yq -P 'sort_keys(..)' current-milvus.yaml) <(yq -P 'sort_keys(..)' rendered.yaml)
    ```
@@ -316,7 +319,9 @@ The pods of one role, old and new, can run side by side for the length of a hand
 3. Overlap: for each role, in the order Proxy, MixCoord, DataNode, StreamingNode, QueryNode, start the KubeDB pods, wait until they are Ready, then stop the old ones. Move QueryNodes one at a time (KubeDB to 1, wait Ready and let it serve a while, old to N-1, and so on), so at most one extra QueryNode runs:
 
    ```bash
-   $ kubectl patch milvus -n demo milvus --type=merge -p '{"spec":{"topology":{"distributed":{"mixcoord":{"replicas":2}}}}}'
+   $ kubectl patch milvuses.kubedb.com -n demo milvus --type=merge -p '{"spec":{"topology":{"distributed":{"mixcoord":{"replicas":2}}}}}'
+   # the pods appear a few seconds after the patch; kubectl wait fails if none exist yet
+   $ until kubectl get pod -n demo -l app.kubernetes.io/instance=milvus,kubedb.com/role=mixcoord -o name | grep -q .; do sleep 2; done
    $ kubectl wait -n demo --for=condition=Ready pod -l app.kubernetes.io/instance=milvus,kubedb.com/role=mixcoord --timeout=15m
    # then stop the old workload of the role; its PVCs are kept
    $ kubectl scale -n demo deployment/<old-mixcoord> --replicas=0
@@ -334,8 +339,8 @@ Scale every old workload to 0, then apply the Milvus with the final replicas. Th
 ## Validate
 
 ```bash
-$ kubectl get milvus -n demo milvus
-$ kubectl get milvus -n demo milvus -o jsonpath='{range .status.conditions[*]}{.type}={.status}{"\n"}{end}'
+$ kubectl get milvuses.kubedb.com -n demo milvus
+$ kubectl get milvuses.kubedb.com -n demo milvus -o jsonpath='{range .status.conditions[*]}{.type}={.status}{"\n"}{end}'
 ```
 
 Then, from a client, check the collection count against the number taken before the handover, run known queries with known results, and run a smoke test from each application.
@@ -346,14 +351,20 @@ The data never moved, so a rollback only changes who runs the pods. `kubectl dba
 
 1. Make sure the annotation `kubedb.com/milvus-orphan-on-delete: "true"` is set, set `spec.deletionPolicy` to `Halt`, and delete the Milvus. Its pods keep serving under their PetSets, and the operator no longer moves the client Service.
 2. For each role, in the order QueryNode, StreamingNode, DataNode, MixCoord, Proxy: scale the old workload back up, wait until its pods are Ready, then scale the KubeDB PetSet to 0.
-3. Before the proxy PetSet goes to 0, point the client Service back at the old proxies: its original selector, and ports whose `targetPort` the old proxy pods define (KubeDB's ports target the port names `proxy`, `metrics` and `http` of its own pods).
+3. Before the proxy PetSet goes to 0, point the client Service back at the old proxies: its original selector, and ports whose `targetPort` the old proxy pods define (KubeDB's ports target the port names `proxy`, `metrics` and `http` of its own pods). Replace the selector instead of merging into it, because a merge patch keeps the KubeDB keys and the Service then selects no old proxy:
+
+   ```bash
+   $ kubectl patch svc -n demo milvus --type=json -p '[{"op":"replace","path":"/spec/selector","value":{"app.kubernetes.io/instance":"RELEASE","app.kubernetes.io/name":"milvus","component":"proxy"}}]'
+   ```
+
+   Use the selector of your chart's proxy pods in place of the example value.
 
 ## Hand the cluster back
 
 With the annotation `kubedb.com/milvus-orphan-on-delete: "true"` set, deleting the Milvus no longer deletes the cluster. Before it lets the object go, the operator removes the Milvus owner reference from the PetSets, Services, config Secret, ServiceAccount, Role and RoleBinding (and from a KubeDB-managed meta etcd, if one is used), and keeps PVCs and Secrets as with `deletionPolicy: Halt`, whatever the policy says. The pods keep serving under the PetSet controller.
 
 ```bash
-$ kubectl patch milvus -n demo milvus --type=merge -p '{"spec":{"deletionPolicy":"Halt"}}'
+$ kubectl patch milvuses.kubedb.com -n demo milvus --type=merge -p '{"spec":{"deletionPolicy":"Halt"}}'
 $ kubectl delete milvus -n demo milvus
 $ kubectl get petset,pods,svc -n demo -l app.kubernetes.io/instance=milvus
 ```
