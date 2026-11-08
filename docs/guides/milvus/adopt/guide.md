@@ -153,6 +153,7 @@ A flag given on the command line wins over the same option in the file. An unkno
 | `--auth-secret` or `--root-password-file` / `auth` | When the root password is not the chart's `defaultRootPassword`; `plan` tells you |
 | `--etcd-auth-secret` / `auth.etcdAuthSecret` | When the etcd uses authentication |
 | `--tls-ca-secret`, `--tls-issuer` or `--tls-client-secret` / `tls` | For KubeDB to take over TLS, or when client mTLS is on; see [Keep the TLS of the cluster](#keep-the-tls-of-the-cluster) |
+| `--object-storage-ca-secret` or `--object-storage-ca-configmap`, and `--object-storage-address` and `--object-storage-port` / `objectStorage` | When the Milvus must reach the object storage over TLS with a private CA after the adoption; see [Move the object storage to TLS](#move-the-object-storage-to-tls) |
 | `--workload` / `source.workloads` (or `--selector`, `--role-label`) | When the workloads do not carry `app.kubernetes.io/instance=RELEASE` and a `component` label |
 | `--config-file` / `source.configFile` | When the Milvus config is not mounted from a ConfigMap or Secret |
 
@@ -217,6 +218,33 @@ spec:
 
 Remove `tls`, `internaltls`, `common.security.tlsMode` and `common.security.internaltlsEnabled` from the carried `milvus.yaml`: it wins over what the operator renders, so the old paths would point at files the new pods do not have.
 
+## Move the object storage to TLS
+
+The running cluster may reach its object storage over plain HTTP, and the new Milvus may have to use TLS with a private CA. This is independent of the TLS above, which is between clients and Milvus. Give the CA with `--object-storage-ca-secret NAME[/KEY]` or `--object-storage-ca-configmap NAME[/KEY]` (the key defaults to `ca.crt`; the Secret or ConfigMap must be in the namespace of the Milvus, because the pods mount it), and the TLS endpoint with `--object-storage-address` and `--object-storage-port` when it differs from the running one. An address or port without a CA is refused.
+
+```bash
+$ kubectl dba adopt milvus plan my-release -n demo \
+    --object-storage-ca-secret s3-ca \
+    --object-storage-address s3.example.com --object-storage-port 443 --output-dir ./adopt
+```
+
+With a CA flag the adoption:
+
+- sets `spec.objectStorage.tls.caSecret` (or `caConfigMap`), so KubeDB mounts the CA, sets `minio.useSSL: true` and points `minio.ssl.tlsCACert` at it,
+- writes `useSSL: "true"` and the new address and port to the Secret `<name>-object-storage`,
+- leaves `minio.useSSL`, `minio.ssl` and, when you give a new endpoint, `minio.address` and `minio.port` out of the carried `milvus.yaml`, because the carried config wins over what the operator renders and would keep the new pods on plain HTTP,
+- expects the rendered config to differ from the running one in exactly those settings, and stops on anything else.
+
+`plan` checks that the CA exists, has the key, parses as PEM and is not expired. It cannot reach the object storage, so the endpoint and its certificate name are yours to confirm: the certificate must name the host you give. The bucket and root path stay as they are, so the old pods and the new pods read the same data while both run. If the CA or endpoint is wrong, the first new pod cannot reach the storage, the handover stops at that role, and the old pods keep serving; run `rollback`.
+
+Without the flags nothing changes. To switch an adopted Milvus to TLS later, set `spec.objectStorage.tls` and the new address, and remove `minio.useSSL` and `minio.address` from the Secret `<name>-adopt-config`.
+
+## GPU and SR-IOV settings
+
+`plan` maps the secondary networks of each chart workload to `spec.topology.distributed.<role>.network.sriov`. From the `k8s.v1.cni.cncf.io/networks` annotation it takes the network (`attachmentRef`) and the interface, and a second entry becomes the `gds` network. It finds the device resource of each network in the `k8s.v1.cni.cncf.io/resourceName` annotation of the NetworkAttachmentDefinition, or, when the pod has one network and one device, takes that device. `rdma/*` resources become `rdmaResourceName`. The GPU count, resource name, node selector and tolerations become `gpu`. KubeDB then generates its own advertise-IP init container, which writes the address of `net1` for Milvus.
+
+`plan` does not guess. If a network cannot be tied to one device, or the network is in another namespace, it prints what it found and leaves `network` out; set it by hand, as in the [GPU and SR-IOV](/docs/guides/milvus/gpu-sriov/guide.md) guide. KubeDB expects `network.sriov` on all five roles when it is on one, so check that `plan` mapped every role that has a secondary network. The init container of the chart, the security context and any other pod setting are not carried over.
+
 ## The contract
 
 Each row is a way an adoption can go wrong silently. Gather the current values from the running cluster first: its effective `milvus.yaml`, its Services, PVCs and pod specs.
@@ -244,7 +272,7 @@ Also check:
 - The StreamingNode PVC. KubeDB names it `data-<name>-streamingnode-<ordinal>`. With Woodpecker on object storage it holds no data that must survive, but confirm that before the handover. If it does, pre-create PVCs with those names from the existing volumes.
 - The pod user. KubeDB images run as UID 1000 (`spec.restrictedSCC: true` lets OpenShift assign it). Volumes written as root by the old pods must be writable by the new user.
 - No `MilvusArchiver` selects the namespace. The archiver needs a KubeDB-managed etcd and is rejected for an externally managed one.
-- GPU and SR-IOV settings, if used: see [GPU and SR-IOV](/docs/guides/milvus/gpu-sriov/guide.md). Remove any advertise-IP init container of your own; KubeDB adds its own.
+- GPU and SR-IOV settings, if used: `plan` maps them (see [GPU and SR-IOV settings](#gpu-and-sr-iov-settings)); check the result against [GPU and SR-IOV](/docs/guides/milvus/gpu-sriov/guide.md). Remove any advertise-IP init container of your own; KubeDB adds its own.
 
 ## Keep the client endpoint
 
