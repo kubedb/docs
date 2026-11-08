@@ -564,6 +564,8 @@ spec:
     removeCustomConfig: true
 ```
 
+> **Note:** Removing custom configuration requires a restart; use `restart: auto` or `restart: "true"`, as `restart: "false"` causes the OpsRequest to fail.
+
 Here,
 
 - `spec.databaseRef.name` specifies that we are reconfiguring `myops-reconfigure-remove` database.
