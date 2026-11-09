@@ -56,19 +56,6 @@ helm upgrade kubedb oci://ghcr.io/appscode-charts/kubedb \
   --wait --burst-limit=10000
 ```
 
-Use the release name and namespace of your existing installation.
-
-#### Using the installer checkout
-
-To install the Courier chart from the feature checkout alongside an existing compatible KubeDB installation:
-
-```bash
-INSTALLER_DIR=/path/to/installer
-helm upgrade --install kubedb-courier "$INSTALLER_DIR/charts/kubedb-courier" \
-  --namespace kubedb --create-namespace \
-  --wait
-```
-
 Use one Courier installation per cluster. If Courier is already managed by the KubeDB subchart, update that release instead of adding another installation.
 
 ### Single-cluster configuration
@@ -90,16 +77,14 @@ For example, pass `--set kubedb-courier.image.tag=<courier-tag>` and `--set kube
 
 ### CRDs and upgrades
 
-The Courier chart ships the Branch and BranchWork CRDs and installs them on a fresh install. Helm does not upgrade CRDs from a chart's `crds/` directory during `helm upgrade`. Before upgrading an existing release, apply the matching CRDs from the installer checkout:
+The Courier chart ships the Branch and BranchWork CRDs and installs them on a fresh install. Helm does not upgrade CRDs from a chart's `crds/` directory during `helm upgrade`. Before upgrading an existing release, apply the matching CRDs from the public apimachinery repository:
 
 ```bash
-INSTALLER_DIR=/path/to/installer
-kubectl apply --server-side \
-  -f "$INSTALLER_DIR/charts/kubedb-courier/crds/courier.kubedb.com_branches.yaml" \
-  -f "$INSTALLER_DIR/charts/kubedb-courier/crds/courier.kubedb.com_branchworks.yaml"
+kubectl apply --server-side -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_branches.yaml
+kubectl apply --server-side -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_branchworks.yaml
 ```
 
-Use CRDs from the same feature/release checkout as the operator. If server-side apply reports a field-ownership conflict, review the existing owner and schema differences before transferring ownership.
+The URLs above track `master`. For a versioned installation, use a repository revision whose CRD schemas match the operator release. If server-side apply reports a field-ownership conflict, review the existing owner and schema differences before transferring ownership.
 
 ### Verify the single-cluster installation
 
@@ -137,33 +122,35 @@ kubectl --context hub get managedclusters source target
 
 Both clusters should report `JOINED=True` and `AVAILABLE=True` with hub acceptance enabled.
 
-### Install the Courier addon manager on the hub
+### Prepare the managed clusters
 
-The installer includes a dedicated chart for the Courier manager and its OCM addon definitions:
+Branch and BranchWork CRDs must exist on both managed clusters before enabling the addon. If your KubeDB installation has not already installed them, apply the matching CRDs:
 
 ```bash
-INSTALLER_DIR=/path/to/installer
+for context in source target; do
+  kubectl --context "$context" apply --server-side \
+    -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_branches.yaml \
+    -f https://raw.githubusercontent.com/kubedb/apimachinery/refs/heads/master/crds/courier.kubedb.com_branchworks.yaml
+done
+```
+
+The managed-cluster addon supplies the Courier agents. Disable any existing standalone Courier Deployment on those clusters as part of the transition, so each cluster runs a single Courier agent installation. For a Courier subchart, set `kubedb-courier.enabled=false` in the existing KubeDB release; retain its CRDs.
+
+### Install the Courier addon manager on the hub
+
+Install the Courier manager and its OCM addon definitions from the public OCI chart:
+
+```bash
 helm --kube-context hub upgrade --install kubedb-courier-addon-manager \
-  "$INSTALLER_DIR/charts/kubedb-courier-addon-manager" \
+  oci://ghcr.io/appscode-charts/kubedb-courier-addon-manager \
+  --version v0.8.0 \
   --namespace kubedb --create-namespace \
   --wait
 ```
 
 The chart installs the hub Courier CRDs, manager Deployment, RBAC, `ClusterManagementAddOn`, and `AddOnTemplate`. It also delegates the permissions needed by OCM's addon manager and work agents. Use the same Courier build for the manager and agents.
 
-Prepare Branch and BranchWork CRDs on both managed clusters before enabling the addon:
-
-```bash
-for context in source target; do
-  kubectl --context "$context" apply --server-side \
-    -f "$INSTALLER_DIR/charts/kubedb-courier/crds/courier.kubedb.com_branches.yaml" \
-    -f "$INSTALLER_DIR/charts/kubedb-courier/crds/courier.kubedb.com_branchworks.yaml"
-done
-```
-
 For upgrades, also apply matching CRDs on the hub before updating the manager, using the [CRD upgrade procedure](/docs/operatormanual/branching/setup.md#crds-and-upgrades) with `--context hub`. Use schemas matching the operator build on all three clusters.
-
-The managed-cluster addon supplies the Courier agents. Disable any existing standalone Courier Deployment on those clusters as part of the transition, so each cluster runs a single Courier agent installation. For a Courier subchart, set `kubedb-courier.enabled=false` in the existing KubeDB release; retain its CRDs.
 
 ### Enable the addon on both managed clusters
 
@@ -214,7 +201,7 @@ OCM deploys `courier-agent` on each managed cluster. The addon supplies each age
 | `ocm.workAgent.namespace` | `open-cluster-management-agent` | Existing work-agent namespace on managed clusters. |
 | `ocm.workAgent.serviceAccountName` | `klusterlet-work-sa` | Existing work-agent ServiceAccount. |
 
-Set the OCM identity values to match the existing installation so the chart grants permissions to the correct ServiceAccounts. To use an existing Placement instead of manual enablement, set `agent.placement.name` and `agent.placement.namespace` when installing the chart.
+Set the OCM identity values to match the existing installation so the chart grants permissions to the correct ServiceAccounts.
 
 ### Verify cross-cluster Courier
 

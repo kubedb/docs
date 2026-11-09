@@ -25,8 +25,6 @@ KubeDB Courier manages this process through a `Branch` resource in the source cl
 - **Make experiments disposable.** Recreate a branch after an unsuccessful backfill or destructive test instead of repairing a shared development database.
 - **Give AI agents an isolated workspace.** Agents can execute generated SQL and evaluate schema changes on a branch. With production credentials, an incorrect query could delete records, alter tables, or read confidential information.
 
-Connect agents to the branch Service with an independent password using [ResetRootPassword](/docs/operatormanual/branching/reset-root-password.md). Use [post-actions](/docs/operatormanual/branching/post-actions.md) to mask or remove sensitive data before granting access. Write isolation alone does not sanitize copied data; restrict access until preparation is complete and the Branch is `Ready`.
-
 ## Storage requirements
 
 Use CSI storage that supports snapshots and copy-on-write (CoW) clones, such as **Ceph RBD**. A CoW clone initially references the snapshot's existing blocks, avoiding an upfront copy of the entire data volume. As source and branch writes diverge, the backend keeps the block versions needed by the snapshot and allocates space for changes. The branch continues to read its snapshot baseline until its own writes or a refresh replace that data. The PostgreSQL examples use Ceph RBD for both same-cluster and cross-cluster branching.
