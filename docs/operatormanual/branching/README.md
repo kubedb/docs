@@ -21,8 +21,8 @@ KubeDB Courier creates independent database copies from storage snapshots. A `Br
 
 Start with the [overview](/docs/operatormanual/branching/overview.md), then configure Courier for your environment:
 
-- [Same-cluster setup and configuration](/docs/operatormanual/branching/setup.md).
-- [Cross-cluster setup and configuration](/docs/operatormanual/branching/setup-ocm.md) with an existing Open Cluster Management (OCM) installation.
+- [Same-cluster setup and configuration](/docs/operatormanual/branching/setup.md#single-cluster-installation).
+- [Cross-cluster setup and configuration](/docs/operatormanual/branching/setup.md#cross-cluster-installation-with-ocm) with an existing Open Cluster Management (OCM) installation.
 
 Read the feature guides for [snapshot configuration](/docs/operatormanual/branching/snapshots.md), [refresh](/docs/operatormanual/branching/refresh.md), [ResetRootPassword](/docs/operatormanual/branching/reset-root-password.md), and [post-actions](/docs/operatormanual/branching/post-actions.md).
 

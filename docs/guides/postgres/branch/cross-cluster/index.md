@@ -18,7 +18,7 @@ This guide creates an HA PostgreSQL source on the `source` managed cluster and b
 
 ## Before You Begin
 
-- Complete [Courier cross-cluster setup](/docs/operatormanual/branching/setup-ocm.md) in an existing OCM environment.
+- Complete [Courier cross-cluster setup](/docs/operatormanual/branching/setup.md#cross-cluster-installation-with-ocm) in an existing OCM environment.
 - Have `kubectl` contexts named `hub`, `source`, and `target`. The OCM managed-cluster names in this tutorial are `source` and `target`.
 - Install compatible branching-capable KubeDB/database images and valid licenses on both database clusters. PostgreSQL version `16.1` must be available on the target as well as the source.
 - Configure compatible `ceph-rbd` storage and snapshot classes on both clusters. Source snapshots must be resolvable on the target against the shared backend.

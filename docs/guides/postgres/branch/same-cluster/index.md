@@ -18,7 +18,7 @@ This guide creates an HA PostgreSQL source in `demo`, then branches its data int
 
 ## Before You Begin
 
-- Complete [Courier setup](/docs/operatormanual/branching/setup.md).
+- Complete [Courier setup](/docs/operatormanual/branching/setup.md#single-cluster-installation).
 - Have a working `ceph-rbd` StorageClass and compatible snapshot class. See [snapshot configuration](/docs/operatormanual/branching/snapshots.md).
 - Ensure PostgreSQL version `16.1` is available in the installed KubeDB catalog and use branching-capable KubeDB/database images.
 - Be familiar with the [Branch specification](/docs/guides/postgres/branch/overview/index.md).

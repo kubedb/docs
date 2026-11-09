@@ -14,13 +14,22 @@ section_menu_id: operatormanual
 
 # Running Branch Post-Actions
 
-Post-actions run application-specific preparation against cloned data, such as anonymizing customer values or inserting test fixtures. Define each action in `spec.postActions` with a container image.
+Post-actions prepare cloned data for the people and applications that will use a branch. Define each action in `spec.postActions` with a container image. For example, you can:
+
+- Mask names, email addresses, and other personal information before giving developers or AI agents access.
+- Drop tables containing sensitive information that the branch does not need.
+- Delete confidential rows or data outside the scope of a test.
+- Insert test fixtures or application-specific seed data.
+
+These changes run against the branch database and leave the source data unchanged.
 
 ## Execution and readiness
 
 Courier runs the actions **in list order**, creating a Kubernetes Job for each action in the target namespace. Actions start after the target database is ready and requested credential isolation is complete. The Branch stays in `ActionsRunning` until all actions succeed, then becomes `Ready`.
 
 A scheduled refresh reruns the full action list against the replacement data. Make scripts safe for Job retries and repeated execution. The target database Service can exist before the actions finish; applications consuming prepared data should wait for the **Branch** to become `Ready`.
+
+For cross-cluster branching, Jobs and their Secrets live on the **target** cluster. See [PostgreSQL post-actions](/docs/guides/postgres/branch/post-actions.md) for a complete SQL anonymization example.
 
 ## Connection environment
 
@@ -44,9 +53,3 @@ Courier injects the database-specific connection environment using the target Se
 | `jobTemplate.spec.nodeSelector`, `jobTemplate.spec.affinity`, `jobTemplate.spec.tolerations` | Action pod placement. |
 
 `jobTemplate` uses KubeDB's pod-template shape. Set action container options directly under `jobTemplate.spec`; it does not take a Kubernetes `containers` list. Choose a retention period long enough for Courier to observe completion and for operators to inspect logs.
-
-## Failures
-
-A failing pod can be retried by its Job while the Branch remains in `ActionsRunning`. If the Job reports terminal failure, the Branch becomes `Failed` and later actions do not run. Correct the action specification to trigger another attempt; account for any changes an earlier attempt already made to the data.
-
-For cross-cluster branching, Jobs and their Secrets live on the **target** cluster. Read their logs there. See [PostgreSQL post-actions](/docs/guides/postgres/branch/post-actions.md) for a complete SQL anonymization example.

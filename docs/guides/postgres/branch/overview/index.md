@@ -18,7 +18,7 @@ aliases:
 
 KubeDB Courier creates PostgreSQL branches from CSI snapshots on CoW storage such as Ceph RBD. Each branch has its own database resource, Service, storage, and auth Secret. Use a branch for development, testing, or data preparation, and optionally refresh it from its source.
 
-Start with [Courier setup](/docs/operatormanual/branching/setup.md) or [Courier cross-cluster setup](/docs/operatormanual/branching/setup-ocm.md). The tutorials demonstrate:
+Start with [Courier setup](/docs/operatormanual/branching/setup.md#single-cluster-installation) or [Courier cross-cluster setup](/docs/operatormanual/branching/setup.md#cross-cluster-installation-with-ocm). The tutorials demonstrate:
 
 - [Same-cluster branching into another namespace](/docs/guides/postgres/branch/same-cluster/index.md).
 - [Cross-cluster branching](/docs/guides/postgres/branch/cross-cluster/index.md) using the same network-reachable Ceph backend.
