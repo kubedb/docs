@@ -34,7 +34,7 @@ Courier transfers Kubernetes resource definitions and snapshot references betwee
 4. KubeDB starts the target database using the cloned storage.
 5. Courier completes optional credential isolation and post-actions, then marks the Branch `Ready`.
 
-Source and target can be in different namespaces. The [PostgreSQL same-cluster tutorial](/docs/guides/postgres/branch/same-cluster.md) demonstrates this arrangement.
+Source and target can be in different namespaces. The [PostgreSQL same-cluster tutorial](/docs/guides/postgres/branch/same-cluster/index.md) demonstrates this arrangement.
 
 ## Cross-cluster flow
 
@@ -46,7 +46,7 @@ Cross-cluster branching uses an existing OCM hub and two registered managed clus
 4. The target agent imports the snapshot references and creates the branch against the shared storage backend.
 5. Target status returns through the hub to the source Branch.
 
-The hub coordinates resource delivery. KubeDB and the database workloads run on the managed clusters. See [Courier cross-cluster setup](/docs/operatormanual/branching/setup-ocm.md) and the [PostgreSQL cross-cluster tutorial](/docs/guides/postgres/branch/cross-cluster.md).
+The hub coordinates resource delivery. KubeDB and the database workloads run on the managed clusters. See [Courier cross-cluster setup](/docs/operatormanual/branching/setup-ocm.md) and the [PostgreSQL cross-cluster tutorial](/docs/guides/postgres/branch/cross-cluster/index.md).
 
 ## Branch lifecycle
 

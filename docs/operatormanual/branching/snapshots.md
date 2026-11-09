@@ -73,4 +73,4 @@ For Ceph RBD, check the CSI driver identity, backend cluster identity, pool, RAD
 
 StorageClass names alone do not establish compatibility. Using identical class names for two independent Ceph installations does not share snapshots. Courier's cross-cluster control plane delivers snapshot references; the shared backend provides the data and CoW clone mechanism.
 
-See the [PostgreSQL configuration guide](/docs/guides/postgres/branch/configuration.md) for a Branch with an explicit snapshot-class override.
+See the [PostgreSQL configuration guide](/docs/guides/postgres/branch/customization/index.md) for a Branch with an explicit snapshot-class override.

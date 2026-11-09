@@ -4,10 +4,12 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-overview
     name: Overview
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
+aliases:
+  - /docs/{{ .version }}/guides/postgres/concepts/branch/
 ---
 
 > New to KubeDB? Please start [here](/docs/README.md).
@@ -18,8 +20,8 @@ KubeDB Courier creates PostgreSQL branches from CSI snapshots on CoW storage suc
 
 Start with [Courier setup](/docs/operatormanual/branching/setup.md) or [Courier cross-cluster setup](/docs/operatormanual/branching/setup-ocm.md). The tutorials demonstrate:
 
-- [Same-cluster branching into another namespace](/docs/guides/postgres/branch/same-cluster.md).
-- [Cross-cluster branching](/docs/guides/postgres/branch/cross-cluster.md) using the same network-reachable Ceph backend.
+- [Same-cluster branching into another namespace](/docs/guides/postgres/branch/same-cluster/index.md).
+- [Cross-cluster branching](/docs/guides/postgres/branch/cross-cluster/index.md) using the same network-reachable Ceph backend.
 
 ## The Branch resource
 
@@ -71,7 +73,7 @@ The source must be a ready, durable KubeDB PostgreSQL database with snapshot-cap
 | `spec.target.resources` | PostgreSQL container CPU/memory requests and limits for the target. |
 | `spec.target.issuerRef` | Target cert-manager Issuer or ClusterIssuer required when the source has TLS enabled. |
 
-Courier prepares target configuration and copies applicable source configuration Secrets. An external ServiceAccount, Secret, or other dependency referenced by your configuration must also be available in the target environment. See [PostgreSQL branch configuration](/docs/guides/postgres/branch/configuration.md) for TLS and overrides.
+Courier prepares target configuration and copies applicable source configuration Secrets. An external ServiceAccount, Secret, or other dependency referenced by your configuration must also be available in the target environment. See [PostgreSQL branch configuration](/docs/guides/postgres/branch/customization/index.md) for TLS and overrides.
 
 ### Optional behavior
 
@@ -85,7 +87,7 @@ Courier prepares target configuration and copies applicable source configuration
 | `spec.volumeSnapshotClassName` | Explicit VolumeSnapshotClass selection for source and importing snapshots. |
 | `spec.deletionPolicy` | `Delete` removes the branch database and managed resources; `Orphan` retains the database, its PVCs, and required Secrets. Defaults to `Delete`. |
 
-Post-action entries support `image`, `jobDefaults`, and `jobTemplate`. The [post-action tutorial](/docs/guides/postgres/branch/post-actions.md) explains this shape with runnable SQL. Deletion policies and TLS examples are covered in [configuration](/docs/guides/postgres/branch/configuration.md).
+Post-action entries support `image`, `jobDefaults`, and `jobTemplate`. The [post-action tutorial](/docs/guides/postgres/branch/post-actions.md) explains this shape with runnable SQL. Deletion policies and TLS examples are covered in [configuration](/docs/guides/postgres/branch/customization/index.md).
 
 ## Status and readiness
 

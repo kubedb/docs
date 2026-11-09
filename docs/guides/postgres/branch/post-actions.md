@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-post-actions
     name: Post-Actions
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 60
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -18,8 +18,7 @@ This tutorial anonymizes email addresses in a PostgreSQL branch before its Branc
 
 ## Before You Begin
 
-Prepare and seed the HA source using a [creation tutorial](/docs/guides/postgres/branch/overview.md). The `branch_demo` table must exist in database `postgres`.
-
+Prepare and seed the HA source using a [creation tutorial](/docs/guides/postgres/branch/overview/index.md). The `branch_demo` table must exist in database `postgres`.
 
 These commands use explicit contexts. For the same-cluster environment, initialize:
 
@@ -29,7 +28,6 @@ TARGET_CONTEXT="$SOURCE_CONTEXT"
 ```
 
 For the cross-cluster environment, set `SOURCE_CONTEXT=source` and `TARGET_CONTEXT=target`, and add `spec.target.clusterName: target` to the downloaded Branch manifest **before creating it**. Apply it on the source cluster. The `demo/prod-pg` source and `dev` target namespace must already exist as described in the creation tutorials.
-
 
 ## Create a Branch with an action
 

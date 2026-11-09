@@ -105,4 +105,4 @@ kubectl get storageclass ceph-rbd
 kubectl get volumesnapshotclass
 ```
 
-Confirm that the Courier Deployment is available and that the snapshot class driver matches the StorageClass provisioner. Continue with [PostgreSQL branching](/docs/guides/postgres/branch/same-cluster.md).
+Confirm that the Courier Deployment is available and that the snapshot class driver matches the StorageClass provisioner. Continue with [PostgreSQL branching](/docs/guides/postgres/branch/same-cluster/index.md).

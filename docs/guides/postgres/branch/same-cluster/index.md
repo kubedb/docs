@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-same-cluster
     name: Same Cluster
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -21,7 +21,7 @@ This guide creates an HA PostgreSQL source in `demo`, then branches its data int
 - Complete [Courier setup](/docs/operatormanual/branching/setup.md).
 - Have a working `ceph-rbd` StorageClass and compatible snapshot class. See [snapshot configuration](/docs/operatormanual/branching/snapshots.md).
 - Ensure PostgreSQL version `16.1` is available in the installed KubeDB catalog and use branching-capable KubeDB/database images.
-- Be familiar with the [Branch specification](/docs/guides/postgres/branch/overview.md).
+- Be familiar with the [Branch specification](/docs/guides/postgres/branch/overview/index.md).
 
 The storage class name is an example; substitute your Ceph RBD class consistently in the source and Branch manifests.
 
@@ -172,4 +172,4 @@ kubectl -n demo delete postgres prod-pg --wait=true --timeout=10m
 kubectl delete namespace dev demo
 ```
 
-The source manifest uses `WipeOut`; deleting it removes its data. See [deletion policies](/docs/guides/postgres/branch/configuration.md#deletion-policies) to retain a branch independently.
+The source manifest uses `WipeOut`; deleting it removes its data. See [deletion policies](/docs/guides/postgres/branch/customization/index.md#deletion-policies) to retain a branch independently.

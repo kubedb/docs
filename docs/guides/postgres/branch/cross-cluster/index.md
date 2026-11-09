@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-cross-cluster
     name: Cross Cluster
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -171,4 +171,4 @@ kubectl --context source delete namespace demo
 kubectl --context target delete namespace dev
 ```
 
-The source uses `WipeOut`, so its deletion removes source data. For a retained branch, use [Orphan](/docs/guides/postgres/branch/configuration.md#deletion-policies).
+The source uses `WipeOut`, so its deletion removes source data. For a retained branch, use [Orphan](/docs/guides/postgres/branch/customization/index.md#deletion-policies).

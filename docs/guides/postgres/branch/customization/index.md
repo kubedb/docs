@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-configuration
     name: Configuration
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 70
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -14,7 +14,7 @@ section_menu_id: guides
 
 # PostgreSQL Branch Configuration
 
-This page covers PostgreSQL branch overrides, snapshot selection, TLS, and deletion policies. Start with the [Branch overview](/docs/guides/postgres/branch/overview.md) and one of the creation tutorials.
+This page covers PostgreSQL branch overrides, snapshot selection, TLS, and deletion policies. Start with the [Branch overview](/docs/guides/postgres/branch/overview/index.md) and one of the creation tutorials.
 
 The examples below use the same HA source `demo/prod-pg`, Ceph RBD storage, and target namespace `dev`. They show same-cluster configuration. For cross-cluster use, set `spec.target.clusterName` to the target ManagedCluster name, apply the Branch on the source, and inspect the database resources on the target.
 
@@ -156,7 +156,7 @@ kubectl -n dev get postgres pg-kept
 kubectl -n dev get pvc,secrets
 ```
 
-The database and its data remain usable after the Branch is gone. Read its auth Secret and verify a query through Service `pg-kept`, following the Service connection steps in the [same-cluster tutorial](/docs/guides/postgres/branch/same-cluster.md). Retain the original Secret; it contains the credential for the preserved data.
+The database and its data remain usable after the Branch is gone. Read its auth Secret and verify a query through Service `pg-kept`, following the Service connection steps in the [same-cluster tutorial](/docs/guides/postgres/branch/same-cluster/index.md). Retain the original Secret; it contains the credential for the preserved data.
 
 To remove the retained database and its durable data later, choose the database's own deletion policy explicitly:
 

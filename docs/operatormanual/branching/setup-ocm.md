@@ -142,4 +142,4 @@ for context in hub source target; do
 done
 ```
 
-Continue with the [PostgreSQL cross-cluster tutorial](/docs/guides/postgres/branch/cross-cluster.md).
+Continue with the [PostgreSQL cross-cluster tutorial](/docs/guides/postgres/branch/cross-cluster/index.md).

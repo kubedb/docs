@@ -26,4 +26,4 @@ Start with the [overview](/docs/operatormanual/branching/overview.md), then conf
 
 Read the feature guides for [snapshot configuration](/docs/operatormanual/branching/snapshots.md), [refresh](/docs/operatormanual/branching/refresh.md), [ResetRootPassword](/docs/operatormanual/branching/reset-root-password.md), and [post-actions](/docs/operatormanual/branching/post-actions.md).
 
-For complete manifests and database-specific behavior, follow the [PostgreSQL branching guides](/docs/guides/postgres/branch/overview.md).
+For complete manifests and database-specific behavior, follow the [PostgreSQL branching guides](/docs/guides/postgres/branch/overview/index.md).

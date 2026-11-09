@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-reset-root-password
     name: ResetRootPassword
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 50
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -18,8 +18,7 @@ Set `spec.resetRootPassword: true` to give a PostgreSQL branch its own root cred
 
 ## Before You Begin
 
-Prepare the HA source and seed data using a [creation tutorial](/docs/guides/postgres/branch/overview.md).
-
+Prepare the HA source and seed data using a [creation tutorial](/docs/guides/postgres/branch/overview/index.md).
 
 These commands use explicit contexts. For the same-cluster environment, initialize:
 
@@ -29,7 +28,6 @@ TARGET_CONTEXT="$SOURCE_CONTEXT"
 ```
 
 For the cross-cluster environment, set `SOURCE_CONTEXT=source` and `TARGET_CONTEXT=target`, and add `spec.target.clusterName: target` to the downloaded Branch manifest **before creating it**. Apply it on the source cluster. The `demo/prod-pg` source and `dev` target namespace must already exist as described in the creation tutorials.
-
 
 ## Create the Branch
 

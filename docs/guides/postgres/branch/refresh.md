@@ -4,7 +4,7 @@ menu:
   docs_{{ .version }}:
     identifier: pg-branch-refresh
     name: Refresh
-    parent: pg-branch
+    parent: guides-pg-branch
     weight: 40
 menu_name: docs_{{ .version }}
 section_menu_id: guides
@@ -18,8 +18,7 @@ This tutorial periodically replaces a PostgreSQL branch with a new snapshot of i
 
 ## Before You Begin
 
-Prepare and seed `demo/prod-pg` using the [same-cluster](/docs/guides/postgres/branch/same-cluster.md) or [cross-cluster](/docs/guides/postgres/branch/cross-cluster.md) tutorial. Retain the source and target namespaces for this tutorial.
-
+Prepare and seed `demo/prod-pg` using the [same-cluster](/docs/guides/postgres/branch/same-cluster/index.md) or [cross-cluster](/docs/guides/postgres/branch/cross-cluster/index.md) tutorial. Retain the source and target namespaces for this tutorial.
 
 These commands use explicit contexts. For the same-cluster environment, initialize:
 
@@ -29,7 +28,6 @@ TARGET_CONTEXT="$SOURCE_CONTEXT"
 ```
 
 For the cross-cluster environment, set `SOURCE_CONTEXT=source` and `TARGET_CONTEXT=target`, and add `spec.target.clusterName: target` to the downloaded Branch manifest **before creating it**. Apply it on the source cluster. The `demo/prod-pg` source and `dev` target namespace must already exist as described in the creation tutorials.
-
 
 ## Create a scheduled Branch
 
