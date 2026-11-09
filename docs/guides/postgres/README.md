@@ -31,6 +31,7 @@ aliases:
 | Instant Backup                     |   &#10003;   |
 | Scheduled Backup                   |   &#10003;   |
 | Initialization from Snapshot       |   &#10003;   |
+| Database Branching                 |   &#10003;   |
 | Initialization using Script        |   &#10003;   |
 | Builtin Prometheus Discovery       |   &#10003;   |
 | Using Prometheus operator          |   &#10003;   |
@@ -47,6 +48,7 @@ aliases:
 
 - [Quickstart PostgreSQL](/docs/guides/postgres/quickstart/quickstart.md) with KubeDB Operator.
 - How to [Backup & Restore](/docs/guides/postgres/backup/stash/overview/index.md) PostgreSQL database using Stash.
+- Create a [PostgreSQL branch](/docs/guides/postgres/branch/overview.md) in another namespace or cluster using Ceph RBD snapshots.
 - Initialize [PostgreSQL with Script](/docs/guides/postgres/initialization/script_source.md).
 - [PostgreSQL Clustering](/docs/guides/postgres/clustering/ha_cluster.md) supported by KubeDB Postgres.
 - [Streaming Replication](/docs/guides/postgres/clustering/streaming_replication.md) for PostgreSQL clustering.

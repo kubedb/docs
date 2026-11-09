@@ -1,21 +1,21 @@
 apiVersion: courier.kubedb.com/v1alpha1
 kind: Branch
 metadata:
-  name: dev-branch-keep
+  name: pg-dev
   namespace: demo
 spec:
   source:
     databaseRef:
       apiGroup: kubedb.com
       kind: Postgres
-      name: sample-postgres
+      name: prod-pg
     namespace: demo
   target:
-    namespace: demo
-    name: dev-postgres-keep
-    storageClassName: topolvm-provisioner-thin
+    namespace: dev
+    name: pg-dev
+    storageClassName: ceph-rbd
     resources:
       requests:
         cpu: 500m
         memory: 1Gi
-  deletionPolicy: Orphan
+  deletionPolicy: Delete

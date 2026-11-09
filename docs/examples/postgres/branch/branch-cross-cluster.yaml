@@ -1,26 +1,22 @@
 apiVersion: courier.kubedb.com/v1alpha1
 kind: Branch
 metadata:
-  name: dev-branch-refresh
+  name: pg-cross
   namespace: demo
 spec:
   source:
     databaseRef:
       apiGroup: kubedb.com
       kind: Postgres
-      name: sample-postgres
+      name: prod-pg
     namespace: demo
   target:
-    namespace: demo
-    name: dev-postgres-refresh
-    storageClassName: topolvm-provisioner-thin
+    clusterName: target
+    namespace: dev
+    name: pg-cross
+    storageClassName: ceph-rbd
     resources:
       requests:
         cpu: 500m
         memory: 1Gi
-  schedule:
-    cron: "*/5 * * * *"
-  historyLimit:
-    success: 3
-    failed: 2
   deletionPolicy: Delete

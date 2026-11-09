@@ -2,7 +2,7 @@
 title: Branching
 menu:
   docs_{{ .version }}:
-    identifier: guides-pg-branch
+    identifier: pg-branch
     name: Branching
     parent: pg-postgres-guides
     weight: 215
