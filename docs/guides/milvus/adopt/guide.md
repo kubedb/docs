@@ -56,7 +56,7 @@ Pre-flight checks for my-release in namespace demo:
   [OK   ] Service my-release-milvus-mixcoord is not headless; run deletes it (KubeDB recreates it headless; Milvus does not use it)
 ```
 
-`plan` changes nothing. It finds the workloads, the effective `milvus.yaml` (the chart's ConfigMap files, merged in the order Milvus reads them), the image and the Service clients use, and checks every row of [the contract](#the-contract). It logs in to a running proxy with the root credentials, because Milvus applies a root password only on its first start: a `defaultRootPassword` that was changed since is rejected here, and you give the current one with `--auth-secret` (an existing basic-auth Secret) or `--root-password-file`. An `ERROR` blocks the adoption; a `WARN` (an init container, environment variables, affinity or secondary networks that are not carried over) needs a look before you continue. With `--output-dir` it writes the objects it would create, so you can review or edit them and `kubectl apply` them yourself; `run` then uses what exists.
+`plan` changes nothing. It finds the workloads, the effective `milvus.yaml` (the chart's ConfigMap files, merged in the order Milvus reads them), the image and the Service clients use, and checks every row of [the contract](#the-contract). It logs in to a running proxy with the root credentials, because Milvus applies a root password only on its first start: a `defaultRootPassword` that was changed since is rejected here, and you give the current one with `--auth-secret` (an existing basic-auth Secret) or `--root-password-file`. An `ERROR` blocks the adoption; a `WARN` (an init container, affinity or secondary networks that are not carried over) needs a look before you continue. With `--output-dir` it writes the objects it would create, so you can review or edit them and `kubectl apply` them yourself; `run` then uses what exists.
 
 ### 2. Adopt: `run`
 
@@ -240,6 +240,12 @@ With a CA flag the adoption:
 If `rollback` finds that the KubeDB pods of a role are not all Ready, for example because they crash on a bad setting, it does not wait for the PetSet to scale down in order, which it never would. It starts the chart's workload first and then deletes the PetSet.
 
 Without the flags nothing changes. To switch an adopted Milvus to TLS later, set `spec.objectStorage.tls` and the new address, and remove `minio.useSSL` and `minio.address` from the Secret `<name>-adopt-config`.
+
+## Environment variables
+
+`plan` reads the environment variables of the Milvus container of each chart workload, and `run` copies them to the same role of the new Milvus (`podTemplate`, container `milvus`). Plain values are copied as they are. A value from a Secret or ConfigMap (`valueFrom`, or `envFrom`) is copied as a reference. `plan` lists the names, never the values, and gives an `ERROR` if a referenced Secret, ConfigMap or key does not exist in the namespace, because the new pods would not start.
+
+A variable the KubeDB operator sets itself (`MINIO_PORT`, `MILVUS_USER`, `MILVUS_PASSWORD`, `MILVUS_ETCD_USER`, `MILVUS_ETCD_PASSWORD`, and `MILVUS_CONF_<SECTION>_IP` on a role with an SR-IOV network) is left out with a `WARN`, so the chart's value does not override the operator's.
 
 ## GPU and SR-IOV settings
 
