@@ -204,12 +204,12 @@ Snapshot support comes from the CSI driver and storage backend. StorageClasses s
 
 ## Branching vs. Backup vs. Migration
 
-These workflows copy data for different purposes:
+KubeDB has three features that copy data, and they answer different questions:
 
 | Feature | Question it answers | Result | Source |
 |---|---|---|---|
 | **Branching** | "Can I get an independent copy to develop or experiment against?" | A writable database created from storage snapshots, in the same or another cluster | A KubeDB-managed database |
-| **Backup & Restore** | "If this database is lost, how can I recover it?" | A retained backup, such as data in object storage, that can be restored on demand | A database configured for backup |
+| [Backup & Restore](https://kubestash.com/) | "If this database is lost, how can I recover it?" | A retained backup, such as data in object storage, that can be restored on demand | A database configured for backup |
 | [Migration](/docs/operatormanual/migration/README.md) | "How do I move an existing database into KubeDB?" | A destination database populated for a controlled cutover | An existing external database |
 
 A branch and its source share a storage backend, even when they run in different Kubernetes clusters. CoW clones also initially share snapshot blocks. A branch therefore does not provide an independent durable copy against loss of that backend. Use a backup and recovery workflow for durability, and branches for independent working copies.
