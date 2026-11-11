@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: neo4j-grafana-demo
+  namespace: demo
+spec:
+  version: "2025.11.2"
+  replicas: 3
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

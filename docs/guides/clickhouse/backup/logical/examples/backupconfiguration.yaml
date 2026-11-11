@@ -1,0 +1,33 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-clickhouse-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: ClickHouse
+    namespace: demo
+    name: sample-clickhouse
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: frequent-backup
+      scheduler:
+        schedule: "*/5 * * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: s3-clickhouse-repo
+          backend: s3-backend
+          directory: /clickhouse
+      addon:
+        name: clickhouse-addon
+        tasks:
+          - name: logical-backup

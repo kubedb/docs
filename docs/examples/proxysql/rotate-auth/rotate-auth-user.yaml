@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ProxySQLOpsRequest
+metadata:
+  name: proxyops-rotate-auth-user
+  namespace: demo
+spec:
+  type: RotateAuth
+  proxyRef:
+    name: proxy-server
+  authentication:
+    secretRef:
+      kind: Secret
+      name: proxy-server-auth-user
+  timeout: 5m
+  apply: IfReady

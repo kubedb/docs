@@ -1,0 +1,40 @@
+apiVersion: archiver.kubedb.com/v1alpha1
+kind: Neo4jArchiver
+metadata:
+  name: neo4j-pitr-archiver
+  namespace: demo
+spec:
+  pause: false
+  databases:
+    namespaces:
+      from: Same
+    selector:
+      matchLabels:
+        archiver: neo4j-pitr
+  backupStorage:
+    ref:
+      name: neo4j-pitr-storage
+      namespace: demo
+    subDir: /neo4j-backup
+  retentionPolicy:
+    name: neo4j-pitr-retention
+    namespace: demo
+  encryptionSecret:
+    name: neo4j-pitr-encryption
+    namespace: demo
+  fullBackup:
+    driver: Neo4jAdmin
+    scheduler:
+      schedule: "0 1 * * *"
+    sessionHistoryLimit: 3
+    timeout: 1h
+  differentialBackup:
+    backupInterval: 5m
+    successfulLogHistoryLimit: 5
+    failedLogHistoryLimit: 5
+  manifestBackup:
+    scheduler:
+      schedule: "*/30 * * * *"
+    sessionHistoryLimit: 3
+    timeout: 15m
+  deletionPolicy: Delete

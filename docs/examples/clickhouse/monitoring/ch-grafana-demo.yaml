@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: ClickHouse
+metadata:
+  name: ch-grafana-demo
+  namespace: demo
+spec:
+  version: "26.2.6"
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

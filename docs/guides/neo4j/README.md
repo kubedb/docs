@@ -91,6 +91,7 @@ spec:
 
 ### Day-2 Operations
 
+- [Point-in-time Recovery](/docs/guides/neo4j/pitr/archiver.md) — archive full and differential backups, then recover a graph to a timestamp before an accidental change.
 - [TLS — How It Works](/docs/guides/neo4j/tls/overview/) — how KubeDB provisions TLS certificates via cert-manager.
 - [Configure TLS](/docs/guides/neo4j/tls/configure/) — enable TLS on a new or existing cluster.
 - [Reconfigure — How It Works](/docs/guides/neo4j/reconfigure/overview.md) — how KubeDB applies config changes internally.

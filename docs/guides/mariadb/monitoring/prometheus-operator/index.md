@@ -35,6 +35,72 @@ section_menu_id: guides
 
 > Note: YAML files used in this tutorial are stored in [/docs/guides/mariadb/monitoring/prometheus-operator/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/monitoring/prometheus-operator/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
+## Configuration
+
+> Step 1 (`kube-prometheus-stack`) is required to follow this tutorial. Step 2 (Panopticon) is **not** needed for the Prometheus Operator / ServiceMonitor scraping documented on this page — install it only if you also plan to use the KubeDB Grafana dashboards' status panels, or phase-based Alerting. If you have already completed the step(s) you need in another guide, skip ahead.
+
+### Step 1: Deploy kube-prometheus-stack
+
+`kube-prometheus-stack` installs Prometheus, Prometheus Operator, Alertmanager, and Grafana together. This is the recommended way to get the full monitoring stack on Kubernetes. This is where Grafana itself gets installed for this tutorial track — the Grafana Dashboard guide's "Access Grafana" step assumes it's already running from here; you do not install Grafana again there.
+
+Add the prometheus-community Helm repo and install:
+
+```bash
+$ helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
+$ helm repo update
+
+$ helm upgrade --install prometheus prometheus-community/kube-prometheus-stack \
+  --namespace monitoring \
+  --set grafana.image.tag=7.5.5
+```
+
+Wait for all pods to be ready:
+
+```bash
+$ kubectl get pods -n monitoring
+NAME                                                   READY   STATUS    RESTARTS   AGE
+alertmanager-prometheus-kube-prometheus-alertmanager-0 2/2     Running   0          2m
+prometheus-grafana-xxxx                                3/3     Running   0          2m
+prometheus-kube-prometheus-operator-xxxx               1/1     Running   0          2m
+prometheus-kube-prometheus-prometheus-0                2/2     Running   0          2m
+prometheus-kube-state-metrics-xxxx                     1/1     Running   0          2m
+```
+
+Find the `serviceMonitorSelector` label that Prometheus uses to pick up `ServiceMonitor` objects. You will need this label when enabling monitoring on the MariaDB instance.
+
+```bash
+$ kubectl get prometheus -n monitoring -o jsonpath='{.items[0].spec.serviceMonitorSelector}'
+{"matchLabels":{"release":"prometheus"}}
+```
+
+The label is `release: prometheus`.
+
+### Step 2: Install Panopticon (optional — only for Grafana dashboards & Alerting)
+
+Panopticon is the Appscode operator that reads `MetricsConfiguration` objects (created by `kubedb-metrics`) and exposes them to Prometheus. It is **not required** for the Prometheus Operator / ServiceMonitor scraping covered on this page — skip it, and skip enabling `kubedb-metrics` too, if you only need raw metrics in Prometheus. Install it only if you also plan to use the phase/status panels of the KubeDB Grafana dashboards, or phase-based Alerting — and install it **before** enabling `kubedb-metrics`.
+
+```bash
+$ helm repo add appscode https://charts.appscode.com/stable/
+$ helm repo update
+
+$ helm upgrade --install panopticon appscode/panopticon \
+  --version v2026.4.30 \
+  --namespace kubeops --create-namespace \
+  --set monitoring.enabled=true \
+  --set monitoring.agent=prometheus.io/operator \
+  --set monitoring.serviceMonitor.labels.release=prometheus \
+  --set-file license=/path/to/kubedb-license.txt \
+  --wait --timeout 5m0s
+```
+
+Verify panopticon is running:
+
+```bash
+$ kubectl get pods -n kubeops
+NAME                          READY   STATUS    RESTARTS   AGE
+panopticon-xxxx               1/1     Running   0          1m
+```
+
 ## Find out required labels for ServiceMonitor
 
 We need to know the labels used to select `ServiceMonitor` by a `Prometheus` crd. We are going to provide these labels in `spec.monitor.prometheus.labels` field of MariaDB crd so that KubeDB creates `ServiceMonitor` object accordingly.
@@ -308,6 +374,12 @@ To cleanup the Kubernetes resources created by this tutorial, run following comm
 ```bash
 # cleanup database
 kubectl delete mariadb -n demo coreos-prom-md
+
+# cleanup panopticon
+helm uninstall panopticon -n kubeops
+
+# if you also completed the Grafana Dashboard tutorial, clean that up first —
+# see https://kubedb.com/docs/guides/mariadb/monitoring/grafana-dashboard.md#cleaning-up
 
 # cleanup Prometheus resources
 kubectl delete -f https://raw.githubusercontent.com/appscode/third-party-tools/master/monitoring/prometheus/operator/artifacts/prometheus.yaml

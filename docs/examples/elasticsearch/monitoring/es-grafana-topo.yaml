@@ -1,0 +1,43 @@
+apiVersion: kubedb.com/v1
+kind: Elasticsearch
+metadata:
+  name: es-grafana-topo
+  namespace: grafana-es
+spec:
+  version: "xpack-9.2.3"
+  topology:
+    master:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    data:
+      replicas: 3
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+    ingest:
+      replicas: 2
+      storage:
+        storageClassName: "local-path"
+        accessModes:
+        - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
