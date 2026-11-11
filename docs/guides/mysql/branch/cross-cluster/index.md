@@ -14,7 +14,9 @@ section_menu_id: guides
 
 # Branch MySQL Across Clusters
 
-This guide creates a three-replica Group Replication MySQL 8.4.8 source on the `source` managed cluster and branches it into namespace `dev` on `target`. Both clusters access the **same network-reachable Ceph RBD backend** with copy-on-write snapshot and clone support.
+Cross-cluster branching creates an independent MySQL database on another Kubernetes cluster from a point-in-time snapshot of an existing database. This lets you prepare development, testing, or data analysis environments on a separate cluster using existing data.
+
+The branch accepts independent reads and writes without changing the source database. Source changes are not continuously replicated; you can configure scheduled refreshes to replace branch data with a fresh source snapshot.
 
 ## Before You Begin
 

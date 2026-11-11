@@ -14,7 +14,9 @@ section_menu_id: guides
 
 # Branch PostgreSQL into Another Namespace
 
-This guide creates an HA PostgreSQL 18.3 source in `demo`, then branches its data into `dev` within the same cluster. Both databases use Ceph RBD. You will seed five customer records and verify that writes to either database remain independent.
+Same-cluster branching creates an independent PostgreSQL database from a point-in-time snapshot of an existing database within the same Kubernetes cluster. You can place the branch in another namespace to prepare development, testing, or data analysis environments using existing data.
+
+The branch accepts independent reads and writes without changing the source database. Source changes are not continuously replicated; you can configure scheduled refreshes to replace branch data with a fresh source snapshot.
 
 ## Before You Begin
 

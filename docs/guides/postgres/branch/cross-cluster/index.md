@@ -14,7 +14,9 @@ section_menu_id: guides
 
 # Branch PostgreSQL Across Clusters
 
-This guide creates an HA PostgreSQL 18.3 source on the `source` managed cluster and branches it into namespace `dev` on `target`. Both clusters access the **same network-reachable Ceph RBD backend** with copy-on-write snapshot and clone support.
+Cross-cluster branching creates an independent PostgreSQL database on another Kubernetes cluster from a point-in-time snapshot of an existing database. This lets you prepare development, testing, or data analysis environments on a separate cluster using existing data.
+
+The branch accepts independent reads and writes without changing the source database. Source changes are not continuously replicated; you can configure scheduled refreshes to replace branch data with a fresh source snapshot.
 
 ## Before You Begin
 
