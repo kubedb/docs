@@ -19,8 +19,8 @@ This tutorial shows how to use KubeDB to provision a **distributed** [Milvus](ht
 ## Before You Begin
 
 - You need a Kubernetes cluster and `kubectl` configured to talk to it.
-- Install KubeDB with `--set global.featureGates.Milvus=true`.
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Install KubeDB with `--set global.featureGates.Milvus=true --set global.featureGates.Etcd=true` (the internal metadata store is a KubeDB `Etcd`).
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). That guide installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 - This quickstart intentionally uses the smallest working distributed manifest. It does **not** require Prometheus Operator or cert-manager.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/quickstart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
@@ -55,7 +55,7 @@ spec:
   version: "2.6.11"
   objectStorage:
     configSecret:
-      name: "milvus-storage-config"
+      name: "milvus-cluster-storage-config"
   topology:
     mode: Distributed
     distributed:
@@ -70,7 +70,7 @@ spec:
               storage: 1Gi
 ```
 
-This manifest also omits `spec.metaStorage`, so KubeDB creates and manages the etcd metadata cluster through the installed etcd operator.
+This manifest also omits `spec.metaStorage`, so KubeDB creates and manages the etcd metadata cluster as a KubeDB `Etcd` object named `milvus-cluster-etcd`. It uses the `milvus-cluster-storage-config` secret, so its object-storage `rootPath` is separate from the standalone quickstart's (see [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#3-create-the-storage-config-secrets)).
 
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
@@ -79,7 +79,7 @@ milvus.kubedb.com/milvus-cluster created
 
 ## Wait for the Cluster to be Ready
 
-Distributed Milvus takes longer than standalone because multiple components have to settle:
+KubeDB first brings up the internal etcd (`milvus-cluster-etcd`, three pods), then the Milvus roles. Expect a few minutes, longer on the first run while images are pulled:
 
 ```bash
 $ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
@@ -146,12 +146,13 @@ data-milvus-cluster-streamingnode-0   Bound    pvc-...   1Gi        RWO         
 
 ### Auth Secret and AppBinding
 
-As with standalone, KubeDB auto-generates the auth secret (`milvus-cluster-auth`, user `root`), the rendered configuration secret, and an `AppBinding`. Because this quickstart does not enable TLS, the AppBinding scheme is `http`:
+As with standalone, KubeDB auto-generates the auth secret (`milvus-cluster-auth`, user `root`), the rendered configuration secret, the internal etcd's auth secret (`milvus-cluster-etcd-auth`), and an `AppBinding`. Because this quickstart does not enable TLS, the AppBinding scheme is `http`:
 
 ```bash
 $ kubectl get secret -n demo | grep milvus-cluster
-milvus-cluster-auth    kubernetes.io/basic-auth   2   3m
-milvus-cluster-d7497a  Opaque                     2   3m
+milvus-cluster-auth        kubernetes.io/basic-auth   2   3m
+milvus-cluster-d7497a      Opaque                     2   3m
+milvus-cluster-etcd-auth   kubernetes.io/basic-auth   2   3m
 
 $ kubectl get appbinding milvus-cluster -n demo -o jsonpath='{.spec.clientConfig.service}'
 {"name":"milvus-cluster","path":"/","port":19530,"scheme":"http"}
@@ -208,6 +209,14 @@ $ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/insert" \
         {"id": 2, "vector": [0.5, 0.4, 0.3, 0.2]}
       ]
     }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": {
+    "insertCount": 2,
+    "insertIds": [1, 2]
+  }
+}
 
 $ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
     -H "Authorization: Bearer root:${PASSWORD}" \
@@ -220,22 +229,41 @@ $ curl -s -X POST "http://localhost:8080/v2/vectordb/entities/search" \
       "metricType": "L2",
       "params": {"nprobe": 10}
     }' | jq .
+{
+  "code": 0,
+  "cost": 0,
+  "data": [
+    {
+      "distance": 0,
+      "id": 2
+    },
+    {
+      "distance": 0.64,
+      "id": 1
+    }
+  ],
+  "topks": [2]
+}
 ```
 
 ## Use an External etcd Cluster Instead
 
 The default quickstart omits `spec.metaStorage`, so KubeDB manages etcd for you. If you want Milvus to use an external etcd cluster instead:
 
-1. Install the etcd operator.
-2. Manage your etcd cluster yourself.
-3. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-use-external-etcd).
+1. Manage your etcd cluster yourself.
+2. Add `spec.metaStorage.externallyManaged: true` and the external endpoints to your `Milvus` manifest as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#optional-path-use-external-etcd).
 
 ## Cleaning up
 
 ```bash
 $ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete milvus.kubedb.com milvus-cluster -n demo
+$ kubectl delete secret -n demo milvus-cluster-etcd-auth
 ```
+
+The internal etcd's auth secret is not removed by `WipeOut`, so the last command deletes it.
+
+KubeDB does not delete the database's data in object storage (`mlv-release/milvus-cluster/` in this guide). If you will create a new Milvus on the same `rootPath` later, for example by following another guide, delete that prefix first, as shown in [Delete a Milvus Instance's Object-Storage Data](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 If you want to remove the dependencies too, either delete the whole `demo` namespace or follow the cleanup steps in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#cleanup).
 
