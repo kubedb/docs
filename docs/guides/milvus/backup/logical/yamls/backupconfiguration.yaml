@@ -1,0 +1,37 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: milvus-logical-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Milvus
+    namespace: demo
+    name: milvus
+  backends:
+    - name: s3-backend
+      storageRef:
+        namespace: demo
+        name: s3-storage
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: daily
+      scheduler:
+        schedule: "0 1 * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: milvus-logical-repo
+          backend: s3-backend
+          directory: /milvus/logical
+      addon:
+        name: milvus-addon
+        tasks:
+          - name: logical-backup
+            params:
+              # empty backs up every collection; otherwise comma-separated <db>.<collection>
+              collections: ""
+              backupTimeout: "6h"

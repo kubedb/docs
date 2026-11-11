@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Neo4j
+metadata:
+  name: pvt-reg-neo4j
+  namespace: demo
+spec:
+  version: "2025.12.1"
+  replicas: 3
+  storageType: Durable
+  storage:
+    storageClassName: standard
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+      - name: myregistrykey
+  deletionPolicy: WipeOut

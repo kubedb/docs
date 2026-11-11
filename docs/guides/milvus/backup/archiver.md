@@ -3,9 +3,9 @@ title: Base Backup and Point-in-time Recovery
 menu:
   docs_{{ .version }}:
     identifier: backup-milvus-archiver
-    name: Overview
-    parent: backup-milvus
-    weight: 10
+    name: Base Backup & PITR
+    parent: milvus-backup
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

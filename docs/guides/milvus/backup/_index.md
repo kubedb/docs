@@ -1,11 +1,10 @@
 ---
-title: Backup, Restore and Point-in-time Recovery
+title: Backup & Restore
 menu:
   docs_{{ .version }}:
-    identifier: backup-milvus
-    name: Backup & Point-in-time Recovery
+    identifier: milvus-backup
+    name: Backup & Restore
     parent: milvus-guides
-    weight: 60
+    weight: 140
 menu_name: docs_{{ .version }}
-section_menu_id: guides
 ---

@@ -10,8 +10,7 @@ spec:
   configuration:
     configSecret:
       name: new-custom-config
-    removeCustomConfig: true
     applyConfig:
-      server.metrics.csv.interval: "40s"
+      db.checkpoint.interval.time: "25m"
   timeout: 5m
   apply: IfReady
