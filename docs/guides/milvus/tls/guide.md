@@ -347,12 +347,149 @@ $ kubectl exec -it milvus-cluster-proxy-0 -n demo -- \
 
 You should see a successful TLS handshake.
 
+## TLS to the Object Storage
+
+The TLS above secures connections to Milvus. Milvus also connects to the object storage, and if that serves a certificate signed by a private CA, Milvus must trust the CA. Give KubeDB the CA with `spec.objectStorage.tls`.
+
+Create a Secret with the CA certificate (use a ConfigMap and `caConfigMap` if the CA is published that way):
+
+```bash
+$ kubectl create secret generic -n demo s3-ca --from-file=ca.crt=./ca.crt
+```
+
+Create the object storage secret for the TLS endpoint and the Milvus object:
+
+```yaml
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-s3-tls
+  namespace: demo
+spec:
+  version: "2.6.15"
+  topology:
+    mode: Standalone
+  objectStorage:
+    configSecret:
+      name: milvus-s3
+    tls:
+      caSecret:
+        name: s3-ca
+        key: ca.crt
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut
+```
+
+The full manifest, with the `milvus-s3` secret, is in [object-storage-tls.yaml](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/object-storage-tls.yaml).
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/object-storage-tls.yaml
+```
+
+### Independent TLS for backup and restore
+
+`spec.objectStorage.tls` works even when `spec.tls` is omitted. The latter controls connections to Milvus itself; it does not enable or disable HTTPS to the object storage.
+
+Deploy the updated provisioner and webhook API together with Milvus archiver v0.2.1 or later, backup plugin v0.1.1 or later, and CSI plugin v0.2.1 or later. These versions must be published before deploying the corresponding catalog; older worker images do not contain this support. The backup workers read the operator-generated `milvus.yaml` and load the selected CA through the Kubernetes API. The storage-check Job receives a read-only CA mount. No KubeDB-issued listener certificate is needed for object-storage verification.
+
+The backup destination uses the existing KubeStash configuration, independently of the live store:
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: backup-storage-credentials
+  namespace: demo
+stringData:
+  AWS_ACCESS_KEY_ID: <backup-access-key>
+  AWS_SECRET_ACCESS_KEY: <backup-secret-key>
+  CA_CERT_DATA: |
+    <PEM CA bundle for the backup endpoint>
+---
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: milvus-backups
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: https://backup.example.com
+      bucket: milvus-backups
+      region: us-east-1
+      secretName: backup-storage-credentials
+  usagePolicy:
+    allowedNamespaces:
+      from: Same
+  deletionPolicy: Delete
+```
+
+The live endpoint and backup endpoint can use different CAs. Physical backup and PITR clients keep separate trust pools. The logical backup plugin gives its external `milvus-backup` process a bundle containing both CAs and the container's normal public roots.
+
+For restore into another namespace or object store, create the target credential and CA resources first. The target's CA is used to write restored data. Existing customer-managed resources are not overwritten from the source backup.
+
+For a physical restore, set the source repository namespace explicitly:
+
+```yaml
+spec:
+  init:
+    archiver:
+      fullDBRepository:
+        name: source-full
+        namespace: source-namespace
+      recoveryTimestamp: "2026-11-04T12:00:00Z"
+      encryptionSecret:
+        name: backup-encryption
+        namespace: source-namespace
+```
+
+For a logical `RestoreSession`, use `spec.dataSource.namespace` for the source repository and `spec.target.namespace` for the target Milvus. Configure KubeStash usage policies and access for the namespaces involved. The target's object-storage Secret and selected CA must exist in the target namespace; the source CA is not copied over them.
+
+Physical backup, PITR and CSI workers currently require object-storage access keys. IAM-only authentication is not supported by those workers.
+
+
+### Certificate renewal
+
+New backup and restore jobs load the current CA when they start. The continuous archiver checks configuration and CA changes every minute and reconnects from its last published checkpoint. A bad replacement certificate stops progress rather than disabling verification.
+
+To renew a private CA, first publish a bundle containing both the old and new CA. Restart Milvus pods through the existing restart workflow so they reload trust, then change the storage server certificate. Remove the old CA after clients have switched and restart Milvus again. The mounted file alone does not guarantee that a running Milvus process reloads it.
+
+For OpenShift service certificates, use a ConfigMap annotated with `service.beta.openshift.io/inject-cabundle: "true"` and select its `service-ca.crt` key. The OpenShift service-CA controller owns that bundle.
+
+### Verify
+
+The CA is mounted in the pod and the rendered configuration enables TLS to the object storage:
+
+```bash
+$ kubectl exec -n demo milvus-s3-tls-0 -- ls /milvus/object-storage-ca
+ca.crt
+
+$ CS=$(kubectl get petset -n demo milvus-s3-tls -o jsonpath='{.spec.template.spec.volumes[?(@.name=="milvus-config")].secret.secretName}')
+$ kubectl get secret -n demo $CS -o jsonpath='{.data.milvus\.yaml}' | base64 -d | grep -A12 '^minio:'
+minio:
+  ...
+  ssl:
+    tlsCACert: /milvus/object-storage-ca/ca.crt
+  useSSL: true
+```
+
+The Milvus pod log has no `x509` errors, and the database becomes `Ready`.
+
 ## Cleaning up
 
 ```bash
 $ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
+$ kubectl delete milvuses.kubedb.com -n demo milvus-s3-tls --ignore-not-found
+$ kubectl delete secret -n demo s3-ca milvus-s3 --ignore-not-found
 $ kubectl delete issuer -n demo milvus-issuer
 $ kubectl delete secret -n demo milvus-ca
 $ kubectl delete clusterissuer milvus-cluster-issuer
