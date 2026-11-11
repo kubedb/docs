@@ -131,6 +131,14 @@ spec:
       name: milvus-storage-config
 ```
 
+Each Milvus needs its own object storage path: the `rootPath` key of the secret, which defaults to `files`. Before the first pod of a new Milvus starts, KubeDB checks that path. If the meta etcd is empty and the path already holds objects, the Milvus does not start, because it could not write there. KubeDB then sets the `ObjectStorageChecked` condition to `False` with reason `PathInUse`:
+
+```bash
+$ kubectl get milvus.kubedb.com -n demo milvus-standalone -o jsonpath='{.status.conditions[?(@.type=="ObjectStorageChecked")].message}'
+```
+
+To continue, clean the path or set a new `rootPath` in the secret. KubeDB checks again every minute and starts the Milvus by itself. A Milvus that already holds its metadata in etcd passes this check, for example an adopted cluster that keeps its etcd. Note that deleting a Milvus with the `Halt` policy also removes the KubeDB-managed etcd it owns, so recreating it stops at this check. If you are sure the path is safe, set the annotation `kubedb.com/milvus-skip-object-storage-check: "true"` on the Milvus. If the check cannot run, for example when S3 is unreachable or `useIAM` is set, KubeDB records a warning and starts the Milvus.
+
 ### spec.metaStorage
 
 Milvus uses etcd as its metadata store.
@@ -232,6 +240,8 @@ In distributed mode, role-specific `podTemplate` blocks can also be provided und
 - `DoNotTerminate`
 
 The quickstart guides switch this to `WipeOut` before cleanup so all generated resources can be removed cleanly.
+
+No policy removes data from object storage, including `WipeOut`. To reuse the path for a new Milvus, clean it first.
 
 ### spec.halted
 
