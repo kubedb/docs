@@ -137,6 +137,23 @@ NAME     VERSION   DB_IMAGE                                       DEPRECATED   A
 
 `spec.storage` specifies the PersistentVolumeClaim configuration for Qdrant data. It contains standard PVC fields like `storageClassName`, `accessModes`, `resources`, `selector`, etc.
 
+### spec.init
+
+`spec.init` is an optional section that can be used to initialize a newly created Qdrant cluster from a backup. Specifically, `spec.init.archiver` restores the database from volume snapshots taken by KubeStash:
+
+```yaml
+spec:
+  init:
+    archiver:
+      fullDBRepository:
+        name: minio-qdrant-repo
+        namespace: demo
+      recoveryTimestamp: "2026-12-12T00:00:00Z"
+```
+
+- `recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
+- `fullDBRepository` specifies the Repository object that holds the backed up data.
+
 ### spec.healthChecker
 
 `spec.healthChecker` specifies the configuration for database health checking. It contains the following sub-fields:
