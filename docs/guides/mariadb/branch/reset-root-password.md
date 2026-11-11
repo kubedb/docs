@@ -18,14 +18,6 @@ Set `spec.resetRootPassword: true` to give a MariaDB branch its own root credent
 
 This tutorial demonstrates a same-cluster MariaDB branch in a different namespace. You will deploy and seed the source, create a Branch with password reset enabled, compare both passwords, and verify authentication through the database Services. No database from another tutorial is required.
 
-## Execution order
-
-Without this option, Courier copies the source credential into a separate target Secret. Different Secret names therefore do not necessarily mean different passwords.
-
-With `resetRootPassword: true`, Courier coordinates credential isolation before running any post-actions or reporting the Branch `Ready`.
-
-For MariaDB, Courier copies the source credential so the target can start with the cloned data. After the target database becomes ready, Courier creates a `MariaDBOpsRequest` of type `RotateAuth` in the target namespace. KubeDB Ops Manager rotates the target credential; Courier waits for successful rotation and removes the previous credential from the branch auth Secret before reporting password reset complete.
-
 ## Before You Begin
 
 - Read the [branching overview](/docs/operatormanual/branching/overview.md) to understand how branches work.

@@ -18,10 +18,6 @@ Set `spec.resetRootPassword: true` to give the branch its own administrator pass
 
 This tutorial deploys its own source and branch, compares their passwords, and verifies authentication through their Services.
 
-## Execution order
-
-Users are stored in the cloned database data, so the target first starts with a copy of the source credential. KubeDB Ops Manager processes a `ElasticsearchOpsRequest` with type `RotateAuth`. Courier waits for success before completing password reset and reporting Branch readiness.
-
 ## Before You Begin
 
 - Read the [branching overview](/docs/operatormanual/branching/overview.md).

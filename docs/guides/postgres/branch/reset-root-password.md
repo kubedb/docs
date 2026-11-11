@@ -18,14 +18,6 @@ Set `spec.resetRootPassword: true` to give a PostgreSQL branch its own root cred
 
 This tutorial demonstrates a same-cluster PostgreSQL branch in a different namespace. You will deploy and seed the source, create a Branch with password reset enabled, compare both passwords, and verify authentication through the database Services. No database from another tutorial is required.
 
-## Execution order
-
-Without this option, Courier copies the source credential into a separate target Secret. Different Secret names therefore do not necessarily mean different passwords.
-
-With `resetRootPassword: true`, Courier coordinates credential isolation before running any post-actions or reporting the Branch `Ready`.
-
-For PostgreSQL, Courier leaves the target auth Secret for KubeDB to generate during provisioning. The branching-capable PostgreSQL startup applies that credential to the cloned data. This path does not require a password-rotation OpsRequest.
-
 ## Before You Begin
 
 - Read the [branching overview](/docs/operatormanual/branching/overview.md) to understand how branches work.

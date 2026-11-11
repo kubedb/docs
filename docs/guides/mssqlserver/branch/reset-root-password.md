@@ -18,10 +18,6 @@ Set `spec.resetRootPassword: true` to give the branch a separate `sa` password. 
 
 This independent tutorial deploys a source and a same-cluster branch in another namespace, compares their passwords, and verifies which credentials each deployment accepts.
 
-## Execution order
-
-Courier first copies the source credential so the target can start with the cloned data. KubeDB Ops Manager then processes a target `MSSQLServerOpsRequest` with type `RotateAuth`. Courier waits for rotation to succeed before completing password reset, running any post-actions, and reporting the Branch `Ready`. Different Secret names alone do not establish different passwords.
-
 ## Before You Begin
 
 - Read the [branching overview](/docs/operatormanual/branching/overview.md).

@@ -18,10 +18,6 @@ Set `spec.resetRootPassword: true` to give the branch its own administrator pass
 
 This tutorial deploys its own source and branch, compares their passwords, and verifies authentication through their Services.
 
-## Execution order
-
-Redis reads its password from configuration rather than the cloned RDB/AOF data. Courier leaves the target auth Secret for KubeDB to generate and apply during provisioning. No RedisOpsRequest is required. Without this option, Courier copies the source credential into a separate target Secret.
-
 ## Before You Begin
 
 - Read the [branching overview](/docs/operatormanual/branching/overview.md).
