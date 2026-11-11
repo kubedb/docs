@@ -16,6 +16,8 @@ section_menu_id: guides
 
 This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure an Elasticsearch Combined cluster.
 
+For changes that support the cluster settings API, KubeDB can apply the new configuration without restarting Pods. See [Dynamic Configuration](/docs/guides/elasticsearch/reconfigure/dynamic-configuration.md) for a live-update example and the [overview](/docs/guides/elasticsearch/reconfigure/overview.md) for the `restart` policy. The node-settings checks below verify configuration loaded at startup; use the cluster settings API to verify live updates.
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
@@ -168,6 +170,7 @@ spec:
   databaseRef:
     name: es-combined
   configuration:
+    restart: auto
     configSecret:
       name: new-es-combined-custom-config
   timeout: 5m
@@ -336,6 +339,7 @@ spec:
   databaseRef:
     name: es-combined
   configuration:
+    restart: auto
     applyConfig:
       elasticsearch.yml: |
         indices.query.bool.max_clause_count: 8192

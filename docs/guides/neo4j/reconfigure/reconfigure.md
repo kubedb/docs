@@ -23,6 +23,8 @@ We will:
 4. Apply a `Reconfigure` OpsRequest.
 5. Verify changed values and show `applyConfig` precedence over `configSecret`.
 
+This example changes `server.jvm.additional`, so the default `restart: "auto"` policy uses the restart path. For settings that Neo4j reports as dynamic, follow [Dynamic Configuration](/docs/guides/neo4j/reconfigure/dynamic-configuration.md) to update every server without replacing Pods. See the [overview](/docs/guides/neo4j/reconfigure/overview.md) for the restart policy and setting-removal rules.
+
 ## Before You Begin
 
 - You need a Kubernetes cluster and `kubectl` configured.
@@ -204,6 +206,7 @@ spec:
   databaseRef:
     name: neo4j-test
   configuration:
+    restart: auto
     configSecret:
       name: custom-config
     applyConfig:
@@ -230,6 +233,7 @@ spec:
   databaseRef:
     name: neo4j-test
   configuration:
+    restart: auto
     configSecret:
       name: custom-config
     applyConfig:

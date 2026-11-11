@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: neo4j-test
   configuration:
+    restart: auto
     configSecret:
       name: new-custom-config
     applyConfig:
