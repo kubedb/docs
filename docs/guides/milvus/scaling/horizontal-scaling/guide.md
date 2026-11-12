@@ -25,15 +25,22 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to horizon
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Horizontal Scaling Overview](/docs/guides/milvus/scaling/horizontal-scaling/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/scaling/horizontal-scaling/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/scaling/horizontal-scaling/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy a Distributed Milvus
 
-Deploy the distributed database (`milvus-cluster`) and wait until it is `Ready` (see the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md)). By default each role runs a single replica.
+Deploy the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest (`milvus-cluster`) and wait until it is `Ready`. By default each role runs a single replica.
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+
 $ kubectl get petset milvus-cluster-proxy milvus-cluster-streamingnode -n demo -o custom-columns=NAME:.metadata.name,REPLICAS:.spec.replicas
 NAME                           REPLICAS
 milvus-cluster-proxy           1
@@ -42,7 +49,7 @@ milvus-cluster-streamingnode   1
 
 ## Apply the HorizontalScaling OpsRequest
 
-The sample changes only `proxy` and `streamingnode`. (The provided sample requests `1` for each; because the default is already `1`, this walkthrough requests `2` to demonstrate a scale-up.)
+The sample scales `proxy` and `streamingnode` from `1` to `2` replicas.
 
 `horizontal-scaling-distributed.yaml`
 
@@ -64,8 +71,10 @@ spec:
 
 Here, `spec.horizontalScaling.topology` carries the desired replica count per role. The API also accepts `mixcoord`, `querynode` and `dataNode`; this sample only scales `proxy` and `streamingnode`, but the other roles are scaled the same way.
 
+> The data node key is `dataNode` (camelCase) in `spec.horizontalScaling.topology`, unlike every other role key and unlike `spec.verticalScaling`, where it is `datanode`. `datanode` is rejected here as an unknown field.
+
 ```bash
-$ kubectl apply -f horizontal-scaling-distributed.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/horizontal-scaling/yamls/horizontal-scaling-distributed.yaml
 milvusopsrequest.ops.kubedb.com/milvus-hscale-up created
 ```
 
@@ -111,12 +120,40 @@ milvus-cluster-streamingnode-0   1/1     Running   0          119s
 milvus-cluster-streamingnode-1   1/1     Running   0          18s
 ```
 
-> Scaling **down** works the same way — set lower replica counts in `spec.horizontalScaling.topology`.
+### Scale Down
+
+Scaling **down** works the same way — set lower replica counts in `spec.horizontalScaling.topology`. `horizontal-scaling-down-distributed.yaml` scales both roles back to `1`:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MilvusOpsRequest
+metadata:
+  name: milvus-hscale-down
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: milvus-cluster
+  horizontalScaling:
+    topology:
+      proxy: 1
+      streamingnode: 1
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/scaling/horizontal-scaling/yamls/horizontal-scaling-down-distributed.yaml
+milvusopsrequest.ops.kubedb.com/milvus-hscale-down created
+
+$ kubectl get milvusopsrequest milvus-hscale-down -n demo
+```
+
+When a `streamingnode` is removed, its PVC is deleted too. Right after a scale-down reports `Successful`, the `Milvus` object can show `Critical` for about a minute while Milvus rebalances, then returns to `Ready`.
 
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvusopsrequest -n demo milvus-hscale-up
+$ kubectl delete milvusopsrequest -n demo milvus-hscale-up milvus-hscale-down
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
 $ kubectl delete milvus.kubedb.com -n demo milvus-cluster
 $ kubectl delete ns demo
 ```
