@@ -1,6 +1,6 @@
 ---
 title: Operator Manual
-description: KubeDB Operator Manual — Recommendations and Maintenance Windows
+description: KubeDB Operator Manual — Recommendations, Migration, and Branching
 menu:
   docs_{{ .version }}:
     identifier: operatormanual
