@@ -22,13 +22,22 @@ KubeDB supports restarting a Milvus database via a `MilvusOpsRequest`. Restartin
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/restart/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/restart/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Restart Standalone Milvus
 
-Deploy a standalone Milvus and wait until it is `Ready` (see the [quickstart](/docs/guides/milvus/quickstart/standalone.md)).
+Deploy the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest and wait until it is `Ready`:
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+```
 
 ### Apply the Restart OpsRequest
 
@@ -108,6 +117,17 @@ milvus-standalone-0   1/1     Running   0          14s
 
 For a distributed Milvus, the same `Restart` OpsRequest is used, pointing at the distributed database (`milvus-cluster`). The operator restarts the pods of every distributed role (`mixcoord`, `datanode`, `querynode`, `streamingnode`, `proxy`) one workload at a time.
 
+Deploy the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest and wait until it is `Ready`. The distributed OpsRequest reuses the name `restart`, so delete the standalone one first:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+
+$ kubectl delete milvusopsrequest -n demo restart
+```
+
 `restart-distributed.yaml`
 
 ```yaml
@@ -169,7 +189,9 @@ milvus-cluster-streamingnode-0   1/1     Running   0          25s
 
 ```bash
 $ kubectl delete milvusopsrequest -n demo restart
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 
