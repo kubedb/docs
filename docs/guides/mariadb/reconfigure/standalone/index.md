@@ -180,6 +180,7 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
+    restart: auto
     configSecret:
       name: new-md-configuration
 ```
@@ -189,6 +190,10 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `mdops-reconfigure-config` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.restart` controls restart behavior
+  - With `auto` (the default) the operator decides whether a restart is needed based on the provided configuration.
+  - Use `"false"` for changes that can be applied dynamically without a restart.
+  - Use `"true"` for changes that require a restart to take effect.
 
 Let's create the `MariaDBOpsRequest` CR we have shown above,
 
@@ -297,7 +302,7 @@ Bye
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
 
-### Reconfigure Existing Config Secret
+### Reconfigure Using Apply Config
 
 Now, we will create a new `MariaDBOpsRequest` to reconfigure our existing secret `new-md-configuration` by modifying our `new-md-config.cnf` file using `applyConfig`. The `MariaDBOpsRequest` yaml is given below,
 
@@ -312,6 +317,7 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
+    restart: auto
     applyConfig:
       new-md-config.cnf: |
         [mysqld]
@@ -502,8 +508,11 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
+    restart: auto
     removeCustomConfig: true
 ```
+
+> **Note:** Removing custom configuration requires a restart; use `restart: auto` or `restart: "true"`, as `restart: "false"` causes the OpsRequest to fail.
 
 Here,
 
