@@ -8,7 +8,7 @@ spec:
   mode: Distributed
   replicas: 3
   init:
-    archiver:
+    restore:
       recoveryTimestamp: "2026-12-12T00:00:00Z"
       fullDBRepository:
         name: minio-qdrant-repo

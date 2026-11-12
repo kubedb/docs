@@ -139,12 +139,12 @@ NAME     VERSION   DB_IMAGE                                       DEPRECATED   A
 
 ### spec.init
 
-`spec.init` is an optional section that can be used to initialize a newly created Qdrant cluster from a backup. Specifically, `spec.init.archiver` restores the database from volume snapshots taken by KubeStash:
+`spec.init` is an optional section that can be used to initialize a newly created Qdrant cluster from a backup. Specifically, `spec.init.restore` restores the database from volume snapshots taken by KubeStash:
 
 ```yaml
 spec:
   init:
-    archiver:
+    restore:
       fullDBRepository:
         name: minio-qdrant-repo
         namespace: demo

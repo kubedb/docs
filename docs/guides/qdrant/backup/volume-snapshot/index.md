@@ -358,7 +358,7 @@ We can see from the above output that the backup session has succeeded.
 
 ## Restore
 
-In this section, we are going to restore the database from the volume snapshot backup we have taken in the previous section. First, delete the original database, then deploy a new one initialized from the backup using the `init.archiver` field.
+In this section, we are going to restore the database from the volume snapshot backup we have taken in the previous section. First, delete the original database, then deploy a new one initialized from the backup using the `init.restore` field.
 
 ```bash
 $ kubectl delete qdrant -n demo qdrant-sample
@@ -380,7 +380,7 @@ spec:
   mode: Distributed
   replicas: 3
   init:
-    archiver:
+    restore:
       recoveryTimestamp: "2026-12-12T00:00:00Z"
       fullDBRepository:
         name: minio-qdrant-repo
@@ -396,8 +396,8 @@ spec:
 ```
 
 Here,
-- `.spec.init.archiver.recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
-- `.spec.init.archiver.fullDBRepository` specifies the Repository object that holds the backed up data.
+- `.spec.init.restore.recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
+- `.spec.init.restore.fullDBRepository` specifies the Repository object that holds the backed up data.
 
 Let's create the above database,
 
