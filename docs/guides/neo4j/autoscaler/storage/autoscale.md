@@ -55,7 +55,7 @@ metadata:
   name: neo4j-autoscale
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   storageType: Durable
   storage:
@@ -89,7 +89,7 @@ neo4j.kubedb.com/neo4j-autoscale created
 
 $ kubectl get neo4j -n demo neo4j-autoscale -w
 NAME              VERSION     STATUS   AGE
-neo4j-autoscale   2025.12.1   Ready    3m
+neo4j-autoscale   2026.08.1   Ready    3m
 ```
 
 Confirm the initial PVC capacities:

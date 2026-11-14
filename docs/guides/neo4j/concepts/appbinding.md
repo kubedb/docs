@@ -51,7 +51,7 @@ spec:
   secret:
     name: neo4j-test-auth
   type: kubedb.com/Neo4j
-  version: 2025.12.1-enterprise
+  version: 2026.08.1-enterprise
 ```
 
 Here, we describe the important sections of this AppBinding.

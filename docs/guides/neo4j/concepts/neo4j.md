@@ -31,7 +31,7 @@ metadata:
   name: neo4j-test
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   storageType: Durable
   configuration:
@@ -76,9 +76,11 @@ To see available versions in your cluster:
 ```bash
 $ kubectl get neo4jversions
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
-2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
-2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
+2026.05.0   2026.05.0-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                14d
+2026.06.0   2026.06.0-enterprise   docker.io/library/neo4j:2026.06.0-enterprise                14d
+2026.07.1   2026.07.1-enterprise   docker.io/library/neo4j:2026.07.1-enterprise                14d
+2026.08.1   2026.08.1-enterprise   docker.io/library/neo4j:2026.08.1-enterprise                14d
+5.26.28     5.26.28-enterprise     docker.io/library/neo4j:5.26.28-enterprise                  14d
 ```
 
 ### spec.replicas

@@ -45,7 +45,7 @@ metadata:
   name: neo4j-autoscale
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   storageType: Durable
   storage:
@@ -83,7 +83,7 @@ Wait for the cluster to become ready:
 ```bash
 $ kubectl get neo4j -n demo neo4j-autoscale -w
 NAME              VERSION     STATUS   AGE
-neo4j-autoscale   2025.12.1   Ready    3m
+neo4j-autoscale   2026.08.1   Ready    3m
 ```
 
 The Neo4j container initially requests and limits `500m` CPU and `2Gi` memory. Neo4j needs enough memory for the JVM, page cache, and native allocations; limits that are too small can cause the process to be OOM-killed.

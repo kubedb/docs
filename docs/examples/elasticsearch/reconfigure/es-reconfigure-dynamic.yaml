@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: ElasticsearchOpsRequest
+metadata:
+  name: elasticsearch-reconfigure-dynamic
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: es-combined
+  configuration:
+    restart: "false"
+    applyConfig:
+      elasticsearch.yml: |
+        cluster.max_shards_per_node: 2000
+  timeout: 5m
+  apply: IfReady

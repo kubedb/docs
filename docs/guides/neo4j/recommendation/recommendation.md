@@ -64,7 +64,7 @@ metadata:
   name: neo4j-recommendation
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   authSecret:
     kind: Secret
     name: neo4j-auth
@@ -98,7 +98,7 @@ metadata:
   name: neo4j-recommendation
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   tls:
     issuerRef:
       apiGroup: cert-manager.io
@@ -138,7 +138,7 @@ metadata:
   name: neo4j-recommendation
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
 ```
 
 In this configuration:
@@ -155,7 +155,7 @@ KubeDB monitors the configured lifecycle and generates a VersionUpdate Recommend
 
 * If changes are introduced in the existing version image (e.g., security fixes or image updates without a version bump), a recommendation is generated
 
-For example: Recommending version update from `2025.12.1` to `2025.12.2`
+For example: Recommending version update from `2026.07.1` to `2026.08.1`
 
 Once approved, KubeDB creates an opsrequest to perform the version upgrade automatically, ensuring:
 
@@ -174,7 +174,7 @@ metadata:
   name: neo4j-recommendation
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
 ```
 
 In this configuration:

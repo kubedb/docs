@@ -89,7 +89,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "2025.12.1"
+  version: "2026.08.1"
   storage:
     storageClassName: local-path
     accessModes:
@@ -114,7 +114,7 @@ When applied:
 ```bash
 $ kubectl get neo4j -n demo neo4j-test
 NAME         VERSION     STATUS   AGE
-neo4j-test   2025.12.1   Ready    3m
+neo4j-test   2026.08.1   Ready    3m
 
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 NAME           READY   STATUS    RESTARTS   AGE

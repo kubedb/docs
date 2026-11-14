@@ -16,6 +16,8 @@ section_menu_id: guides
 
 This guide will show you how to use `KubeDB` Ops-manager operator to reconfigure an Elasticsearch Topology cluster.
 
+For changes that support the cluster settings API, KubeDB can apply the new configuration without restarting Pods. See [Dynamic Configuration](/docs/guides/elasticsearch/reconfigure/dynamic-configuration.md) for a live-update example and the [overview](/docs/guides/elasticsearch/reconfigure/overview.md) for the `restart` policy. Changes to role-specific files in this guide require a restart.
+
 ## Before You Begin
 
 - At first, you need to have a Kubernetes cluster, and the `kubectl` command-line tool must be configured to communicate with your cluster.
@@ -240,6 +242,7 @@ spec:
   databaseRef:
     name: es-topology
   configuration:
+    restart: auto
     configSecret:
       name: new-es-topology-custom-config
   timeout: 5m
@@ -451,6 +454,7 @@ spec:
   databaseRef:
     name: es-topology
   configuration:
+    restart: auto
     applyConfig:
       master-elasticsearch.yml: |
         cluster.max_shards_per_node: 4000

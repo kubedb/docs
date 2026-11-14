@@ -49,7 +49,7 @@ spec:
   databaseRef:
     name: neo4j-test
   updateVersion:
-    targetVersion: 2025.12.1
+    targetVersion: 2026.08.1
 ```
 
 **Sample `Neo4jOpsRequest` for vertical scaling:**
@@ -311,6 +311,7 @@ spec:
 - `spec.horizontalScaling.server` sets the desired number of Neo4j servers. `spec.horizontalScaling.reallocate.strategy` controls post-scaling reallocation, and `spec.horizontalScaling.reallocate.batchSize` is used with the `incremental` strategy.
 - `spec.authentication.secretRef` optionally points to a user-managed Secret for `RotateAuth`. If it is omitted, KubeDB can rotate credentials using an operator-managed Secret.
 - `spec.configuration.configSecret.name` points to a Secret containing new custom configuration, `spec.configuration.removeCustomConfig` removes the existing custom config, and `spec.configuration.applyConfig` applies inline configuration changes.
+- `spec.configuration.restart` is a string-valued policy for `Reconfigure`: `"auto"` (default) applies all changes live when supported and restarts Pods otherwise; `"true"` forces a restart; `"false"` fails the request if any change requires a restart. Quote `"true"` and `"false"` in YAML. A setting can change live only when `SHOW SETTINGS` reports `isDynamic: true`. KubeDB applies it on every server and persists the desired configuration for future Pods. Removing a known setting, changing JVM arguments, or changing other configuration files requires a restart. See [dynamic reconfiguration](/docs/guides/neo4j/reconfigure/dynamic-configuration.md).
 - `spec.tls.rotateCertificates`, `spec.tls.remove`, and `spec.tls.issuerRef` control TLS certificate rotation, removal, and issuer-based TLS configuration. Protocol-specific settings such as `spec.tls.bolt.mode` can also be updated there.
 - `spec.timeout` sets the timeout for each step of the operation.
 - `spec.apply` controls when KubeDB should execute the OpsRequest:
@@ -351,6 +352,8 @@ spec:
 - `message`: human-readable details for the transition.
 - `lastTransitionTime`: timestamp for the latest state transition.
 - `observedGeneration`: generation observed for that condition update.
+
+For `Reconfigure`, the `ReconfigureMode` condition records `Live` or `Restart` in its `reason` and explains the decision in its `message`. `ValidateLiveConfig` tracks mode selection and initial validation; `ApplyLiveConfig` tracks application and verification on every server. See the [reconfiguration overview](/docs/guides/neo4j/reconfigure/overview.md) for details.
 
 Example `status.conditions` from a completed `VerticalScaling` request:
 
