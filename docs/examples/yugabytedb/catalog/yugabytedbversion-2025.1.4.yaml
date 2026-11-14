@@ -1,0 +1,30 @@
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: YugabyteDBVersion
+metadata:
+  name: 2025.1.4
+spec:
+  version: 2025.1.4
+  build: 2025.1.4.0-b103
+  db:
+    image: docker.io/yugabytedb/yugabyte:2025.1.4.0-b103
+  securityContext:
+    runAsUser: 10001
+  ysqlMajorVersion: 15
+  memory:
+    masterLimitPercent: 85
+    tserverLimitPercent: 70
+  defaultFlags:
+    master:
+      use_memory_defaults_optimized_for_ysql: "true"
+      graceful_shutdown: "true"
+      enforce_tablet_replica_limits: "true"
+      split_respects_tablet_replica_limits: "true"
+    tserver:
+      use_memory_defaults_optimized_for_ysql: "true"
+      graceful_shutdown: "true"
+  features:
+    clientOnlyCertReload: false
+  updateConstraints:
+    allowlist:
+    - '>= 2025.1.0, < 2025.1.4'
+  deprecated: false

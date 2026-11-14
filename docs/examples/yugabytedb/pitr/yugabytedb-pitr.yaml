@@ -1,0 +1,14 @@
+apiVersion: kubedb.com/v1alpha2
+kind: YugabyteDB
+metadata:
+  name: yb-pitr
+  namespace: demo
+spec:
+  version: 2025.2.8
+  # One snapshot schedule per database.
+  pitr:
+    - database: yugabyte
+      kind: YSQL
+      intervalMinutes: 60
+      retentionMinutes: 1440
+  deletionPolicy: WipeOut

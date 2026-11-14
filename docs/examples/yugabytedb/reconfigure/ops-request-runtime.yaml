@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-reconf-runtime
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef: {name: yb-demo}
+  configuration:
+    applyConfig:
+      ysql_pg.conf: |
+        work_mem = 8MB
+    restart: auto

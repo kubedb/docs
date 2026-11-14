@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: YugabyteDB
+metadata:
+  name: yb-cm
+  namespace: demo
+spec:
+  version: 2025.2.8
+  ysql:
+    enabled: true
+    connectionManager:
+      enabled: true
+      maxClientConnections: 10000
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: yb-ca-issuer
+    webserver: true
+  deletionPolicy: WipeOut

@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-vertical-in-place
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: yb-demo
+  verticalScaling:
+    # Only the CPU can change in place. The memory must equal the current value.
+    mode: InPlace
+    tserver:
+      resources:
+        requests:
+          cpu: "2"
+          memory: 4Gi
+        limits:
+          cpu: "4"
+          memory: 4Gi

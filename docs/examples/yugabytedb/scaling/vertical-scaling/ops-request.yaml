@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef: {name: yb-demo}
+  verticalScaling:
+    master:
+      resources:
+        requests: {cpu: 500m, memory: 1280Mi}
+        limits: {memory: 1280Mi}
+    tserver:
+      resources:
+        requests: {cpu: "1", memory: 2560Mi}
+        limits: {memory: 2560Mi}
+  rolling: {masterWait: 20s, tserverWait: 20s}

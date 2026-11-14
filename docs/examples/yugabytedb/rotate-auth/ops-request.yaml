@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-rotate-auth
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef: {name: yb-demo}
+  authentication:
+    secretRef:
+      kind: Secret
+      name: yb-new-auth

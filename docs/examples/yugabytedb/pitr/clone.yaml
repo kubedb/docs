@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-clone
+  namespace: demo
+spec:
+  type: Clone
+  databaseRef:
+    name: yb-demo
+  clone:
+    sourceDatabase: yugabyte
+    targetDatabase: yugabyte_clone

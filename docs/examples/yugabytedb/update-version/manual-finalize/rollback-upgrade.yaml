@@ -1,0 +1,10 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-rollback-upgrade
+  namespace: demo
+spec:
+  type: RollbackUpgrade
+  databaseRef:
+    name: yb-demo
+  rollbackUpgrade: {}

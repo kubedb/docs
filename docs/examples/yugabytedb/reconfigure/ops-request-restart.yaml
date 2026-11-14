@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-reconf-restart
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef: {name: yb-demo}
+  configuration:
+    applyConfig:
+      tserver.flags: |
+        --ysql_max_connections=300
+    restart: auto
+  rolling: {tserverWait: 20s}
