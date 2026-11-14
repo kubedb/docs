@@ -141,7 +141,7 @@ Once we see `[Note] /usr/sbin/mysqld: ready for connections.` in the log, the da
 
 Now, we will check if the database has started with the custom configuration we have provided.
 
-First, deploy [phpMyAdmin](https://hub.docker.com/r/phpmyadmin/phpmyadmin/) to connect with the MySQL database we have just created.
+First, deploy [phpMyAdmin](https://hub.docker.com/_/phpmyadmin) to connect with the MySQL database we have just created.
 
 ```bash
 $ kubectl create -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/configuration/podtemplating/yamls/phpmyadmin.yaml
