@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: archival-s3
+  namespace: demo
+type: Opaque
+stringData:
+  AWS_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: <access key id>
+  AWS_SECRET_ACCESS_KEY: <secret access key>
+  # Optional, for an S3-compatible store such as MinIO:
+  # AWS_ENDPOINT_URL: http://minio.minio.svc:9000
+  # AWS_S3_FORCE_PATH_STYLE: "true"
+---
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-archival
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  archival:
+    history:
+      provider: s3
+      uri: s3://my-archive/history
+      configSecret:
+        name: archival-s3
+    visibility:
+      provider: s3
+      uri: s3://my-archive/visibility
+      configSecret:
+        name: archival-s3
+  deletionPolicy: WipeOut

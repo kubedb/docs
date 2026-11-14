@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-reconfigure-dynamic
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: temporal-config
+  configuration:
+    applyConfig:
+      dynamic_config.yaml: |
+        history.persistenceMaxQPS:
+        - value: 5000

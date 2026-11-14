@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-hscale
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: temporal
+  horizontalScaling:
+    frontend: 3
+    history: 3
+    matching: 3

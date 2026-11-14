@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-rotate-tls
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef:
+    name: temporal-tls
+  tls:
+    rotateCertificates: true

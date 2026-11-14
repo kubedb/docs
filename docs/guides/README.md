@@ -20,6 +20,7 @@ Guides to show you how to perform tasks with KubeDB:
 - [ClickHouse](/docs/guides/clickhouse/README.md). Shows how to manage ClickHouse using KubeDB.
 - [DocumentDB](/docs/guides/documentdb/README.md). Shows how to manage DocumentDB using KubeDB.
 - [Druid](/docs/guides/druid/README.md). Shows how to manage Druid using KubeDB.
+- [DurableWorkflow](/docs/guides/durableworkflow/README.md). Shows how to manage Temporal & Cadence using KubeDB.
 - [Elasticsearch](/docs/guides/elasticsearch/README.md). Shows how to manage Elasticsearch & OpenSearch using KubeDB.
 - [Etcd](/docs/guides/etcd/README.md). Shows how to manage etcd using KubeDB.
 - [Hazelcast](/docs/guides/hazelcast/README.md). Shows how to manage Hazelcast using KubeDB.

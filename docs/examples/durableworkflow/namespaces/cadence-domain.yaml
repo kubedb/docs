@@ -1,0 +1,12 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: orders
+  namespace: demo
+spec:
+  databaseRef:
+    name: cadence
+  description: Order processing
+  ownerEmail: orders@example.com
+  retention: 49h
+  deletionPolicy: Delete

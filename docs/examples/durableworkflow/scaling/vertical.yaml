@@ -1,0 +1,24 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: temporal
+  verticalScaling:
+    history:
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          memory: 2Gi
+    frontend:
+      resources:
+        requests:
+          cpu: 500m
+          memory: 512Mi
+        limits:
+          memory: 1Gi

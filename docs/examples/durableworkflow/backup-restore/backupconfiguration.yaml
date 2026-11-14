@@ -1,0 +1,39 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: dw-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: DurableWorkflow
+    name: dw
+    namespace: demo
+  backends:
+  - name: s3
+    storageRef:
+      name: s3-storage
+      namespace: demo
+    retentionPolicy:
+      name: keep-last-5
+      namespace: demo
+  sessions:
+  - name: daily
+    scheduler:
+      schedule: "0 2 * * *"
+      jobTemplate:
+        backoffLimit: 1
+    repositories:
+    - name: dw-repo
+      backend: s3
+      directory: /dw
+      encryptionSecret:
+        name: encrypt-secret
+        namespace: demo
+    addon:
+      name: durableworkflow-addon
+      tasks:
+      - name: coordinated-backup
+    retryConfig:
+      maxRetry: 1
+      delay: 30s

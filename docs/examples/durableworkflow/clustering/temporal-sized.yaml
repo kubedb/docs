@@ -1,0 +1,44 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-sized
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  numHistoryShards: 512
+  topology:
+    frontend:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+          - name: durableworkflow
+            resources:
+              requests:
+                cpu: 500m
+                memory: 512Mi
+              limits:
+                memory: 1Gi
+    history:
+      replicas: 3
+      podTemplate:
+        spec:
+          containers:
+          - name: durableworkflow
+            resources:
+              requests:
+                cpu: "1"
+                memory: 2Gi
+              limits:
+                memory: 2Gi
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+    internalFrontend:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  deletionPolicy: WipeOut

@@ -1,0 +1,10 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: default
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal
+  description: Default namespace
+  retention: 72h

@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-update-temporal
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: temporal
+  updateVersion:
+    targetVersion: temporal-1.32.2
