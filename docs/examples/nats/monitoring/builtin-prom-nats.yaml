@@ -1,0 +1,11 @@
+apiVersion: kubedb.com/v1alpha2
+kind: NATS
+metadata:
+  name: nats-builtin-prom
+  namespace: demo
+spec:
+  version: "2.15.1"
+  replicas: 3
+  monitor:
+    agent: prometheus.io/builtin
+  deletionPolicy: WipeOut

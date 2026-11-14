@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-volume-expansion
+  namespace: demo
+spec:
+  type: VolumeExpansion
+  databaseRef:
+    name: nats-cluster
+  volumeExpansion:
+    mode: Online
+    nats: 20Gi
+  timeout: 30m
+  apply: IfReady

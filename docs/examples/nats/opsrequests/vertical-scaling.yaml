@@ -1,0 +1,20 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-vscale
+  namespace: demo
+spec:
+  type: VerticalScaling
+  databaseRef:
+    name: nats-cluster
+  verticalScaling:
+    nats:
+      resources:
+        requests:
+          cpu: "1"
+          memory: 2Gi
+        limits:
+          cpu: "2"
+          memory: 2Gi
+  timeout: 30m
+  apply: IfReady

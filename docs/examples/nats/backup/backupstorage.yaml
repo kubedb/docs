@@ -1,0 +1,17 @@
+apiVersion: storage.kubestash.com/v1alpha1
+kind: BackupStorage
+metadata:
+  name: s3-storage
+  namespace: demo
+spec:
+  storage:
+    provider: s3
+    s3:
+      endpoint: http://minio.storage.svc:9000
+      bucket: nats-backup
+      region: us-east-1
+      secretName: s3-secret
+  usagePolicy:
+    allowedNamespaces:
+      from: All
+  deletionPolicy: WipeOut

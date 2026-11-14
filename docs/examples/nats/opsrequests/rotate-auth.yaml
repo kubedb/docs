@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-rotate-auth
+  namespace: demo
+spec:
+  type: RotateAuth
+  databaseRef:
+    name: nats-cluster
+  timeout: 10m
+  apply: IfReady

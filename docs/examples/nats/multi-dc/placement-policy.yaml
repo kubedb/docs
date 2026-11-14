@@ -1,0 +1,19 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  name: nats-3dc
+spec:
+  clusterSpreadConstraint:
+    slice:
+      projectNamespace: kubeslice-demo
+      sliceName: demo-slice
+    distributionRules:
+      - clusterName: dc-a
+        replicaIndices: [0, 1, 2]
+        role: Member
+      - clusterName: dc-b
+        replicaIndices: [3, 4, 5]
+        role: Member
+      - clusterName: dc-c
+        replicaIndices: []
+        role: Arbiter
