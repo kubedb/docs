@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: mariadb-dcdr
+  namespace: demo
+  annotations:
+    # Interim DC-DR trigger. This is transitioning to the PlacementPolicy
+    # clusterSpreadConstraint.failoverPolicy as the single source of truth.
+    dr.kubedb.com/enabled: "true"
+spec:
+  distributed: true
+  deletionPolicy: WipeOut
+  # spec.replicas is partitioned across the Member DCs by the PlacementPolicy
+  # distributionRules: 3 nodes in dc-a and 3 in dc-b. The Arbiter DC carries no
+  # MariaDB data.
+  replicas: 6
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 500Mi
+  storageType: Durable
+  version: 12.1.2
+  podTemplate:
+    spec:
+      podPlacementPolicy:
+        name: distributed-mariadb-dcdr
