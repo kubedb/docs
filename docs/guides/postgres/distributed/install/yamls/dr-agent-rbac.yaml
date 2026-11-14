@@ -1,0 +1,39 @@
+# The hub credential the dr-controlplane agents use: Leases in dc-failover only.
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: dr-controlplane-agent
+  namespace: dc-failover
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: dr-controlplane-agent
+  namespace: dc-failover
+rules:
+- apiGroups: ["coordination.k8s.io"]
+  resources: ["leases"]
+  verbs: ["get", "list", "watch", "create", "update", "patch"]
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: dr-controlplane-agent
+  namespace: dc-failover
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: dr-controlplane-agent
+subjects:
+- kind: ServiceAccount
+  name: dr-controlplane-agent
+  namespace: dc-failover
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: dr-controlplane-agent-token
+  namespace: dc-failover
+  annotations:
+    kubernetes.io/service-account.name: dr-controlplane-agent
+type: kubernetes.io/service-account-token

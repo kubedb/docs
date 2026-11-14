@@ -1,0 +1,79 @@
+# In-cluster TCP proxy to the hub API servers. Apply it on the hub and on every spoke.
+# Replace the two "server" lines with your hub API servers.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hub-api-proxy
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: haproxy
+  namespace: hub-api-proxy
+data:
+  haproxy.cfg: |
+    global
+        log stdout format raw local0
+        maxconn 4000
+    defaults
+        mode tcp
+        log global
+        option tcplog
+        timeout connect 5s
+        timeout client 1h
+        timeout server 1h
+    frontend hub-api
+        bind :6443
+        default_backend hub-apiservers
+    backend hub-apiservers
+        option httpchk
+        http-check connect ssl
+        http-check send meth GET uri /healthz
+        http-check expect status 200
+        balance roundrobin
+        server hub-a 10.10.1.11:6443 check verify none inter 3s fall 3 rise 2
+        server hub-b 10.10.2.11:6443 check verify none inter 3s fall 3 rise 2
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: haproxy
+  namespace: hub-api-proxy
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: hub-api-proxy
+  template:
+    metadata:
+      labels:
+        app: hub-api-proxy
+    spec:
+      containers:
+      - name: haproxy
+        image: haproxy:2.8
+        ports:
+        - containerPort: 6443
+        readinessProbe:
+          tcpSocket:
+            port: 6443
+          periodSeconds: 5
+        volumeMounts:
+        - name: cfg
+          mountPath: /usr/local/etc/haproxy
+      volumes:
+      - name: cfg
+        configMap:
+          name: haproxy
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hub-api
+  namespace: hub-api-proxy
+spec:
+  selector:
+    app: hub-api-proxy
+  ports:
+  - port: 6443
+    targetPort: 6443

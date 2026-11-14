@@ -1,0 +1,23 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  name: pg-docs
+spec:
+  clusterSpreadConstraint:
+    distributionRules:
+    - clusterName: spoke-1
+      replicaIndices: [0, 1]
+      role: Member
+    - clusterName: spoke-2
+      replicaIndices: [2, 3]
+      role: Member
+    - clusterName: hub
+      replicaIndices: []
+      role: Arbiter
+    failoverPolicy:
+      mode: TwoDC
+      failoverGroupRef:
+        name: pg-docs
+    slice:
+      projectNamespace: kubeslice-demo-distributed-postgres
+      sliceName: demo-slice
