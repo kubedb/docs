@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: bank-pg-tune-audit
+  namespace: bank
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: bank-pg
+  configuration:
+    configSecret:
+      name: bank-pg-audit-config
