@@ -1,0 +1,193 @@
+<svg version="1.1" viewBox="0 0 1512 1120" xmlns="http://www.w3.org/2000/svg" font-family="Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="title description">
+  <title id="title">Cross-cluster database branching through an OCM hub</title>
+  <desc id="description">The source Courier agent snapshots its database and creates BranchWork on the hub. The Courier addon manager creates ManifestWork, and OCM's work agent applies both a Branch and a target database custom resource. The target Courier agent reconciles the Branch to import snapshots and clone PVCs. Separately, kubedb-provisioner reconciles the database custom resource, waits for the cloned PVCs and required Secrets, and starts database workloads. Courier completes requested password reset and post-actions before Branch readiness. Status returns through the hub. Both managed clusters access the same network-reachable Ceph storage backend directly.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#5b6b7c"/>
+    </marker>
+    <marker id="controller-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#8e7cc3"/>
+    </marker>
+    <marker id="storage-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="11" markerHeight="11" markerUnits="userSpaceOnUse" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#e69138"/>
+    </marker>
+  </defs>
+
+  <rect width="1512" height="1120" fill="#ffffff"/>
+
+  <!-- Cluster boundaries use the same visual treatment as the local diagram. -->
+  <rect x="24" y="100" width="360" height="840" rx="10" fill="#f6f8fc" stroke="#b7c6e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="204" y="132" text-anchor="middle" font-size="19" font-weight="bold" fill="#3c4858">Source Cluster</text>
+  <text x="204" y="153" text-anchor="middle" font-size="14" fill="#5f6368">ManagedCluster: source</text>
+
+  <rect x="480" y="100" width="360" height="840" rx="10" fill="#f6f8fc" stroke="#b7c6e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="660" y="132" text-anchor="middle" font-size="19" font-weight="bold" fill="#3c4858">Hub Cluster</text>
+  <text x="660" y="153" text-anchor="middle" font-size="14" fill="#5f6368">Open Cluster Management (OCM)</text>
+
+  <rect x="936" y="100" width="552" height="840" rx="10" fill="#f6f8fc" stroke="#b7c6e8" stroke-width="1.5" stroke-dasharray="6 4"/>
+  <text x="1212" y="132" text-anchor="middle" font-size="19" font-weight="bold" fill="#3c4858">Target Cluster</text>
+  <text x="1212" y="153" text-anchor="middle" font-size="14" fill="#5f6368">ManagedCluster: target</text>
+
+  <!-- Status returns through the hub, separately from resource delivery. -->
+  <path d="M 1440 285 V 58 H 800 V 285" fill="none" stroke="#5b6b7c" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <text x="1120" y="42" text-anchor="middle" font-size="15" fill="#5f6368">Target status via ManifestWork feedback</text>
+  <circle cx="1120" cy="80" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="1120" y="85" text-anchor="middle" font-size="13" fill="#5b6b7c">8</text>
+  <path d="M 528 285 V 58 H 348 V 170" fill="none" stroke="#5b6b7c" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <circle cx="438" cy="80" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="438" y="85" text-anchor="middle" font-size="13" fill="#5b6b7c">9</text>
+  <text x="438" y="20" text-anchor="middle" font-size="15" fill="#5f6368">Source agent mirrors</text>
+  <text x="438" y="42" text-anchor="middle" font-size="15" fill="#5f6368">BranchWork status</text>
+
+  <!-- Source: the user-facing Branch, agent, and live data. -->
+  <rect x="48" y="170" width="312" height="62" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="204" y="196" text-anchor="middle" font-size="17" fill="#1a1a1a">User creates Branch</text>
+  <text x="204" y="218" text-anchor="middle" font-size="14" fill="#5f6368">spec.target.clusterName: target</text>
+
+  <path d="M 204 232 V 285" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="226" cy="257" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="226" y="262" text-anchor="middle" font-size="13" fill="#5b6b7c">1</text>
+
+  <rect x="48" y="285" width="312" height="70" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="204" y="314" text-anchor="middle" font-size="17" fill="#1a1a1a">Courier agent</text>
+  <text x="204" y="337" text-anchor="middle" font-size="14" fill="#5f6368">Initiator</text>
+
+  <path d="M 204 355 V 415" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+  <text x="218" y="388" font-size="13" fill="#7a63b8">resolve source</text>
+
+  <rect x="48" y="415" width="312" height="62" rx="6" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="204" y="441" text-anchor="middle" font-size="17" fill="#1a1a1a">Source database</text>
+  <text x="204" y="463" text-anchor="middle" font-size="14" fill="#5f6368">keeps serving traffic</text>
+
+  <path d="M 204 477 V 545" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="218" y="511" font-size="13" fill="#5f6368">uses</text>
+
+  <rect x="48" y="545" width="312" height="60" rx="6" fill="#fce5cd" stroke="#e69138" stroke-width="1.5"/>
+  <text x="204" y="570" text-anchor="middle" font-size="17" fill="#1a1a1a">Source data PVCs</text>
+  <text x="204" y="592" text-anchor="middle" font-size="14" fill="#7a5217">live data volumes</text>
+
+  <path d="M 204 605 V 650" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="226" cy="627" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="226" y="632" text-anchor="middle" font-size="13" fill="#5b6b7c">2</text>
+
+  <rect x="48" y="650" width="312" height="62" rx="8" fill="#d9ead3" stroke="#6aa84f" stroke-width="1.5"/>
+  <text x="204" y="676" text-anchor="middle" font-size="17" fill="#1a1a1a">CSI snapshots</text>
+  <text x="204" y="698" text-anchor="middle" font-size="14" fill="#38761d">readyToUse + backend handles</text>
+  <path d="M 360 340 H 400 V 681 H 360" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+
+  <text x="220" y="810" text-anchor="middle" font-size="15" fill="#5f6368">Source workload stays online.</text>
+  <text x="220" y="836" text-anchor="middle" font-size="15" fill="#5f6368">Branch writes are independent.</text>
+
+  <!-- Hub: resource definitions and snapshot references, rather than data. -->
+  <path d="M 360 320 H 504" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="428" y="300" text-anchor="middle" font-size="13" fill="#5f6368">create</text>
+  <circle cx="428" cy="340" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="428" y="345" text-anchor="middle" font-size="13" fill="#5b6b7c">3</text>
+
+  <rect x="504" y="285" width="312" height="70" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="660" y="314" text-anchor="middle" font-size="17" fill="#1a1a1a">BranchWork</text>
+  <text x="660" y="337" text-anchor="middle" font-size="14" fill="#5f6368">hub namespace: source</text>
+
+  <path d="M 660 355 V 415" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <circle cx="682" cy="383" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="682" y="388" text-anchor="middle" font-size="13" fill="#5b6b7c">4</text>
+
+  <rect x="504" y="415" width="312" height="70" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="660" y="444" text-anchor="middle" font-size="17" fill="#1a1a1a">Courier addon manager</text>
+  <text x="660" y="467" text-anchor="middle" font-size="14" fill="#5f6368">translates work + syncs status</text>
+
+  <path d="M 660 485 V 545" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="674" y="515" font-size="13" fill="#5f6368">create</text>
+
+  <rect x="504" y="545" width="312" height="60" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="660" y="570" text-anchor="middle" font-size="17" fill="#1a1a1a">ManifestWork</text>
+  <text x="660" y="592" text-anchor="middle" font-size="14" fill="#5f6368">hub namespace: target</text>
+
+  <text x="660" y="730" text-anchor="middle" font-size="15" fill="#5f6368">Payload contains:</text>
+  <text x="660" y="758" text-anchor="middle" font-size="15" fill="#3c4858">target namespace + database</text>
+  <text x="660" y="784" text-anchor="middle" font-size="15" fill="#3c4858">Secrets + delivered Branch</text>
+  <text x="660" y="810" text-anchor="middle" font-size="15" fill="#3c4858">snapshot handles in a clone plan</text>
+  <text x="660" y="862" text-anchor="middle" font-size="15" fill="#5f6368">Database contents stay on storage.</text>
+
+  <!-- Target: OCM applies two custom resources for two independent controllers. -->
+  <path d="M 816 575 H 960" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="884" y="555" text-anchor="middle" font-size="13" fill="#5f6368">deliver</text>
+  <circle cx="884" cy="595" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="884" y="600" text-anchor="middle" font-size="13" fill="#5b6b7c">5</text>
+
+  <rect x="960" y="545" width="504" height="60" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="1212" y="570" text-anchor="middle" font-size="17" fill="#1a1a1a">OCM work agent</text>
+  <text x="1212" y="592" text-anchor="middle" font-size="14" fill="#5f6368">applies Branch, database CR, namespace, and Secrets</text>
+
+  <path d="M 1212 545 V 485" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1226" y="523" font-size="13" fill="#5f6368">apply Branch</text>
+
+  <rect x="960" y="415" width="504" height="70" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="1212" y="444" text-anchor="middle" font-size="17" fill="#1a1a1a">Delivered Branch</text>
+  <text x="1212" y="467" text-anchor="middle" font-size="14" fill="#5f6368">snapshot clone plan</text>
+
+  <path d="M 1212 415 V 355" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1226" y="391" font-size="13" fill="#5f6368">reconcile Branch</text>
+
+  <rect x="960" y="285" width="504" height="70" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="1212" y="314" text-anchor="middle" font-size="17" fill="#1a1a1a">Courier agent</text>
+  <text x="1212" y="337" text-anchor="middle" font-size="14" fill="#5f6368">Creator: reconciles Branch and prepares cloned storage</text>
+
+  <path d="M 960 320 H 920 V 681 H 960" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+  <circle cx="940" cy="659" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="940" y="664" text-anchor="middle" font-size="13" fill="#5b6b7c">6</text>
+
+  <rect x="960" y="650" width="224" height="62" rx="6" fill="#fce5cd" stroke="#e69138" stroke-width="1.5"/>
+  <text x="1072" y="676" text-anchor="middle" font-size="17" fill="#1a1a1a">Cloned target PVCs</text>
+  <text x="1072" y="698" text-anchor="middle" font-size="13" fill="#7a5217">from imported snapshot handles</text>
+
+  <path d="M 1352 605 V 650" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1366" y="632" font-size="13" fill="#5f6368">apply database CR</text>
+
+  <rect x="1240" y="650" width="224" height="62" rx="8" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="1352" y="676" text-anchor="middle" font-size="17" fill="#1a1a1a">Target database CR</text>
+  <text x="1352" y="698" text-anchor="middle" font-size="14" fill="#5f6368">marked as branched</text>
+
+  <path d="M 1352 712 V 745" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1366" y="733" font-size="13" fill="#5f6368">reconcile database</text>
+
+  <rect x="1240" y="745" width="224" height="70" rx="8" fill="#d9d2e9" stroke="#8e7cc3" stroke-width="1.5"/>
+  <text x="1352" y="774" text-anchor="middle" font-size="17" fill="#1a1a1a">kubedb-provisioner</text>
+  <text x="1352" y="797" text-anchor="middle" font-size="13" fill="#5f6368">waits for PVCs + Secrets</text>
+
+  <path d="M 1240 780 H 1212 V 681 H 1184" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+  <text x="1226" y="733" font-size="13" fill="#7a63b8">adopts PVCs</text>
+  <path d="M 1352 815 V 845" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+
+  <rect x="1240" y="845" width="224" height="64" rx="6" fill="#c9daf8" stroke="#6d9eeb" stroke-width="1.5"/>
+  <text x="1352" y="871" text-anchor="middle" font-size="16" fill="#1a1a1a">Database workloads</text>
+  <text x="1352" y="894" text-anchor="middle" font-size="14" fill="#5f6368">Pods + Services + auth</text>
+
+  <path d="M 1240 885 H 1156" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="1208" y="868" text-anchor="middle" font-size="13" fill="#5f6368">DB Ready</text>
+  <circle cx="1198" cy="907" r="12" fill="#ffffff" stroke="#5b6b7c" stroke-width="1.5"/>
+  <text x="1198" y="912" text-anchor="middle" font-size="13" fill="#5b6b7c">7</text>
+  <rect x="960" y="845" width="196" height="80" rx="8" fill="#fff2cc" stroke="#f1c232" stroke-width="1.5"/>
+  <text x="1058" y="867" text-anchor="middle" font-size="14" fill="#1a1a1a">Optional password reset</text>
+  <text x="1058" y="888" text-anchor="middle" font-size="15" fill="#1a1a1a">+ post-actions</text>
+  <text x="1058" y="911" text-anchor="middle" font-size="12" fill="#7f6000">Courier marks Branch Ready</text>
+
+  <!-- Storage access is direct from the managed clusters, bypassing the hub. -->
+  <path d="M 72 712 V 1030 H 450" fill="none" stroke="#e69138" stroke-width="2.2" marker-start="url(#storage-arrow)" marker-end="url(#storage-arrow)"/>
+  <text x="246" y="1013" text-anchor="middle" font-size="15" fill="#7a5217">Source volumes + snapshots</text>
+  <path d="M 1176 712 V 1030 H 870" fill="none" stroke="#e69138" stroke-width="2.2" marker-start="url(#storage-arrow)" marker-end="url(#storage-arrow)"/>
+  <text x="1024" y="1013" text-anchor="middle" font-size="15" fill="#7a5217">CoW clones on the same backend</text>
+
+  <rect x="450" y="990" width="420" height="80" rx="10" fill="#fce5cd" stroke="#e69138" stroke-width="1.5"/>
+  <text x="660" y="1022" text-anchor="middle" font-size="18" fill="#1a1a1a">Shared Ceph RBD / CoW storage backend</text>
+  <text x="660" y="1048" text-anchor="middle" font-size="15" fill="#7a5217">Network-reachable from source and target</text>
+
+  <path d="M 270 1100 H 310" fill="none" stroke="#5b6b7c" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="320" y="1105" font-size="14" fill="#5f6368">Resource delivery</text>
+  <path d="M 500 1100 H 540" fill="none" stroke="#5b6b7c" stroke-width="2" stroke-dasharray="6 5" marker-end="url(#arrow)"/>
+  <text x="550" y="1105" font-size="14" fill="#5f6368">Status feedback</text>
+  <path d="M 730 1100 H 770" fill="none" stroke="#8e7cc3" stroke-width="2" marker-end="url(#controller-arrow)"/>
+  <text x="780" y="1105" font-size="14" fill="#5f6368">Controller action</text>
+  <path d="M 970 1100 H 1010" fill="none" stroke="#e69138" stroke-width="2.2" marker-end="url(#storage-arrow)"/>
+  <text x="1020" y="1105" font-size="14" fill="#5f6368">Storage access</text>
+</svg>

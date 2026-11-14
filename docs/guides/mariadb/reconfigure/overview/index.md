@@ -47,7 +47,7 @@ The Reconfiguring MariaDB process consists of the following steps:
 
 7. Then the `KubeDB` Enterprise operator will replace the existing configuration with the new configuration provided or merge the new configuration with the existing configuration according to the `MariaDBOpsRequest` CR.
 
-8. Then the `KubeDB` Enterprise operator will restart the related PetSet Pods so that they restart with the new configuration defined in the `MariaDBOpsRequest` CR.
+8. Then the `KubeDB` Enterprise operator applies the configuration defined in the `MariaDBOpsRequest` CR, restarting the related PetSet Pods when needed according to `spec.configuration.restart`.
 
 9. After the successful reconfiguring of the `MariaDB`, the `KubeDB` Enterprise operator resumes the `MariaDB` object so that the `KubeDB` Community operator resumes its usual operations.
 
