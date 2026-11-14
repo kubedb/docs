@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-confluent
+  namespace: demo
+spec:
+  version: confluent-8.3.2
+  license:
+    secretName: kafka-confluent-license
+  replicas: 3
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+    storageClassName: standard
+  deletionPolicy: WipeOut
