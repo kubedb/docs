@@ -255,6 +255,33 @@ NAME                     VERSION     STATUS   AGE
 mssqlserver-standalone   2022-cu12   Ready    5m
 ```
 
+### Create Empty Target Databases
+
+Before you create the `MSSQLServerMigration` CR, create an empty target database for every source database that you will list in `spec.source.schema.database`. The target database name must exactly match its source database name.
+
+The migrator applies the source schema and then copies the source data into the target. Therefore, do not create user tables or insert data in these target databases before starting the migration. For a clean retry, delete and recreate the target databases before applying a new migration CR.
+
+For this guide, create the empty `RestaurantMigrationDB` database on the target MSSQL Server:
+
+```sql
+USE master;
+GO
+
+IF DB_ID(N'RestaurantMigrationDB') IS NULL
+    CREATE DATABASE [RestaurantMigrationDB];
+GO
+```
+
+Verify that the target database has no user tables:
+
+```sql
+USE RestaurantMigrationDB;
+GO
+
+SELECT COUNT(*) AS UserTables FROM sys.tables WHERE is_ms_shipped = 0;
+GO
+```
+
 ## Apply MSSQLServerMigration CR
 
 To migrate the database we have to create an `MSSQLServerMigration` CR. KubeDB uses [SqlPackage](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage) for schema migration and built-in CDC for streaming changes. Below is the YAML of the `MSSQLServerMigration` CR:
