@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1
+kind: Redis
+metadata:
+  name: rd-alert-demo
+  namespace: alert-redis
+spec:
+  version: "6.0.20"
+  deletionPolicy: WipeOut
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus

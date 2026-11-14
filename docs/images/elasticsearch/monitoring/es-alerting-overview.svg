@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 420" font-family="Segoe UI, Arial, sans-serif">
+
+  <!-- Background -->
+  <rect width="900" height="420" fill="#f8f9fa" rx="12"/>
+
+  <!-- ── Elasticsearch Topology box ───────────────────────────────── -->
+  <rect x="20" y="55" width="220" height="140" rx="10" fill="#e8f4fd" stroke="#2196F3" stroke-width="2"/>
+  <text x="130" y="76" text-anchor="middle" font-size="13" font-weight="bold" fill="#1565C0">Elasticsearch Topology</text>
+  <text x="130" y="91" text-anchor="middle" font-size="10" fill="#555">master · data · ingest pods</text>
+
+  <!-- pod icon -->
+  <rect x="35" y="98" width="80" height="38" rx="6" fill="#1565C0"/>
+  <text x="75" y="121" text-anchor="middle" font-size="12" font-weight="bold" fill="white">elasticsearch</text>
+
+  <!-- exporter icon -->
+  <rect x="125" y="98" width="95" height="38" rx="6" fill="#0288D1"/>
+  <text x="172" y="114" text-anchor="middle" font-size="10" fill="white">elasticsearch</text>
+  <text x="172" y="127" text-anchor="middle" font-size="10" fill="white">exporter (sidecar)</text>
+
+  <!-- port label -->
+  <text x="130" y="155" text-anchor="middle" font-size="11" fill="#555">metrics on :56790/metrics</text>
+  <text x="130" y="172" text-anchor="middle" font-size="10" fill="#777">one target per pod (7 for a 2m/3d/2i cluster)</text>
+
+  <!-- ── ServiceMonitor box ─────────────────────────────────────── -->
+  <rect x="20" y="230" width="220" height="55" rx="10" fill="#e8f5e9" stroke="#4CAF50" stroke-width="2"/>
+  <text x="130" y="252" text-anchor="middle" font-size="12" font-weight="bold" fill="#2E7D32">ServiceMonitor</text>
+  <text x="130" y="270" text-anchor="middle" font-size="11" fill="#555">es-alert-stats</text>
+
+  <!-- arrow: pod → servicemonitor -->
+  <line x1="130" y1="198" x2="130" y2="228" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="145" y="216" font-size="10" fill="#888">scrape</text>
+
+  <!-- ── Prometheus box ─────────────────────────────────────────── -->
+  <rect x="330" y="120" width="200" height="100" rx="10" fill="#fff3e0" stroke="#FF9800" stroke-width="2"/>
+  <text x="430" y="145" text-anchor="middle" font-size="13" font-weight="bold" fill="#E65100">Prometheus</text>
+  <text x="430" y="165" text-anchor="middle" font-size="11" fill="#555">kube-prometheus-stack</text>
+  <text x="430" y="182" text-anchor="middle" font-size="11" fill="#555">evaluates rules every 30s</text>
+  <text x="430" y="199" text-anchor="middle" font-size="11" fill="#555">ruleSelector: release=prometheus</text>
+
+  <!-- arrow: servicemonitor → prometheus -->
+  <line x1="242" y1="257" x2="328" y2="175" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="265" y="225" font-size="10" fill="#888">discovers</text>
+
+  <!-- ── PrometheusRule box ─────────────────────────────────────── -->
+  <rect x="330" y="260" width="200" height="70" rx="10" fill="#fce4ec" stroke="#E91E63" stroke-width="2"/>
+  <text x="430" y="284" text-anchor="middle" font-size="12" font-weight="bold" fill="#880E4F">PrometheusRule</text>
+  <text x="430" y="302" text-anchor="middle" font-size="11" fill="#555">elasticsearch-alerts chart</text>
+  <text x="430" y="318" text-anchor="middle" font-size="11" fill="#555">release name = es-alert</text>
+
+  <!-- arrow: prometheusrule → prometheus -->
+  <line x1="430" y1="258" x2="430" y2="222" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="438" y="244" font-size="10" fill="#888">loads</text>
+
+  <!-- ── AlertManager box ───────────────────────────────────────── -->
+  <rect x="630" y="120" width="200" height="80" rx="10" fill="#ede7f6" stroke="#673AB7" stroke-width="2"/>
+  <text x="730" y="147" text-anchor="middle" font-size="13" font-weight="bold" fill="#4527A0">AlertManager</text>
+  <text x="730" y="167" text-anchor="middle" font-size="11" fill="#555">groups · inhibits · silences</text>
+  <text x="730" y="184" text-anchor="middle" font-size="11" fill="#555">routes to receivers</text>
+
+  <!-- arrow: prometheus → alertmanager -->
+  <line x1="532" y1="165" x2="628" y2="163" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="558" y="156" font-size="10" fill="#888">fires alerts</text>
+
+  <!-- ── Notification icons ─────────────────────────────────────── -->
+  <rect x="670" y="235" width="58" height="28" rx="6" fill="#7B1FA2"/>
+  <text x="699" y="254" text-anchor="middle" font-size="11" fill="white">Slack</text>
+
+  <rect x="740" y="235" width="58" height="28" rx="6" fill="#C62828"/>
+  <text x="769" y="254" text-anchor="middle" font-size="11" fill="white">Email</text>
+
+  <rect x="670" y="272" width="128" height="28" rx="6" fill="#1565C0"/>
+  <text x="734" y="291" text-anchor="middle" font-size="11" fill="white">PagerDuty / Webhook</text>
+
+  <!-- arrow: alertmanager → notifications -->
+  <line x1="730" y1="202" x2="730" y2="233" stroke="#888" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="736" y="222" font-size="10" fill="#888">notify</text>
+
+  <!-- ── Grafana box ────────────────────────────────────────────── -->
+  <rect x="630" y="320" width="200" height="70" rx="10" fill="#e0f2f1" stroke="#009688" stroke-width="2"/>
+  <text x="730" y="345" text-anchor="middle" font-size="13" font-weight="bold" fill="#00695C">Grafana</text>
+  <text x="730" y="363" text-anchor="middle" font-size="11" fill="#555">kubedb-grafana-dashboards</text>
+  <text x="730" y="379" text-anchor="middle" font-size="11" fill="#555">Summary · Database · Pod</text>
+
+  <!-- arrow: prometheus → grafana (datasource) -->
+  <path d="M532 195 Q590 195 590 355 L628 355" stroke="#888" stroke-width="1.5" fill="none" marker-end="url(#arr)" stroke-dasharray="5,3"/>
+  <text x="560" y="285" font-size="10" fill="#888">datasource</text>
+
+  <!-- ── arrow markers ─────────────────────────────────────────── -->
+  <defs>
+    <marker id="arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L8,3 z" fill="#888"/>
+    </marker>
+  </defs>
+
+  <!-- ── Title ────────────────────────────────────────────────── -->
+  <text x="450" y="30" text-anchor="middle" font-size="16" font-weight="bold" fill="#333">Elasticsearch Alerting Architecture with KubeDB</text>
+
+</svg>

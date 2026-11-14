@@ -1,0 +1,25 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Hazelcast
+metadata:
+  name: hazelcast-alert-demo
+  namespace: alert-hazelcast
+spec:
+  version: "5.5.2"
+  replicas: 1
+  licenseSecret:
+    name: hz-license-key
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s

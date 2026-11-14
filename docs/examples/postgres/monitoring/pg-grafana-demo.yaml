@@ -9,6 +9,7 @@ spec:
   deletionPolicy: WipeOut
   storage:
     storageClassName: "local-path"
+
     accessModes:
     - ReadWriteOnce
     resources:

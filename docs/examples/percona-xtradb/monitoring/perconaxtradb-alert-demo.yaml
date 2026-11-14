@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: PerconaXtraDB
+metadata:
+  name: perconaxtradb-alert-demo
+  namespace: alert-perconaxtradb
+spec:
+  version: "8.0.40"
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        labels:
+          release: prometheus
+        interval: 10s
