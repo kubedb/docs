@@ -39,14 +39,14 @@ spec:
   compute:
     node:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
   storage:
     node:
@@ -75,58 +75,58 @@ spec:
   compute:
     proxy:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
     mixcoord:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
     datanode:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
     querynode:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
     streamingnode:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
   storage:
     streamingnode:
@@ -171,7 +171,7 @@ Each compute block supports:
 - `resourceDiffPercentage` - minimum percentage difference between current resources and the recommendation before a scaling operation is created.
 - `controlledResources` - which resources may be autoscaled, typically `cpu` and `memory`.
 
-For compute autoscaling, the autoscaler creates a `VerticalPodAutoscaler` recommendation first and then generates a `VerticalScaling` [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md) when the recommendation passes the configured thresholds.
+For compute autoscaling, the autoscaler's built-in recommender produces a recommendation first (recorded in `status.vpas`; no `VerticalPodAutoscaler` object is created) and then generates a `VerticalScaling` [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md) when the recommendation passes the configured thresholds.
 
 See [Compute Autoscaling Overview](/docs/guides/milvus/autoscaler/compute/overview.md).
 
@@ -193,7 +193,7 @@ Each storage block supports:
 - `expansionMode` - `Online` or `Offline`.
 - `scalingRules` - how much storage should be added when usage crosses the threshold.
 
-For storage autoscaling, the autoscaler watches PVC usage from Prometheus and creates a `VolumeExpansion` [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md) when the configured threshold is crossed.
+For storage autoscaling, the autoscaler reads PVC usage from the `custom.metrics.k8s.io` API served by KubeDB's storage metrics server and creates a `VolumeExpansion` [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md) when the configured threshold is crossed.
 
 See [Storage Autoscaling Overview](/docs/guides/milvus/autoscaler/storage/overview.md).
 
@@ -220,21 +220,21 @@ spec:
 ### Compute autoscaling
 
 1. A user creates a `MilvusAutoscaler` with `spec.compute`.
-2. The autoscaler creates one VPA recommendation source per targeted component.
+2. The autoscaler's built-in recommender produces one recommendation per targeted component.
 3. When the recommendation differs from current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`.
 4. The Ops-manager applies the scaling operation.
 
 ### Storage autoscaling
 
 1. A user creates a `MilvusAutoscaler` with `spec.storage`.
-2. The autoscaler watches persistent-volume usage from Prometheus.
+2. The autoscaler reads persistent-volume usage from the `custom.metrics.k8s.io` API (KubeDB storage metrics server).
 3. When usage exceeds `usageThreshold`, the autoscaler creates a `VolumeExpansion` `MilvusOpsRequest`.
 4. The Ops-manager applies the volume expansion.
 
 ## Prerequisites
 
-- Compute autoscaling requires a metrics server and VPA recommender.
-- Storage autoscaling requires Prometheus volume metrics.
+- Compute autoscaling requires a metrics server.
+- Storage autoscaling requires KubeDB's storage metrics server, enabled with `--set kubedb-autoscaler.storage-metrics-server.enabled=true` in the KubeDB install.
 - Storage autoscaling also requires an expansion-capable `StorageClass`.
 
 ## Related Concepts

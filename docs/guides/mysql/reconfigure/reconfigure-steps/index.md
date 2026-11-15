@@ -324,6 +324,7 @@ spec:
   databaseRef:
     name: sample-mysql
   configuration:   
+    restart: auto
     configSecret:
       name: new-my-configuration
 ```
@@ -333,6 +334,11 @@ Here,
 - `spec.databaseRef.name` specifies that we are reconfiguring `sample-mysql` database.
 - `spec.type` specifies that we are performing `Reconfigure` on our database.
 - `spec.configuration.configSecret.name` specifies the name of the new secret.
+- `spec.configuration.restart` controls restart behavior
+  - With `auto` (the default) the operator decides whether a restart is needed based on the provided configuration.
+  - Use `"false"` for changes that can be applied dynamically without a restart.
+  - Use `"true"` for changes that require a restart to take effect.
+
 
 Let's create the `MySQLOpsRequest` CR we have shown above,
 
@@ -491,6 +497,50 @@ mysql>
 
 As we can see from the configuration has changed, the value of `max_connections` has been changed from `200` to `250` and and the `read_buffer_size` has been changed `1048576` to `122880`. So the reconfiguration of the database is successful.
 
+### Reconfigure Using Apply Config
+
+Use `spec.configuration.applyConfig` to update configuration files without creating a new config secret. The following request changes the two settings in `new-my-config.cnf`:
+
+```yaml
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-mysql
+  configuration:
+    restart: auto
+    applyConfig:
+      new-my-config.cnf: |
+        [mysqld]
+        max_connections = 230
+        read_buffer_size = 1064960
+```
+
+`applyConfig` can modify multiple settings and can also be used when no config secret exists. Apply the request:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/mysql/reconfigure/reconfigure-steps/yamls/reconfigure-apply-config.yaml
+$ kubectl get mysqlopsrequest -n demo myops-reconfigure-apply-config -w
+```
+
+Once the request is `Successful`, connect to MySQL and verify the updated values:
+
+```bash
+$ kubectl exec -it -n demo sample-mysql-0 -- bash
+bash-4.4# mysql -u${MYSQL_ROOT_USERNAME} -p${MYSQL_ROOT_PASSWORD}
+```
+
+```sql
+mysql> SHOW VARIABLES LIKE 'max_connections';
+-- Expected value: 230
+mysql> SHOW VARIABLES LIKE 'read_buffer_size';
+-- Expected value: 1064960
+```
+
 ### Remove Custom Configuration
 
 We can also remove exisiting custom config using `MySQLOpsRequest`. Provide `true` to field `spec.configuration.removeCustomConfig` and make an Ops Request to remove existing custom configuration.
@@ -510,8 +560,11 @@ spec:
   databaseRef:
     name: sample-mysql
   configuration:   
+    restart: auto
     removeCustomConfig: true
 ```
+
+> **Note:** Removing custom configuration requires a restart; use `restart: auto` or `restart: "true"`, as `restart: "false"` causes the OpsRequest to fail.
 
 Here,
 
@@ -586,6 +639,6 @@ To clean up the Kubernetes resources created by this tutorial, run:
 
 ```bash
 $ kubectl delete mysql -n demo sample-mysql
-$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config  myops-reconfigure-remove
+$ kubectl delete mysqlopsrequest -n demo myops-reconfigure-config myops-reconfigure-apply-config myops-reconfigure-remove
 $ kubectl delete ns demo
 ```

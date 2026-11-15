@@ -1,0 +1,25 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: Branch
+metadata:
+  name: pg-tls
+  namespace: demo
+spec:
+  source:
+    databaseRef:
+      apiGroup: kubedb.com
+      kind: Postgres
+      name: prod-pg
+    namespace: demo
+  target:
+    namespace: dev
+    name: pg-tls
+    storageClassName: ceph-rbd
+    resources:
+      requests:
+        cpu: 500m
+        memory: 1Gi
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: branch-ca
+  deletionPolicy: Delete

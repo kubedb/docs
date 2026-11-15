@@ -8,4 +8,5 @@ spec:
   databaseRef:
     name: sample-mysql
   configuration:
+    restart: auto
     removeCustomConfig: true

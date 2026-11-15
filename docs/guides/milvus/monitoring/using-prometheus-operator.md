@@ -24,7 +24,7 @@ section_menu_id: guides
   - [Milvus](/docs/guides/milvus/concepts/milvus.md)
   - [Monitoring Overview](/docs/guides/milvus/monitoring/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/monitoring/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/monitoring/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
@@ -47,7 +47,16 @@ spec:
 - `serviceMonitor.labels` are applied to the generated `ServiceMonitor` so the Prometheus Operator picks it up (`release: prometheus` must match your Prometheus `serviceMonitorSelector`).
 - `serviceMonitor.interval` is the scrape interval.
 
-Deploy the database and wait until it is `Ready`.
+The `monitoring/yamls/standalone.yaml` and `monitoring/yamls/distributed.yaml` files are the quickstart manifests with this block added. Deploy the standalone database and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/monitoring/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+```
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ## Stats Service
 
@@ -118,11 +127,30 @@ Key points:
 
 Once the Prometheus Operator reconciles this `ServiceMonitor`, Milvus metrics begin appearing in Prometheus.
 
+## Verify in Prometheus
+
+Port-forward the Prometheus service created by your Prometheus Operator installation (with kube-prometheus-stack release `prometheus` in namespace `monitoring`, it is `prometheus-kube-prometheus-prometheus`; adjust the name and namespace to your installation):
+
+```bash
+$ kubectl port-forward -n monitoring svc/prometheus-kube-prometheus-prometheus 9090:9090
+```
+
+Then open `http://localhost:9090/targets` and check that the `serviceMonitor/demo/milvus-standalone-stats/0` target is `UP`, or query the `up` metric for the namespace:
+
+```bash
+$ curl -s 'http://localhost:9090/api/v1/query' --data-urlencode 'query=up{namespace="demo"}' | jq '.data.result[] | {job: .metric.job, pod: .metric.pod, value: .value[1]}'
+```
+
+Each scraped Milvus pod reports `"value": "1"`. Milvus metrics are prefixed with `milvus_`, for example `milvus_num_node`.
+
 ## Distributed Milvus
 
 Monitoring works identically for a distributed Milvus. A single stats service and `ServiceMonitor` named `milvus-cluster-stats` are created, and metrics are scraped from the distributed components (each role's pods expose port `9091`).
 
 ```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/monitoring/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
 $ kubectl get svc -n demo -l app.kubernetes.io/instance=milvus-cluster
 NAME                           TYPE        CLUSTER-IP    EXTERNAL-IP   PORT(S)                       AGE
 milvus-cluster                 ClusterIP   10.43.221.1   <none>        19530/TCP,9091/TCP,8080/TCP   3m
@@ -140,22 +168,32 @@ spec:
     interval: 10s
     path: /metrics
     port: metrics
+    relabelings:
+    - action: replace
+      sourceLabels:
+      - __meta_kubernetes_endpoint_address_target_name
+      targetLabel: pod
     scheme: http
   namespaceSelector:
     matchNames:
     - demo
   selector:
     matchLabels:
+      app.kubernetes.io/component: database
       app.kubernetes.io/instance: milvus-cluster
       app.kubernetes.io/managed-by: kubedb.com
       app.kubernetes.io/name: milvuses.kubedb.com
       kubedb.com/role: stats
 ```
 
+In Prometheus, the `milvus-cluster-stats` job has one target per role pod (mixcoord, datanode, querynode, streamingnode and proxy), each with `up` = `1`.
+
 ## Cleaning up
 
 ```bash
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 

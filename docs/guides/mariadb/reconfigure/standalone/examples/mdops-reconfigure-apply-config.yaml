@@ -8,6 +8,7 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
+    restart: auto
     applyConfig:
       new-md-config.cnf: |
         [mysqld]

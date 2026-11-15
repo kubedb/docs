@@ -8,4 +8,5 @@ spec:
   databaseRef:
     name: sample-mariadb
   configuration:   
+    restart: auto
     removeCustomConfig: true

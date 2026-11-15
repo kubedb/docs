@@ -12,10 +12,10 @@ spec:
     node:
       resources:
         requests:
-          memory: "2Gi"
-          cpu: "1"
+          memory: "3Gi"
+          cpu: "2"
         limits:
-          memory: "2Gi"
-          cpu: "1"
+          memory: "3Gi"
+          cpu: "2"
   timeout: 5m
   apply: IfReady
