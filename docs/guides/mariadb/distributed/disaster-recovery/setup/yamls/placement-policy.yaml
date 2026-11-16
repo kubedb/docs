@@ -1,0 +1,49 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  name: distributed-mariadb-dcdr
+spec:
+  clusterSpreadConstraint:
+    slice:
+      projectNamespace: kubeslice-demo-distributed-mariadb
+      sliceName: demo-slice
+    # The failoverPolicy turns this distributed cluster into a DC-DR cluster:
+    # each Member DC runs its own self contained Galera cluster, and exactly one
+    # DC is writable at a time. mode TwoDC is the two Member DC plus Arbiter
+    # layout; trigger scope Global means one primary-dc Lease decides the
+    # writable DC for the whole cluster.
+    failoverPolicy:
+      mode: TwoDC
+      trigger:
+        scope: Global
+    distributionRules:
+      # dc-a: a self contained Galera cluster with its own gcomm and quorum.
+      - clusterName: dc-a
+        role: Member
+        storageClassName: local-path   # optional; omit to use the cluster default
+        replicaIndices:
+          - 0
+          - 1
+          - 2
+      # dc-b: a self contained Galera cluster; read-only, async-follows the
+      # active DC via a GTID stream from node 0.
+      - clusterName: dc-b
+        role: Member
+        storageClassName: local-path   # optional; omit to use the cluster default
+        replicaIndices:
+          - 3
+          - 4
+          - 5
+      # dc-c: Arbiter DC. No MariaDB data; holds only the dr-controlplane etcd
+      # member, which contributes the third vote to the cross-DC quorum.
+      - clusterName: dc-c
+        role: Arbiter
+        replicaIndices: []
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
+  zoneSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway
