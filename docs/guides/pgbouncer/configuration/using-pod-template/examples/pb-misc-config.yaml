@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1
+kind: PgBouncer
+metadata:
+  name: sample-pgbouncer
+  namespace: demo
+spec:
+  version: "1.18.0"
+  replicas: 1
+  database:
+    syncUsers: true
+    databaseName: "postgres"
+    databaseRef:
+      name: "quick-postgres"
+      namespace: demo
+  connectionPool:
+    port: 5432
+  podTemplate:
+    metadata:
+      annotations:
+        passMe: ToPbPod
+    spec:
+      containers:
+      - name: pgbouncer
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+  deletionPolicy: WipeOut
