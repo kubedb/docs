@@ -1,0 +1,23 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: bank-pg
+  namespace: bank
+spec:
+  version: "16.9-appscode-bookworm-ext"
+  replicas: 3
+  standbyMode: Hot
+  license:
+    secretRef:
+      name: bank-pg-license
+      key: license.pem
+  configSecret:
+    name: bank-pg-audit-config
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+    storageClassName: local-path
+  deletionPolicy: WipeOut
