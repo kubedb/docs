@@ -1,0 +1,14 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-tls-add
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef: {name: yb-demo}
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: yb-ca-issuer
+  rolling: {masterWait: 20s, tserverWait: 20s}

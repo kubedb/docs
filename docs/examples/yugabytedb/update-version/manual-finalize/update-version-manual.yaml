@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-update-version-manual
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: yb-demo
+  updateVersion:
+    targetVersion: 2025.2.8
+    soakDuration: 30m
+    # Manual stops after the soak with the UpgradePendingFinalize condition on the database.
+    # A FinalizeUpgrade or RollbackUpgrade request completes the upgrade.
+    finalize: Manual

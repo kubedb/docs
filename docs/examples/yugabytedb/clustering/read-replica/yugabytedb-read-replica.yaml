@@ -1,0 +1,22 @@
+apiVersion: kubedb.com/v1alpha2
+kind: YugabyteDB
+metadata:
+  name: yb-rr
+  namespace: demo
+spec:
+  version: 2025.2.8
+  replicationFactor: 3
+  topology:
+    tserver:
+      replicas: 3
+    readReplica:
+      replicas: 2
+      replicationFactor: 2
+      placementUUID: rr
+      storage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 10Gi
+  deletionPolicy: WipeOut

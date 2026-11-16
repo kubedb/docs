@@ -1,0 +1,41 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: YugabyteDBAutoscaler
+metadata:
+  name: yb-compute-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: yb-demo
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 20m
+    maxRetries: 1
+  compute:
+    tserver:
+      trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: "1"
+        memory: 2Gi
+      maxAllowed:
+        cpu: "4"
+        memory: 8Gi
+      controlledResources:
+        - cpu
+        - memory
+      containerControlledValues: RequestsAndLimits
+    master:
+      trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 500m
+        memory: 1Gi
+      maxAllowed:
+        cpu: "2"
+        memory: 4Gi
+      controlledResources:
+        - cpu
+        - memory
+      containerControlledValues: RequestsAndLimits

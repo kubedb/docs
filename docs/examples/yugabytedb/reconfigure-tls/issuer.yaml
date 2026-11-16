@@ -1,0 +1,32 @@
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata: {name: selfsigned, namespace: demo}
+spec: {selfSigned: {}}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata: {name: yb-ca, namespace: demo}
+spec:
+  isCA: true
+  commonName: yb-ca
+  secretName: yb-ca
+  issuerRef: {name: selfsigned, kind: Issuer}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata: {name: yb-ca-issuer, namespace: demo}
+spec: {ca: {secretName: yb-ca}}
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata: {name: yb-ca2, namespace: demo}
+spec:
+  isCA: true
+  commonName: yb-ca2
+  secretName: yb-ca2
+  issuerRef: {name: selfsigned, kind: Issuer}
+---
+apiVersion: cert-manager.io/v1
+kind: Issuer
+metadata: {name: yb-ca2-issuer, namespace: demo}
+spec: {ca: {secretName: yb-ca2}}

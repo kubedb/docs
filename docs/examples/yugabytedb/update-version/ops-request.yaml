@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-up-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef: {name: yb-up}
+  updateVersion:
+    targetVersion: 2025.2.8
+    soakDuration: 2m
+  rolling: {masterWait: 20s, tserverWait: 20s}

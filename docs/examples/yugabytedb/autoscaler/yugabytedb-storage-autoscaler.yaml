@@ -1,0 +1,19 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: YugabyteDBAutoscaler
+metadata:
+  name: yb-storage-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: yb-demo
+  opsRequestOptions:
+    apply: IfReady
+    timeout: 20m
+    maxRetries: 1
+  storage:
+    tserver:
+      trigger: "On"
+      usageThreshold: 60
+      scalingThreshold: 50
+      upperBound: 100Gi
+      expansionMode: Online

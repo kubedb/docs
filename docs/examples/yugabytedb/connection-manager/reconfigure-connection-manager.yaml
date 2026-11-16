@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-enable-connection-manager
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: yb-demo
+  # PostgreSQL moves to port 6433 inside the pods and the Connection Manager listens on 5433.
+  connectionManager:
+    enabled: true
+    maxClientConnections: 5000

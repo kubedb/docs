@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-scale-read-replica
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: yb-rr
+  horizontalScaling:
+    readReplica: 4

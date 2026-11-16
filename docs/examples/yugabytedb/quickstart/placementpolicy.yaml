@@ -1,0 +1,11 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  name: spread-across-zones
+spec:
+  zoneSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: DoNotSchedule
+  nodeSpreadConstraint:
+    maxSkew: 1
+    whenUnsatisfiable: ScheduleAnyway

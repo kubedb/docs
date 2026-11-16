@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: YugabyteDBOpsRequest
+metadata:
+  name: yb-demo-tls-remove
+  namespace: demo
+spec:
+  type: ReconfigureTLS
+  databaseRef: {name: yb-demo}
+  tls:
+    remove: true
+  rolling: {masterWait: 20s, tserverWait: 20s}
