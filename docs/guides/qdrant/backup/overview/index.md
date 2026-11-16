@@ -1,5 +1,11 @@
 ---
 title: Backup & Restore Qdrant Using KubeStash
+menu:
+  docs_{{ .version }}:
+    identifier: qdrant-backup-overview
+    name: Overview
+    parent: qdrant-backup
+    weight: 10
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -90,3 +96,4 @@ The restore process consists of the following steps:
 ## Next Steps
 
 - Backup a `Qdrant` database using KubeStash by following the guides from [here](/docs/guides/qdrant/backup/logical/index.md).
+- Backup a `Qdrant` database using Volume Snapshot by following the guides from [here](/docs/guides/qdrant/backup/volume-snapshot/index.md).

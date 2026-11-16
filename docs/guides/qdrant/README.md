@@ -32,9 +32,9 @@ Qdrant is a high-performance open-source vector database designed for similarity
 | Ops Requests             |   &#10003;   |
 | Autoscaler               |   &#10003;   |
 
-## Supported Microsoft SQL Server Versions
+## Supported Qdrant Versions
 
-KubeDB supports the following Microsoft SQL Server Version.
+KubeDB supports the following Qdrant versions:
 - `1.15.4`
 - `1.16.2`
 - `1.17.0`
@@ -51,4 +51,5 @@ KubeDB supports the following Microsoft SQL Server Version.
 - [Quickstart Qdrant](/docs/guides/qdrant/quickstart/quickstart.md) with KubeDB operator.
 - Deploy [Distributed Qdrant](/docs/guides/qdrant/distributed-deployment/overview.md) cluster.
 - Detail concepts of [Qdrant Object](/docs/guides/qdrant/concepts/).
+- [Backup and Restore Qdrant](/docs/guides/qdrant/backup/overview/index.md) using [Logical Backup](/docs/guides/qdrant/backup/logical/index.md) or [Volume Snapshot](/docs/guides/qdrant/backup/volume-snapshot/index.md).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).

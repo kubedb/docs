@@ -1,6 +1,12 @@
 ---
 title: Backup & Restore Qdrant | KubeStash
 description: Backup Qdrant database using KubeStash
+menu:
+  docs_{{ .version }}:
+    identifier: qdrant-backup-logical
+    name: Logical Backup
+    parent: qdrant-backup
+    weight: 20
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---

@@ -1,6 +1,12 @@
 ---
 title: Volume Snapshot Backup & Restore Qdrant
 description: Backup Qdrant database using Volume Snapshot
+menu:
+  docs_{{ .version }}:
+    identifier: qdrant-backup-volume-snapshot
+    name: Volume Snapshot
+    parent: qdrant-backup
+    weight: 30
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
@@ -352,7 +358,7 @@ We can see from the above output that the backup session has succeeded.
 
 ## Restore
 
-In this section, we are going to restore the database from the volume snapshot backup we have taken in the previous section. First, delete the original database, then deploy a new one initialized from the backup using the `init.archiver` field.
+In this section, we are going to restore the database from the volume snapshot backup we have taken in the previous section. First, delete the original database, then deploy a new one initialized from the backup using the `init.restore` field.
 
 ```bash
 $ kubectl delete qdrant -n demo qdrant-sample
@@ -373,12 +379,12 @@ spec:
   version: "1.17.0"
   mode: Distributed
   replicas: 3
-  # init:
-  #   archiver:
-  #     recoveryTimestamp: "2026-12-12T00:00:00Z"
-  #     fullDBRepository:
-  #       name: minio-qdrant-repo
-  #       namespace: demo
+  init:
+    restore:
+      recoveryTimestamp: "2026-12-12T00:00:00Z"
+      fullDBRepository:
+        name: minio-qdrant-repo
+        namespace: demo
   storage:
     storageClassName: longhorn
     accessModes:
@@ -389,10 +395,9 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-<!-- Here,
-- `.spec.init.archiver.recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
-- `.spec.init.archiver.fullDBRepository` specifies the Repository object that holds the backed up data.
--->
+Here,
+- `.spec.init.restore.recoveryTimestamp` specifies the timestamp to recover to. KubeDB will restore the database to the state at this timestamp using the volume snapshots.
+- `.spec.init.restore.fullDBRepository` specifies the Repository object that holds the backed up data.
 
 Let's create the above database,
 
