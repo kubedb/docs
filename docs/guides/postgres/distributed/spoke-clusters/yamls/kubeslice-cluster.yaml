@@ -1,0 +1,24 @@
+# One KubeSlice Cluster and one kubeslice ManagedClusterAddOn per cluster in the slice.
+# Repeat for hub, spoke-1 and spoke-2; set networkInterface to the NIC of the
+# gateway node's default route (ip route get 8.8.8.8 prints it after "dev").
+apiVersion: controller.kubeslice.io/v1alpha1
+kind: Cluster
+metadata:
+  name: spoke-1
+  namespace: kubeslice-demo-distributed-postgres
+spec:
+  networkInterface: enp1s0
+  clusterProperty: {}
+---
+apiVersion: addon.open-cluster-management.io/v1alpha1
+kind: ManagedClusterAddOn
+metadata:
+  name: kubeslice
+  namespace: spoke-1
+spec:
+  installNamespace: kubeslice-system
+  configs:
+  - group: controller.kubeslice.io
+    resource: clusters
+    name: spoke-1
+    namespace: kubeslice-demo-distributed-postgres

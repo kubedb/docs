@@ -1,0 +1,8 @@
+# EMERGENCY ONLY. Apply on the SPOKE of the CURRENT active data center.
+# Name: <scope Lease name>-override, for example primary-dc-pg-docs-override.
+# While it exists, split-brain protection for this scope is bypassed.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: primary-dc-pg-docs-override
+  namespace: dc-failover
