@@ -48,3 +48,7 @@ KubeDB supports the following ClickHouse Versions.
 - [Quickstart ClickHouse](/docs/guides/clickhouse/quickstart/guide/quickstart.md) with KubeDB Operator.
 - How to [Backup & Restore](/docs/guides/clickhouse/backup/overview/index.md) ClickHouse using [KubeStash](https://kubestash.com/).
 - Want to hack on KubeDB? Check our [contribution guidelines](/docs/CONTRIBUTING.md).
+
+## Cross-DC Disaster Recovery (DC-DR)
+
+Do you want to run your ClickHouse database across multiple data centers and recover from a full data center failure with a single, automatically re-routing write endpoint? KubeDB runs one logical `ReplicatedMergeTree` cluster across the data centers, spreads ClickHouse Keeper 3-site so no single data center holds a Keeper majority (the split-brain guarantee), and lets the `dr-controlplane` Lease route the write endpoint to a data center that still holds Keeper quorum. Follow [here](/docs/guides/clickhouse/dr/overview/index.md).
