@@ -1,0 +1,44 @@
+apiVersion: catalog.kubedb.com/v1alpha1
+kind: DurableWorkflowVersion
+metadata:
+  name: cadence-1.4.2-tls
+spec:
+  version: 1.4.2
+  distribution: Cadence
+  defaultHistoryShards: 16
+  publicClientTLS: true
+  server:
+    image: registry.example.com/kubedb/cadence-server:v1.4.2-tls
+  adminTools:
+    image: registry.example.com/kubedb/cadence-server:v1.4.2-tls
+  ui:
+    image: docker.io/ubercadence/web:v4.0.17
+  ports:
+    frontend: {tchannel: 7933, grpc: 7833}
+    history: {tchannel: 7934, grpc: 7834}
+    matching: {tchannel: 7935, grpc: 7835}
+    worker: {tchannel: 7939}
+    metrics: 9090
+    ui: 8088
+  schema:
+    tool: cadence-server
+    dir: /etc/cadence/schema
+    stores:
+    - {type: Postgres, default: true, visibility: true}
+    - {type: MySQL, default: true, visibility: true}
+    - {type: Cassandra, default: true, visibility: true}
+    - {type: Elasticsearch, visibility: true}
+    - {type: OpenSearch, visibility: true}
+  securityContext:
+    runAsUser: 1000
+  rollout:
+    roleOrder: [history, matching, frontend, worker]
+    frontendShutdownDrainDuration: 10s
+    matchingShutdownDrainDuration: 10s
+    historyShutdownDrainDuration: 30s
+    preStopSleep: 10s
+    historyMinInterval: 60s
+    onlineSchemaUpdate: true
+  updateConstraints:
+    allowlist:
+    - "> 1.4.2, < 1.5.0"

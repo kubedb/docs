@@ -28,6 +28,7 @@ global:
     DB2: false
     DocumentDB: false
     Druid: false
+    DurableWorkflow: false
     Elasticsearch: true
     HanaDB: false
     Hazelcast: false

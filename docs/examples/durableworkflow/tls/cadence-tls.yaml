@@ -1,0 +1,29 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: cadence-tls
+  namespace: demo
+spec:
+  version: cadence-1.4.2-tls
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  tls:
+    issuerRef:
+      apiGroup: cert-manager.io
+      kind: Issuer
+      name: dw-ca-issuer
+  frontendClientAuth: NotRequired
+  ui:
+    enabled: true
+  deletionPolicy: WipeOut

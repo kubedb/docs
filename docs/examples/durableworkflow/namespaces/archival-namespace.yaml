@@ -1,0 +1,11 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: audit
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal-archival
+  retention: 72h
+  archival:
+    enabled: true

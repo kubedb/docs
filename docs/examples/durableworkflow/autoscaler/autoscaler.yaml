@@ -1,0 +1,34 @@
+apiVersion: autoscaling.kubedb.com/v1alpha1
+kind: DurableWorkflowAutoscaler
+metadata:
+  name: temporal-autoscaler
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal
+  opsRequestOptions:
+    timeout: 30m
+    apply: IfReady
+  compute:
+    frontend:
+      trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 250m
+        memory: 256Mi
+      maxAllowed:
+        cpu: "2"
+        memory: 2Gi
+      controlledResources: ["cpu", "memory"]
+    history:
+      trigger: "On"
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
+      minAllowed:
+        cpu: 500m
+        memory: 512Mi
+      maxAllowed:
+        cpu: "4"
+        memory: 8Gi
+      controlledResources: ["cpu", "memory"]

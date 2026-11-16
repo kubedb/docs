@@ -1,0 +1,10 @@
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: default
+  namespace: demo
+spec:
+  databaseRef:
+    name: cadence
+  ownerEmail: admin@example.com
+  retention: 72h

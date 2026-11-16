@@ -1,0 +1,38 @@
+apiVersion: gitops.kubedb.com/v1alpha1
+kind: DurableWorkflow
+metadata:
+  name: temporal-gitops
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+      podTemplate:
+        spec:
+          containers:
+            - name: durableworkflow
+              resources:
+                requests:
+                  cpu: 500m
+                  memory: 512Mi
+                limits:
+                  cpu: "1"
+                  memory: 1Gi
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  configuration:
+    inline:
+      dynamic_config.yaml: |
+        limit.maxIDLength:
+          - value: 255
+            constraints: {}
+  deletionPolicy: WipeOut

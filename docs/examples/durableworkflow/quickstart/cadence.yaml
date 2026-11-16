@@ -1,0 +1,21 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: cadence
+  namespace: demo
+spec:
+  version: cadence-1.4.2
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  deletionPolicy: WipeOut

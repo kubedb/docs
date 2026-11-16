@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: temporal-admin-token
+  namespace: demo
+type: Opaque
+stringData:
+  token: <an admin JWT, for example with the permission default:admin>
+---
+apiVersion: kubedb.com/v1alpha2
+kind: WorkflowNamespace
+metadata:
+  name: orders
+  namespace: demo
+spec:
+  databaseRef:
+    name: temporal-authz
+  retention: 168h
+  tokenSecretRef:
+    name: temporal-admin-token

@@ -1,0 +1,18 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: DurableWorkflowOpsRequest
+metadata:
+  name: dw-reconfigure-static
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: temporal-config
+  configuration:
+    applyConfig:
+      server.yaml: |
+        persistence:
+          datastores:
+            default:
+              sql:
+                maxConns: 8
+                maxIdleConns: 8

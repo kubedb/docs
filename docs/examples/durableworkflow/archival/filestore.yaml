@@ -1,0 +1,28 @@
+apiVersion: kubedb.com/v1alpha2
+kind: DurableWorkflow
+metadata:
+  name: temporal-filestore
+  namespace: demo
+spec:
+  version: temporal-1.32.1
+  topology:
+    frontend:
+      replicas: 2
+    history:
+      replicas: 2
+    matching:
+      replicas: 2
+    worker:
+      replicas: 2
+  persistence:
+    default:
+      name: pg
+      namespace: demo
+  archival:
+    history:
+      provider: filestore
+      uri: file:///var/archival/history
+    visibility:
+      provider: filestore
+      uri: file:///var/archival/visibility
+  deletionPolicy: WipeOut
