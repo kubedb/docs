@@ -1,0 +1,16 @@
+apiVersion: kubedb.com/v1
+kind: Memcached
+metadata:
+  name: mc-alert-demo
+  namespace: demo
+spec:
+  replicas: 1
+  version: "1.6.40"
+  deletionPolicy: WipeOut
+  monitor:
+    agent: prometheus.io/operator
+    prometheus:
+      serviceMonitor:
+        interval: 10s
+        labels:
+          release: prometheus
