@@ -70,7 +70,7 @@ metadata:
 spec:
   replicas: 3
   deletionPolicy: WipeOut
-  version: "2025.12.1"
+  version: "2026.08.1"
   storage:
     storageClassName: "local-path"
     accessModes:
@@ -83,7 +83,7 @@ neo4j.kubedb.com/neo4j-test created
 
 $ kubectl get neo4j,pvc -n demo
 NAME                      VERSION     STATUS   AGE
-neo4j.kubedb.com/neo4j-test   2025.12.1   Ready    2m
+neo4j.kubedb.com/neo4j-test   2026.08.1   Ready    2m
 
 NAME                               STATUS   VOLUME   CAPACITY   ACCESS MODES   STORAGECLASS   AGE
 persistentvolumeclaim/data-neo4j-test-0   Bound    ...      2Gi        RWO            local-path     2m
