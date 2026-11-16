@@ -24,6 +24,12 @@ kubedb-operator operator [flags]
 
 ```
       --burst int                           The maximum burst for throttle (default 1000000)
+      --dc-dr-coord-burst int               The maximum burst for throttle against the DC-DR coordination control plane apiserver. (default 100000)
+      --dc-dr-coord-kubeconfig string       Path to the coordination control plane kubeconfig that holds the primary DC Leases. Empty uses this cluster (a hub that is itself the coordination plane).
+      --dc-dr-coord-qps float               The maximum QPS to the DC-DR coordination control plane apiserver from this client. (default 100000)
+      --dc-dr-enabled                       Enable the cross data center (DC-DR) failover orchestrator for distributed Postgres.
+      --dc-dr-local-dc string               Name of the data center this operator instance runs in (used for logging and group scopes).
+      --dc-dr-marker-namespace string       Spoke namespace the dr-controlplane agent projects the active-DC marker ConfigMaps into. Must match the dr-controlplane agents' configuration. (default "dc-failover")
       --enable-network-policy               Controls the network policy creation
       --health-probe-bind-address string    The address the probe endpoint binds to. (default ":8081")
   -h, --help                                help for operator
