@@ -227,6 +227,36 @@ configuration:
               connection.uri=mongodb://mongo-user:mongo-password@mongo-host:27017
       ```
 
+### spec.license
+
+`spec.license` is an optional field used to provide an enterprise license for a licensed Kafka distribution, such as [Confluent Server](/docs/guides/kafka/concepts/kafkaversion.md#specdistribution) (`KafkaVersion.spec.distribution: Confluent`). It references a Secret containing the license key. This field has no effect for the default `KubeDB` distribution.
+
+- `spec.license.secretName` is a required field that specifies the name of the Secret (in the same namespace as the Kafka object) that holds the license key.
+- `spec.license.key` is an optional field that specifies the key inside the Secret's data that holds the license value. Defaults to `license`.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: kafka-confluent-license
+  namespace: demo
+stringData:
+  license: <your-confluent-enterprise-license-key>
+---
+apiVersion: kubedb.com/v1
+kind: Kafka
+metadata:
+  name: kafka-confluent
+  namespace: demo
+spec:
+  version: confluent-8.3.2
+  license:
+    secretName: kafka-confluent-license
+  ...
+```
+
+Without a valid license, Confluent Server runs on a 30-day trial and then stops working, so `spec.license` should be set before the trial period expires.
+
 ### spec.tieredStorage
 `spec.tieredStorage` is an optional field that specifies the tiered storage configuration for Kafka. Tiered storage allows Kafka to offload older data to cheaper storage solutions like S3, Azure Blob Storage, GCS, or local storage, while keeping recent data on faster local storage. Tiered storage helps in reducing the cost of storage and improves the performance of Kafka by keeping the frequently accessed data on local storage. Following are the fields of `spec.tieredStorage`:
 - `provider` ( `string` | `""` ) - is a field that specifies the tiered storage provider. Supported providers are `s3`, `azure`, `gcs`, and `local`.
