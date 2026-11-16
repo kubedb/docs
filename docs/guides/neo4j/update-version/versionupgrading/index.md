@@ -65,7 +65,7 @@ metadata:
   name: neo4j-test
   namespace: demo
 spec:
-  version: "2025.10.1"
+  version: "2026.07.1"
   replicas: 3
   storage:
     resources:
@@ -89,7 +89,7 @@ Wait until `STATUS` shows `Ready` before proceeding.
 
 ```
 NAME         VERSION     STATUS   AGE
-neo4j-test   2025.10.1   Ready    3m
+neo4j-test   2026.07.1   Ready    3m
 ```
 
 To see all available upgrade targets before proceeding:
@@ -97,9 +97,11 @@ To see all available upgrade targets before proceeding:
 ```bash
 kubectl get neo4jversions
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
-2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
-2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
+2026.05.0   2026.05.0-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                14d
+2026.06.0   2026.06.0-enterprise   docker.io/library/neo4j:2026.06.0-enterprise                14d
+2026.07.1   2026.07.1-enterprise   docker.io/library/neo4j:2026.07.1-enterprise                14d
+2026.08.1   2026.08.1-enterprise   docker.io/library/neo4j:2026.08.1-enterprise                14d
+5.26.28     5.26.28-enterprise     docker.io/library/neo4j:5.26.28-enterprise                  14d
 ```
 
 ---
@@ -119,7 +121,7 @@ spec:
   databaseRef:
     name: neo4j-test
   updateVersion:
-    targetVersion: "2025.12.1"
+    targetVersion: "2026.08.1"
 ```
 
 Apply it and wait for completion:
@@ -171,10 +173,10 @@ NAME                   TYPE            STATUS       AGE
 neo4j-update-version   UpdateVersion   Successful   2m57s
 
 NAME         VERSION     STATUS   AGE
-neo4j-test   2025.12.1   Ready    21m
+neo4j-test   2026.08.1   Ready    21m
 ```
 
-> ✅ The `VERSION` column now shows `2025.12.1` and `STATUS` is `Ready` — the upgrade is complete.
+> ✅ The `VERSION` column now shows `2026.08.1` and `STATUS` is `Ready` — the upgrade is complete.
 
 ---
 
@@ -210,9 +212,11 @@ The version must exist as a `Neo4jVersion` catalog entry in your cluster. If the
 
 ```bash
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE                                                                                                        
-2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                2d23h
-2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                2d23h
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                2d23h
+2026.05.0   2026.05.0-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                14d
+2026.06.0   2026.06.0-enterprise   docker.io/library/neo4j:2026.06.0-enterprise                14d
+2026.07.1   2026.07.1-enterprise   docker.io/library/neo4j:2026.07.1-enterprise                14d
+2026.08.1   2026.08.1-enterprise   docker.io/library/neo4j:2026.08.1-enterprise                14d
+5.26.28     5.26.28-enterprise     docker.io/library/neo4j:5.26.28-enterprise                  14d
 ```
 
 Update your KubeDB operator to get the latest catalog.
