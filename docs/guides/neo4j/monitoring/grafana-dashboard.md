@@ -55,7 +55,7 @@ metadata:
   name: neo4j-grafana-demo
   namespace: demo
 spec:
-  version: "2025.11.2"
+  version: "2026.08.1"
   replicas: 3
   deletionPolicy: WipeOut
   storage:
@@ -92,7 +92,7 @@ Wait for it to be `Ready`:
 ```bash
 $ kubectl get neo4j -n demo neo4j-grafana-demo
 NAME                 VERSION     STATUS   AGE
-neo4j-grafana-demo   2025.11.2   Ready    3m
+neo4j-grafana-demo   2026.08.1   Ready    3m
 ```
 
 KubeDB creates a stats service named `{neo4j-name}-stats` for the exporter:
