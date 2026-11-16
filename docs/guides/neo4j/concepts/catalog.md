@@ -28,13 +28,13 @@ The value of `Neo4j.spec.version` must correspond to a valid `Neo4jVersion` reso
 apiVersion: catalog.kubedb.com/v1alpha1
 kind: Neo4jVersion
 metadata:
-  name: 2025.11.2
+  name: 2026.08.1
 spec:
   db:
-    image: docker.io/library/neo4j:2025.11.2-enterprise
+    image: docker.io/library/neo4j:2026.08.1-enterprise
   securityContext:
     runAsUser: 7474
-  version: 2025.11.2-enterprise
+  version: 2026.08.1-enterprise
 ```
 
 ## Key fields
@@ -50,9 +50,11 @@ spec:
 ```bash
 $ kubectl get neo4jversions
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
-2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
-2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
+2026.05.0   2026.05.0-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                14d
+2026.06.0   2026.06.0-enterprise   docker.io/library/neo4j:2026.06.0-enterprise                14d
+2026.07.1   2026.07.1-enterprise   docker.io/library/neo4j:2026.07.1-enterprise                14d
+2026.08.1   2026.08.1-enterprise   docker.io/library/neo4j:2026.08.1-enterprise                14d
+5.26.28     5.26.28-enterprise     docker.io/library/neo4j:5.26.28-enterprise                  14d
 ```
 
 If the `DEPRECATED` column shows `true` for a version you are currently using, upgrade to a supported version via [UpdateVersion](/docs/guides/neo4j/update-version/versionupgrading/).
