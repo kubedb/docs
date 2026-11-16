@@ -1,0 +1,14 @@
+apiVersion: kubedb.com/v1alpha2
+kind: NATS
+metadata:
+  name: nats-external-operator
+  namespace: demo
+spec:
+  version: "2.15.1"
+  replicas: 3
+  auth:
+    mode: Operator
+    operator:
+      externalSecret:
+        name: my-nats-operator
+  deletionPolicy: WipeOut

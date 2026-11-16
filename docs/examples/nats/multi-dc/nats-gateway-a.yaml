@@ -1,0 +1,15 @@
+apiVersion: kubedb.com/v1alpha2
+kind: NATS
+metadata:
+  name: dc-a
+  namespace: demo
+spec:
+  version: "2.15.1"
+  replicas: 3
+  gateway:
+    name: dc-a
+    remotes:
+      - name: dc-b
+        urls:
+          - nats://dc-b-pods.demo.svc.slice.local:7222
+  deletionPolicy: WipeOut

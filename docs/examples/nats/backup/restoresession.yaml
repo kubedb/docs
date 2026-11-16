@@ -1,0 +1,22 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: nats-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: NATS
+    namespace: demo
+    name: nats-restored
+  dataSource:
+    repository: s3-nats-repo
+    snapshot: latest
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: nats-addon
+    tasks:
+      - name: manifest-restore
+      - name: logical-backup-restore

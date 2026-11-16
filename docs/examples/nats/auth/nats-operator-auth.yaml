@@ -1,0 +1,19 @@
+apiVersion: kubedb.com/v1alpha2
+kind: NATS
+metadata:
+  name: nats-operator-auth
+  namespace: demo
+spec:
+  version: "2.15.1"
+  replicas: 3
+  auth:
+    mode: Operator
+    operator:
+      resolverStorage:
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 1Gi
+      allowDelete: false
+  deletionPolicy: WipeOut

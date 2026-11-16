@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-restart
+  namespace: demo
+spec:
+  type: Restart
+  databaseRef:
+    name: nats-cluster
+  timeout: 30m
+  apply: IfReady

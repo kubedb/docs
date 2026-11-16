@@ -1,0 +1,17 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-hscale-dc
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: nats-dc
+  horizontalScaling:
+    dataCenters:
+      - clusterName: dc-a
+        replicas: 5
+      - clusterName: dc-b
+        replicas: 5
+  timeout: 1h
+  apply: IfReady

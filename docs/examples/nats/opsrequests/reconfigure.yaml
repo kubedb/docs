@@ -1,0 +1,15 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-reconfigure
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: nats-cluster
+  configuration:
+    serverConfig:
+      maxConnections: 20000
+    restart: auto
+  timeout: 10m
+  apply: IfReady

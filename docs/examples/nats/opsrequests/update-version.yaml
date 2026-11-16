@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-update-version
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: nats-cluster
+  updateVersion:
+    targetVersion: "2.15.1"
+  timeout: 30m
+  apply: IfReady

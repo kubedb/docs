@@ -1,0 +1,13 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: NATSOpsRequest
+metadata:
+  name: nats-hscale
+  namespace: demo
+spec:
+  type: HorizontalScaling
+  databaseRef:
+    name: nats-cluster
+  horizontalScaling:
+    replicas: 5
+  timeout: 30m
+  apply: IfReady
