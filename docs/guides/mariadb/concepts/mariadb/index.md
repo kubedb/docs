@@ -373,9 +373,9 @@ spec:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-#### Service templates in Replication mode
+#### Service templates in MariaDBReplication mode
 
-In `Replication` mode, KubeDB creates two Services that both act as the database's primary endpoint:
+In `MariaDBReplication` mode, KubeDB creates two Services that both act as the database's primary endpoint:
 
 - `<mariadb-name>`: points directly to the MariaDB primary pod.
 - `<mariadb-name>-mx`: points to the MaxScale proxy pods, which route reads and writes for you.
@@ -402,7 +402,7 @@ spec:
   version: "11.8.5"
   replicas: 3
   topology:
-    mode: Replication
+    mode: MariaDBReplication
     maxscale:
       replicas: 3
       enableUI: true
