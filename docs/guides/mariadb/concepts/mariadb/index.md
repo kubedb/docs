@@ -373,24 +373,24 @@ spec:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
-#### Primary service template in Replication mode
+#### Service templates in Replication mode
 
 In `Replication` mode, KubeDB creates two Services that both act as the database's primary endpoint:
 
 - `<mariadb-name>`: points directly to the MariaDB primary pod.
 - `<mariadb-name>-mx`: points to the MaxScale proxy pods, which route reads and writes for you.
 
-Only one of these Services gets the `primary` service template by default. You choose which one with the `kubedb.com/primary-service-template` annotation on the `MariaDB` object:
+Each Service reads its own template from `spec.serviceTemplates`:
 
-| Annotation value     | `<mariadb-name>` Service    | `<mariadb-name>-mx` Service (MaxScale) |
-|----------------------|-----------------------------|----------------------------------------|
-| `maxscale` (default) | default `ClusterIP`         | uses the `primary` template            |
-| `mariadb`            | uses the `primary` template | default `ClusterIP`                    |
-| `both`               | uses the `primary` template | uses the `primary` template            |
+| Templates in `spec.serviceTemplates` | `<mariadb-name>` Service    | `<mariadb-name>-mx` Service (MaxScale) |
+|--------------------------------------|-----------------------------|----------------------------------------|
+| `primary` only                       | uses the `primary` template | uses the `primary` template            |
+| `primary` and `maxscale`             | uses the `primary` template | uses the `maxscale` template           |
+| `maxscale` only                      | default `ClusterIP`         | uses the `maxscale` template           |
 
-If the annotation is missing, or its value is not one of the values above, KubeDB uses `maxscale`. The value is not case-sensitive. The Service that does not get the template keeps the default spec and the standard KubeDB labels, so the template's type, ports, annotations and labels do not reach it.
+If you don't set a `maxscale` template, the MaxScale Service uses the `primary` template, so existing `MariaDB` objects keep working as before. Add a `maxscale` template when you want to configure the two Services differently. A Service that gets no template keeps the default spec and the standard KubeDB labels.
 
-For example, this exposes only the MariaDB primary through a `LoadBalancer`, and keeps the MaxScale Service internal:
+For example, this exposes MaxScale through a `LoadBalancer`, and keeps the MariaDB primary Service internal:
 
 ```yaml
 apiVersion: kubedb.com/v1
@@ -398,8 +398,6 @@ kind: MariaDB
 metadata:
   name: sample-mariadb
   namespace: demo
-  annotations:
-    kubedb.com/primary-service-template: mariadb
 spec:
   version: "11.8.5"
   replicas: 3
@@ -427,13 +425,26 @@ spec:
   serviceTemplates:
     - alias: primary
       spec:
+        type: ClusterIP
+    - alias: maxscale
+      spec:
         type: LoadBalancer
   deletionPolicy: WipeOut
 ```
 
-> Note: Before this annotation existed, the `primary` template was applied to both Services in `Replication` mode. To keep that behavior, set `kubedb.com/primary-service-template: both`.
+To keep the MaxScale Service on its default spec while the `primary` template exposes the MariaDB primary, add a `maxscale` template with no `spec`:
 
-In `Standalone` and `GaleraCluster` mode, there is no MaxScale Service. The `primary` template always applies to the `<mariadb-name>` Service, and the annotation has no effect.
+```yaml
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+    - alias: maxscale
+```
+
+In `Standalone` and `GaleraCluster` mode, there is no MaxScale Service. The `primary` template applies to the `<mariadb-name>` Service, and a `maxscale` template has no effect.
+
+> Note: The `kubedb.com/primary-service-template` annotation (`maxscale`, `mariadb` or `both`) is deprecated. KubeDB still honors it when there is no `maxscale` template, but a `maxscale` template overrides it. Use the `maxscale` alias instead.
 
 ### spec.halted
 
