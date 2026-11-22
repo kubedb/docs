@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: sample-oracle-restore
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Oracle
+    name: sample-oracle
+    namespace: demo
+  dataSource:
+    repository: oracle-repo
+    snapshot: oracle-repo-sample-oracle-backup-full-backup-1795154400
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+  addon:
+    name: oracle-addon
+    tasks:
+      - name: physical-backup-restore

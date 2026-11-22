@@ -1,0 +1,39 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: BackupConfiguration
+metadata:
+  name: sample-oracle-backup
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Oracle
+    name: sample-oracle
+    namespace: demo
+  backends:
+    - name: s3-backend
+      storageRef:
+        name: s3-storage
+        namespace: demo
+      retentionPolicy:
+        name: demo-retention
+        namespace: demo
+  sessions:
+    - name: full-backup
+      scheduler:
+        schedule: "0 */6 * * *"
+        jobTemplate:
+          backoffLimit: 1
+      repositories:
+        - name: oracle-repo
+          backend: s3-backend
+          directory: /sample-oracle
+          encryptionSecret:
+            name: encrypt-secret
+            namespace: demo
+      sessionHistoryLimit: 3
+      addon:
+        name: oracle-addon
+        tasks:
+          - name: physical-backup
+            params:
+              targetPod: sample-oracle-0
