@@ -1,0 +1,18 @@
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: prod-pg
+  namespace: demo
+spec:
+  version: "16.1"
+  replicas: 3
+  standbyMode: Hot
+  storageType: Durable
+  storage:
+    storageClassName: ceph-rbd
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  deletionPolicy: WipeOut

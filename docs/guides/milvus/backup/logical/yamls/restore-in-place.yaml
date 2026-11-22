@@ -1,0 +1,21 @@
+apiVersion: core.kubestash.com/v1alpha1
+kind: RestoreSession
+metadata:
+  name: milvus-restore-in-place
+  namespace: demo
+spec:
+  target:
+    apiGroup: kubedb.com
+    kind: Milvus
+    namespace: demo
+    name: milvus
+  dataSource:
+    repository: milvus-logical-repo
+    snapshot: latest
+  addon:
+    name: milvus-addon
+    tasks:
+      - name: logical-backup-restore
+        params:
+          collections: "default.products"
+          inPlaceRestore: "true"

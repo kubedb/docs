@@ -264,7 +264,7 @@ resources:
 
 Used when `spec.type: HorizontalScaling`.
 
-Horizontal scaling is distributed-only. The requested replica counts are set under `spec.horizontalScaling.topology`:
+Horizontal scaling is distributed-only. The requested replica counts are set under `spec.horizontalScaling.topology`. The data node key here is `dataNode` (camelCase), unlike `spec.verticalScaling`, where it is `datanode`:
 
 ```yaml
 spec:
@@ -272,7 +272,7 @@ spec:
     topology:
       proxy: 2
       mixcoord: 2
-      datanode: 2
+      dataNode: 2
       querynode: 2
       streamingnode: 2
 ```
@@ -317,7 +317,7 @@ The Milvus reconfigure flow supports:
 - `configSecret` - reference to a secret whose `milvus.yaml` key holds configuration.
 - `applyConfig` - inline configuration to merge under the `milvus.yaml` key.
 - `removeCustomConfig` - remove previously applied custom configuration before applying the new one.
-- `restart` - whether pods should be restarted after the config change.
+- `restart` - whether pods should be restarted after the config change (`auto`, the default, `true` or `false`). Milvus does not reload its configuration while running, so with `false` the new values take effect only at the next pod restart.
 
 ### spec.tls
 

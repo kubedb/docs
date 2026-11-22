@@ -9,5 +9,5 @@ spec:
     name: milvus-cluster
   horizontalScaling:
     topology:
-      proxy: 1
-      streamingnode: 1
+      proxy: 2
+      streamingnode: 2

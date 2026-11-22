@@ -1,0 +1,28 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: mysql-inplace-restore
+  namespace: demo
+spec:
+  type: ArchiverRestore
+  databaseRef:
+    name: mysql
+  # Required. The default, IfReady, waits for the database to be Ready — which never
+  # happens once this request has wiped its volumes.
+  apply: Always
+  # Required. Size this to your database: the restore has to restore a base backup,
+  # replay binlogs and re-seed the remaining members.
+  timeout: 30m
+  archiver:
+    recoveryTimestamp: "2024-12-02T06:38:42Z"
+    encryptionSecret:
+      name: encrypt-secret
+      namespace: demo
+    fullDBRepository:
+      name: mysql-full
+      namespace: demo
+    replicationStrategy: sync
+    # true (the default) keeps the pre-restore PersistentVolumes after a successful
+    # restore, so you can go back to the data as it was. Set it to false to have them
+    # deleted once the restore succeeds.
+    retainPV: true

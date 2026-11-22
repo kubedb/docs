@@ -47,7 +47,7 @@ metadata:
   name: builtin-prom-neo4j
   namespace: demo
 spec:
-  version: "2025.12.1"
+  version: "2026.08.1"
   replicas: 3
   deletionPolicy: WipeOut
   storage:
@@ -77,7 +77,7 @@ Now, wait for the database to go into `Ready` state.
 ```bash
 $ kubectl get neo4j -n demo builtin-prom-neo4j
 NAME                   VERSION      STATUS   AGE
-builtin-prom-neo4j     2025.12.1    Ready    2m
+builtin-prom-neo4j     2026.08.1    Ready    2m
 ```
 
 KubeDB will create a separate stats service with the name `{Neo4j CR name}-stats` for monitoring purposes.

@@ -13,7 +13,6 @@ stringData:
         maxAge: 20
     queryNode:
       gracefulTime: 10
-
     dataNode:
       segment:
         maxSize: 400
@@ -39,6 +38,5 @@ spec:
             maxAge: 30
         queryNode:
           gracefulTime: 500
-    restart: "false"
   timeout: 5m
   apply: IfReady

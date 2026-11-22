@@ -1,0 +1,37 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: milvus-s3
+  namespace: demo
+stringData:
+  address: rgw.example.svc.cluster.local
+  port: "443"
+  bucketName: milvus
+  rootPath: files
+  accessKeyID: <access-key>
+  secretAccessKey: <secret-key>
+---
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-s3-tls
+  namespace: demo
+spec:
+  version: "2.6.15"
+  topology:
+    mode: Standalone
+  objectStorage:
+    configSecret:
+      name: milvus-s3
+    tls:
+      caSecret:
+        name: s3-ca
+        key: ca.crt
+  storageType: Durable
+  storage:
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  deletionPolicy: WipeOut

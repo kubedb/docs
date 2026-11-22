@@ -9,14 +9,14 @@ spec:
   compute:
     node:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
   opsRequestOptions:
     apply: IfReady

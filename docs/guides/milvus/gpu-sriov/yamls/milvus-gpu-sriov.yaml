@@ -1,0 +1,63 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Milvus
+metadata:
+  name: milvus-gpu
+  namespace: demo
+spec:
+  version: "2.6.15-gpu"
+  deletionPolicy: Delete
+  objectStorage:
+    configSecret:
+      name: milvus-storage-config
+  topology:
+    mode: Distributed
+    distributed:
+      mixcoord:
+        replicas: 2
+        network: &sriov
+          sriov:
+            attachmentRef: sriov-net
+            resourceName: nvidia.com/sriov_vf
+            rdmaResourceName: rdma/rdma_shared_device
+      proxy:
+        replicas: 2
+        network: *sriov
+      querynode:
+        replicas: 6
+        podTemplate:
+          spec:
+            podPlacementPolicy:
+              name: milvus-querynode-gpu-pools
+            containers:
+              - name: milvus
+                resources:
+                  limits:
+                    memory: 64Gi
+        gpu:
+          count: 1
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+        network:
+          sriov:
+            attachmentRef: sriov-net
+            resourceName: nvidia.com/sriov_vf
+            rdmaResourceName: rdma/rdma_shared_device
+            gds:
+              attachmentRef: gds-net
+              resourceName: nvidia.com/gds_vf
+      datanode:
+        replicas: 2
+        gpu:
+          count: 1
+          nodeSelector:
+            nvidia.com/gpu.product: NVIDIA-L40S
+          tolerations:
+            - key: nvidia.com/gpu
+              operator: Exists
+              effect: NoSchedule
+        network: *sriov
+      streamingnode:
+        replicas: 2
+        network: *sriov

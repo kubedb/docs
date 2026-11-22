@@ -25,7 +25,7 @@ This guide will give an overview on how the KubeDB Autoscaler operator autoscale
 
 ## How Compute Autoscaling Works
 
-A `MilvusAutoscaler` of type `compute` watches the resource usage of the Milvus pods (via the metrics server / VPA recommender) and, when usage drifts far enough from the requested resources, it creates a `VerticalScaling` `MilvusOpsRequest` to right-size the pods.
+A `MilvusAutoscaler` of type `compute` watches the resource usage of the Milvus pods (via the metrics server and the autoscaler's built-in recommender) and, when usage drifts far enough from the requested resources, it creates a `VerticalScaling` `MilvusOpsRequest` to right-size the pods.
 
 `spec.compute` is keyed by component:
 
@@ -39,11 +39,11 @@ spec:
   compute:
     node:                          # or proxy/mixcoord/datanode/querynode/streamingnode
       trigger: "On"
-      podLifeTimeThreshold: 1m
-      resourceDiffPercentage: 10
+      podLifeTimeThreshold: 10m
+      resourceDiffPercentage: 20
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
@@ -54,15 +54,17 @@ spec:
 - **`minAllowed`/`maxAllowed`** — the bounds the autoscaler stays within.
 - **`resourceDiffPercentage`** — how far current resources must drift from the recommendation before an ops request is created.
 - **`podLifeTimeThreshold`** — minimum pod age before it is considered for scaling.
+
+Every autoscaler-created OpsRequest restarts the pods it scales, and a freshly started Milvus briefly uses much more CPU. `podLifeTimeThreshold: 10m` and `resourceDiffPercentage: 20` keep that startup spike from triggering another re-scale right after a restart. Keep `minAllowed.memory` at `1Gi` or more: the autoscaler sets the memory limit equal to the request, and Milvus needs more than `256Mi`.
 - **`controlledResources`** — which resources are managed.
 
 The flow is:
 
 1. A user creates a `MilvusAutoscaler` with `spec.compute`.
-2. The autoscaler creates a `VerticalPodAutoscaler` (VPA) object which produces resource recommendations.
+2. The autoscaler's built-in recommender produces resource recommendations and records them in the autoscaler's `status.vpas` (no `VerticalPodAutoscaler` object is created).
 3. When the recommendation differs from the current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest` (subject to `spec.opsRequestOptions`).
-4. The Ops-manager operator applies the vertical scaling as usual.
+4. The Ops-manager operator applies the vertical scaling as usual, restarting the affected pods.
 
-> **Prerequisite:** a **metrics server** must be installed in the cluster for the VPA recommender to produce recommendations.
+> **Prerequisite:** a **metrics server** must be installed in the cluster for the autoscaler to produce recommendations.
 
 In the next doc, we will see a step-by-step guide on compute autoscaling of a Milvus database.

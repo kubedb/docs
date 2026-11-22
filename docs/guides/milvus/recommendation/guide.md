@@ -34,11 +34,27 @@ The KubeDB Recommendation Engine watches your databases and proactively generate
   recommendations.supervisor.appscode.com   2026-06-30T05:18:01Z
   ```
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
+
+- Install [cert-manager](https://cert-manager.io/docs/installation/). The sample manifests set `spec.tls` so that a `ReconfigureTLS` recommendation can be generated, and they reference an `Issuer` named `milvus-issuer` (created below).
 
 > Milvus has no `autoOps` field, so there is no `autoOps.disabled` toggle — recommendations are always generated for the conditions above when their triggers are met.
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/recommendation/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/recommendation/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
+
+## Create the Issuer
+
+The sample manifests request their certificates from the `milvus-issuer` `Issuer`. Without it, the Milvus pod stays in `ContainerCreating` because its certificate secret is never created. Create a CA secret and the issuer, as in the [TLS guide](/docs/guides/milvus/tls/guide.md#create-a-cert-manager-issuer):
+
+```bash
+$ openssl genrsa -out ca.key 2048
+$ openssl req -x509 -new -nodes -key ca.key -subj "/CN=milvus-ca/O=kubedb" -days 3650 -out ca.crt
+$ kubectl create secret tls milvus-ca --cert=ca.crt --key=ca.key -n demo
+secret/milvus-ca created
+
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/tls/yamls/issuer.yaml
+issuer.cert-manager.io/milvus-issuer created
+```
 
 ## Deploy Milvus with Recommendation-Triggering Settings
 
@@ -83,7 +99,12 @@ spec:
         duration: 61m
 ```
 
-The distributed sample (`distributed.yaml`) is equivalent, targeting `milvus-cluster` with `streamingnode` storage.
+The distributed sample (`distributed.yaml`) is equivalent, targeting `milvus-cluster` with `streamingnode` storage. Deploy it the same way if you want recommendations for a distributed database:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/recommendation/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+```
 
 - `spec.authSecret.rotateAfter: 15m` — the credential is considered due for rotation 15 minutes after `activeFrom`.
 - `spec.tls.certificates[].duration: 61m` — short certificate lifetimes so renewal/rotation recommendations surface quickly.
@@ -94,7 +115,13 @@ $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >
 milvus.kubedb.com/milvus-standalone created
 ```
 
-Wait for the database to become `Ready`.
+Wait for the database to become `Ready`:
+
+```bash
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+```
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ## Observe the Generated Recommendations
 
@@ -169,7 +196,11 @@ $ kubectl get recommendation -n demo <name> -o jsonpath='{.spec.operation}' | ku
 
 ```bash
 $ kubectl delete recommendation -n demo --all
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
+$ kubectl delete issuer -n demo milvus-issuer
+$ kubectl delete secret -n demo milvus-ca
 $ kubectl delete ns demo
 ```
 

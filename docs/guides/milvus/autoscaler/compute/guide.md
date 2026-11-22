@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
   - [MilvusAutoscaler](/docs/guides/milvus/concepts/milvusautoscaler.md)
   - [Compute Autoscaling Overview](/docs/guides/milvus/autoscaler/compute/overview.md)
 
-- Install the **KubeDB Autoscaler** operator and a **metrics server** in your cluster — the VPA recommender needs metrics to produce recommendations.
+- Install the **KubeDB Autoscaler** operator and a **metrics server** in your cluster — the autoscaler's built-in recommender needs metrics to produce recommendations.
 
   ```bash
   $ kubectl get deploy metrics-server -n kube-system
@@ -31,13 +31,24 @@ This guide will show you how to use the `KubeDB` Autoscaler operator to autoscal
   metrics-server   1/1     1            1           5m
   ```
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 > Note: The yaml files used in this tutorial are stored in [docs/guides/milvus/autoscaler/compute/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/compute/yamls) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Compute Autoscaling — Standalone Milvus
 
-Deploy a standalone Milvus and wait until it is `Ready`. Then create a `MilvusAutoscaler` targeting the standalone `node`:
+Deploy the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest and wait until it is `Ready`:
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+```
+
+Then create a `MilvusAutoscaler` targeting the standalone `node`:
 
 `compute-standalone.yaml`
 
@@ -53,26 +64,33 @@ spec:
   compute:
     node:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
   opsRequestOptions:
     apply: IfReady
     timeout: 5m
 ```
 
+Here,
+
+- `minAllowed.memory: 1Gi` keeps the autoscaler from shrinking Milvus below what it needs. The generated OpsRequest sets the memory limit equal to the request, so a lower floor (for example `256Mi`) leaves no headroom and Milvus is OOM-killed under real load.
+- `podLifeTimeThreshold: 10m` and `resourceDiffPercentage: 20` damp the autoscaler. Every OpsRequest it creates restarts the pods, and a freshly started Milvus briefly uses much more CPU. With a short `podLifeTimeThreshold` and a small `resourceDiffPercentage`, that startup spike immediately triggers another re-scale (and another restart). Waiting 10 minutes after a pod starts and ignoring differences below 20% prevents this.
+
 ```bash
 $ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/compute/yamls/compute-standalone.yaml
 milvusautoscaler.autoscaling.kubedb.com/milvus-standalone-compute-autoscaler created
 ```
 
-The autoscaler creates a `VerticalPodAutoscaler` (VPA) object. Once the VPA recommender produces a recommendation that differs from the current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`.
+The autoscaler runs its own built-in recommender (it does not create a `VerticalPodAutoscaler` object). Once the recommender produces a recommendation that differs from the current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`.
+
+> **Each autoscaler-created OpsRequest restarts the pods** of the role it scales (it uses `Restart` mode). For a standalone Milvus, that means a short outage every time the autoscaler re-scales.
 
 ```bash
 $ kubectl get milvusautoscaler -n demo
@@ -80,33 +98,42 @@ NAME                                   AGE
 milvus-standalone-compute-autoscaler   59s
 ```
 
-The autoscaler runs a VPA recommender (fed by the metrics server) and records the recommendation in its status. Once enough samples are collected, the `RecommendationProvided` condition becomes `True` and a target resource set is published:
+The recommender (fed by the metrics server) records its recommendation in the autoscaler status. Once enough samples are collected, the `RecommendationProvided` condition becomes `True` and a target resource set is published. The status has this shape (values and the large `checkpoints` array elided):
 
 ```bash
 $ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo -o jsonpath='{.status}' | jq .
 {
+  "checkpoints": [ ... ],
+  "conditions": [ ... ],
   "vpas": [
     {
       "conditions": [
-        { "type": "RecommendationProvided", "status": "True", "lastTransitionTime": "2026-06-30T18:40:17Z" }
+        { "type": "RecommendationProvided", "status": "True", ... }
       ],
       "recommendation": {
         "containerRecommendations": [
           {
             "containerName": "milvus",
-            "lowerBound": { "cpu": "100m", "memory": "256Mi" },
-            "target":     { "cpu": "143m", "memory": "256Mi" },
-            "uncappedTarget": { "cpu": "143m", "memory": "262144k" }
+            "lowerBound": { "cpu": ..., "memory": ... },
+            "target": { "cpu": ..., "memory": ... },
+            "uncappedTarget": { "cpu": ..., "memory": ... },
+            ...
           }
         ]
       },
-      "ref": { "containerName": "milvus", "vpaObjectName": "milvus-standalone" }
+      "vpaName": "milvus-standalone"
     }
   ]
 }
 ```
 
-Here the recommended `target` is `cpu: 143m` / `memory: 256Mi` (the standalone idles well below its `500m` request). Because the recommendation differs from the current request by more than `resourceDiffPercentage` (10%) and stays within `minAllowed`/`maxAllowed`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`. This is recorded in the autoscaler status as a `CreateOpsRequest` condition:
+To see just the recommended target:
+
+```bash
+$ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo -o jsonpath='{.status.vpas[0].recommendation.containerRecommendations[0].target}'
+```
+
+An idle standalone uses far less CPU than its `500m` request, so the CPU target is lower, while the memory target is held at `minAllowed` (`1Gi`). When the recommendation differs from the current request by more than `resourceDiffPercentage` (20%) and stays within `minAllowed`/`maxAllowed`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest`. This is recorded in the autoscaler status as a `CreateOpsRequest` condition:
 
 ```bash
 $ kubectl get milvusautoscaler milvus-standalone-compute-autoscaler -n demo \
@@ -122,7 +149,16 @@ The Ops-manager then applies the vertical scaling exactly as in the [vertical sc
 
 ## Compute Autoscaling — Distributed Milvus
 
-For a distributed Milvus, the autoscaler is keyed by role (`proxy`, `mixcoord`, `datanode`, `querynode`, `streamingnode`). The sample below enables compute autoscaling for all five roles:
+For a distributed Milvus, the autoscaler is keyed by role (`proxy`, `mixcoord`, `datanode`, `querynode`, `streamingnode`). The sample below enables compute autoscaling for all five roles.
+
+Deploy the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest and wait until it is `Ready`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/quickstart/yamls/distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+```
 
 `compute-distributed.yaml`
 
@@ -138,14 +174,14 @@ spec:
   compute:
     proxy:
       trigger: "On"
-      podLifeTimeThreshold: 1m
+      podLifeTimeThreshold: 10m
       minAllowed:
         cpu: 100m
-        memory: 256Mi
+        memory: 1Gi
       maxAllowed:
         cpu: 1000m
         memory: 2Gi
-      resourceDiffPercentage: 10
+      resourceDiffPercentage: 20
       controlledResources: ["cpu", "memory"]
     mixcoord: { ... }
     datanode: { ... }
@@ -158,13 +194,28 @@ spec:
 
 (Each role block is identical to the `proxy` block above; see the full file in the `yamls` folder.)
 
-The behavior is identical to standalone, except a VPA object and resource recommendation are produced **per role**. When any role's recommendation differs from its current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest` scoped to that role (see the [vertical scaling guide](/docs/guides/milvus/scaling/vertical-scaling/guide.md) for what that ops request looks like).
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/autoscaler/compute/yamls/compute-distributed.yaml
+milvusautoscaler.autoscaling.kubedb.com/milvus-compute-autoscaler created
+```
+
+The behavior is identical to standalone, except a resource recommendation is produced **per role** (one `status.vpas[]` entry per role, for example `vpaName: milvus-cluster-proxy`). When any role's recommendation differs from its current resources by more than `resourceDiffPercentage`, the autoscaler creates a `VerticalScaling` `MilvusOpsRequest` scoped to that role (see the [vertical scaling guide](/docs/guides/milvus/scaling/vertical-scaling/guide.md) for what that ops request looks like). The OpsRequests run one at a time, and each restarts the pods of its role.
 
 ## Cleaning up
 
+The OpsRequests created by a `MilvusAutoscaler` are owned by it, so deleting the autoscaler also deletes them, **including one that is still running**. An OpsRequest deleted mid-flight can leave the database paused or with pods that don't match its spec. Before deleting the autoscaler, wait until none of its OpsRequests is `Progressing`:
+
+```bash
+$ kubectl get milvusopsrequest -n demo
+```
+
+Then clean up:
+
 ```bash
 $ kubectl delete milvusautoscaler -n demo --all
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 

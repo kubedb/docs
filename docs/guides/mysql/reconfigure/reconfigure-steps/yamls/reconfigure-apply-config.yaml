@@ -1,0 +1,16 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: MySQLOpsRequest
+metadata:
+  name: myops-reconfigure-apply-config
+  namespace: demo
+spec:
+  type: Reconfigure
+  databaseRef:
+    name: sample-mysql
+  configuration:
+    restart: auto
+    applyConfig:
+      new-my-config.cnf: |
+        [mysqld]
+        max_connections = 230
+        read_buffer_size = 1064960

@@ -54,12 +54,14 @@ When KubeDB is installed, it creates `Neo4jVersion` CRDs for all supported Neo4j
 ```bash
 $ kubectl get neo4jversions
 NAME        VERSION                DB_IMAGE                                       DEPRECATED   AGE
-2025.10.1   2025.10.1-enterprise   docker.io/library/neo4j:2025.10.1-enterprise                12d
-2025.11.2   2025.11.2-enterprise   docker.io/library/neo4j:2025.11.2-enterprise                12d
-2025.12.1   2025.12.1-enterprise   docker.io/library/neo4j:2025.12.1-enterprise                12d
+2026.05.0   2026.05.0-enterprise   docker.io/library/neo4j:2026.05.0-enterprise                14d
+2026.06.0   2026.06.0-enterprise   docker.io/library/neo4j:2026.06.0-enterprise                14d
+2026.07.1   2026.07.1-enterprise   docker.io/library/neo4j:2026.07.1-enterprise                14d
+2026.08.1   2026.08.1-enterprise   docker.io/library/neo4j:2026.08.1-enterprise                14d
+5.26.28     5.26.28-enterprise     docker.io/library/neo4j:5.26.28-enterprise                  14d
 ```
 
-Notice the `DEPRECATED` column. A `true` value means that version is deprecated for the current KubeDB release and should be avoided. In this tutorial, we will use `2025.12.1`.
+Notice the `DEPRECATED` column. A `true` value means that version is deprecated for the current KubeDB release and should be avoided. In this tutorial, we will use `2026.08.1`.
 
 ## Create a Neo4j Database
 
@@ -73,7 +75,7 @@ metadata:
   namespace: demo
 spec:
   replicas: 3
-  version: "2025.12.1"
+  version: "2026.08.1"
   storage:
     storageClassName: local-path
     accessModes:
@@ -86,7 +88,7 @@ spec:
 
 Here,
 
-- `spec.version` is the name of the `Neo4jVersion` CR specifying the Docker image for each database pod. In this tutorial, Neo4j `2025.12.1` Enterprise is used.
+- `spec.version` is the name of the `Neo4jVersion` CR specifying the Docker image for each database pod. In this tutorial, Neo4j `2026.08.1` Enterprise is used.
 - `spec.replicas` sets the number of Neo4j instances in the cluster. Here, a 3-member cluster is created.
 - `spec.storage` specifies the `StorageClass` and size of the PVC that KubeDB will dynamically allocate for each pod. This field is required when `spec.storageType` is `Durable` (the default).
 - `spec.deletionPolicy` controls what KubeDB does when the `Neo4j` CR is deleted. `WipeOut` removes all related resources including PVCs and Secrets.
@@ -99,8 +101,8 @@ neo4j.kubedb.com/neo4j-test created
 
 $ kubectl get neo4j -n demo neo4j-test -w
 NAME         VERSION     STATUS         AGE
-neo4j-test   2025.12.1   Provisioning   10s
-neo4j-test   2025.12.1   Ready          2m
+neo4j-test   2026.08.1   Provisioning   10s
+neo4j-test   2026.08.1   Ready          2m
 ```
 
 > If the status stays `Provisioning` for more than a few minutes, run `kubectl describe neo4j -n demo neo4j-test` and check the `Events` section for errors. Common causes are insufficient cluster resources or a missing StorageClass.
@@ -114,7 +116,7 @@ Once `status.phase` is `Ready`, all three pods are running and the cluster has f
 ```bash
 $ kubectl get neo4j -n demo
 NAME         VERSION     STATUS   AGE
-neo4j-test   2025.12.1   Ready    3m
+neo4j-test   2026.08.1   Ready    3m
 
 $ kubectl get pods -n demo -l app.kubernetes.io/instance=neo4j-test
 NAME           READY   STATUS    RESTARTS   AGE

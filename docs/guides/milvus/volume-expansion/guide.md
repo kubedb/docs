@@ -23,7 +23,7 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to expand 
   - [MilvusOpsRequest](/docs/guides/milvus/concepts/milvusopsrequest.md)
   - [Volume Expansion Overview](/docs/guides/milvus/volume-expansion/overview.md)
 
-- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO, creates the `milvus-storage-config` secret, and installs the etcd operator required by Milvus.
+- Complete the dependency setup from [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md). It installs MinIO and creates the object-storage secrets (`milvus-storage-config` for `milvus-standalone`, `milvus-cluster-storage-config` for `milvus-cluster`).
 
 - The PVC's `StorageClass` **must** support volume expansion (`allowVolumeExpansion: true`). The base examples use `local-path`, which does **not** support expansion, so this guide uses `longhorn-custom`:
 
@@ -36,9 +36,16 @@ This guide will show you how to use the `KubeDB` Ops-manager operator to expand 
 
 ## Volume Expansion — Standalone Milvus
 
-Deploy a standalone Milvus on an expansion-capable `StorageClass` (here `longhorn-custom`) with a `1Gi` volume:
+Deploy a standalone Milvus on an expansion-capable `StorageClass` (here `longhorn-custom`) with a `1Gi` volume. `volume-expansion/yamls/milvus-standalone.yaml` is the [standalone quickstart](/docs/guides/milvus/quickstart/standalone.md) manifest with `storageClassName: longhorn-custom`:
+
+> If you deleted a Milvus of the same name in an earlier guide, delete its object-storage prefix first, as shown in [Prepare Dependencies](/docs/guides/milvus/quickstart/prerequisites.md#delete-a-milvus-instances-object-storage-data). Otherwise the new database can hang in `Provisioning`.
 
 ```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/volume-expansion/yamls/milvus-standalone.yaml
+milvus.kubedb.com/milvus-standalone created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-standalone -w
+
 $ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-standalone -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage,SC:.spec.storageClassName
 NAME                       SIZE   SC
 data-milvus-standalone-0   1Gi    longhorn-custom
@@ -84,7 +91,7 @@ data-milvus-standalone-0   4Gi    longhorn-custom
 
 ### Online Volume Expansion
 
-Online expansion grows the volume without taking the pod down. The example file requests `node: 4Gi`; since the volume is already `4Gi` after the offline step above, this walkthrough requests `6Gi` to demonstrate a second (online) expansion:
+Online expansion grows the volume without taking the pod down. The volume is already `4Gi` after the offline step above, so this request grows it to `6Gi`. (A request for the current size is accepted and reported `Successful` without changing anything.)
 
 `volume-expansion-online-standalone.yaml`
 
@@ -104,7 +111,7 @@ spec:
 ```
 
 ```bash
-$ kubectl apply -f volume-expansion-online-standalone.yaml
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/volume-expansion/yamls/volume-expansion-online-standalone.yaml
 milvusopsrequest.ops.kubedb.com/volume-expansion-online created
 
 $ kubectl get milvusopsrequest volume-expansion-online -n demo
@@ -125,7 +132,22 @@ $ kubectl get milvuses.kubedb.com milvus-standalone -n demo -o jsonpath='{.spec.
 
 ## Volume Expansion — Distributed Milvus
 
-For a distributed Milvus, volume expansion targets `streamingnode` — the only distributed role that carries a persistent volume. Point `spec.databaseRef.name` at `milvus-cluster` and use the `streamingnode` key:
+For a distributed Milvus, volume expansion targets `streamingnode` — the only distributed role that carries a persistent volume. Point `spec.databaseRef.name` at `milvus-cluster` and use the `streamingnode` key.
+
+Deploy a distributed Milvus with two `streamingnode` replicas on `longhorn-custom`, each with a `1Gi` volume. `volume-expansion/yamls/milvus-distributed.yaml` is the [distributed quickstart](/docs/guides/milvus/quickstart/distributed.md) manifest with `storageClassName: longhorn-custom` and `streamingnode.replicas: 2`:
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/volume-expansion/yamls/milvus-distributed.yaml
+milvus.kubedb.com/milvus-cluster created
+
+$ kubectl get milvuses.kubedb.com -n demo milvus-cluster -w
+```
+
+The distributed OpsRequests reuse the names of the standalone ones, so delete the standalone OpsRequests first:
+
+```bash
+$ kubectl delete milvusopsrequest -n demo volume-expansion-offline volume-expansion-online
+```
 
 `volume-expansion-online-distributed.yaml`
 
@@ -146,15 +168,21 @@ spec:
 
 (An `Offline` variant — `volume-expansion-offline-distributed.yaml` — uses `streamingnode: 3Gi` with `mode: Offline`.)
 
-The operator expands the PVC of every `streamingnode` replica. Starting from `1Gi` on `longhorn-custom`, an **offline** expansion to `3Gi` followed by an **online** expansion to `4Gi`:
+The operator expands the PVC of every `streamingnode` replica, one replica at a time. Starting from `1Gi` on `longhorn-custom`, an **offline** expansion to `3Gi` followed by an **online** expansion to `4Gi`. Apply the online request only after the offline one is `Successful`:
 
 ```bash
 # offline: streamingnode 1Gi -> 3Gi
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/volume-expansion/yamls/volume-expansion-offline-distributed.yaml
+milvusopsrequest.ops.kubedb.com/volume-expansion-offline created
+
 $ kubectl get milvusopsrequest volume-expansion-offline -n demo
 NAME                       TYPE              STATUS       AGE
 volume-expansion-offline   VolumeExpansion   Successful   ...
 
 # online: streamingnode 3Gi -> 4Gi
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/milvus/volume-expansion/yamls/volume-expansion-online-distributed.yaml
+milvusopsrequest.ops.kubedb.com/volume-expansion-online created
+
 $ kubectl get pvc -n demo -l app.kubernetes.io/instance=milvus-cluster -o custom-columns=NAME:.metadata.name,SIZE:.status.capacity.storage
 NAME                                  SIZE
 data-milvus-cluster-streamingnode-0   4Gi
@@ -169,7 +197,9 @@ Both `streamingnode` replicas are expanded. The stateless roles (`mixcoord`, `da
 
 ```bash
 $ kubectl delete milvusopsrequest -n demo volume-expansion-offline volume-expansion-online
-$ kubectl delete milvus.kubedb.com -n demo milvus-standalone
+$ kubectl patch -n demo milvus.kubedb.com milvus-standalone -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl patch -n demo milvus.kubedb.com milvus-cluster -p '{"spec":{"deletionPolicy":"WipeOut"}}' --type="merge"
+$ kubectl delete milvus.kubedb.com -n demo milvus-standalone milvus-cluster
 $ kubectl delete ns demo
 ```
 

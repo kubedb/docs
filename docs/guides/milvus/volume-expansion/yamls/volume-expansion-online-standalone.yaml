@@ -8,5 +8,5 @@ spec:
   databaseRef:
     name: milvus-standalone
   volumeExpansion:
-    node: 4Gi
+    node: 6Gi
     mode: Online
