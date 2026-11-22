@@ -1,0 +1,32 @@
+apiVersion: kubedb.com/v1alpha2
+kind: Oracle
+metadata:
+  name: restored-oracle
+  namespace: demo
+spec:
+  version: "21.3.0"
+  edition: enterprise
+  mode: Standalone
+  replicas: 1
+  storageType: Durable
+  storage:
+    storageClassName: "local-path"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 10Gi
+  podTemplate:
+    spec:
+      imagePullSecrets:
+        - name: orclcred
+  init:
+    archiver:
+      recoveryTimestamp: "2026-11-20T05:41:30Z"
+      fullDBRepository:
+        name: sample-oracle-full
+        namespace: demo
+      encryptionSecret:
+        name: encrypt-secret
+        namespace: demo
+  deletionPolicy: WipeOut
