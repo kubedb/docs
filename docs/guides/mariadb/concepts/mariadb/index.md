@@ -373,6 +373,79 @@ spec:
 
 See [here](https://github.com/kmodules/offshoot-api/blob/kubernetes-1.16.3/api/v1/types.go#L163) to understand these fields in detail.
 
+#### Service templates in MariaDBReplication mode
+
+In `MariaDBReplication` mode, KubeDB creates two Services that both act as the database's primary endpoint:
+
+- `<mariadb-name>`: points directly to the MariaDB primary pod.
+- `<mariadb-name>-mx`: points to the MaxScale proxy pods, which route reads and writes for you.
+
+Each Service reads its own template from `spec.serviceTemplates`:
+
+| Templates in `spec.serviceTemplates` | `<mariadb-name>` Service    | `<mariadb-name>-mx` Service (MaxScale) |
+|--------------------------------------|-----------------------------|----------------------------------------|
+| `primary` only                       | uses the `primary` template | uses the `primary` template            |
+| `primary` and `maxscale`             | uses the `primary` template | uses the `maxscale` template           |
+| `maxscale` only                      | default `ClusterIP`         | uses the `maxscale` template           |
+
+If you don't set a `maxscale` template, the MaxScale Service uses the `primary` template, so existing `MariaDB` objects keep working as before. Add a `maxscale` template when you want to configure the two Services differently. A Service that gets no template keeps the default spec and the standard KubeDB labels.
+
+For example, this exposes MaxScale through a `LoadBalancer`, and keeps the MariaDB primary Service internal:
+
+```yaml
+apiVersion: kubedb.com/v1
+kind: MariaDB
+metadata:
+  name: sample-mariadb
+  namespace: demo
+spec:
+  version: "11.8.5"
+  replicas: 3
+  topology:
+    mode: MariaDBReplication
+    maxscale:
+      replicas: 3
+      enableUI: true
+      storageType: Durable
+      storage:
+        storageClassName: "standard"
+        accessModes:
+          - ReadWriteOnce
+        resources:
+          requests:
+            storage: 50Mi
+  storageType: Durable
+  storage:
+    storageClassName: "standard"
+    accessModes:
+      - ReadWriteOnce
+    resources:
+      requests:
+        storage: 1Gi
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: ClusterIP
+    - alias: maxscale
+      spec:
+        type: LoadBalancer
+  deletionPolicy: WipeOut
+```
+
+To keep the MaxScale Service on its default spec while the `primary` template exposes the MariaDB primary, add a `maxscale` template with no `spec`:
+
+```yaml
+  serviceTemplates:
+    - alias: primary
+      spec:
+        type: LoadBalancer
+    - alias: maxscale
+```
+
+In `Standalone` and `GaleraCluster` mode, there is no MaxScale Service. The `primary` template applies to the `<mariadb-name>` Service, and a `maxscale` template has no effect.
+
+> Note: The `kubedb.com/primary-service-template` annotation (`maxscale`, `mariadb` or `both`) is deprecated. KubeDB still honors it when there is no `maxscale` template, but a `maxscale` template overrides it. Use the `maxscale` alias instead.
+
 ### spec.halted
 
 `spec.halted` is an optional field. Suppose you want to delete the `MariaDB` resources(`PetSet`, `Service` etc.) except `MariaDB` object, `PVCs` and `Secret` then you need to set `spec.halted` to `true`. If you set `spec.halted` to `true` then the `deletionPolicy` in `MariaDB` object will be set `Halt` by-default.  

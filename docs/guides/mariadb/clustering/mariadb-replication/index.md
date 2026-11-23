@@ -33,6 +33,15 @@ Before proceeding:
   namespace/demo created
   ```
 
+## MaxScale License
+
+MariaDB Standard Replication in KubeDB uses [MariaDB MaxScale](https://mariadb.com/products/enterprise/maxscale/) as its proxy for failover, load balancing and read-write split. KubeDB deploys the MaxScale image published by MariaDB (`docker.io/mariadb/maxscale`). **KubeDB does not provide or include a MaxScale license.** MaxScale is not open source, and you are responsible for licensing it from MariaDB.
+
+- MaxScale 24.02 and earlier are licensed under the Business Source License (BSL 1.1). Production use is free only when your application uses MaxScale with fewer than three server instances in total. Larger production deployments need a commercial license from MariaDB.
+- MaxScale 25.01 and later are licensed under MariaDB's commercial license terms, which require a MariaDB subscription for production use.
+
+The cluster in this tutorial has three MariaDB servers, so running it in production requires a MaxScale license from MariaDB. Check the [MaxScale license terms](https://mariadb.com/terms/archive/) for the version you run, and contact [MariaDB](https://mariadb.com/contact/) to purchase a license.
+
 > Note: The yaml files used in this tutorial are stored in [docs/guides/mariadb/clustering/mariadb-replication/examples](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/mariadb/clustering/mariadb-replication/examples) folder in GitHub repository [kubedb/docs](https://github.com/kubedb/docs).
 
 ## Deploy MariaDB Cluster
