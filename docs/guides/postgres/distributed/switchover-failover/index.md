@@ -168,7 +168,13 @@ All are annotations on the Postgres object:
 
 A switchover requires the active primary to be up: the orchestrator measures the target's lag and confirms the write-lock by connecting to it. When the active primary is down but its data center is alive, use a planned failover instead.
 
-Name only a Member data center as the target. A switchover to the Arbiter is not rejected up front; it stays `FailingOver` until you abort it.
+Name only a Member data center as the target. A switchover to a data center that is not a streaming Member (for example the Arbiter) is refused and never starts: the database stays `Steady`, and the provisioner logs `switchover target DC "<dc>" has no lag report yet; refusing until it is known` on every retry. Remove the `switchover-to` annotation.
+
+### Switchover and ops requests
+
+- A switchover does not start while a PostgresOpsRequest of the database (other than a `ForceFailOver`) is `Progressing`; the provisioner logs `switchover to "<dc>" waiting for Progressing ops request(s) ...`. Once the switchover has started, it never waits for an ops request.
+- A DC-DR ops request that restarts pods (`Restart`, `Reconfigure`, `RotateAuth`, `ReconfigureTLS`, `VerticalScaling`, `VolumeExpansion`, a minor `UpdateVersion`) steps aside when it sees a switchover to another data center requested, or a failover or failback running: it fails with `this DC-DR operation steps aside so ...`, and the switchover then proceeds. Apply the request again once the database is `Steady`.
+- A **major** `UpdateVersion` does not step aside. A switchover requested during it waits until the update has finished, and the update may itself be waiting for you; see [Update version](/docs/guides/postgres/distributed/update-version/index.md).
 
 ## Planned failover (Lease handoff)
 
