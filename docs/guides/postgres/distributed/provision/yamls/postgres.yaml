@@ -19,7 +19,7 @@ spec:
         storage: 2Gi
   replication:
     walLimitPolicy: WALKeepSize
-    walKeepSize: 1536
+    walKeepSize: 8192
     maxSlotWALKeepSize: 8192
   arbiter:
     resources:

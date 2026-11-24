@@ -273,7 +273,7 @@ There were never two writable primaries. A writer in `spoke-2` lost none of its 
 spec:
   replication:
     walLimitPolicy: WALKeepSize
-    walKeepSize: 1536
+    walKeepSize: 8192
     maxSlotWALKeepSize: 8192
     bestEffortCrossDCLagBytesForFailover: 1048576
 ```

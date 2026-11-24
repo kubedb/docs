@@ -123,7 +123,7 @@ spec:
         storage: 2Gi
   replication:
     walLimitPolicy: WALKeepSize
-    walKeepSize: 1536
+    walKeepSize: 8192
     maxSlotWALKeepSize: 8192
   arbiter:
     resources:
@@ -157,7 +157,7 @@ spec:
 
 - `spec.distributed: true` with a PlacementPolicy that has a `failoverPolicy` makes this a DC-DR database: KubeDB sets the annotation `dr.kubedb.com/enabled: "true"` by itself, so setting it here is optional and only makes the intent explicit. Leaving the annotation out does **not** give you a plain distributed database; for that, use a PlacementPolicy without `failoverPolicy`, as described in [Distributed Postgres without DC-DR](/docs/guides/postgres/distributed/plain/index.md).
 - `spec.replicas` is the total over all data centers (2 + 2).
-- `spec.replication` keeps enough WAL on the primary (`walKeepSize` and `maxSlotWALKeepSize`, in MB) for the other data center to catch up with a cheap rewind after an outage instead of a full re-seed. Size it for the longest data center outage you want to absorb at your write rate.
+- `spec.replication` keeps enough WAL (`walKeepSize` and `maxSlotWALKeepSize`, in MB) for a lagging standby, in the same or the other data center, to catch up after an outage instead of needing a full re-seed. On a DC-DR database, KubeDB sets `walLimitPolicy: WALKeepSize` and, when they are unset, both sizes to `8192`; the values here are those defaults. Size them for the longest outage you want to absorb at your write rate, and do not set them lower than the defaults without a reason: a smaller `walKeepSize` makes standbys re-seed sooner.
 - `spec.arbiter` sizes the arbiter pod that a data center with an even node count gets. The arbiter keeps a small Raft volume, so give it a `storage` request.
 - `spec.podTemplate.spec.podPlacementPolicy` names the PlacementPolicy from Step 1.
 
