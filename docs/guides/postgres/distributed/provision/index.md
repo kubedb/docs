@@ -28,7 +28,7 @@ This page creates a PostgreSQL database that runs two nodes in `spoke-1` (DC A) 
 export HUB=~/dcdr/hub.kubeconfig S1=~/dcdr/spoke-1.kubeconfig S2=~/dcdr/spoke-2.kubeconfig
 ```
 
-Pick a `PostgresVersion` from the KubeDB catalog. This guide uses `17.2`, which runs `pg-coordinator` `v0.52.0`:
+Pick a `PostgresVersion` from the KubeDB catalog. This guide uses `17.2`:
 
 ```bash
 $ kubectl --kubeconfig $HUB get postgresversion 17.2

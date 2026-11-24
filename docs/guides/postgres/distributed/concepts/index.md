@@ -145,7 +145,7 @@ So the isolated primary stops accepting writes before the other data center can 
 
 ## Data loss (RPO) and recovery time (RTO)
 
-Cross data center replication is **asynchronous**. The numbers below were measured on a test installation of this guide's topology (KubeDB `v2026.10.12`, three single-site VMs with sub-millisecond latency between them) with a writer that records every acknowledged write.
+Cross data center replication is **asynchronous**. The numbers below were measured with KubeDB `v2026.10.12` on a test installation of this guide's topology (three single-site VMs with sub-millisecond latency between them), with a writer that records every acknowledged write. They are the numbers of that release; expect similar figures, not identical ones, on later releases and on your network.
 
 | Scenario | Data loss | Recovery |
 |---|---|---|
@@ -188,8 +188,8 @@ The Postgres object reports the DC-DR state in `status.disasterRecovery`:
 - **OCM uses one hub API address.** The klusterlets register against a single hub API server URL. Use a VIP, a load balancer or a DNS name for production so that the loss of one hub node does not cut the klusterlets off.
 - **Switchover target.** A switchover to a data center that is not a Member (for example the Arbiter) is not rejected up front; it stays `FailingOver` until you abort it.
 - **Leftover group Leases.** When you delete the last database of a failover group, its `primary-dc-<group>` Lease and marker ConfigMaps stay behind. See [Teardown](/docs/guides/postgres/distributed/teardown/index.md).
-- **Backup.** Backup and restore of a DC-DR database with KubeStash is not covered by this guide.
-- **Monitoring is not supported.** Do not set `spec.monitor` on a DC-DR Postgres in `v2026.10.12`. The provisioner in this release has no RBAC for `discovery.k8s.io` EndpointSlices, which it needs to build the stats endpoints of a DC-DR database, so a DC-DR Postgres with `spec.monitor` set stays in `Provisioning`. The stats endpoints are also derived from non-DC-DR pod names (`<db>-<ordinal>` instead of `<db>-<dc>-<ordinal>`), so they would not point at the DC-DR pods even with that permission.
+- **Backup.** Full backups, WAL archiving and PITR work with KubeStash, with limitations; see [Backup, archiving and PITR](/docs/guides/postgres/distributed/backup/index.md).
+- **Monitoring.** `spec.monitor` works as on a single-cluster Postgres. KubeDB builds the stats Service on the hub from the per-pod Services exported on the slice (`<db>-<dc>-<ordinal>`).
 
 ## Next Steps
 

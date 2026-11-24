@@ -27,13 +27,15 @@ The hub's own three-site etcd stores the failover Leases, so the hub is also the
 ## Before You Begin
 
 - Complete [Build the stretched hub](/docs/guides/postgres/distributed/stretched-hub/index.md) and [Set up the spoke clusters](/docs/guides/postgres/distributed/spoke-clusters/index.md). The `kubedb` namespace must already be on the slice, and `slice.local` DNS must work in every cluster.
-- This guide was tested with these releases:
+- This guide uses these releases:
 
   | Component | Version |
   |---|---|
-  | KubeDB | `v2026.10.12` (provisioner `v0.68.0`, `pg-coordinator` `v0.52.0`) |
+  | KubeDB | `{{< param "info.version" >}}` |
   | PetSet CRDs | `v0.2.0` |
   | dr-controlplane | `v0.1.0` |
+
+  DC-DR backup and PITR, monitoring, the `WALArchiveGap` condition and the DC-DR PostgresOpsRequests other than horizontal scaling need KubeDB `{{< param "info.version" >}}` or later. Earlier releases, such as `v2026.10.12`, do not have them.
 
 - Each spoke needs a default StorageClass for the database volumes. k3s ships `local-path`, which this guide uses. You can install another provisioner, such as [Longhorn](https://longhorn.io/), and make it the default instead.
 - You need a KubeDB Enterprise license issued for the **hub** cluster. Get the hub's cluster ID:
@@ -76,7 +78,7 @@ Install the chart:
 
 ```bash
 $ helm --kubeconfig $HUB upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2026.10.12 \
+    --version {{< param "info.version" >}} \
     --namespace kubedb --create-namespace \
     --values https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/distributed/install/yamls/kubedb-values.yaml \
     --set-file global.license=/path/to/license.txt \
@@ -94,7 +96,7 @@ done
 
 ## Step 2: Apply the PetSet v0.2.0 CRDs
 
-The `v2026.10.12` KubeDB chart runs the PetSet controller `v0.2.0`, but the PetSet chart it bundles (`v2026.9.18`) can install an older PlacementPolicy CRD (without `failoverPolicy.failoverGroupRef`) and no FailoverGroup CRD. Apply the PetSet `v0.2.0` CRDs over them. Helm never updates CRDs on upgrade, so also run this once on an existing KubeDB installation that you enable DC-DR on:
+The KubeDB chart runs the PetSet controller `v0.2.0`, but the PetSet chart it bundles (`v2026.9.18`) can install an older PlacementPolicy CRD (without `failoverPolicy.failoverGroupRef`) and no FailoverGroup CRD. Apply the PetSet `v0.2.0` CRDs over them. Helm never updates CRDs on upgrade, so also run this once on an existing KubeDB installation that you enable DC-DR on:
 
 ```bash
 $ kubectl --kubeconfig $HUB apply --server-side --force-conflicts \
@@ -137,7 +139,7 @@ $ kubectl --kubeconfig $HUB -n kubedb logs kubedb-kubedb-provisioner-0 -c operat
 
 The last command must print one line, with `localDC="hub"`.
 
-> **Troubleshooting:** If the provisioner exits with `unknown flag: --dc-dr-enabled`, the node runs a cached provisioner image without the DC-DR orchestrator. Remove the cached image on that node (`sudo crictl rmi ghcr.io/kubedb/kubedb-provisioner:v0.68.0`), then delete the pod `kubedb/kubedb-kubedb-provisioner-0` so that the image is pulled again.
+> **Troubleshooting:** If the provisioner exits with `unknown flag: --dc-dr-enabled`, the node runs a cached provisioner image without the DC-DR orchestrator. Remove the cached image on that node (`sudo crictl rmi ghcr.io/kubedb/kubedb-provisioner:<tag>`, with the tag the pod uses), then delete the pod `kubedb/kubedb-kubedb-provisioner-0` so that the image is pulled again.
 
 Check that the provisioner has the RBAC that DC-DR needs. Every line must end in `yes`; a missing permission freezes the DR status:
 
@@ -152,11 +154,11 @@ done
 
 ### Optional: KubeStash
 
-DC-DR does not need KubeStash, and backup and restore of a DC-DR database is not covered by this guide. To install KubeStash anyway, the same Enterprise license covers it:
+KubeStash is needed only for backup, WAL archiving and PITR; see [Backup, archiving and PITR](/docs/guides/postgres/distributed/backup/index.md). The same Enterprise license covers it:
 
 ```bash
 helm --kubeconfig $HUB upgrade -i kubestash oci://ghcr.io/appscode-charts/kubestash \
-  --version v2026.10.12 --namespace stash --create-namespace \
+  --version {{< param "info.version" >}} --namespace stash --create-namespace \
   --set-file global.license=/path/to/license.txt \
   --wait --timeout 15m --burst-limit=10000
 ```
