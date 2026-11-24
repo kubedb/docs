@@ -40,7 +40,7 @@ $ kubectl --kubeconfig $HUB get postgresversion 17.2
 
 Every database follows one primary-DC Lease, its *failover scope*, and all databases in a scope fail over together. The `FailoverGroup` object itself is optional: the Lease is derived from the PlacementPolicy's `failoverGroupRef` alone, and the object adds ordering between groups (`spec.dependsOn`) and a status view.
 
-> **Warning:** Databases whose PlacementPolicy has no `failoverPolicy.failoverGroupRef` all share the default scope, the Lease `primary-dc`. A switchover or failover of any one of them moves **all** of them to the other data center together, including a switchover you request on only one database. Use one FailoverGroup per database, or per group of databases that must always move together (for example an application's databases that must stay in the same data center). KubeDB sets the condition `DCDRFailoverScopeShared=True` on every database whose scope is shared.
+> **Warning:** Databases whose PlacementPolicy has no `failoverPolicy.failoverGroupRef` all share the default scope, the Lease `primary-dc`. A switchover or failover of any one of them moves **all** of them to the other data center together, including a switchover you request on only one database. Use one FailoverGroup per database (each with its own PlacementPolicy, see below), or per group of databases that must always move together (for example an application's databases that must stay in the same data center). KubeDB sets the condition `DCDRFailoverScopeShared=True` on every database whose scope is shared.
 
 ```yaml
 apiVersion: apps.k8s.appscode.com/v1
@@ -91,6 +91,8 @@ spec:
 - `failoverPolicy.mode: TwoDC` requires exactly two Members and at least one Arbiter or Witness; the PlacementPolicy is rejected otherwise.
 - `failoverPolicy.failoverGroupRef.name` selects the Lease `primary-dc-pg-docs`. Without it, the database follows the shared Lease `primary-dc`.
 - `slice` names the KubeSlice project namespace and slice.
+
+> **Important:** Create one PlacementPolicy, and one FailoverGroup, per DC-DR database; never let two databases reference the same PlacementPolicy. KubeDB derives the per data center policies `<policy>-<dc>` from it and stamps them with the database that owns them, deletes them when that database is deleted, and rewrites the policy's `replicaIndices` when the database is scaled horizontally. A policy shared by two databases would have its per data center policies taken over by whichever database reconciled last, deleted under the other database when one of them is deleted, and its topology reshaped by the other database's scaling. A shared policy also shares its `failoverGroupRef`, so both databases would always fail over together.
 
 ```bash
 $ kubectl --kubeconfig $HUB apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/guides/postgres/distributed/provision/yamls/placementpolicy.yaml
