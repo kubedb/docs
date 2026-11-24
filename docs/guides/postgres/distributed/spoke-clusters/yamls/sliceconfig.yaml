@@ -18,6 +18,8 @@ spec:
   - hub
   - spoke-1
   - spoke-2
+  # The slice carries all cross data center replication and re-seeds. 5120 Kbps is a demo
+  # value: size the bandwidth for your peak WAL rate plus re-seeds.
   qosProfileDetails:
     queueType: HTB
     priority: 1

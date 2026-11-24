@@ -316,6 +316,8 @@ spec:
       - '*'
 ```
 
+> **Warning:** `qosProfileDetails` caps the slice's bandwidth. The sample's `bandwidthCeilingKbps: 5120` (5 Mbit/s, about 640 KB/s) is a demo value: the slice carries **all** cross data center replication and every cross data center re-seed (a full base backup), so with this cap a database that writes WAL faster than about 640 KB/s falls further and further behind in the other data center (`protected` turns `false` and the possible data loss of a failover grows), and a 100 GiB re-seed takes about 45 hours. Size `bandwidthCeilingKbps` and `bandwidthGuaranteedKbps` for your peak WAL generation rate plus the re-seeds you must absorb, and keep them within what the link between your data centers can carry. The RPO and RTO figures in [Concepts](/docs/guides/postgres/distributed/concepts/index.md#data-loss-rpo-and-recovery-time-rto) were measured at low write rates.
+
 `sliceSubnet` must not overlap your VM networks, pod CIDRs or service CIDRs. Every namespace whose pods must reach a database over the slice, including your application namespaces, must be listed under `applicationNamespaces`. Add yours now, before you deploy those applications.
 
 ```bash
