@@ -18,10 +18,10 @@ This page moves the primary of a DC-DR Postgres between data centers:
 
 | Operation | When to use it | Data loss | How |
 |---|---|---|---|
-| [Planned switchover](#planned-switchover) | Both data centers are healthy; you want the primary elsewhere (maintenance, failback) | None | Annotate the Postgres |
+| [Planned switchover](#planned-switchover) | Both data centers are healthy; you want the primary elsewhere (maintenance, failback) | None in testing (up to 8 KiB residual WAL allowed by default) | Annotate the Postgres |
 | [Planned failover](#planned-failover-lease-handoff) | The active data center is alive but its database cannot serve, and you decide to move | Bounded by the replication lag | Annotate the failover Lease |
 | [Unplanned failover](#unplanned-failover-loss-of-the-active-data-center) | The active data center is lost | Writes not yet replicated | Automatic |
-| [Failback](#failback) | After a failover, the old data center has rejoined | None | Planned switchover |
+| [Failback](#failback) | After a failover, the old data center has rejoined | As a planned switchover | Planned switchover |
 
 It also covers how to keep a data center from becoming primary (standby-hold), the emergency break-glass override, and how to bound the data loss of an unplanned failover.
 
@@ -70,7 +70,7 @@ The example outputs on this page were recorded with a test client in `psql-clien
 
 ## Planned switchover
 
-A planned switchover moves the primary with no loss of acknowledged writes. Set the target data center on the Postgres object:
+A planned switchover moves the primary with no loss of acknowledged writes in testing. The handoff waits until the target is within `dr.kubedb.com/switchover-zero-rpo-lag-bytes` (default 8 KiB) of the frozen primary position; that residue is in practice checkpoint and autovacuum records, and you can set the annotation to `"0"` for a strict catch-up (see [Switchover settings](#switchover-settings)). Set the target data center on the Postgres object:
 
 ```bash
 $ kubectl --kubeconfig $HUB -n demo annotate pg pg-docs dr.kubedb.com/switchover-to=spoke-1 --overwrite

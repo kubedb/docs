@@ -105,7 +105,7 @@ The database pods never look across data centers to decide whether they may writ
 
 ## Planned switchover
 
-A planned switchover moves the active data center with **zero acknowledged-write loss**. You request it with the annotation `dr.kubedb.com/switchover-to=<dc>` on the Postgres object. The orchestrator then:
+A planned switchover moves the active data center without losing acknowledged writes: none was lost in testing. The handoff allows up to 8 KiB of WAL that the target has not replayed yet (in practice checkpoint and autovacuum records); set `dr.kubedb.com/switchover-zero-rpo-lag-bytes: "0"` on the Postgres to require an exact catch-up. You request it with the annotation `dr.kubedb.com/switchover-to=<dc>` on the Postgres object. The orchestrator then:
 
 1. asks the active data center to quiesce; `pg-coordinator` write-locks the active primary (`default_transaction_read_only`) and ends write transactions;
 2. waits until the target data center has replayed to within 8 KiB of the frozen primary position;
