@@ -338,7 +338,7 @@ Keep a safe copy of `encryption-config.yaml`. Without it, Secrets in an etcd bac
 
 The API server certificate must carry the in-cluster name `hub-api.hub-api-proxy.svc`. The spokes, the KubeSlice workers and the dr-controlplane agents reach the hub through an HAProxy Service of that name (set up on the [next page](/docs/guides/postgres/distributed/spoke-clusters/index.md#step-2-give-every-cluster-a-path-to-the-hub-api)). If you plan to put a VIP, a load balancer or a DNS name in front of the hub, add it to `certSANs` now.
 
-On **hub-a**, write the kubeadm configuration (an example rendered for this guide's addresses is in [yamls/kubeadm-config.yaml](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/distributed/stretched-hub/yamls/kubeadm-config.yaml)) and run `kubeadm init`:
+On **hub-a**, write the kubeadm configuration (an example rendered for this guide's addresses is in [yamls/kubeadm-config.conf](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/distributed/stretched-hub/yamls/kubeadm-config.conf)) and run `kubeadm init`:
 
 ```bash
 cat <<EOF | sudo tee /root/kubeadm-init.yaml
