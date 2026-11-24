@@ -1,0 +1,72 @@
+apiVersion: apps.k8s.appscode.com/v1
+kind: FailoverGroup
+metadata:
+  name: pg-restored
+spec: {}
+---
+apiVersion: apps.k8s.appscode.com/v1
+kind: PlacementPolicy
+metadata:
+  name: pg-restored
+spec:
+  clusterSpreadConstraint:
+    distributionRules:
+    - clusterName: spoke-1
+      replicaIndices: [0, 1]
+      role: Member
+    - clusterName: spoke-2
+      replicaIndices: [2, 3]
+      role: Member
+    - clusterName: hub
+      replicaIndices: []
+      role: Arbiter
+    failoverPolicy:
+      mode: TwoDC
+      failoverGroupRef:
+        name: pg-restored
+    slice:
+      projectNamespace: kubeslice-demo-distributed-postgres
+      sliceName: demo-slice
+---
+apiVersion: kubedb.com/v1
+kind: Postgres
+metadata:
+  name: pg-restored
+  namespace: demo
+spec:
+  version: "17.2"
+  distributed: true
+  replicas: 4
+  standbyMode: Hot
+  storageType: Durable
+  storage:
+    accessModes:
+    - ReadWriteOnce
+    resources:
+      requests:
+        storage: 2Gi
+  arbiter:
+    resources:
+      requests:
+        cpu: 100m
+        memory: 192Mi
+        storage: 1Gi
+      limits:
+        memory: 256Mi
+  init:
+    archiver:
+      recoveryTimestamp: "2026-11-24T08:56:35Z"
+      encryptionSecret:
+        name: encrypt-secret
+        namespace: demo
+      fullDBRepository:
+        name: pg-docs-full
+        namespace: demo
+      manifestRepository:
+        name: pg-docs-manifest
+        namespace: demo
+  podTemplate:
+    spec:
+      podPlacementPolicy:
+        name: pg-restored
+  deletionPolicy: WipeOut

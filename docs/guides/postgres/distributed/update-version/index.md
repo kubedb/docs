@@ -185,4 +185,5 @@ kubectl --kubeconfig $HUB -n demo delete postgresopsrequest pg-docs-update-minor
 
 ## Next Steps
 
+- [Backup, archiving and PITR](/docs/guides/postgres/distributed/backup/index.md).
 - [Teardown](/docs/guides/postgres/distributed/teardown/index.md).

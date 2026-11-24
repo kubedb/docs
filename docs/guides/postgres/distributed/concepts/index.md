@@ -26,7 +26,8 @@ This page explains how DC-DR is built, what each component does, how split-brain
 6. [Switchover and failover](/docs/guides/postgres/distributed/switchover-failover/index.md)
 7. [Horizontal scaling](/docs/guides/postgres/distributed/scaling/index.md)
 8. [Update version](/docs/guides/postgres/distributed/update-version/index.md)
-9. [Teardown](/docs/guides/postgres/distributed/teardown/index.md)
+9. [Backup, archiving and PITR](/docs/guides/postgres/distributed/backup/index.md)
+10. [Teardown](/docs/guides/postgres/distributed/teardown/index.md)
 
 A distributed Postgres can also run without DC-DR, as one Raft group spread across clusters with no data center failover. See [Distributed Postgres without DC-DR](/docs/guides/postgres/distributed/plain/index.md).
 
