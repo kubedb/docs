@@ -153,7 +153,7 @@ spec:
   deletionPolicy: WipeOut
 ```
 
-- `metadata.annotations["dr.kubedb.com/enabled"]: "true"` together with `spec.distributed: true` makes this a DC-DR database. Without the annotation, `distributed: true` creates a single Raft group spread across clusters, with no cross data center failover.
+- `metadata.annotations["dr.kubedb.com/enabled"]: "true"` together with `spec.distributed: true` makes this a DC-DR database. Without the annotation, `distributed: true` creates a single Raft group spread across clusters, with no cross data center failover. That plain mode is described in [Distributed Postgres without DC-DR](/docs/guides/postgres/distributed/plain/index.md).
 - `spec.replicas` is the total over all data centers (2 + 2).
 - `spec.replication` keeps enough WAL on the primary (`walKeepSize` and `maxSlotWALKeepSize`, in MB) for the other data center to catch up with a cheap rewind after an outage instead of a full re-seed. Size it for the longest data center outage you want to absorb at your write rate.
 - `spec.arbiter` sizes the arbiter pod that a data center with an even node count gets. The arbiter keeps a small Raft volume, so give it a `storage` request.
