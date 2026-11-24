@@ -94,7 +94,7 @@ $ kubectl --kubeconfig $S2 -n demo logs pg-docs-spoke-2-1 -c pg-coordinator | gr
 I1023 04:09:09.622327       1 dcdr_quiesce.go:134] "DC-DR: primary write-lock changed" dcdr.db="demo/pg-docs" dcdr.dc="spoke-2" dcdr.raftLeader=2 dcdr.myId=2 pod="pg-docs-spoke-2-1" writeLock=true reason="planned-switchover quiesce"
 ```
 
-Then the target catches up to the frozen primary position (within 8 KiB), the Lease is handed to the target, the target's leader is promoted, and the old primary becomes a standby. Watch it on the hub:
+Then the target catches up to the frozen primary position (within 8 KiB), the Lease is handed to the target, the target's leader is promoted, and the old primary becomes a standby. The old primary does not step down at once: it stays up, read-only (write-locked), for about 2 minutes after the handoff while it waits for the new primary's data center to stream from it, then restarts as a standby. Watch it on the hub:
 
 ```bash
 $ kubectl --kubeconfig $HUB -n demo get pg pg-docs -w
@@ -113,6 +113,8 @@ The observed sequence (Postgres phase, DR phase, active data center, `protected`
 | 04:12:43 | `Ready Steady active=spoke-1 protected=true` | spoke-1 |
 
 The new data center was `Steady` 20 s after the request. While the old primary restarts as a standby, the database briefly reports `Critical` and `Degraded`; it is writable on the new data center throughout. When the switchover completes, the orchestrator removes the `switchover-to`, `switchover-started` and `quiesce-active` annotations.
+
+Until the old primary has restarted as a standby, about 2 minutes after the handoff, it can still carry the label `kubedb.com/role=primary`, so the check "exactly one pod with `kubedb.com/role=primary` in all clusters" can fail in that window. It accepts no writes. Run that check after the old primary has restarted.
 
 ```bash
 $ kubectl --kubeconfig $S1 -n demo get pods -l app.kubernetes.io/instance=pg-docs -L kubedb.com/role
@@ -359,7 +361,7 @@ Read these in order; they agree within seconds on a healthy system, and the firs
 1. The Lease on the hub: `kubectl --kubeconfig $HUB -n dc-failover get lease primary-dc-pg-docs`.
 2. The marker on each cluster: `kubectl --kubeconfig <cluster> -n dc-failover get cm primary-dc-pg-docs -o jsonpath='{.data}'`.
 3. The Postgres status: `status.disasterRecovery.activeDC` and each data center's `writable`.
-4. The pods: exactly one pod in all clusters with `kubedb.com/role=primary`.
+4. The pods: exactly one pod in all clusters with `kubedb.com/role=primary` (in the first 2 minutes after a planned switchover, the write-locked old primary can still carry the label).
 
 Conditions on the Postgres object:
 

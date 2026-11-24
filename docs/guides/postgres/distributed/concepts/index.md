@@ -110,7 +110,7 @@ A planned switchover moves the active data center without losing acknowledged wr
 1. asks the active data center to quiesce; `pg-coordinator` write-locks the active primary (`default_transaction_read_only`) and ends write transactions;
 2. waits until the target data center has replayed to within 8 KiB of the frozen primary position;
 3. hands the primary-DC Lease to the target data center;
-4. promotes the target data center's leader and rewinds the old primary into a standby.
+4. promotes the target data center's leader and rewinds the old primary into a standby. The old primary stays up, write-locked, for about 2 minutes after the handoff before it restarts as a standby.
 
 A switchover that cannot finish is aborted automatically after 10 minutes, and you can abort it at any time with `dr.kubedb.com/switchover-abort`. Writes then resume on the original data center.
 
