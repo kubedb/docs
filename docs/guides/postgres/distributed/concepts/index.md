@@ -60,7 +60,7 @@ A data center is identified everywhere by **one name: its OCM ManagedCluster nam
 
 ## How a DC-DR Postgres is laid out
 
-A Postgres becomes a DC-DR database when it has `spec.distributed: true`, the annotation `dr.kubedb.com/enabled: "true"`, and a PlacementPolicy with a `failoverPolicy`. KubeDB expands it on the hub into:
+A distributed Postgres (`spec.distributed: true`) becomes a DC-DR database when its PlacementPolicy has a `failoverPolicy`; KubeDB then sets the annotation `dr.kubedb.com/enabled: "true"` on it. (Setting the annotation yourself also turns DC-DR on.) A distributed Postgres whose PlacementPolicy has no `failoverPolicy` is a plain distributed database; see [Distributed Postgres without DC-DR](/docs/guides/postgres/distributed/plain/index.md). KubeDB expands a DC-DR database on the hub into:
 
 - one PetSet per data-bearing data center, named `<db>-<dc>` (for example `pg-docs-spoke-1`), with its own PlacementPolicy `<policy>-<dc>`, derived from the PlacementPolicy `<policy>` that you create;
 - an arbiter PetSet `<db>-<dc>-arbiter` in a data center whose replica count is even, so that the data center's own Raft group always has an odd number of voters.
