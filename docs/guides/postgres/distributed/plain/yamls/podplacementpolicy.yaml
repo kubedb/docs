@@ -15,7 +15,7 @@ spec:
         replicaIndices:
           - 1
     slice:
-      projectNamespace: kubeslice-demo-distributed-mariadb
+      projectNamespace: kubeslice-demo-distributed-postgres
       sliceName: demo-slice
   nodeSpreadConstraint:
     maxSkew: 1

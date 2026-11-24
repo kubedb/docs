@@ -1,24 +1,32 @@
 ---
-title: Distributed Postgres Cluster Overview
+title: Distributed Postgres without DC-DR
 menu:
   docs_{{ .version }}:
-    identifier: guides-postgres-distributed-overview
-    name: Distributed Postgres Overview
+    identifier: guides-postgres-distributed-plain
+    name: Without DC-DR
     parent: guides-postgres-distributed
-    weight: 10
+    weight: 90
 menu_name: docs_{{ .version }}
 section_menu_id: guides
 ---
 
-# Distributed Postgres Cluster Overview
+> New to KubeDB? Please start [here](/docs/README.md).
+
+# Distributed Postgres without DC-DR
+
+This page sets up a *plain* distributed Postgres: **one** Raft group whose pods are spread over several Kubernetes clusters. It has no data center failover: there is no failover Lease, no per data center Raft group, no fencing across clusters and no arbiter data center. A Raft majority of the pods elects the primary, wherever they run, so the cluster that holds the majority of the pods must stay up.
+
+For a database that must survive the loss of a whole data center without split-brain, use DC-DR instead; start with [Concepts](/docs/guides/postgres/distributed/concepts/index.md).
+
+> **Important:** A distributed Postgres becomes a DC-DR database when its PlacementPolicy has `spec.clusterSpreadConstraint.failoverPolicy`: KubeDB then sets `dr.kubedb.com/enabled: "true"` on it. For the plain mode on this page, use a PlacementPolicy without `failoverPolicy`, and do not set that annotation.
+
+> **Note:** YAML files used in this tutorial are stored in [docs/guides/postgres/distributed/plain/yamls](https://github.com/kubedb/docs/tree/{{< param "info.version" >}}/docs/guides/postgres/distributed/plain/yamls) directory of [kubedb/docs](https://github.com/kubedb/docs) repository.
 
 ## Introduction
 
 KubeDB enables distributed Postgres deployments across multiple Kubernetes clusters, providing a scalable, highly available, and resilient database solution. By integrating **Open Cluster Management (OCM)** for multi-cluster orchestration and **KubeSlice** for seamless pod-to-pod network connectivity, KubeDB simplifies the deployment and management of Postgres instances across clusters. A **PlacementPolicy** ensures precise control over pod scheduling, allowing you to distribute Postgres pods across clusters for optimal resource utilization and fault tolerance.
 
 This guide provides a step-by-step process to deploy a distributed Postgres cluster, including prerequisites, configuration, and verification steps. It assumes familiarity with Kubernetes and basic database concepts.
-
-> **New to KubeDB?** Please start [here](/docs/README.md).
 
 ## Understanding OCM Hub and Spoke Clusters
 
@@ -648,7 +656,7 @@ If expired or not yet obtained, download a FREE license from the [AppsCode Licen
 
 ```bash
 $ helm upgrade -i kubedb oci://ghcr.io/appscode-charts/kubedb \
-    --version v2026.2.26 \
+    --version {{< param "info.version" >}} \
     --namespace kubedb --create-namespace \
     --set-file global.license=$HOME/Downloads/kubedb-license-<uid>.txt \
     --set petset.features.ocm.enabled=true \

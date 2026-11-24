@@ -1,0 +1,10 @@
+petset:
+  features:
+    ocm:
+      enabled: true      # place DC-DR pods on the spokes through OCM ManifestWorks
+kubedb-provisioner:
+  dcDR:
+    enabled: true        # run the DC-DR failover orchestrator
+    localDC: hub         # the hub's own OCM ManagedCluster name
+    # coordKubeconfigSecret is left unset: the hub itself stores the
+    # primary-DC Leases, so the operator reads them in-cluster.
