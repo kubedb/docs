@@ -166,7 +166,7 @@ The Postgres object reports the DC-DR state in `status.disasterRecovery`:
 |---|---|
 | `activeDC` | The data center that holds the primary-DC Lease. |
 | `phase` | `Steady`, `FailingOver`, `FailingBack` or `Degraded`. `Steady` requires confirmed protection. |
-| `protected` | `true` when another Member data center is confirmed streaming within the lag budget. Treat a missing value as `false` before any planned operation. |
+| `protected` | `true` when another Member data center is confirmed streaming within the lag budget. Treat a missing value as `false` before any planned operation. For about a minute after a switchover or failover it can read `true` before the old data center has rejoined; see [Check before you start](/docs/guides/postgres/distributed/switchover-failover/index.md#check-before-you-start). |
 | `protectionMessage` | Why `protected` has its current value. |
 | `dataCenters[]` | One entry per data center: `clusterName`, `role`, `leader`, `writable`, `crossDCStreamer`, `lagBytes`, `healthy` (the freshness of its `dc-health-<dc>` Lease), `notReadyPods`. |
 

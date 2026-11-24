@@ -144,7 +144,7 @@ $ kubectl --kubeconfig $HUB get placementpolicy pg-docs -o jsonpath='{.spec.clus
 
 - A data center cannot be scaled to 0. Adding or removing a whole data center is a topology change, not horizontal scaling.
 - Use `dataCenters`, not `horizontalScaling.replicas`, on a DC-DR database.
-- Run one scaling request at a time, and start it only when the database is `Ready`, `Steady` and `protected`.
+- Run one scaling request at a time, and start it only when the database is `Ready`, `Steady` and `protected`. Right after a switchover or failover, `protected` can read `true` before the other data center has rejoined; check that it streams, as in [Check before you start](/docs/guides/postgres/distributed/switchover-failover/index.md#check-before-you-start).
 
 ## Cleaning up
 

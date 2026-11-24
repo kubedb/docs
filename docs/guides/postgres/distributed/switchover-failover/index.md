@@ -58,6 +58,14 @@ Ready Steady active=spoke-2 protected=true
 
 The status fields are not enough on their own. Also check the pods: exactly one pod with `kubedb.com/role=primary` in all clusters, and every standby streaming (see [Provision, Step 5](/docs/guides/postgres/distributed/provision/index.md#step-5-write-data-and-see-it-in-the-other-data-center)).
 
+> **Warning:** Right after a switchover or a failover, `protected` can read `true` for about a minute **before** the old data center has rejoined: the hub can still measure the old primary through the slice name. Before you rely on `protected`, check that the other Member data center's entry in `dataCenters[]` names a `crossDCStreamer` with a `lagBytes` value:
+>
+> ```bash
+> $ kubectl --kubeconfig $HUB -n demo get pg pg-docs -o jsonpath='{range .status.disasterRecovery.dataCenters[*]}{.clusterName} {.role} streamer={.crossDCStreamer} lag={.lagBytes}{"\n"}{end}'
+> ```
+>
+> and, on the active primary, that `pg_stat_replication` shows that streamer `streaming` and `pg_replication_slots` shows its `dcdr_<dc>` slot `active = t`. Until then, losing the active data center loses data.
+
 The example outputs on this page were recorded with a test client in `psql-client` on spoke-1 that inserted a row through `pg-docs.demo.svc.slice.local` every half second and recorded every acknowledged id. After each operation, every acknowledged id was checked against the table. Your timings will differ with your network and write load.
 
 ## Planned switchover
@@ -284,7 +292,7 @@ After an unplanned or planned failover, the old data center rejoins as a standby
 $ kubectl --kubeconfig $HUB -n demo annotate pg pg-docs dr.kubedb.com/switchover-to=<original-dc> --overwrite
 ```
 
-Wait for `protected: true` first: right after a failover the returning data center may still be rewinding and catching up.
+Wait for `protected: true` first: right after a failover the returning data center may still be rewinding and catching up. `protected` can read `true` for about a minute before that data center has rejoined, so also check that it streams, as in [Check before you start](#check-before-you-start).
 
 ## Keep a data center from becoming primary (standby-hold)
 
