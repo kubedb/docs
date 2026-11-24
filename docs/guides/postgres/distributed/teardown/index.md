@@ -59,6 +59,22 @@ failovergroup.apps.k8s.appscode.com "pg-docs" deleted
 
 The per data center PlacementPolicies (`pg-docs-spoke-1`, `pg-docs-spoke-2`) are removed with the database. With `WipeOut`, the pods, PVCs and volumes on both spokes are gone within about a minute.
 
+### After `Halt` or `Delete`
+
+The kept data and Secrets stay on the spokes through ManifestWorks that remain on the hub, in each data center's cluster namespace:
+
+- with `Halt`, the PVC ManifestWorks `data-<db>-<dc>-<n>` (and `data-<db>-<dc>-arbiter-0`), which keep the PVCs;
+- with `Halt` or `Delete`, the auth Secret ManifestWork `<namespace>-<db>-auth` and, with TDE, the TDE Secret's.
+
+Re-creating a DC-DR database over halted data is not covered in this release. Once you no longer need the data, delete these ManifestWorks; deleting a PVC ManifestWork deletes the PVC, and with it the data, on the spoke:
+
+```bash
+$ for dc in hub spoke-1 spoke-2; do kubectl --kubeconfig $HUB -n $dc get manifestwork | grep pg-docs; done
+$ kubectl --kubeconfig $HUB -n spoke-1 delete manifestwork data-pg-docs-spoke-1-0 data-pg-docs-spoke-1-1 data-pg-docs-spoke-1-arbiter-0 demo-pg-docs-auth
+```
+
+Repeat the delete for each cluster namespace the first command lists.
+
 ### Remove the group's Lease and markers
 
 Deleting a database does not remove its failover group's Lease and marker ConfigMaps. dr-controlplane `v0.1.0` never deletes them: the agent that holds the `primary-dc-<group>` Lease keeps renewing it, and every agent keeps refreshing its marker ConfigMap of the same name. A group created later with the same name would start from the old holder. They are:
