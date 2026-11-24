@@ -1,0 +1,12 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-docs-update-major
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: pg-docs
+  updateVersion:
+    targetVersion: "18.3"
+  apply: IfReady

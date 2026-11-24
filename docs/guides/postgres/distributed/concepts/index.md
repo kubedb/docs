@@ -25,7 +25,8 @@ This page explains how DC-DR is built, what each component does, how split-brain
 5. [Provision a DC-DR Postgres](/docs/guides/postgres/distributed/provision/index.md)
 6. [Switchover and failover](/docs/guides/postgres/distributed/switchover-failover/index.md)
 7. [Horizontal scaling](/docs/guides/postgres/distributed/scaling/index.md)
-8. [Teardown](/docs/guides/postgres/distributed/teardown/index.md)
+8. [Update version](/docs/guides/postgres/distributed/update-version/index.md)
+9. [Teardown](/docs/guides/postgres/distributed/teardown/index.md)
 
 ## Topology
 
@@ -169,7 +170,17 @@ The Postgres object reports the DC-DR state in `status.disasterRecovery`:
 ## Limitations
 
 - **Two data-bearing data centers.** This guide covers `failoverPolicy.mode: TwoDC`: exactly two Member data centers and one Arbiter.
-- **Day-2 operations.** Of the PostgresOpsRequest types, only per data center horizontal scaling is documented for DC-DR databases in this release. See [Horizontal scaling](/docs/guides/postgres/distributed/scaling/index.md).
+- **Day-2 operations.** These PostgresOpsRequest types work on a DC-DR database:
+  - `Restart`;
+  - `Reconfigure` (`applyConfig`, `configSecret`, `removeCustomConfig`);
+  - `RotateAuth`, with a generated or a user-provided auth Secret;
+  - `ReconfigureTLS`;
+  - `VerticalScaling`, in mode `Restart` only: `mode: InPlace` is refused, and so is `verticalScaling.arbiter` on a database that has no per data center arbiter;
+  - `VolumeExpansion`, in mode `Online` only: `Offline` is refused, and so is `volumeExpansion.arbiter` on a database that has no per data center arbiter;
+  - `UpdateVersion`, minor and major; a major update needs manual steps, see [Update version](/docs/guides/postgres/distributed/update-version/index.md);
+  - `HorizontalScaling`, per data center only, see [Horizontal scaling](/docs/guides/postgres/distributed/scaling/index.md).
+
+  A refused request fails at once with the condition `DCDRRequestRefused`, before anything is paused. Read replicas are not supported on a DC-DR database. Run one request at a time, and only when the database is `Ready`, `Steady` and `protected`. A request that restarts pods steps aside (fails) when a failover, failback or planned switchover to another data center starts; apply it again once the database is `Steady`.
 - **Hub components are single-replica.** Restarting any of them does not move the primary or lose writes, but the loss of a hub VM that runs them was not tested.
 - **OCM uses one hub API address.** The klusterlets register against a single hub API server URL. Use a VIP, a load balancer or a DNS name for production so that the loss of one hub node does not cut the klusterlets off.
 - **Switchover target.** A switchover to a data center that is not a Member (for example the Arbiter) is not rejected up front; it stays `FailingOver` until you abort it.

@@ -154,4 +154,5 @@ kubectl --kubeconfig $HUB -n demo delete postgresopsrequest pg-docs-hscale-spoke
 
 ## Next Steps
 
+- [Update version](/docs/guides/postgres/distributed/update-version/index.md).
 - [Teardown](/docs/guides/postgres/distributed/teardown/index.md).

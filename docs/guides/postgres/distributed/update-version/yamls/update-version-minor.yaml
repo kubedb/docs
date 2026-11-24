@@ -1,0 +1,11 @@
+apiVersion: ops.kubedb.com/v1alpha1
+kind: PostgresOpsRequest
+metadata:
+  name: pg-docs-update-minor
+  namespace: demo
+spec:
+  type: UpdateVersion
+  databaseRef:
+    name: pg-docs
+  updateVersion:
+    targetVersion: "17.9"
