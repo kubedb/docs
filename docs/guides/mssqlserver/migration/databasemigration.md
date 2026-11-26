@@ -255,6 +255,118 @@ NAME                     VERSION     STATUS   AGE
 mssqlserver-standalone   2022-cu12   Ready    5m
 ```
 
+## Run the Pre-check First
+
+Before copying any data, you can ask the migration to validate the source and your table selection. When `spec.precheck` is `true`, the migration only runs these checks and does not copy any data. Use the following `MSSQLServerMigration` CR:
+
+```yaml
+apiVersion: courier.kubedb.com/v1alpha1
+kind: MSSQLServerMigration
+metadata:
+  name: mssqlserver-precheck
+  namespace: demo
+spec:
+  precheck: true # only validate the source and the table selection, do not copy any data
+  source:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-source
+        namespace: demo
+      database: master
+    schema:
+      enabled: true
+      databases:
+        - name: RestaurantMigrationDB
+    snapshot:
+      enabled: true
+    streaming:
+      enabled: true
+      autoEnableCDC: true
+  target:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-standalone
+        namespace: demo
+      database: master
+```
+
+```bash
+$ kubectl apply -f https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/migration/mssqlserver-migration-precheck.yaml
+mssqlservermigration.courier.kubedb.com/mssqlserver-precheck created
+```
+
+The pre-check checks that every selected table can be streamed with CDC. It reports:
+
+- tables **without a primary key** (`primary_key_required`);
+- tables that you excluded but that a selected table has a **foreign key** to (`foreign_key_dependency_excluded`).
+
+When the check passes, the phase becomes `Succeeded`:
+
+```bash
+$ kubectl get mssqlservermigrations -n demo mssqlserver-precheck
+NAME                   PHASE       STAGE   LAG   PROGRESS   AGE
+mssqlserver-precheck   Succeeded                            10s
+```
+
+Read the report from the ConfigMap `<migration-name>-precheck-report`:
+
+```bash
+$ kubectl get cm -n demo mssqlserver-precheck-precheck-report -o jsonpath='{.data.report\.json}'
+{
+  "AffectedTableCount": 0,
+  "Code": "MSSQL_COMPATIBILITY_PASSED",
+  "Databases": [],
+  "IssueCount": 0,
+  "Message": "MSSQL precheck passed",
+  "Stage": "Precheck",
+  "Status": "completed"
+}
+```
+
+If the check **fails**, the `PHASE` stays `Pending` while the pre-check job is retried, and the migrator pods end up in `Error`. Always read the report to see why. For example, a table `LegacyNoPK` without a primary key, and a selection that leaves out the parent tables of `OrderItems`, give:
+
+```json
+{
+  "Code": "MSSQL_COMPATIBILITY_FAILED",
+  "Databases": [
+    {
+      "Database": "SalesDB",
+      "Tables": [
+        {
+          "Schema": "dbo",
+          "Table": "LegacyNoPK",
+          "Issues": [{"Category": "missing_primary_key", "Code": "primary_key_required"}]
+        }
+      ]
+    },
+    {
+      "Database": "InventoryDB",
+      "Tables": [
+        {
+          "Schema": "dbo",
+          "Table": "Orders",
+          "Issues": [{"Category": "invalid_table_selection", "Code": "foreign_key_dependency_excluded"}],
+          "DependentTables": [{"Constraint": "FK_OrderItems_Orders", "Table": "OrderItems"}]
+        }
+      ]
+    }
+  ],
+  "IssueCount": 2,
+  "Message": "MSSQL precheck failed",
+  "Stage": "Precheck",
+  "Status": "failed"
+}
+```
+
+To fix the issues, add a primary key to the table, or leave the table out with `excludeTable` (see [Select Specific Tables](#select-specific-tables)), or add the missing parent tables to the selection.
+
+Once the pre-check passes, delete it and apply the real migration (the next section):
+
+```bash
+$ kubectl delete mssqlservermigrations -n demo mssqlserver-precheck
+mssqlservermigration.courier.kubedb.com "mssqlserver-precheck" deleted
+```
+
 ## Apply MSSQLServerMigration CR
 
 To migrate the database we have to create an `MSSQLServerMigration` CR. KubeDB uses [SqlPackage](https://learn.microsoft.com/en-us/sql/tools/sqlpackage/sqlpackage) for schema migration and built-in CDC for streaming changes. Below is the YAML of the `MSSQLServerMigration` CR:
@@ -322,6 +434,34 @@ Here,
 
 For a full description of every field, see the [MSSQLServerMigration CRD reference](/docs/guides/mssqlserver/concepts/migrator.md).
 
+## Select Specific Tables
+
+By default every table of the databases listed in `spec.source.schema.databases` is migrated. To migrate only some tables, add a filter to the database entry:
+
+- `table` — migrate **only** these tables.
+- `excludeTable` — migrate everything **except** these tables. It takes precedence over `table`.
+
+A table name without a schema, such as `Customers`, means `dbo.Customers`. Use `schema.table` for other schemas.
+
+```yaml
+    schema:
+      enabled: true
+      databases:
+        - name: RestaurantMigrationDB   # only these tables
+          table:
+            - Customers
+            - Orders
+        - name: ReportingDB             # everything except these tables
+          excludeTable:
+            - ScratchData
+            - dbo.LegacyLog
+        - name: ArchiveDB               # no filter: every table
+```
+
+The complete manifest is in [mssqlserver-migration-table-selection.yaml](https://github.com/kubedb/docs/raw/{{< param "info.version" >}}/docs/examples/mssqlserver/migration/mssqlserver-migration-table-selection.yaml).
+
+> **Note:** Tables that are not selected are not created on the target, and changes made to them on the source are never replicated. A selected table must not have a foreign key to a table that is left out, and every migrated table needs a primary key. Run the [pre-check](#run-the-pre-check-first) before you start to find these problems.
+
 ## Watch Migration Progress
 
 Let's wait for the Migration to finish the schema and snapshot phases and enter the streaming phase. Run the following command to watch `MSSQLServerMigration` CR:
@@ -380,12 +520,14 @@ Store the target MSSQL Server's `sa` password in a shell variable, so it's never
 SA_PASSWORD=$(kubectl get secret -n demo mssqlserver-standalone-auth -o jsonpath='{.data.password}' | base64 -d)
 ```
 
-Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed documents were copied over:
+Once the migration reaches the `Streaming` stage, exec into the KubeDB target pod and confirm all seed rows were copied over:
 
 ```bash
-kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
+kubectl exec -it -n demo mssqlserver-standalone-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd \
     -S localhost -U sa -P "$SA_PASSWORD" -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
+
+> **Note:** The path of `sqlcmd` depends on the image. The `2022-cu12` image used here ships it at `/opt/mssql-tools/bin/sqlcmd`; images that ship the newer tools use `/opt/mssql-tools18/bin/sqlcmd` instead. Run `kubectl exec -n demo mssqlserver-standalone-0 -c mssql -- ls /opt` to see which one your image has.
 
 Expected output (`CreatedAt` reflects `GETDATE()` at insert time, so actual values will differ per run):
 
@@ -426,7 +568,7 @@ GO
 Wait a few seconds for the CDC events to propagate, then re-query the **target** (reusing the `$SA_PASSWORD` variable set earlier):
 
 ```bash
-kubectl exec -it -n demo mssqlserver-standalone-0 -- /opt/mssql-tools18/bin/sqlcmd \
+kubectl exec -it -n demo mssqlserver-standalone-0 -c mssql -- /opt/mssql-tools/bin/sqlcmd \
     -S localhost -U sa -P "$SA_PASSWORD" -C -Q "SELECT * FROM RestaurantMigrationDB.dbo.Customers"
 ```
 
@@ -444,7 +586,7 @@ The INSERT, UPDATE, and DELETE are all reflected on the target — CDC streaming
 
 ## Cutover
 
-Once the `LAG` drops to near zero, stop all writes to the source database. Wait until the `LAG` reaches exactly zero — at that point both databases are fully in sync.
+Stop all writes to the source database, then wait until the `LAG` reaches zero. At that point both databases are fully in sync.
 
 Now delete the `MSSQLServerMigration` CR to stop the migration process:
 

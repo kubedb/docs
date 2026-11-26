@@ -82,6 +82,17 @@ spec:
 
 `spec.target` is a required field that describes the KubeDB-managed MSSQL Server database being migrated **into**.
 
+### spec.precheck
+
+`precheck` is an optional boolean. When `true`, the migration only validates the source and your
+table selection and does **not** copy any data. It reports tables that CDC streaming cannot handle,
+such as tables without a primary key, and tables that are excluded while a selected table has a
+foreign key to them. The result is stored in the ConfigMap `<migration-name>-precheck-report`, and the
+`MSSQLServerMigration` phase becomes `Succeeded` when the check passes. Set it back to `false` (or
+omit it) to run the real migration. See the
+[migration guide](/docs/guides/mssqlserver/migration/databasemigration.md#run-the-pre-check-first)
+for a walkthrough.
+
 ### spec.source.connectionInfo / spec.target.connectionInfo
 
 `connectionInfo` tells the migration how to connect to the MSSQL Server instance.
