@@ -398,7 +398,7 @@ spec:
         write_batch_size: 100
     streaming:
       enabled: true
-      autoEnableCDC: true # set to false on AWS RDS and enable CDC yourself (see "Prepare Source Database")
+      autoEnableCDC: true
       batchSize: 1000
   target:
     connectionInfo:
@@ -430,7 +430,7 @@ Here,
 
 **`spec.source.streaming` — CDC change streaming:**
 - `enabled: true` — enables the streaming phase.
-- `autoEnableCDC: true` — automatically enables CDC on the source database and tables. Use `false` on AWS RDS, where you enable CDC yourself with `msdb.dbo.rds_cdc_enable_db`.
+- `autoEnableCDC: true` — automatically enables CDC on the source database and tables.
 
 For a full description of every field, see the [MSSQLServerMigration CRD reference](/docs/guides/mssqlserver/concepts/migrator.md).
 
