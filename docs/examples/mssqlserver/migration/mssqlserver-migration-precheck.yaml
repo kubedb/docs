@@ -1,0 +1,28 @@
+apiVersion: courier.kubedb.com/v1alpha1
+kind: MSSQLServerMigration
+metadata:
+  name: mssqlserver-precheck
+  namespace: demo
+spec:
+  precheck: true # only validate the source and the table selection, do not copy any data
+  source:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-source
+        namespace: demo
+      database: master
+    schema:
+      enabled: true
+      databases:
+        - name: RestaurantMigrationDB
+    snapshot:
+      enabled: true
+    streaming:
+      enabled: true
+      autoEnableCDC: true
+  target:
+    connectionInfo:
+      appBinding:
+        name: mssqlserver-standalone
+        namespace: demo
+      database: master
